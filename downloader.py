@@ -24,11 +24,23 @@ if __name__ == '__main__':
     # Read the command line arguments
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter,
                             add_help=False)
+    parser.add_argument('-a', '--alert', type=str, default="",
+                        help='\nSend an email at the end of the '
+                             'execution of the script in case of '
+                             'error in one harvester\n\n')
     parser.add_argument('-d', '--directory', type=str, default=DEF_PATH,
                         help="Set the directory where the database " +
                              "will be stored\nDefault: "+DEF_PATH +"\n\n")
+    parser.add_argument('-e', '--execute-only', type=str, default='',
+                        help="Execute an harvester only if contains the " +
+                             "argument in its name. This is particularly "
+                             "useful for debug purposes.\nDefault:'' \n\n")
     parser.add_argument('-h', '--help', action='help',
                         help='\nShow this help and exit\n\n')
+    parser.add_argument('-r', '--report', type=str, default="",
+                        help='\nSend an email at the end of the '
+                             'execution of the script with the '
+                             'log of all the operations\n\n')
     parser.add_argument('-v', '--verbosity', type=int, default=2,
                         help="Define the level of verbosity\n"
                              "Default: 2\n\n")
@@ -40,6 +52,7 @@ if __name__ == '__main__':
     database_path = argv.directory
     verbose_level = argv.verbosity
     reset_mode = argv.RESET
+    execution_filter = argv.execute_only
 
     # Create a log object
     log = Log(verbose_level)
@@ -70,6 +83,7 @@ if __name__ == '__main__':
         if not ispkg:
             mod_path = 'harvesters.' + modname
             current_mod = import_module(mod_path)
+            log.info('Imported module ' + mod_path)
             list_of_harvester_modules.append(current_mod)
 
     # Look for every class with a name that ends with "Harvester" in that
@@ -87,19 +101,24 @@ if __name__ == '__main__':
 
     errors = []
     for harvester_name, Harvester in list_of_harvester_classes:
-        harvester = Harvester()
-        try:
-            if reset_mode:
-                harvester.rebuild(database_path, log)
-            else:
-                harvester.harvest(database_path, log)
-        except:
-            exception = traceback.format_exc()
-            errors.append((harvester_name, exception))
-            log.error("An error occurred executing the "
-                      "harvester " + harvester_name + "!")
+        if execution_filter in harvester_name:
+            log.separation_line()
+            log.achievement('Running ' + harvester_name)
+            harvester = Harvester()
+            try:
+                if reset_mode:
+                    harvester.rebuild(database_path, log)
+                else:
+                    harvester.harvest(database_path, log)
+                log.achievement(harvester_name + ' sucessfully executed!')            
+            except:
+                exception = traceback.format_exc()
+                errors.append((harvester_name, exception))
+                log.error("An error occurred executing the "
+                          "harvester " + harvester_name + "!")
     
     if len(errors) != 0:
+        log.separation_line()
         for harvester, exception in errors:
             log.error("Error executing " + harvester +
                       ":\n" + exception, split_lines=False)

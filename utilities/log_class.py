@@ -10,9 +10,9 @@ class Log(object):
         try: 
             stty = check_output(['stty', 'size']).split()
             cols = int(stty[1])
-            if cols > 80: cols=80
+            if cols > 100: cols=100
         except:
-            cols = 80
+            cols = 100
         self.__tty_cols = cols
     
     def __restruct_in_lines(self, first_word, txt):
@@ -47,6 +47,9 @@ class Log(object):
     def get_verbosity_level(self):
         return self.__verbose
 
+    def separation_line(self):
+        print('-'*self.__tty_cols)
+
     def set_verbosity_level(self, v):
         self.__verbose = int(v)
 
@@ -56,7 +59,16 @@ class Log(object):
             print(txt, *args, **kwargs)
 
     def queerness(self, txt, *args, **kwargs):
-        txt = self.__restruct_in_lines('STRANGE: ', txt)
+        if 'split_lines' in kwargs:
+            if kwargs['split_lines'] == True:
+                txt = self.__restruct_in_lines('STRANGE: ', txt)
+            else:
+                txt = '\n'.join([' '*9 + l for l in txt.split('\n')])
+                txt = 'STRANGE:' + txt[8:]
+            del kwargs['split_lines']
+        else:
+            txt = self.__restruct_in_lines('STRANGE: ', txt)
+
         if self.__verbose > 1:
             print(txt, *args, **kwargs)
 

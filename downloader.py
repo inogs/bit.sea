@@ -60,20 +60,20 @@ if __name__ == '__main__':
     # Check if the directory of the database exists. If not, create it
     if exists(database_path):
         if isdir(database_path):
-           log.info(database_path + " exists and it is a directory!")
+           log.debug(database_path + " exists and it is a directory!")
         else:
             log.error(database_path + " exists but it is not a"
                       "directory!")
             exit(1)
     else:
         if reset_mode == False:
-            log.queerness("Reset mode is not active, but there is no "
+            log.info("Reset mode is not active, but there is no "
                           "archive to update! The script will work "
                           "in reset mode even if it is not specified "
                           "in the command line interface")
             reset_mode = True
         makedirs(database_path)
-        log.info("Directory " + database_path + " created")
+        log.debug("Directory " + database_path + " created")
 
     # Look every module inside the directory of the harvesters
     list_of_harvester_modules = []
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         if not ispkg:
             mod_path = 'harvesters.' + modname
             current_mod = import_module(mod_path)
-            log.info('Imported module ' + mod_path)
+            log.debug('Imported module ' + mod_path)
             list_of_harvester_modules.append(current_mod)
 
     # Look for every class with a name that ends with "Harvester" in that
@@ -103,20 +103,19 @@ if __name__ == '__main__':
     for harvester_name, Harvester in list_of_harvester_classes:
         if execution_filter in harvester_name:
             log.separation_line()
-            log.achievement('Running ' + harvester_name)
+            log.report('Running ' + harvester_name)
             harvester = Harvester()
             try:
                 if reset_mode:
                     harvester.rebuild(database_path, log)
                 else:
                     harvester.harvest(database_path, log)
-                log.achievement(harvester_name + ' sucessfully executed!')            
+                log.report(harvester_name + ' sucessfully executed!')            
             except:
                 exception = traceback.format_exc()
                 errors.append((harvester_name, exception))
                 log.error("An error occurred executing the "
                           "harvester " + harvester_name + "!")
-    
     if len(errors) != 0:
         log.separation_line()
         for harvester, exception in errors:

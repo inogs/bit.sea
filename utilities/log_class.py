@@ -2,6 +2,9 @@ from __future__ import print_function
 from sys import stderr
 from subprocess import check_output
 
+LOG_LEVELS = {1 : 'report', 2 : 'info', 3 : 'debug'}
+COL_SPACE = 9
+
 class Log(object):
     def __init__(self, verbose_level=1):
         self.__verbose = verbose_level
@@ -14,8 +17,9 @@ class Log(object):
         except:
             cols = 100
         self.__tty_cols = cols
+        self._lines = []
     
-    def __restruct_in_lines(self, first_word, txt):
+    def _restruct_in_lines(self, first_word, txt):
         # Given a word and a some text, return a text with
         # the first world on the left and the text in another
         # coulumn on the right
@@ -44,6 +48,18 @@ class Log(object):
         new_lines[0] = first_word + new_lines[0][first_col:]
         return '\n'.join(new_lines)
 
+    def _format_text(self, kwargs, first_word, txt):
+        if 'split_lines' in kwargs:
+            if kwargs['split_lines'] == True:
+                txt = self._restruct_in_lines(first_word, txt)
+            else:
+                txt = '\n'.join([' '*9 + l for l in txt.split('\n')])
+                txt = first_word + txt[9:]
+            del kwargs['split_lines']
+        else:
+                txt = self._restruct_in_lines(first_word, txt)            
+        return txt
+
     def get_verbosity_level(self):
         return self.__verbose
 
@@ -53,39 +69,26 @@ class Log(object):
     def set_verbosity_level(self, v):
         self.__verbose = int(v)
 
-    def info(self, txt, *args, **kwargs):
-        txt = self.__restruct_in_lines('INFO:    ', txt)
-        if self.__verbose > 2:
-            print(txt, *args, **kwargs)
-
-    def queerness(self, txt, *args, **kwargs):
-        if 'split_lines' in kwargs:
-            if kwargs['split_lines'] == True:
-                txt = self.__restruct_in_lines('STRANGE: ', txt)
-            else:
-                txt = '\n'.join([' '*9 + l for l in txt.split('\n')])
-                txt = 'STRANGE:' + txt[8:]
-            del kwargs['split_lines']
-        else:
-            txt = self.__restruct_in_lines('STRANGE: ', txt)
-
-        if self.__verbose > 1:
-            print(txt, *args, **kwargs)
-
-    def achievement(self, txt, *args, **kwargs):
-        txt = self.__restruct_in_lines('REPORT:  ', txt)
-        if self.__verbose > 0:
-            print(txt, *args, **kwargs)
+    def get_content(self):
+        output = ""
+        for l in self._lines:
+            output += LOG_LEVELS[l[0]].upper() + ': ' + l[1] + '\n'
+        return output
 
     def error(self, txt, *args, **kwargs):
-        if 'split_lines' in kwargs:
-            if kwargs['split_lines'] == True:
-                txt = self.__restruct_in_lines('ERROR:   ', txt)
-            else:
-                txt = '\n'.join([' '*9 + l for l in txt.split('\n')])
-                txt = 'ERROR:' + txt[6:]
-            del kwargs['split_lines']
-        else:
-            txt = self.__restruct_in_lines('ERROR:   ', txt)
-            
+        first_word = ('{:<' + str(COL_SPACE) +'}').format('ERROR:')
+        txt = self._format_text(kwargs, first_word, txt) 
         print(txt, *args, file=stderr)
+
+
+def add_log_level(l):
+    def f(self, txt, *args, **kwargs):
+        self._lines.append((l,txt.replace('\n', ' ')))
+        first_word = ('{:<' + str(COL_SPACE) +'}').format(LOG_LEVELS[l].upper() + ':')
+        if self.get_verbosity_level() >= l:
+            txt = self._format_text(kwargs, first_word, txt)
+            print(txt, *args, **kwargs)
+    setattr(Log, LOG_LEVELS[i], f)
+
+for i in LOG_LEVELS:
+    add_log_level(i)

@@ -1,3 +1,6 @@
+from os.path import exists, join
+from os import fsync, rename
+
 import ftplib
 
 def _read_permissions(txt):
@@ -31,10 +34,10 @@ def _read_permissions(txt):
 
 def list_files(connection):
     # Unfortunately, the standard library for the ftp connections
-    # in python do not have a method to have a list of directories
+    # in python does not have a method to have a list of directories
     # or files inside a folder. All that we have is the output of
-    # the ls command of ftp and a list of the files names. This
-    # function return a tuple with the files and the directories.
+    # the ls command of the ftp server and a list of the files names.
+    # This function return a tuple with the files and the directories.
     # The last element of the tuple is a dictionary with the file
     # permissions
     ls_output = []
@@ -47,16 +50,21 @@ def list_files(connection):
             return ([], [], dict())
         else:
             raise
+    if len(file_names)==0:
+        return ([], [], dict())
 
     # Now I divide the ls_output in two columns. In the second one
     # there are the filenames, in the first one all the other
     # informations.
+    second_col = None
     min_len = min([len(l) for l in ls_output])
     for i in range(min_len)[::-1]:
         end_table_set = set([l[i:] for l in ls_output])
         if end_table_set == file_names_set:
             second_col = i
             break
+    if second_col is None:
+        return list_files_backup(ls_output)
 
     # Now I prepare the output.
     files = []
@@ -74,3 +82,86 @@ def list_files(connection):
             permissions[f] = _read_permissions(perms)
 
     return files, dirs, permissions
+
+
+
+def download_file(connection, f, path, perms, log,
+                  skip_if_exists=True, skip_is_strange = False):
+    if skip_if_exists:
+        # Check if the file already exists
+        if exists(join(path, f)):
+            if skip_is_strange:
+                log.info('Skipping file ' + f + ' because'
+                         ' it was already downloaded!')
+            else:
+                log.debug('Skipping file ' + f + ' because '
+                          'it was already downloaded')
+            return False
+
+    # Check if the file is readable
+    if 'read' not in perms[f]['others']:
+        log.info('The file ' + f + ' is not '
+                 'readable. Check the '
+                 'permissions')
+        return False
+ 
+    # Download the file
+    log.debug('Downloading ' + f + '...')
+    file_path = join(path, f)
+    temp_name = join(path, 'incomplete_download.tmp')
+    with open(join(path, 'incomplete_download.tmp'), 'wb') as loc_file:
+        connection.retrbinary('RETR ' + f, loc_file.write)
+        loc_file.flush()
+        fsync(loc_file.fileno())
+    
+    rename(temp_name, file_path)
+    
+    log.debug('File ' + f + ' downloaded!')
+    return True
+
+
+
+def list_files_backup(ls_output):
+    # If the ls output is not properly aligned (this means that
+    # there is a rows which is not aligned with the others) then
+    # the standard list_files function will fail. This will works
+    # but requires that the time column contains exactly two space
+    # for every entries (for example Jun 23 2015).
+
+    files = []
+    dirs = []
+    permissions = dict()
+
+    perms = None
+    num = None
+    user = None
+    group = None
+    size = None
+    date = None
+    name = None
+    
+    for l in ls_output:
+        perms = l.split()[0]
+        l = l[len(perms):].lstrip()
+        num = int(l.split()[0])
+        l = l[len(str(num)):].lstrip()
+        user = l.split()[0]
+        l = l[len(user):].lstrip()
+        group = l.split()[0]
+        l = l[len(group):].lstrip()
+        size = int(l.split()[0])
+        l = l[len(str(size)):].lstrip()
+        date = " ".join(l.split()[:3])
+        l = l[len(date)+1:]
+        name = l
+    
+        isdir = perms.startswith('d')
+        if isdir:
+            dirs.append(name)
+        else:
+            files.append(name)
+            permissions[name] = _read_permissions(perms[1:])
+
+    return files, dirs, permissions
+        
+    

@@ -1,6 +1,276 @@
-class BioFloatsHarvester(object):
-    def harvest(self, path, log):
-        pass
+from __future__ import print_function
 
-    def rebuild(self, path, log):
-        pass
+from ftplib import FTP
+from os.path import join, exists, realpath, dirname
+from os import listdir, remove
+from xml.dom.minidom import parseString
+
+#import lxml.etree as xml_tree
+import xml.etree.ElementTree as xml_tree
+
+from harvester_interface import HarvesterInterface
+from utilities.ftp_utilities import list_files, download_file
+from utilities.files_and_dirs import ensure_dir
+from utilities.date_and_time import now_as_string
+
+ftp_url = 'ftp.ifremer.fr'
+
+relative_path = "biofloats"
+wmo_file = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
+xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
+
+
+class BioFloatsHarvester(HarvesterInterface):
+    def harvest(self, db_path, log):
+        # Read the wmo file line by line (exclude the first one because
+        # it does not contain data)
+        with open(wmo_file, 'r') as wmo_info:
+            wmo_list = [l.split() for l in wmo_info.readlines()[1:]]
+        # Put its content in a dictionary
+        wmo_status = dict()
+        for l in wmo_list:
+            name = l[1]
+            status = l[-1]
+            wmo_status[name] = status
+
+        active_floats = [f for f in wmo_status if wmo_status[f]=='A']
+        dead_floats = [f for f in wmo_status if wmo_status[f]=='D']
+
+        # Now we need the xml file that keeps what we did on the
+        # last updates
+        xml_file = join(xml_path, self.__class__.__name__ + '.xml')
+        try:
+            tree = xml_tree.parse(xml_file)
+        except:
+            log.info('XML file not found or not readable. '
+                     'This script will update every file '
+                     'from the remote archive. This is '
+                     'almost the same than run in reset '
+                     'mode, but the files that exist will '
+                     'not be downloaded again. Moreover, '
+                     'the XML file will be rewritten.')
+            return self.rebuild(db_path, log, skip_if_present=True)
+
+        root = tree.getroot()
+
+        # In the following list I will store the name of the
+        # files that will be downloaded or updated
+        downloaded = []
+
+        # Check if the directory for this harvester is present
+        # in the database
+        path = join(db_path,relative_path)
+        ensure_dir(path, log, expected=True)
+
+        # Open the connection with the remote archive
+        connection = FTP(ftp_url)
+        connection.login()
+
+        # Enter in the directory tree
+        connection.cwd('ifremer/argo/dac/coriolis')
+
+        # Download data for every active float
+        for f in active_floats:
+
+            # Update the xml with the current status of the float
+            f_in_xml = root.findall('wmo_' + str(f))
+            if len(f_in_xml) == 0:
+                f_node = xml_tree.SubElement(root, 'wmo_' + str(f))
+                f_node.set('status', 'A')
+            else:
+                f_node = [fn for fn in f_in_xml if fn.tag=='wmo_'+str(f)][0]
+                f_node.set('status', 'A')
+
+            try:
+                connection.cwd(f)
+            except:
+                log.info('No directory associated with file ' + str(f) +
+                         '. This file will be skipped!')
+                continue
+
+            _, float_dirs, _ = list_files(connection)
+            # Now I look for the profiles dir. This is the folder
+            # where all the data are stored
+            if 'profiles' in float_dirs:
+                connection.cwd('profiles')
+                float_files, _, perms = list_files(connection)
+                min_len = len(f) + 2
+                to_be_downloaded = [ff for ff in float_files
+                                    if len(ff)>min_len
+                                    and ff[:min_len]=='MR'+f]
+                if len(to_be_downloaded) > 0:
+                    download_for_f = []
+                    # Copy all file in a local dir with the same name
+                    # skipping the one that we already have
+                    float_local_dir = join(path, f)
+                    ensure_dir(float_local_dir, log, expected = False)
+                    for ff in to_be_downloaded:
+                        d = download_file(connection, ff, float_local_dir,
+                                          perms, log, True)
+                        # If the file was downloaded without any problem,
+                        # add it to the list of downloaded files
+                        if d:
+                            downloaded.append(ff)
+                            download_for_f.append(ff)
+                    if len(download_for_f) == 0:
+                        log.info('No updates found for float ' + str(f))                    
+                else:
+                    log.info('No updates found for float ' + str(f))
+                connection.cwd('..')
+            else:
+                log.info('Float ' + f + ' does not contain a profile '
+                         'dir inside its directory. No data will be '
+                         'downloaded for this float')
+            connection.cwd('..')
+
+
+        for f in dead_floats:
+            to_be_updated = False
+            # Update the xml with the current status of the float
+            f_in_xml = root.findall('wmo_' + str(f))
+            if len(f_in_xml) == 0:
+                # If this float is new, then add it to the archive
+                # and it will be updated
+                to_be_updated = True
+                f_node = xml_tree.SubElement(root, 'wmo_' + str(f))
+                f_node.set('status', 'D')
+            else:
+                f_node = [fn for fn in f_in_xml if fn.tag=='wmo_'+str(f)][0]
+                # If I already know this float, but the last time it
+                # was not dead, update it
+                if f_node.get('status') != 'D':
+                    to_be_updated = True
+                f_node.set('status', 'D')
+
+
+            if to_be_updated:
+                try:
+                    connection.cwd(f)
+                except:
+                    log.info('No directory associated with file ' + str(f) +
+                             '. This file will be skipped!')
+                    continue
+
+                _, float_dirs, _ = list_files(connection)
+                # Now I look for the profiles dir. This is the folder
+                # where all the data are stored
+                if 'profiles' in float_dirs:
+                    connection.cwd('profiles')
+                    float_files, _, perms = list_files(connection)
+                    min_len = len(f) + 2
+                    to_be_downloaded = [ff for ff in float_files
+                                        if len(ff)>min_len
+                                        and ff[:min_len]=='MR'+f]
+                    if len(to_be_downloaded) > 0:
+                        # Copy all file in a local dir with the same name
+                        # skipping the one that we already have
+                        float_local_dir = join(path, f)
+                        ensure_dir(float_local_dir, log, expected = False)
+                        for ff in to_be_downloaded:
+                            d = download_file(connection, ff, float_local_dir,
+                                              perms, log, True)
+                            # If the file was downloaded without any problem,
+                            # add it to the list of downloaded files
+                            if d:
+                                downloaded.append(ff)
+                    connection.cwd('..')
+                else:
+                    log.info('Float ' + f + ' does not contain a profile '
+                             'dir inside its directory. No data will be '
+                             'downloaded for this float')
+                connection.cwd('..')
+        connection.quit()
+
+        # Save the XML file
+        root.set('Updated', now_as_string())
+        xml_as_string = xml_tree.tostring(root)
+        xml_rebuild = parseString(xml_as_string)
+        pretty_xml = xml_rebuild.toprettyxml(indent='  ')
+        pretty_xml_lines = pretty_xml.split('\n')
+        pretty_xml = "\n".join([l for l in pretty_xml_lines if l.strip()])
+        with open(xml_file, 'w') as xml_f:
+            xml_f.write(pretty_xml)
+
+        # Return the list of downloaded files
+        return downloaded
+
+
+    def rebuild(self, db_path, log, skip_if_present=False):
+        # In the following list I will store the name of the
+        # files that will be downloaded or updated
+        downloaded = []
+        
+        # Delete, if present, the XML files with all the floats
+        xml_file = join(xml_path, self.__class__.__name__ + '.xml')
+        if exists(xml_file):
+            remove(xml_file)
+        # Create a new one (in memory)
+        root = xml_tree.Element("BioFloats")
+        root.set('Updated', now_as_string())
+        tree = xml_tree.ElementTree(root)
+
+        # Check if the directory for this harvester is present
+        # in the database
+        path = join(db_path,relative_path)
+        ensure_dir(path, log, expected=True)
+
+        # Open the connection with the remote archive
+        connection = FTP(ftp_url)
+        connection.login()
+
+        # Enter in the directory tree
+        connection.cwd('ifremer/argo/dac/coriolis')
+        
+        # Get a list of every dir
+        _, floats, _ = list_files(connection)
+
+        for f in floats:
+            connection.cwd(f)
+            _, float_dirs, _ = list_files(connection)
+            # Now I look for the profiles dir. This is the folder
+            # where all the data are stored
+            if 'profiles' in float_dirs:
+                connection.cwd('profiles')
+                float_files, _, perms = list_files(connection)
+                min_len = len(f) + 2
+                to_be_downloaded = [ff for ff in float_files 
+                                    if len(ff)>min_len 
+                                    and ff[:min_len]=='MR'+f]
+                if len(to_be_downloaded) > 0:
+                    # This float is useful! Add it to the xml file
+                    float_node = xml_tree.SubElement(root, 'wmo_' + f)
+                    float_node.set('status','U') # U is for unknown
+
+                    # Copy all file in a local dir with the same name
+                    float_local_dir = join(path, f)
+                    ensure_dir(float_local_dir, log, expected = False)
+                    for ff in to_be_downloaded:
+                        d = download_file(connection, ff, float_local_dir,
+                                          perms, log, skip_if_present)
+                        # If the file was downloaded without any problem,
+                        # add it to the list of downloaded files
+                        if d:
+                            downloaded.append(ff)
+                else:
+                    log.debug('Dir ' + f + ' is ignored because it does '
+                              'not contain any file that starts with MR')
+                connection.cwd('..')                
+            else:
+                log.debug('Dir ' + f + ' is ignored because it does not '
+                          'contain a profile folder')
+            connection.cwd('..')
+        connection.quit()
+        
+        # Save the XML file
+        xml_lines = [l.replace('\n','').strip() for l in xml_tree.tostringlist(root)]
+        xml_as_string = xml_tree.tostring(root)
+        xml_rebuild = parseString(xml_as_string)
+        pretty_xml = xml_rebuild.toprettyxml(indent='  ')
+        pretty_xml_lines = pretty_xml.split('\n')
+        pretty_xml = "\n".join([l for l in pretty_xml_lines if l.strip()])
+        with open(xml_file, 'w') as xml_f:
+            xml_f.write(pretty_xml)
+
+        # Return the list of downloaded files
+        return downloaded
+

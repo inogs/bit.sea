@@ -142,7 +142,7 @@ def download_file(connection, f, path, perms, log,
                 transf_socket = connection.transfercmd('RETR ' + f)
 
                 while True:
-                    block = transf_socket.recv(1024*1024)
+                    block = transf_socket.recv(2*1024)
                     if not block:
                         # If no more data, the download is complete
                         break
@@ -157,7 +157,6 @@ def download_file(connection, f, path, perms, log,
         except:
             try:
                 transf_socket.close()
-                connection.voidresp()
             except:
                 pass
             err_msg.message = traceback.format_exc()

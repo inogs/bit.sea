@@ -81,7 +81,7 @@ class CopernicusHarvester(HarvesterInterface):
         log.debug("Entering in dir mooring")
 
         already_downloaded = listdir(path_mooring)
-        file_dates = [int(l.split('_')[1]) for l in already_downloaded]
+        file_dates = [int(l.split('_')[1]) for l in already_downloaded if l!='incomplete_download.tmp']
         if len(file_dates) == 0:
             last_downloaded = 0
         else:

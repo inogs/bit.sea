@@ -43,7 +43,7 @@ class MyOceanHarvester(HarvesterInterface):
         connection.cwd('dataset-oc-med-chl-modis_a-l4-chl_7km_daily-rt-v02')
         
         # List all the local files
-        loc_files = listdir(path)
+        loc_files = [f for f in listdir(path) if f !='incomplete_download.tmp']
         
         # If there are no files, download everything
         if len(loc_files)==0:

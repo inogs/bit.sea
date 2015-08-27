@@ -16,7 +16,7 @@ from utilities.date_and_time import now_as_string
 
 ftp_url = 'ftp.ifremer.fr'
 
-relative_path = "biofloats"
+relative_path = "FLOAT_BIO"
 wmo_file = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
 xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
 
@@ -275,7 +275,7 @@ class BioFloatsHarvester(HarvesterInterface):
                     ensure_dir(float_local_dir, log, expected = False)
                     for ff in to_be_downloaded:
                         d = download_file(connection, ff, float_local_dir,
-                                          perms, log, False)
+                                          perms, log, skip_if_present)
                         # If the file was downloaded without any problem,
                         # add it to the list of downloaded files
                         if d:

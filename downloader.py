@@ -15,8 +15,8 @@ from utilities.log_class import Log
 
 # This is the default location where the database will be stored if
 # that information is not specified when running the script
-DEF_PATH = dirname(realpath(__file__)) +  '/data'
-
+#DEF_PATH = dirname(realpath(__file__)) +  '/data'
+DEF_PATH = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE"
 
 
 if __name__ == '__main__':

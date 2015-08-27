@@ -1,11 +1,12 @@
 from __future__ import print_function
 
+import sys
+
 from ftplib import FTP
 from os.path import join, exists, realpath, dirname
 from os import listdir, remove
 from xml.dom.minidom import parseString
 
-#import lxml.etree as xml_tree
 import xml.etree.ElementTree as xml_tree
 
 from harvester_interface import HarvesterInterface
@@ -22,6 +23,10 @@ xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
 
 class BioFloatsHarvester(HarvesterInterface):
     def harvest(self, db_path, log):
+        # In the following list I will store the name of the
+        # files that will be downloaded or updated
+        downloaded = []
+
         # Read the wmo file line by line (exclude the first one because
         # it does not contain data)
         with open(wmo_file, 'r') as wmo_info:
@@ -53,10 +58,6 @@ class BioFloatsHarvester(HarvesterInterface):
 
         root = tree.getroot()
 
-        # In the following list I will store the name of the
-        # files that will be downloaded or updated
-        downloaded = []
-
         # Check if the directory for this harvester is present
         # in the database
         path = join(db_path,relative_path)
@@ -71,7 +72,6 @@ class BioFloatsHarvester(HarvesterInterface):
 
         # Download data for every active float
         for f in active_floats:
-
             # Update the xml with the current status of the float
             f_in_xml = root.findall('wmo_' + str(f))
             if len(f_in_xml) == 0:
@@ -127,6 +127,7 @@ class BioFloatsHarvester(HarvesterInterface):
         for f in dead_floats:
             to_be_updated = False
             # Update the xml with the current status of the float
+            # Check if it must be updated
             f_in_xml = root.findall('wmo_' + str(f))
             if len(f_in_xml) == 0:
                 # If this float is new, then add it to the archive
@@ -141,6 +142,12 @@ class BioFloatsHarvester(HarvesterInterface):
                 if f_node.get('status') != 'D':
                     to_be_updated = True
                 f_node.set('status', 'D')
+            
+            if not to_be_updated:
+                log.debug("Wmo " + str(f) + " is dead and will not be updated")
+            else:
+                log.debug("Wmo " + str(f) + " now is dead but was active on "
+                          "the last run and will be updated anyway")
 
 
             if to_be_updated:
@@ -199,12 +206,23 @@ class BioFloatsHarvester(HarvesterInterface):
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
-        
+
+        # Read the wmo file line by line (exclude the first one because
+        # it does not contain data)
+        with open(wmo_file, 'r') as wmo_info:
+            wmo_list = [l.split() for l in wmo_info.readlines()[1:]]
+        # Put its content in a dictionary
+        wmo_status = dict()
+        for l in wmo_list:
+            name = l[1]
+            status = l[-1]
+            wmo_status[name] = status
+
         # Delete, if present, the XML files with all the floats
         xml_file = join(xml_path, self.__class__.__name__ + '.xml')
         if exists(xml_file):
             remove(xml_file)
-        # Create a new one (in memory)
+        # and create a new one (in memory)
         root = xml_tree.Element("BioFloats")
         root.set('Updated', now_as_string())
         tree = xml_tree.ElementTree(root)
@@ -212,7 +230,7 @@ class BioFloatsHarvester(HarvesterInterface):
         # Check if the directory for this harvester is present
         # in the database
         path = join(db_path,relative_path)
-        ensure_dir(path, log, expected=True)
+        ensure_dir(path, log, expected=False)
 
         # Open the connection with the remote archive
         connection = FTP(ftp_url)
@@ -220,12 +238,26 @@ class BioFloatsHarvester(HarvesterInterface):
 
         # Enter in the directory tree
         connection.cwd('ifremer/argo/dac/coriolis')
-        
-        # Get a list of every dir
-        _, floats, _ = list_files(connection)
 
-        for f in floats:
-            connection.cwd(f)
+        # Download data for every active float
+        for f in wmo_status:
+
+            # Update the xml with the current status of the float
+            f_in_xml = root.findall('wmo_' + str(f))
+            if len(f_in_xml) == 0:
+                f_node = xml_tree.SubElement(root, 'wmo_' + str(f))
+                f_node.set('status', wmo_status[f])
+            else:
+                f_node = [fn for fn in f_in_xml if fn.tag=='wmo_'+str(f)][0]
+                f_node.set('status', wmo_status[f])
+
+            try:
+                connection.cwd(f)
+            except:
+                log.info('No directory associated with file ' + str(f) +
+                         '. This file will be skipped!')
+                continue
+
             _, float_dirs, _ = list_files(connection)
             # Now I look for the profiles dir. This is the folder
             # where all the data are stored
@@ -233,36 +265,36 @@ class BioFloatsHarvester(HarvesterInterface):
                 connection.cwd('profiles')
                 float_files, _, perms = list_files(connection)
                 min_len = len(f) + 2
-                to_be_downloaded = [ff for ff in float_files 
-                                    if len(ff)>min_len 
+                to_be_downloaded = [ff for ff in float_files
+                                    if len(ff)>min_len
                                     and ff[:min_len]=='MR'+f]
                 if len(to_be_downloaded) > 0:
-                    # This float is useful! Add it to the xml file
-                    float_node = xml_tree.SubElement(root, 'wmo_' + f)
-                    float_node.set('status','U') # U is for unknown
-
+                    download_for_f = []
                     # Copy all file in a local dir with the same name
                     float_local_dir = join(path, f)
                     ensure_dir(float_local_dir, log, expected = False)
                     for ff in to_be_downloaded:
                         d = download_file(connection, ff, float_local_dir,
-                                          perms, log, skip_if_present)
+                                          perms, log, False)
                         # If the file was downloaded without any problem,
                         # add it to the list of downloaded files
                         if d:
                             downloaded.append(ff)
+                            download_for_f.append(ff)
+                    if len(download_for_f) == 0:
+                        log.info('No updates found for float ' + str(f))                    
                 else:
-                    log.debug('Dir ' + f + ' is ignored because it does '
-                              'not contain any file that starts with MR')
-                connection.cwd('..')                
+                    log.info('No updates found for float ' + str(f))
+                connection.cwd('..')
             else:
-                log.debug('Dir ' + f + ' is ignored because it does not '
-                          'contain a profile folder')
+                log.info('Float ' + f + ' does not contain a profile '
+                         'dir inside its directory. No data will be '
+                         'downloaded for this float')
             connection.cwd('..')
+
         connection.quit()
         
         # Save the XML file
-        xml_lines = [l.replace('\n','').strip() for l in xml_tree.tostringlist(root)]
         xml_as_string = xml_tree.tostring(root)
         xml_rebuild = parseString(xml_as_string)
         pretty_xml = xml_rebuild.toprettyxml(indent='  ')
@@ -273,4 +305,3 @@ class BioFloatsHarvester(HarvesterInterface):
 
         # Return the list of downloaded files
         return downloaded
-

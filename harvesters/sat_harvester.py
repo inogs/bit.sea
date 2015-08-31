@@ -14,10 +14,10 @@ ftp_url = 'myocean.artov.isac.cnr.it'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "myocean"
+relative_path = "SAT/MODIS/DAILY/ORIG/"
 
 
-class MyOceanHarvester(HarvesterInterface):
+class SatHarvester(HarvesterInterface):
 
     def harvest(self, db_path, log):
         # In the following list I will store the name of the

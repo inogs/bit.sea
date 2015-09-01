@@ -300,6 +300,8 @@ class BioFloatsHarvester(HarvesterInterface):
         pretty_xml = xml_rebuild.toprettyxml(indent='  ')
         pretty_xml_lines = pretty_xml.split('\n')
         pretty_xml = "\n".join([l for l in pretty_xml_lines if l.strip()])
+
+        ensure_dir(xml_path, log, expected=False)
         with open(xml_file, 'w') as xml_f:
             xml_f.write(pretty_xml)
 

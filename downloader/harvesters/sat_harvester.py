@@ -14,10 +14,10 @@ ftp_url = 'myocean.artov.isac.cnr.it'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "myocean"
+relative_path = "SAT"
 
 
-class MyOceanHarvester(HarvesterInterface):
+class SatHarvester(HarvesterInterface):
 
     def harvest(self, db_path, log):
         # In the following list I will store the name of the
@@ -53,7 +53,8 @@ class MyOceanHarvester(HarvesterInterface):
             for year in years:
                 connection.cwd(year)
                 files, _, perms = list_files(connection)
-                for f in files:
+                files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+                for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
                                       perms, log, False)
                     if d:
@@ -69,7 +70,8 @@ class MyOceanHarvester(HarvesterInterface):
             # file and download every file which is newer than that
             connection.cwd(str(last_year))
             files, _, perms = list_files(connection)
-            for f in files:
+            files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+            for f in files_to_be_downloaded:
                 if f > last_file:
                     d = download_file(connection, f, path,
                                       perms, log, True, True)
@@ -81,7 +83,8 @@ class MyOceanHarvester(HarvesterInterface):
             for year in new_years:
                 connection.cwd(year)
                 files, _, perms = list_files(connection)
-                for f in files:
+                files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+                for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
                                       perms, log, True, True)
                     if d:

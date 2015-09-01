@@ -12,12 +12,13 @@ import traceback
 
 import harvesters
 from utilities.log_class import Log
+from utilities.mail import write_mail
 
 # This is the default location where the database will be stored if
 # that information is not specified when running the script
 #DEF_PATH = dirname(realpath(__file__)) +  '/data'
 DEF_PATH = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE"
-
+LOG_FILE = "log/downloader.log"
 
 if __name__ == '__main__':
 
@@ -35,6 +36,11 @@ if __name__ == '__main__':
                         help="Execute an harvester only if contains the " +
                              "argument in its name. This is particularly "
                              "useful for debug purposes.\nDefault:'' \n\n")
+    parser.add_argument('-l', '--log-file', type=str, default=LOG_FILE,
+                        help="The relative or absolute path of the file " +
+                             "where the log will be saved. If the string " +
+                             "is empty, no file will be written\n" +
+                             "Default: " + str(LOG_FILE) + "\n\n")
     parser.add_argument('-h', '--help', action='help',
                         help='\nShow this help and exit\n\n')
     parser.add_argument('-r', '--report', type=str, default="",
@@ -54,8 +60,23 @@ if __name__ == '__main__':
     reset_mode = argv.RESET
     execution_filter = argv.execute_only
 
+    if argv.report != "":
+        report_to = argv.report.split(',')
+    else:
+        report_to = []
+
+    if argv.alert != "":
+        alert_to = argv.alert.split(',')
+    else:
+        alert_to = []
+
+    if argv.log_file == "":
+        log_file = None
+    else:
+        log_file = argv.log_file
+
     # Create a log object
-    log = Log(verbose_level)
+    log = Log(verbose_level, log_file)
 
     # Check if the directory of the database exists. If not, create it
     if exists(database_path):
@@ -95,30 +116,54 @@ if __name__ == '__main__':
                 list_of_harvester_classes.append((obj_name, obj))
 
 
+    # Take only the harvesters that contains the filter parameter in ther
+    # names 
+    harvester_classes_filtered = [h for h in list_of_harvester_classes if 
+                                  execution_filter.lower() in h[0].lower()]
+    if len(harvester_classes_filtered) == 0:
+        log.info('No harvester to be executed! Program will exit!')
+
     # Now, for every class, we call the method harvest (or rebuild if we
     # are running in reset mode. In case of an error, it will be reported
     # at the end of the process
-
     errors = []
-    for harvester_name, Harvester in list_of_harvester_classes:
-        if execution_filter in harvester_name:
-            log.separation_line()
-            log.report('Running ' + harvester_name)
-            harvester = Harvester()
-            try:
-                if reset_mode:
-                    harvester.rebuild(database_path, log)
-                else:
-                    harvester.harvest(database_path, log)
-                log.report(harvester_name + ' sucessfully executed!')            
-            except:
-                exception = traceback.format_exc()
-                errors.append((harvester_name, exception))
-                log.error("An error occurred executing the "
-                          "harvester " + harvester_name + "!")
+    for harvester_name, Harvester in harvester_classes_filtered:
+        log.separation_line()
+        log.report('Running ' + harvester_name)
+        harvester = Harvester()
+        try:
+            if reset_mode:
+                harvester.rebuild(database_path, log)
+            else:
+                harvester.harvest(database_path, log)
+            log.report(harvester_name + ' sucessfully executed!')            
+        except:
+            exception = traceback.format_exc()
+            errors.append((harvester_name, exception))
+            log.error("An error occurred executing the "
+                      "harvester " + harvester_name + "!")
+            log.info("This is the traceback:\n" + exception,
+                                            split_lines = False)
+
+    # Report the errors
     if len(errors) != 0:
         log.separation_line()
         for harvester, exception in errors:
             log.error("Error executing " + harvester +
-                      ":\n" + exception, split_lines=False)
+                      ":\n" + exception, split_lines = False)
+        recipients = report_to + alert_to
+        if len(recipients) > 0:
+            message_text  = "Something went wrong executing the "
+            message_text += "downloader script. Please, see the "
+            message_text += "attached log!"
+            write_mail("Downloader", recipients, "Something went wrong!!!",
+                   message_text, "Downloader.log", log.get_content())        
         exit(1)
+    else:
+        # Send the mail to the people in the report list
+        if len(report_to) > 0:
+            message_text  = "Please, find attached a complete report "
+            message_text += "of the last execution of the downloader "
+            message_text += "script"
+            write_mail("Downloader", report_to, "Downloader report",
+                   message_text, "Downloader.log", log.get_content())

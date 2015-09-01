@@ -13,7 +13,7 @@ ftp_url = 'medinsitu.hcmr.gr'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "copernicus"
+relative_path = "COPERNICUS"
 
 
 class CopernicusHarvester(HarvesterInterface):

@@ -23,7 +23,8 @@ class Bio_Float():
 def FloatSelector(var,T,Reg):
     '''
     Arguments:
-       var is a string indicating variable
+       var is a string indicating variable, 
+          if var is None, no selection is done about variable
        T is as Time_Interval istance
        Reg is a Region istance
     '''
@@ -34,7 +35,8 @@ def FloatSelector(var,T,Reg):
               ('time','S17'),
               ('parameters','S200')] )
     
-    INDEX_FILE=np.loadtxt("index.txt",dtype=mydtype, delimiter=",")
+    FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+    INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",")
     nFiles=INDEX_FILE.size    
     SELECTED=[]
     for iFile in range(nFiles):
@@ -43,20 +45,23 @@ def FloatSelector(var,T,Reg):
         lat              = INDEX_FILE['lat' ][iFile]
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
-        float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')     
-        if var in available_params:
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+        Condition = var in available_params
+        if var is None : Condition = True
+             
+        if Condition:
             if (float_time >= T.starttime) & (float_time <T.end__time):
                 if (lon >= Reg.lonmin) &  (lon <= Reg.lonmax) &  (lat >= Reg.latmin) &  (lat <= Reg.latmax):
                     SELECTED.append(Bio_Float(lon,lat,float_time,filename))
                       
     return SELECTED
 
-
-var = 'NITRATE'
-TI = Time_Interval('20150520','20150830','%Y%m%d')
-R = Region(-6,36,30,46)
-
-FLOAT_LIST=FloatSelector(var, TI, R)
+if __name__ == '__main__':
+    var = 'NITRATE'
+    TI = Time_Interval('20150520','20150830','%Y%m%d')
+    R = Region(-6,36,30,46)
+    
+    FLOAT_LIST=FloatSelector(var, TI, R)
 
   
             

@@ -14,7 +14,7 @@ ftp_url = 'myocean.artov.isac.cnr.it'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT"
+relative_path = "SAT/MODIS/DAILY/ORIG/"
 
 
 class SatHarvester(HarvesterInterface):

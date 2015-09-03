@@ -4,7 +4,7 @@ from sys import stderr, exit
 from pkgutil import iter_modules
 from importlib import import_module
 from inspect import isclass, getmembers
-from os import makedirs
+from os import makedirs, setuid, setgid
 from os.path import dirname, isdir, exists, realpath
 from argparse import ArgumentParser, RawTextHelpFormatter
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter,
                             add_help=False)
     parser.add_argument('-a', '--alert', type=str, default="",
-                        help='\nSend an email at the end of the '
+                        help='Send an email at the end of the '
                              'execution of the script in case of '
                              'error in one harvester\n\n')
     parser.add_argument('-d', '--directory', type=str, default=DEF_PATH,
@@ -36,6 +36,10 @@ if __name__ == '__main__':
                         help="Execute an harvester only if contains the " +
                              "argument in its name. This is particularly "
                              "useful for debug purposes.\nDefault:'' \n\n")
+    parser.add_argument('-g', '--gid', type=int, default=-1,
+                        help="\nSet the group that will execute this script " +
+                             "by its id.\nPlease, be sure to have the " +
+                             "permission to do this kind of operation\n\n")
     parser.add_argument('-l', '--log-file', type=str, default=LOG_FILE,
                         help="The relative or absolute path of the file " +
                              "where the log will be saved. If the string " +
@@ -44,9 +48,13 @@ if __name__ == '__main__':
     parser.add_argument('-h', '--help', action='help',
                         help='\nShow this help and exit\n\n')
     parser.add_argument('-r', '--report', type=str, default="",
-                        help='\nSend an email at the end of the '
+                        help='Send an email at the end of the '
                              'execution of the script with the '
                              'log of all the operations\n\n')
+    parser.add_argument('-u', '--uid', type=int, default=-1,
+                        help="\nRun this script as the user with the uid set " +
+                             "in this option.\nPlease, be sure to have the " +
+                             "permission to do this kind of operation\n\n")
     parser.add_argument('-v', '--verbosity', type=int, default=2,
                         help="Define the level of verbosity\n"
                              "Default: 2\n\n")
@@ -74,9 +82,30 @@ if __name__ == '__main__':
         log_file = None
     else:
         log_file = argv.log_file
-
+    
     # Create a log object
     log = Log(verbose_level, log_file)
+
+    # Try to set gui and uid
+    if argv.gid != -1:
+        try:
+            setgid(argv.gid)
+        except:
+            exception = traceback.format_exc()
+            log.info('Impossible change the group id of the program. '
+                     'The execution will continue without changing it.')
+            log.debug("This is the traceback:\n" + exception,
+                                            split_lines = False)
+    if argv.uid != -1:
+        try:
+            setuid(argv.uid)
+        except:
+            exception = traceback.format_exc()
+            log.info('Impossible change the user id of the program. '
+                     'The execution will continue without changing it.')
+            log.debug("This is the traceback:\n" + exception,
+                                            split_lines = False)
+            
 
     # Check if the directory of the database exists. If not, create it
     if exists(database_path):
@@ -142,7 +171,7 @@ if __name__ == '__main__':
             errors.append((harvester_name, exception))
             log.error("An error occurred executing the "
                       "harvester " + harvester_name + "!")
-            log.info("This is the traceback:\n" + exception,
+            log.debug("This is the traceback:\n" + exception,
                                             split_lines = False)
 
     # Report the errors

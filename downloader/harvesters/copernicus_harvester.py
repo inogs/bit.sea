@@ -17,8 +17,28 @@ relative_path = "COPERNICUS"
 
 
 class CopernicusHarvester(HarvesterInterface):
+    """
+    This is the harvester in charge of download all the files from the
+    ftp server medinsitu.hcmr.gr.
+    """
 
     def harvest(self, db_path, log):
+        """
+        Download all the files inside the remote directories "vessel" and
+        "mooring" of the remote ftp server whose modification date is after
+        the modification date of the last file in the local dir. Please do
+        not put any file in the local directory because this may change the
+        date of the last edited file
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
+
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -70,7 +90,7 @@ class CopernicusHarvester(HarvesterInterface):
             for f in files:
                 if f[:2] == "MO" and f[-3:]==".nc":
                     d = download_file(connection, f, path_vessel,
-                                      perms, log, True, False)
+                                      log, perms, True, False)
                     if d:
                         downloaded.append(f)
             connection.cwd('..')
@@ -99,7 +119,7 @@ class CopernicusHarvester(HarvesterInterface):
             for f in files:
                 if f[:2] == "MO" and f[-3:]==".nc":
                     d = download_file(connection, f, path_mooring,
-                                      perms, log, True, False)
+                                      log, perms, True, False)
                     if d:
                         downloaded.append(f)
             connection.cwd('..')
@@ -109,13 +129,27 @@ class CopernicusHarvester(HarvesterInterface):
         connection.cwd('..')
         _, _, perms = list_files(connection)
         download_file(connection, 'index_monthly.txt', path,
-                      perms, log, False)
+                      log, perms, False)
 
         connection.quit()
         return downloaded
 
 
     def rebuild(self, db_path, log):
+        """
+        Download all the files inside the remote directories "vessel" and
+        "mooring" of the remote ftp server. If a file already exists, it
+        will be rewritten.
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
+
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -154,7 +188,7 @@ class CopernicusHarvester(HarvesterInterface):
             for f in files:
                 if f[:2] == "MO" and f[-3:]==".nc":
                     d = download_file(connection, f, path_vessel,
-                                      perms, log, False)
+                                      log, perms, False)
                     if d:
                         downloaded.append(f)
             connection.cwd('..')
@@ -172,7 +206,7 @@ class CopernicusHarvester(HarvesterInterface):
             for f in files:
                 if f[:2] == "MO" and f[-3:]==".nc":
                     d = download_file(connection, f, path_mooring,
-                                      perms, log, False)
+                                      log, perms, False)
                     if d:
                         downloaded.append(f)
             connection.cwd('..')
@@ -182,7 +216,7 @@ class CopernicusHarvester(HarvesterInterface):
         connection.cwd('..')
         _, _, perms = list_files(connection)
         download_file(connection, 'index_monthly.txt', path,
-                      perms, log, False)
+                      log, perms, False)
 
         connection.quit()
         return downloaded

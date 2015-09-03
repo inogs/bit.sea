@@ -32,16 +32,27 @@ def str_to_base64(txt):
 
 def write_mail(sender, recipient_list, subject, text,
                attachment_name=None,
-               attachment_base64=None):
+               attachment_content=None):
 
     """
     Send a mail to someone. If needed, a text file can be attached
-    to the mail. The function need a sender, which is a short text
-    without spaces, a list of address to send the mail to as strings,
-    the text of the mail as a string and, optionally, the name and the
-    content of the text file that should be attached at the mail.
+    to the mail.
     This function relies on the sendmail utilities which should be
-    properly configured
+    properly configured.
+    
+    Args:
+        - *sender*: The name of the sender as a string without spaces
+        - *recipient_list*: A list of strings that are the addresses of 
+          the recipients
+        - *subject*: The subject of the mail as a string
+        - *text*: The text of the mail as a string
+        - *attachment_name* (optional): If it is not None, this is the
+          name of the attached file that will be send with the mail.
+          If this parameter is not none, also the attachment_content
+          shall not be empty.
+        - *attachment_content* (optional): The content of the attached
+          file as a string. This content will be converted in Base64
+          and will be attached to the mail.
     """
  
     recipient_str = ', '.join(recipient_list)
@@ -74,7 +85,7 @@ def write_mail(sender, recipient_list, subject, text,
         message_text += 'filename="{}"\n'.format(attachment_name)
         message_text += 'Content-Transfer-Encoding: base64\n\n'
 
-        message_text += str_to_base64(attachment_base64)
+        message_text += str_to_base64(attachment_content)
         
     # End message
     message_text += '\n\n--{}--'.format(boundary)

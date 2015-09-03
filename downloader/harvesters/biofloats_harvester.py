@@ -22,7 +22,30 @@ xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
 
 
 class BioFloatsHarvester(HarvesterInterface):
+    """
+    This is the harvester in charge of download all the files whose name
+    start with "MR" from the ftp server ftp.ifremer.fr. This harvester
+    need a file (called wmo_file) that reports the status of the biological
+    floats. The position of that file is set in the global variable "wmo_file".
+    Moreover, the harvester will save the information of the previous file
+    in a xml file whose path is set in the global variable "xml_path".
+    """
     def harvest(self, db_path, log):
+        """
+        For every float in the file wmo, check the status in the wmo_file and
+        in the xml one. If in at least one file the float is reported as active,
+        then check the last file downloaded for that wmo and download every file
+        on the server that is more recent than the one already downloaded. Then
+        update the xml file with the status reported in the wmo file.
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -106,7 +129,7 @@ class BioFloatsHarvester(HarvesterInterface):
                     ensure_dir(float_local_dir, log, expected = False)
                     for ff in to_be_downloaded:
                         d = download_file(connection, ff, float_local_dir,
-                                          perms, log, True)
+                                          log, perms, True)
                         # If the file was downloaded without any problem,
                         # add it to the list of downloaded files
                         if d:
@@ -175,7 +198,7 @@ class BioFloatsHarvester(HarvesterInterface):
                         ensure_dir(float_local_dir, log, expected = False)
                         for ff in to_be_downloaded:
                             d = download_file(connection, ff, float_local_dir,
-                                              perms, log, True)
+                                              log, perms, True)
                             # If the file was downloaded without any problem,
                             # add it to the list of downloaded files
                             if d:
@@ -203,6 +226,21 @@ class BioFloatsHarvester(HarvesterInterface):
 
 
     def rebuild(self, db_path, log, skip_if_present=False):
+        """
+        For every float in the file wmo, download every data file related to
+        that float that starts with 'MR'. Then create a xml file with the
+        data read from the wmo file.
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+            - *skip_if_present*: A boolean value that set if not download again 
+              the files that are saved on the local directory. By defalut is False
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -275,7 +313,7 @@ class BioFloatsHarvester(HarvesterInterface):
                     ensure_dir(float_local_dir, log, expected = False)
                     for ff in to_be_downloaded:
                         d = download_file(connection, ff, float_local_dir,
-                                          perms, log, skip_if_present)
+                                          log, perms, skip_if_present)
                         # If the file was downloaded without any problem,
                         # add it to the list of downloaded files
                         if d:

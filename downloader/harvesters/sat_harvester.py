@@ -18,8 +18,25 @@ relative_path = "SAT/MODIS/DAILY/ORIG/"
 
 
 class SatHarvester(HarvesterInterface):
-
+    """
+    This is the harvester in charge of download all the files from the
+    ftp server myocean.artov.isac.cnr.it.
+    """
     def harvest(self, db_path, log):
+        """
+        Download all the files inside a remote directory of the ftp server
+        whose modification date is after the modification date of the last
+        file in the local dir. Do not download the files if the contain
+        '-NRT-' in their name.
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -56,7 +73,7 @@ class SatHarvester(HarvesterInterface):
                 files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
                 for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
-                                      perms, log, False)
+                                      log, perms, False)
                     if d:
                         downloaded.append(f)
                 connection.cwd('..')
@@ -74,7 +91,7 @@ class SatHarvester(HarvesterInterface):
             for f in files_to_be_downloaded:
                 if f > last_file:
                     d = download_file(connection, f, path,
-                                      perms, log, True, True)
+                                      log, perms, True, True)
                     if d:
                         downloaded.append(f)
             connection.cwd('..')
@@ -86,7 +103,7 @@ class SatHarvester(HarvesterInterface):
                 files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
                 for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
-                                      perms, log, True, True)
+                                      log, perms, True, True)
                     if d:
                         downloaded.append(f)
                 connection.cwd('..')
@@ -105,6 +122,20 @@ class SatHarvester(HarvesterInterface):
 
 
     def rebuild(self, db_path, log):
+        """
+        Download all the files inside a remote directory of the ftp server. If the
+        file is already present on the local directory, rewrite it. Do not download
+        the file that contain the string '-NRT' in their filename.
+
+        Args:
+            - *db_path*: the path of the directory set in the download program.
+            - *log*: a logger object from the class Log to print informations on
+              the standard output
+               
+        Returns:
+            - *downloaded*: a list of all the downloaded filenames.
+        """
+        
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
@@ -133,7 +164,7 @@ class SatHarvester(HarvesterInterface):
             files, _, perms = list_files(connection)
             for f in files:
                 d = download_file(connection, f, path,
-                                       perms, log, False)
+                                       log, perms, False)
                 if d:
                     downloaded.append(f)
             connection.cwd('..')

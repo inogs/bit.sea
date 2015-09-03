@@ -18,6 +18,7 @@ class ErrorMessage(object):
         self.message = None
 
 class DownloadError(Exception):
+    """An error that reports if a ftp download fails"""
     pass
 
 def _read_permissions(txt):
@@ -50,13 +51,33 @@ def _read_permissions(txt):
 
 
 def list_files(connection):
+    """
+    Returns some informations about the directory the remote connection
+    is inside.
+   
+    Args:
+        - *connection*: An ftp connection, created with the ftplib library
+    
+    Returns:
+        A tuple of three elements: 
+        
+          - A list of all the filenames inside the remote directory
+          - A list of all the subfolders of the remote directory
+          - A dictionary that associates to every filename in the
+            remote directory a representation af all the permissions
+            of the file. The permissions are a dictionary that associates
+            to the strings "others", "group" and "owner" a set that can
+            contain the strings "read", "write" and "execute". If the
+            string is present the permission is guaranteed. So, for example,
+            to check if the file "f1" is writeable by the members of its
+            group you should do:
+          
+              "write" in perms["f1"]["group"] 
+    """ 
     # Unfortunately, the standard library for the ftp connections
     # in python does not have a method to have a list of directories
     # or files inside a folder. All that we have is the output of
     # the ls command of the ftp server and a list of the files names.
-    # This function return a tuple with the files and the directories.
-    # The last element of the tuple is a dictionary with the file
-    # permissions
     ls_output = []
     connection.dir('.', ls_output.append) 
     try:
@@ -80,8 +101,10 @@ def list_files(connection):
         if end_table_set == file_names_set:
             second_col = i
             break
+    # Something went wrong: bad formatted ls output! Use the backup
+    # function
     if second_col is None:
-        return list_files_backup(ls_output)
+        return _list_files_backup(ls_output)
 
     # Now I prepare the output.
     files = []
@@ -102,8 +125,33 @@ def list_files(connection):
 
 
 
-def download_file(connection, f, path, perms, log,
+def download_file(connection, f, path, log, perms=None,
                   skip_if_exists=True, skip_is_strange = False):
+    """
+    Download a file from an ftp remote archive.
+    
+    Args:
+        - *connection*: An ftp connection, created with the ftplib library
+        - *f*: The name of the file as a string
+        - *path*: The directory where the file will be saved
+        - *log*: A Log object to report the operations to the user
+        - *perms* (optional): A dictionary of permissions like the one the
+          list_file function returns. If this dictionary is not none, the
+          file will be downloaded only if the readable flag for others is
+          present.
+        - *skip_if_exists*: A boolean value that says what to do if the file
+          is already present. Default is True.
+        - *skip_is_strange*: This means that the fact that the file is already
+          present shall be logged with high severity. If skip_if_exists is
+          False it has no effect. Default is False.
+    
+    Returns:
+        *Success*: A boolean value that reports if the downloade
+        was executed or if it was skipped for some reasons
+    
+    Raises:
+        *DownloadError* if something went wrong during the download
+    """
     if skip_if_exists:
         # Check if the file already exists
         if exists(join(path, f)):
@@ -116,11 +164,12 @@ def download_file(connection, f, path, perms, log,
             return False
 
     # Check if the file is readable
-    if 'read' not in perms[f]['others']:
-        log.info('The file ' + f + ' is not '
-                 'readable. Check the '
-                 'permissions')
-        return False
+    if perms is not None:
+        if 'read' not in perms[f]['others']:
+            log.info('The file ' + f + ' is not '
+                     'readable. Check the '
+                     'permissions')
+            return False
  
     # Download the file
     err_msg = ErrorMessage()
@@ -186,7 +235,7 @@ def download_file(connection, f, path, perms, log,
 
 
 
-def list_files_backup(ls_output):
+def _list_files_backup(ls_output):
     # If the ls output is not properly aligned (this means that
     # there is a rows which is not aligned with the others) then
     # the standard list_files function will fail. This will works
@@ -228,5 +277,3 @@ def list_files_backup(ls_output):
             permissions[name] = _read_permissions(perms[1:])
 
     return files, dirs, permissions
-        
-    

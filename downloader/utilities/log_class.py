@@ -14,7 +14,38 @@ COL_SPACE = 9
 
 
 class Log(object):
-    def __init__(self, verbose_level=1, file_log=None):
+    """
+    Log (short for Logger) is a class whose object are in charge of
+    manage the output that shall be printed on the standard output and
+    standard error, display it in a proper way, save it in memory or,
+    optionally, also in a file.
+    
+    A log object store a verbose level that influence only what kind
+    of information is printed on the standard output. In any case, the
+    log will store in memory all the informations. The verbose level is
+    an integer; a message will be print on the standard output only if
+    its priority is greater or equal to the verbosity level of the log. 
+    
+    The possible levels of the log are stored in the LOG_LEVELS entries:
+    it associates to an integer number a string which is the name of the
+    level. That string is the name of the method of the log objects.
+    
+    Another level of severity it is also implemented even if it is not
+    included in the LOG_LEVELS dictionary. It is the level "Error". This
+    it is a little bit different from the others level for two reasons:
+    
+      - It will be printed no matter of the verbosity level
+      - It will be printed on the standard error
+    
+    Args:
+        - *verbose_level*: An integer that set the verbose level of the
+          logger object
+        - *file_log*: The name of the file where the log will be stored
+
+    Returns:
+        - *log*: a logger object 
+    """ 
+    def __init__(self, verbose_level, file_log=None):
         self.__verbose = verbose_level
         
         # This is a not portable way to know the dimension
@@ -109,7 +140,6 @@ class Log(object):
         self.__verbose = int(v)
 
     def get_content(self, level=0):
-        
         '''
         Return a string that contains all the information that
         the log has generated. Every message of the log is
@@ -126,6 +156,20 @@ class Log(object):
         return output
 
     def error(self, txt, *args, **kwargs):
+        '''
+        Write the passed string on the standard error, putting an "ERROR:"
+        string before. Moreover, if the string is too long, the text will
+        be reformatted to be suitable for the console of the user. If you
+        do not want this (for example because you are printing a traceback)
+        you can disable this behaviour with the optional argument.
+        split_line=False. All the other optional arguments will be passed
+        directly to the print function that will be invoked by this method.
+        
+        Args:
+            - *txt*: an error message
+        
+        '''
+
         # Save the message in the local buffer
         self._lines.append((-1, txt.replace('\n', ' ')))
 

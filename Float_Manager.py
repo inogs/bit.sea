@@ -2,6 +2,7 @@ import numpy as np
 import datetime
 import scipy.io.netcdf as NC
 import pylab as pl
+import os
 
 
 class Time_Interval():
@@ -25,6 +26,10 @@ class Bio_Float():
         self.time = time
         self.filename = filename
         self.available_params = available_params
+        wmo,cycle=os.path.basename(filename).rsplit("_")
+        self.wmo = wmo[2:]
+        self.cycle = int(cycle[:3])
+        
         self.T = 0
         self.S = 0
 

@@ -5,18 +5,12 @@ import pylab as pl
 import os
 
 
+from region import Region, Rectangle
+
 class Time_Interval():
     def __init__(self,starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
         self.starttime=datetime.datetime.strptime(starttime,dateformat)
         self.end__time=datetime.datetime.strptime(endtime  ,dateformat)
-
-class Region():
-    def __init__(self,lonmin,lonmax,latmin,latmax):
-        self.lonmin = lonmin
-        self.lonmax = lonmax
-        self.latmin = latmin
-        self.latmax = latmax
-
 
 
 class Bio_Float():
@@ -54,6 +48,7 @@ class Bio_Float():
                     s=PARAMETER[iprof,0,iparam,:].tostring().rstrip()
                     if s==var:
                         return iprof
+
     def __fillnan__(self, ncObj,var):
         varObj = ncObj.variables[var]
         fillvalue  =varObj._FillValue
@@ -122,13 +117,13 @@ class Bio_Float():
         pl.gca().invert_yaxis()
         pl.show(block=False)
 
-def FloatSelector(var,T,Reg):
+def FloatSelector(var, T, region):
     '''
     Arguments:
        var is a string indicating variable, 
           if var is None, no selection is done about variable
        T is as Time_Interval istance
-       Reg is a Region istance
+       region is a region istance
     '''
     mydtype= np.dtype([
               ('file_name','S200'),
@@ -157,15 +152,15 @@ def FloatSelector(var,T,Reg):
 
         if VarCondition:
             if (float_time >= T.starttime) & (float_time <T.end__time):
-                if (lon >= Reg.lonmin) &  (lon <= Reg.lonmax) &  (lat >= Reg.latmin) &  (lat <= Reg.latmax):
-                    SELECTED.append(Bio_Float(lon,lat,float_time,filename, available_params))
+                if region.is_inside(lon, lat):
+                    SELECTED.append(Bio_Float(lon,lat,float_time,filename))
                       
     return SELECTED
 
 if __name__ == '__main__':
     var = 'NITRATE'
     TI = Time_Interval('20150520','20150830','%Y%m%d')
-    R = Region(-6,36,30,46)
+    R = Rectangle(-6,36,30,46)
     
     FLOAT_LIST=FloatSelector(var, TI, R)
 

@@ -324,8 +324,21 @@ class TimeList():
         SEASON_LIST=[]
         return SEASON_LIST
     
-
-    
+    def getOwnList(self):
+        '''
+        Not useful for time aggregation, but to get requestors in order to match with observations'''
+        
+        REQ_LIST=[]
+        if self.inputFrequency == 'daily':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Daily_req(t.year,t.month,t.day))
+        if self.inputFrequency == 'monthly':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Monthly_req(t.year, t.month))
+        if self.inputFrequency == 'weekly' :
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day)) 
+        return REQ_LIST
     
     def getDecadalList(self):
         LIST=[]

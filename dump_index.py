@@ -42,7 +42,7 @@ for DIR in DIRLIST:
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
         line=file_header_content(filename)
-        if line is not None: LINES.append(line+"/n")
+        if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')
 F.writelines(LINES)

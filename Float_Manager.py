@@ -23,9 +23,6 @@ class Bio_Float():
         wmo,cycle=os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
-        
-        self.T = 0
-        self.S = 0
 
     def __searchVariable_on_parameters__(self,var):
         '''
@@ -133,7 +130,7 @@ def FloatSelector(var, T, region):
               ('parameters','S200')] )
     
     FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
-    #FloatIndexer="MyFloat_Index.txt"
+    #FloatIndexer="Float_Index.txt"
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size    
     SELECTED=[]
@@ -153,7 +150,7 @@ def FloatSelector(var, T, region):
         if VarCondition:
             if (float_time >= T.starttime) & (float_time <T.end__time):
                 if region.is_inside(lon, lat):
-                    SELECTED.append(Bio_Float(lon,lat,float_time,filename))
+                    SELECTED.append(Bio_Float(lon,lat,float_time,filename,available_params))
                       
     return SELECTED
 

@@ -3,7 +3,7 @@ import glob
 import os
 import numpy as np
 import read_descriptor
-import IOnames
+import IOnames as IOname
 import argparse
 
 
@@ -77,6 +77,7 @@ from maskload import *
 INPUT_AVEDIR = addsep(args.inputdir)
 TMPDIR       = addsep(args.tmpdir)
 BASEDIR      = addsep(args.outdir)
+IOnames      = IOname.IOnames()
 
 
 try:

@@ -344,6 +344,15 @@ class TimeList():
         LIST=[]
         return LIST
 
+    def couple_with(self,datetimelist):
+        Coupled_List=[]
+        for ir, req in enumerate(self.getOwnList()):
+            LIST_of_IND=[]
+            for ind_date, d in enumerate(datetimelist):
+                if (d >= req.starttime) & (d <= req.endtime) :
+                    LIST_of_IND.append(ind_date)
+            if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
+        return Coupled_List
         
                         
             

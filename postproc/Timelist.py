@@ -136,9 +136,9 @@ class TimeList():
         
     def select(self,requestor):
         '''
-        datetimeList, weights = select(requestor)
+        indexes, weights = select(requestor)
         Returned values: 
-         - a list of datetime objects
+         - a list of indexes (integers) indicating to access selected times (or files)
          - a numpy array of weights
         
          
@@ -148,19 +148,19 @@ class TimeList():
             SELECTION=[]
             weights = []
                            
-            if self.inputFrequency == 'daily': 
-                for t in self.Timelist:               
+            if self.inputFrequency == 'daily':
+                for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
-                        SELECTION.append(t)
+                        SELECTION.append(it)
                         weights.append(1.)
             if self.inputFrequency == 'weekly':
-                for t in self.Timelist:
+                for it,t in enumerate(self.Timelist):
                     s1,e1 = computeTimeWindow("weekly",t);
                     s2    = requestor.starttime
                     e2    = requestor.endtime
                     weight = overlapTime(s1,e1,s2,e2); 
                     if (weight > 0. ) : 
-                        SELECTION.append(t)
+                        SELECTION.append(it)
                         weights.append(weight)
                     
             return SELECTION , np.array(weights)
@@ -174,9 +174,9 @@ class TimeList():
             weights  =[]
             
             if self.inputFrequency == "daily":
-                for t in self.Timelist:
+                for it,t in enumerate(self.Timelist):
                     if (t>=requestor.starttime) & (t<=requestor.endtime):
-                        SELECTION.append(t)
+                        SELECTION.append(it)
                         weights.append(1.)                     
             return SELECTION , np.array(weights)
         
@@ -194,9 +194,9 @@ class TimeList():
             assert self.inputFrequency == 'daily'
             SELECTION=[]
             weights  =[]
-            for t in self.Timelist:
+            for it,t in enumerate(self.Timelist):
                 if (t.month == requestor.month) & (t.day == requestor.day):
-                    SELECTION.append(t)
+                    SELECTION.append(it)
                     weights.append(1.)
             return SELECTION , np.array(weights)
 
@@ -236,9 +236,9 @@ class TimeList():
         '''
         L=[0,1,2,3,-3,-2,-1]
         index= abs(weekday - self.datestart.isoweekday())
-        starting_centered_day = self.datestart + datetime.timedelta(days=L[index])
+        starting_centered_day = self.Timelist[0] + datetime.timedelta(days=L[index])
 
-        TL=DL.getTimeList(starting_centered_day,self.dateend , "days=7")
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=7")
         REQ_LIST=[]
         for t in TL:
             m = requestors.Weekly_req(t.year,t.month,t.day)

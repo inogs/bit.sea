@@ -4,6 +4,6 @@
 <!-- typical for SAT -->
 
 <input  prefix=""     dateformat="%Y%m%d" suffix="_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02"  ></input>
-<output prefix="sat." dateformat="%Y%m%d" suffix="" ></output>
+<output prefix=""     dateformat="%Y%m%d" suffix="_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02" ></output>
 
 </root>

@@ -102,6 +102,9 @@ class TimeList():
         self.nTimes   =len(self.filelist)
         
     def __searchFrequency__(self):
+        if len(self.Timelist)<2:
+            print "Frequency cannot be calculated in " + self.inputdir
+            return None
         mydiff = self.Timelist[1]-self.Timelist[0]
         if mydiff.days == 1:
             return "daily"

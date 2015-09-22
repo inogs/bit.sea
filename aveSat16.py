@@ -17,6 +17,7 @@ jpj = Sat.NativeMesh.jpj
 
 for req in WEEK_reqs:
     outfile = req.string + IOname.Output.suffix + ".nc"
+    print outfile
     ii, w = TLCheck.select(req)
     nFiles = len(ii)
     M = np.zeros((nFiles,jpj,jpi),np.float32)
@@ -24,8 +25,7 @@ for req in WEEK_reqs:
         inputfile = TLCheck.filelist[j]
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
-    
     CHL_OUT = Sat.logAverager(M)
-    Sat.dumpfile(outfile, CHL_OUT)
+    Sat.dumpfile(WEEKLYDIR + outfile, CHL_OUT)
             
 

@@ -1,41 +1,8 @@
 import postproc
 from postproc.Timelist import *
-import glob,os
 import numpy as np
 
 import SatManager as Sat
-
-# def satread(filename):
-#     '''
-#     returns CHL,Lat,Lon
-#     ''' 
-#     ncIN = NC.netcdf_file(filename,'r')
-#     CHL_IN = ncIN.variables['CHL'].data[0,:,:].copy()
-#     Lon    = ncIN.variables['lon'].data
-#     Lat    = ncIN.variables['lat'].data
-#     ncIN.close()
-#     return CHL_IN,Lat,Lon
-# 
-# def satwrite(filename, CHL,Lon,Lat):
-#     ncOUT  = NC.netcdf_file(filename,'w')
-#     ncOUT.createDimension('time', 1)
-#     ncOUT.createDimension('depth',1)
-#     ncOUT.createDimension('lon',len(Lon))
-#     ncOUT.createDimension('lat',len(Lat))
-#     
-#     ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
-#     ncvar[:] = CHL
-#     setattr(ncvar, 'missing_value', fillValue)
-#     setattr(ncvar, '_FillValue', fillValue)
-#     ncvar = ncOUT.createVariable('depth','f',('depth',))
-#     ncvar[:] = 1.47210180759
-#     ncvar = ncOUT.createVariable('time','f',('time',))
-#     ncvar[:] = 1.0
-#     ncvar = ncOUT.createVariable('lat','f',('lat',))
-#     ncvar[:] = Lat
-#     ncvar = ncOUT.createVariable('lon','f',('lon',))
-#     ncvar[:] = Lon
-#     ncOUT.close()        
 
 ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/"
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
@@ -85,6 +52,9 @@ for filename, iTimeorig in toCheckList:
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
     Sat.dumpfile(CHECKDIR + filename, CHL_OUT)
+
+
+    
      
     
 

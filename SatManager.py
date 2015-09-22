@@ -5,6 +5,7 @@ import numpy as np
 
 
 NativeMesh = masks.SatOrigMesh
+V4 = masks.V4mesh
 fillValue = -999.0
 
     
@@ -20,19 +21,21 @@ def readfromfile(filename):
 def readClimatology(filename):
     ncIN = NC.netcdf_file(filename,'r') 
     MEAN = ncIN.variables['Mean'].data #(366, 253, 733)
-    STD  = ncIN.variables['Mean'].data 
+    STD  = ncIN.variables['Std'].data 
     ncIN.close()
     return MEAN,STD
 
-def dumpfile(self,filename, CHL):
+def dumpfile(filename, CHL):
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)
     ncOUT.createDimension('depth',1)
     ncOUT.createDimension('lon',NativeMesh.jpi)
     ncOUT.createDimension('lat',NativeMesh.jpj)
     
-    ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
-    ncvar[:] = CHL
+    ncvar = ncOUT.createVariable('CHL', 'f', ('time','lat','lon'))
+    chl = np.zeros((1,NativeMesh.jpj,NativeMesh.jpi),np.float32)
+    chl[0,:,:] = CHL
+    ncvar[:] = chl
     setattr(ncvar, 'missing_value', fillValue)
     setattr(ncvar, '_FillValue', fillValue)
     ncvar = ncOUT.createVariable('depth','f',('depth',))
@@ -44,12 +47,34 @@ def dumpfile(self,filename, CHL):
     ncvar = ncOUT.createVariable('lon','f',('lon',))
     ncvar[:] = NativeMesh.lon
     ncOUT.close()   
-def dumpV4file(self,filename,M):
-    a=0
-def dumpV1file(self,filename,M):
+    
+def dumpV4file(filename,CHL):
+    ncOUT  = NC.netcdf_file(filename,'w')
+    ncOUT.createDimension('time', 1)
+    ncOUT.createDimension('depth',1)
+    ncOUT.createDimension('lon',V4.jpi)
+    ncOUT.createDimension('lat',V4.jpj)
+    
+    ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
+    ncvar[:] = CHL
+    setattr(ncvar, 'missing_value', fillValue)
+    setattr(ncvar, '_FillValue', fillValue)
+    ncvar = ncOUT.createVariable('depth','f',('depth',))
+    ncvar[:] = 1.47210180759
+    ncvar = ncOUT.createVariable('time','f',('time',))
+    ncvar[:] = 1.0
+    ncvar = ncOUT.createVariable('lat','f',('lat',))
+    ncvar[:] = V4.lat
+    ncvar = ncOUT.createVariable('lon','f',('lon',))
+    ncvar[:] = V4.lon
+    ncOUT.close()
+    
+    
+       
+def dumpV1file(filename,M):
     a=0
     
-def logAverager(self,M):
+def logAverager(M):
     '''
     Inner matrix M has dimensions (nFrames, jpj, jpi )
     Performs average passing through natural logarithm

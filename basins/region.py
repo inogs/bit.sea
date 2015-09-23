@@ -52,6 +52,10 @@ class Polygon(Region):
         lon_list = list(lon_list)
         lat_list = list(lat_list)
         
+        # Save the longitude and the latitude lists
+        self.__lon_list = lon_list
+        self.__lat_list = lat_list
+
         # Ensure that the input is close
         if lon_list[-1] != lon_list[0] or lat_list[-1] != lat_list[0]:
             lon_list.append(lon_list[0])
@@ -80,6 +84,23 @@ class Polygon(Region):
                 return inside[0]
             else:
                 return inside
+    
+    @property 
+    def border_latitudes(self):
+        return self.__lat_list
+
+    @property 
+    def border_longitudes(self):
+        return self.__lon_list
+
+    @property 
+    def borders(self):
+        output = []
+        for i in range(len(self.__lon_list)):
+            lon = self.border_longitudes[i]
+            lat = self.border_latitudes[i]
+            output.append((lon, lat))
+        return tuple(output)
 
 
 class RegionUnion(Region):

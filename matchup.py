@@ -53,14 +53,6 @@ class SingleFloatMatchup():
     def plot(self):
         return 1
 
-
-class prova():
-    def __init__(self):
-        a=1
-class prova2(prova):
-    def __init__(self,a=None):
-        if a is None:
-            print "niente"
             
 
 if __name__ == '__main__':

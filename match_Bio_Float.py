@@ -1,10 +1,9 @@
 import scipy.io.netcdf as NC
 import numpy as np
 import os
-import postproc
 from postproc.Timelist import *
 from matchup import *
-from region import *
+from postproc.basins.regions import *
 import Float_Manager
 from shared_data import *
 
@@ -78,11 +77,11 @@ MODELVARS={'DOXY':'O2o', \
 
 R1 = Rectangle(-6,10,30,46)
 R2 = Rectangle(10,36,30,46)
-Layer_1 = Layer(0,50)
-Layer_2 = Layer(50,150)
+
+
 VARLIST=[ 'DOXY','CHL']
 SUBLIST = [R1,R2]
-LAYERLIST = [ Layer_1, Layer_2]
+LAYERLIST = [Layer(0,10), Layer(10,50), Layer(50,100), Layer(100,150), Layer(150,300),Layer(300,600), Layer(600,1000)]
 
 TI = Float_Manager.Time_Interval("20150903", "20150917", "%Y%m%d")
 

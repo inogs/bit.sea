@@ -3,7 +3,7 @@ import numpy as np
 import os
 from postproc.Timelist import *
 from matchup import *
-from postproc.basins.regions import *
+from basins.region import *
 import Float_Manager
 from shared_data import *
 

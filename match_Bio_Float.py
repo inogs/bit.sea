@@ -114,6 +114,10 @@ ncOUT.createDimension('nSub', nSub)
 ncOUT.createDimension('nLay', nLay)
 ncOUT.createDimension('nStats',nStats)
 
+ncvar=ncOUT.createVariable('STATS', 'f', (nVars,nSub,nLay,nStats))
+ncvar[:] = STATS
+
+
 ncOUT.close()
 
 

@@ -23,8 +23,8 @@ def readfromfile(filename):
 
 def readClimatology(filename):
     ncIN = NC.netcdf_file(filename,'r') 
-    MEAN = ncIN.variables['Mean'].data #(366, 253, 733)
-    STD  = ncIN.variables['Std'].data 
+    MEAN = ncIN.variables['Mean'].data.copy() #(366, 253, 733)
+    STD  = ncIN.variables['Std'].data.copy() 
     ncIN.close()
     return MEAN,STD
 
@@ -91,7 +91,7 @@ def interpOnV1(CHL_16,bathy_threshold = 0):
     V1 = masks.V1mesh
     Bathyfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MODIS/Bathy_MODIS.nc"
     ncIN = NC.netcdf_file(Bathyfile,'r')
-    BATHY=ncIN.variables['bathy'].data
+    BATHY=ncIN.variables['bathy'].data.copy()
     ncIN.close()
     
     PREVLON = np.array( [getnextIndex(NativeMesh.lon, V1.lon[i]) for i in range(V1.jpi)], np.int32) -1

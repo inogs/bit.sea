@@ -8,9 +8,11 @@ ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
 CLIM_FILE="/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/DA/CHECKSAT/SatClimatology.nc"
 
-
-TL_orig = TimeList("19500101","20500101", ORIGDIR ,"*.nc",'postproc/IOnames_sat.xml')
-TLCheck = TimeList("19500101","20500101", CHECKDIR,"*.nc",'postproc/IOnames_sat.xml')
+Timestart="19500101"
+Time__end="20500101"
+IonamesFile = '../postproc/IOnames_sat.xml'
+TL_orig = TimeList(Timestart,Time__end, ORIGDIR ,"*.nc",IonamesFile)
+TLCheck = TimeList(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
 
 ORIG_NAMES=[os.path.basename(i) for i in TL_orig.filelist]
 CHECKNAMES=[os.path.basename(i) for i in TLCheck.filelist]

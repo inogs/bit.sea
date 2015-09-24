@@ -7,8 +7,12 @@ import SatManager as Sat
 
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
 WEEKLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/"
-TLCheck = Timelist.TimeList("19500101","20500101", CHECKDIR,"*.nc",'postproc/IOnames_sat.xml')
-IOname = IOnames.IOnames('postproc/IOnames_sat.xml')
+
+Timestart="19500101"
+Time__end="20500101"
+IonamesFile = '../postproc/IOnames_sat.xml'
+TLCheck = Timelist.TimeList(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
+IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)
 

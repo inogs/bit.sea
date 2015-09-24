@@ -107,20 +107,22 @@ def interpOnV1(CHL_16,bathy_threshold = 0):
             riq =CHL_16[jj:jj+2,ji:ji+2]
             bat = BATHY[jj:jj+2,ji:ji+2]
             
-            batgoods = bat < bathy_threshold
+            batgoods = bat > bathy_threshold
             condition = False
             
             if batgoods.sum() > 3:
                 condition = True               
             if batgoods.sum() == 2:
                 diag1 = batgoods.diagonal()
-                diag2 = [batgoods[0,1], batgoods[1,0]]
+                diag2 = np.array([batgoods[0,1], batgoods[1,0]],np.bool)
                 if (diag1.all()) | (diag2.all()) :
                     condition=True
            
             if condition:
                 selected = riq[batgoods]
-                CHL_8[j,i] = selected[selected>fillValue].mean()
+                writeable = selected>fillValue
+                if np.any(writeable):
+                    CHL_8[j,i] = selected[writeable].mean()
     return CHL_8    
        
 def dumpV1file(filename,CHL):

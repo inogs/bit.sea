@@ -2,6 +2,8 @@ class Layer():
     def __init__(self,top, bottom):
         self.top = top
         self.bottom = bottom
+    def __str__(self):
+        return "Layer %d-%d m" %(self.top, self.bottom)
 
 class matchup():
     def __init__(self,Model,Ref):
@@ -17,17 +19,17 @@ class matchup():
 class FloatMatchup(matchup):
     def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None):        
         if Model is None:
-            Void=np.array([],np.float32)
-            self.Model = Void
-            self.Ref   = Void
+            self.Model = np.array([],np.float32)
+            self.Ref   = np.array([],np.float32)
+            self.Depth = np.array([],np.float32)
+            self.Lon   = np.array([],np.float32)
+            self.Lat   = np.array([],np.float32)
+        else:
+            self.Model = Model
+            self.Ref   = Ref
             self.Depth = Depth
             self.Lon   = Lon
-            self.Lat   = Lat             
-        self.Model = Model
-        self.Ref   = Ref
-        self.Depth = Depth
-        self.Lon   = Lon
-        self.Lat   = Lat
+            self.Lat   = Lat
         
     def subset(self,layer):
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)        

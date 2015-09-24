@@ -5,8 +5,6 @@ import pylab as pl
 import os
 
 
-from region import Region, Rectangle
-
 class Time_Interval():
     def __init__(self,starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
         self.starttime=datetime.datetime.strptime(starttime,dateformat)
@@ -155,6 +153,7 @@ def FloatSelector(var, T, region):
     return SELECTED
 
 if __name__ == '__main__':
+    from basins.region import Region, Rectangle
     var = 'NITRATE'
     TI = Time_Interval('20150520','20150830','%Y%m%d')
     R = Rectangle(-6,36,30,46)

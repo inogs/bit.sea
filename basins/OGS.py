@@ -49,4 +49,4 @@ wes = ComposedBasin('wes', [alb, sww, swe, nwm, tyr], 'West Mediterranean Sea')
 eas = ComposedBasin('eas', [ion, lev])
 med = ComposedBasin('med', [alb, sww, swe, nwm, tyr, ion, lev])
 
-P = ComposedBasin('P',['alb' ,'sww','swe','nwm','tyr','adn','ads','aeg','ion','lev'])
+P = ComposedBasin('P',[alb ,sww,swe,nwm,tyr,adn,ads,aeg,ion,lev])

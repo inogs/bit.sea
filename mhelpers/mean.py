@@ -34,14 +34,18 @@ class mean():
         steps = np.array(steps, dtype=float)
         values = np.array(values, dtype=float)
         output = np.empty([l,], dtype=float)
+        #Build gaussian weights
+        w = gaussian(self._i, self._sigma)
         for i in range(l):
-            rbegin = (i - (self._i/2))
-            rend = (i + (self._i/2)) + 1
+            rbegin = (i - (self._i // 2))
+            rend = (i + (self._i // 2)) + 1
+            wbegin = 0
+            wend = self._i
             if rbegin < 0:
+                wbegin = -rbegin
                 rbegin = 0
             if rend > l:
+                wend = (rend - l) + (self._i // 2)
                 rend = l
-            #Build gaussian weights
-            w = gaussian((rend-rbegin), self._sigma)
-            output[i] = sum((values[rbegin:rend] * w)) / sum(w)
+            output[i] = sum((values[rbegin:rend] * w[wbegin:wend])) / sum(w[wbegin:wend])
         return output

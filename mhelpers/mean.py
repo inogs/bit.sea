@@ -1,9 +1,6 @@
 import numpy as np
 from scipy.signal import gaussian
 
-'''
-Moving average helper object (abstract class)
-'''
 class mean():
     def __init__(self, interval):
         raise NotImplementedError()
@@ -22,13 +19,12 @@ class gaussianmean(mean):
             self._i = int(interval)
         if self._i < 0:
             raise ValueError("interval should be positive")
-        if isinstance(sigma, (int, long, float)) or isinstance(float(sigma), (float,)):
+        if isinstance(float(sigma), (float,)):
+            sigma = float(sigma)
             if sigma >=0:
                 self._sigma = sigma
             else:
                 raise ValueError("sigma should be positive")
-        else:
-            raise ValueError("sigma should be a float")
 
     def compute(self, values):
         l = len(values)

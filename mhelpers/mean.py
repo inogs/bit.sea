@@ -20,18 +20,13 @@ class mean():
         else:
             raise ValueError("sigma should be a float")
 
-    def compute(self, steps, values):
-        if not len(steps) == len(values):
-            raise ValueError("steps and values arrays must have the same length")
-        l = len(steps)
-        if not isinstance(steps[0], (int, long, float, complex)):
-            raise TypeError()
+    def compute(self, values):
+        l = len(values)
         if not isinstance(values[0], (int, long, float, complex)):
             raise TypeError()
         if l == 1 or self._i == 0:
             return values
         #Ensure we have np.arrays
-        steps = np.array(steps, dtype=float)
         values = np.array(values, dtype=float)
         output = np.empty([l,], dtype=float)
         #Build gaussian weights

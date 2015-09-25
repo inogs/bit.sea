@@ -1,6 +1,8 @@
 from nose.tools import *
 from .. import mean as m
 from numpy import array
+from numpy import nan
+from numpy import isnan
 
 def test_initial():
     assert True
@@ -36,56 +38,45 @@ def test_compute_no_params():
 @raises(TypeError)
 def test_compute_single_digits():
     a = m.mean(0)
-    a.compute(1,1)
+    a.compute(1)
 
 @raises(TypeError)
 def test_compute_strings():
     a = m.mean(0)
-    a.compute('1','1')
+    a.compute('1')
 
 def test_compute_lists_of_single_point():
     a = m.mean(0)
-    r = a.compute([1,],[1,])
+    r = a.compute([1,])
     assert len(r) == 1
     assert r[0] == 1
 
 def test_compute_tuples_of_single_point():
     a = m.mean(0)
-    r = a.compute((1,),(1,))
+    r = a.compute((1,))
     assert len(r) == 1
     assert r[0] == 1
 
 def test_compute_nparrays_of_single_point():
     obj = m.mean(0)
     a = array([1,])
-    b = array([1,])
-    result = obj.compute(a, b)
+    result = obj.compute(a)
     assert len(result) == 1
     assert result[0] == 1
 
 def test_compute_nparrays_one_point_interval():
     obj = m.mean(0)
     a = array([1, 2, 3])
-    b = array([1, 1, 1])
-    result = obj.compute(a, b)
-    assert len(result) == len(b)
-    for i in range(len(b)):
-        assert result[i] == b[i]
-
-@raises(ValueError)
-def test_compute_different_lengths():
-    obj = m.mean(0)
-    a = array([1, 2, 3])
-    b = array([1, 1])
-    obj.compute(a, b)
+    result = obj.compute(a)
+    assert len(result) == len(a)
+    for i in range(len(a)):
+        assert result[i] == a[i]
 
 def test_compute_nparrays_three_points_interval():
     obj = m.mean(3)
-    a = array([1, 2, 3])
-    b = array([1, 1, 1])
-    result = obj.compute(a, b)
-    assert len(result) == len(b)
-    for i in range(len(b)):
-        assert (result[i] - b[i]) < 1e-16
-
+    a = array([1, 1, 1])
+    result = obj.compute(a)
+    assert len(result) == len(a)
+    for i in range(len(a)):
+        assert abs(result[i] - a[i]) < 1e-16
 

@@ -2,9 +2,19 @@ import numpy as np
 from scipy.signal import gaussian
 
 '''
-Moving average helper object
+Moving average helper object (abstract class)
 '''
 class mean():
+    def __init__(self, interval):
+        raise NotImplementedError()
+
+    def compute(self, values):
+        raise NotImplementedError()
+
+class gaussianmean(mean):
+    '''
+    Gaussian weighted moving average helper object
+    '''
     def __init__(self, interval, sigma=1.0):
         if isinstance(interval, (int, long )):
             self._i = interval

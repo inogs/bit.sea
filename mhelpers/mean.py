@@ -43,12 +43,11 @@ class GaussianMean(Mean):
             rbegin = (i - (self._i // 2))
             rend = (i + (self._i // 2)) + 1
             wbegin = 0
-            wend = self._i
             if rbegin < 0:
                 wbegin = -rbegin
                 rbegin = 0
             if rend > l:
-                wend = (rend - l) + (self._i // 2)
                 rend = l
+            wend = (rend - rbegin) + wbegin
             output[i] = sum((values[rbegin:rend] * w[wbegin:wend])) / sum(w[wbegin:wend])
         return output

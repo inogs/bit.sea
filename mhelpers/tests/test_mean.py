@@ -2,6 +2,7 @@ from nose.tools import *
 from ..mean import Mean as m
 from ..mean import GaussianMean as gm
 from numpy import array
+from numpy import linspace
 from numpy import nan
 from numpy import isnan
 
@@ -91,3 +92,15 @@ def test_gm_compute_nparrays_three_points_interval():
     for i in range(len(a)):
         assert abs(result[i] - a[i]) < 1e-16
 
+#Test numerical stability
+def test_gm_compute_1001nparray_symmetrical():
+    #Generate symmetric array of 1001 elements from -500 to 500 included
+    #a[500] is always 0
+    a = linspace(-500, 500, 1001)
+    assert a[500] == 0.0
+    #Test 3,5,7,9,11,13 and 15 elements-long intervals
+    for i in range(3,16,2):
+        obj = gm(i)
+        result = obj.compute(a)
+        assert len(result) == len(a)
+        assert abs(result[500]) < 1e-16

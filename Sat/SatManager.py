@@ -34,16 +34,63 @@ def readBathymetry(filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_D
     ncIN.close()
     return BATHY
 
-def convertinV4format(CHL):
-    chl = np.ones((V4.jpj, V4.jpi) ,np.float32) * fillValue
-    chl[1:,:] = CHL[0:-1:,11:]
-    return chl
-
 def filterOnBathymetry(chl,Bathy,bathy_threshold=0):
     CHL=chl.copy()
     CHL[Bathy<bathy_threshold]=fillValue
     return CHL
 
+def convertinV4format(CHL):
+    chl = np.ones((V4.jpj, V4.jpi) ,np.float32) * fillValue
+    chl[1:,:] = CHL[0:-1:,11:]
+    return chl
+
+def interpOnV1(CHL_16,bathy_threshold = 0):
+    '''
+    Performs interpolation on V1 grid using the following algorithm
+    For a given pixel of V1 mesh, we select the four pixels of the OrigSat mesh 
+    corresponding exactly to it.
+    Then, we look at the bathymetry in these pixels, and filter pixels having bathymetry greater than
+    bathy_threshold. 
+    Returned value is the average of the filtered pixels.
+    Condition to return values are:
+     - at least 3 pixels having bathymetry < bathy_threshold
+     - 2 pixels if they are on a diagonal
+    
+    '''
+    V1 = masks.V1mesh
+    BATHY=readBathymetry()
+    
+    
+    PREVLON = np.array( [getnextIndex(NativeMesh.lon, V1.lon[i]) for i in range(V1.jpi)], np.int32) -1
+    PREVLAT = np.array( [getnextIndex(NativeMesh.lat, V1.lat[i]) for i in range(V1.jpj)], np.int32) -1
+
+    CHL_8 = np.ones((V1.jpj,V1.jpi),np.float32) * fillValue
+    
+    for i in range(V1.jpi):
+        ji = PREVLON[i]
+        for j in range(V1.jpj):
+            jj = PREVLAT[j] 
+            
+            riq =CHL_16[jj:jj+2,ji:ji+2]
+            bat = BATHY[jj:jj+2,ji:ji+2]
+            
+            batgoods = bat > bathy_threshold
+            condition = False
+            
+            if batgoods.sum() > 3:
+                condition = True               
+            if batgoods.sum() == 2:
+                diag1 = batgoods.diagonal()
+                diag2 = np.array([batgoods[0,1], batgoods[1,0]],np.bool)
+                if (diag1.all()) | (diag2.all()) :
+                    condition=True
+           
+            if condition:
+                selected = riq[batgoods]
+                writeable = selected>fillValue
+                if np.any(writeable):
+                    CHL_8[j,i] = selected[writeable].mean()
+    return CHL_8    
 
 def dumpfile(filename, CHL):
     ncOUT  = NC.netcdf_file(filename,'w')
@@ -96,53 +143,6 @@ def dumpV4file(filename,CHL):
     ncOUT.close()
     
 
-def interpOnV1(CHL_16,bathy_threshold = 0):
-    '''
-    Performs interpolation on V1 grid using the following algorithm
-    For a given pixel of V1 mesh, we select the four pixels of the OrigSat mesh 
-    corresponding exactly to it.
-    Then, we look at the bathymetry in these pixels, and filter pixels having bathymetry greater than
-    bathy_threshold. 
-    Returned value is the average of the filtered pixels.
-    Condition to return values are:
-     - at least 3 pixels having bathymetry < bathy_threshold
-     - 2 pixels if they are on a diagonal
-    
-    '''
-    V1 = masks.V1mesh
-    BATHY=readBathymetry()
-    
-    
-    PREVLON = np.array( [getnextIndex(NativeMesh.lon, V1.lon[i]) for i in range(V1.jpi)], np.int32) -1
-    PREVLAT = np.array( [getnextIndex(NativeMesh.lat, V1.lat[i]) for i in range(V1.jpj)], np.int32) -1
-
-    CHL_8 = np.ones((V1.jpj,V1.jpi),np.float32) * fillValue
-    
-    for i in range(V1.jpi):
-        ji = PREVLON[i]
-        for j in range(V1.jpj):
-            jj = PREVLAT[j] 
-            
-            riq =CHL_16[jj:jj+2,ji:ji+2]
-            bat = BATHY[jj:jj+2,ji:ji+2]
-            
-            batgoods = bat > bathy_threshold
-            condition = False
-            
-            if batgoods.sum() > 3:
-                condition = True               
-            if batgoods.sum() == 2:
-                diag1 = batgoods.diagonal()
-                diag2 = np.array([batgoods[0,1], batgoods[1,0]],np.bool)
-                if (diag1.all()) | (diag2.all()) :
-                    condition=True
-           
-            if condition:
-                selected = riq[batgoods]
-                writeable = selected>fillValue
-                if np.any(writeable):
-                    CHL_8[j,i] = selected[writeable].mean()
-    return CHL_8    
        
 def dumpV1file(filename,CHL):
  

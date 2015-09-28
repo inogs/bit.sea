@@ -8,6 +8,17 @@ class Mean(object):
     def compute(self, values, pressure_values):
         raise NotImplementedError()
 
+    def _check_compute_input(self, values, pressure_values):
+        assert pressure_values == None or len(values) == len(pressure_values)
+        l = len(values)
+        if l==0:
+            return False
+        if not isinstance(values[0], (int, long, float, complex)):
+            raise TypeError()
+        if l == 1 or self._i == 0:
+            return False
+        return True
+
 class GaussianMean(Mean):
     '''
     Gaussian weighted moving average helper object
@@ -27,13 +38,9 @@ class GaussianMean(Mean):
                 raise ValueError("sigma should be positive")
 
     def compute(self, values, pressure_values):
+        if self._check_compute_input(values, pressure_values) == False:
+            return np.array(values)
         l = len(values)
-        if l==0:
-            return np.array(values)
-        if not isinstance(values[0], (int, long, float, complex)):
-            raise TypeError()
-        if l == 1 or self._i == 0:
-            return np.array(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
         output = np.empty((l,), dtype=float)

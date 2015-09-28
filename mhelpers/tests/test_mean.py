@@ -1,6 +1,6 @@
 from nose.tools import *
-from ..mean import mean as m
-from ..mean import gaussianmean as gm
+from ..mean import Mean as m
+from ..mean import GaussianMean as gm
 from numpy import array
 from numpy import nan
 from numpy import isnan

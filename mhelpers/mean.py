@@ -5,7 +5,7 @@ class Mean(object):
     def __init__(self, interval):
         raise NotImplementedError()
 
-    def compute(self, values):
+    def compute(self, values, pressure_values):
         raise NotImplementedError()
 
 class GaussianMean(Mean):
@@ -26,7 +26,7 @@ class GaussianMean(Mean):
             else:
                 raise ValueError("sigma should be positive")
 
-    def compute(self, values):
+    def compute(self, values, pressure_values):
         l = len(values)
         if l==0:
             return np.array(values)

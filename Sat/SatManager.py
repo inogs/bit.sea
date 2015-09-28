@@ -28,6 +28,23 @@ def readClimatology(filename):
     ncIN.close()
     return MEAN,STD
 
+def readBathymetry(filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MODIS/Bathy_MODIS.nc"):
+    ncIN = NC.netcdf_file(filename,'r')
+    BATHY=ncIN.variables['bathy'].data.copy()
+    ncIN.close()
+    return BATHY
+
+def convertinV4format(CHL):
+    chl = np.ones((V4.jpj, V4.jpi) ,np.float32) * fillValue
+    chl[1:,:] = CHL[0:-1:,11:]
+    return chl
+
+def filterOnBathymetry(chl,Bathy,bathy_threshold=0):
+    CHL=chl.copy()
+    CHL[Bathy<bathy_threshold]=fillValue
+    return CHL
+
+
 def dumpfile(filename, CHL):
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)
@@ -51,7 +68,13 @@ def dumpfile(filename, CHL):
     ncvar[:] = NativeMesh.lon
     ncOUT.close()   
     
+
+
+
 def dumpV4file(filename,CHL):
+    '''
+    Second argument CHL is a matrix in the native format
+    '''
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)
     ncOUT.createDimension('depth',1)
@@ -59,9 +82,7 @@ def dumpV4file(filename,CHL):
     ncOUT.createDimension('lat',V4.jpj)
     
     ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
-    chl = np.ones(V4.jpj, V4.jpi) * fillValue
-    chl[1:,:] = CHL[0:-1:,11:]
-    ncvar[:] = chl
+    ncvar[:] = convertinV4format(CHL)
     setattr(ncvar, 'missing_value', fillValue)
     setattr(ncvar, '_FillValue', fillValue)
     ncvar = ncOUT.createVariable('depth','f',('depth',))
@@ -89,10 +110,8 @@ def interpOnV1(CHL_16,bathy_threshold = 0):
     
     '''
     V1 = masks.V1mesh
-    Bathyfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MODIS/Bathy_MODIS.nc"
-    ncIN = NC.netcdf_file(Bathyfile,'r')
-    BATHY=ncIN.variables['bathy'].data.copy()
-    ncIN.close()
+    BATHY=readBathymetry()
+    
     
     PREVLON = np.array( [getnextIndex(NativeMesh.lon, V1.lon[i]) for i in range(V1.jpi)], np.int32) -1
     PREVLAT = np.array( [getnextIndex(NativeMesh.lat, V1.lat[i]) for i in range(V1.jpj)], np.int32) -1

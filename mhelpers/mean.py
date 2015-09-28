@@ -8,7 +8,7 @@ class Mean(object):
     def compute(self, values):
         raise NotImplementedError()
 
-class GaussianMean(mean):
+class GaussianMean(Mean):
     '''
     Gaussian weighted moving average helper object
     '''

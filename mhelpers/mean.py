@@ -29,11 +29,11 @@ class GaussianMean(Mean):
     def compute(self, values):
         l = len(values)
         if l==0:
-            return values.copy()
+            return np.array(values)
         if not isinstance(values[0], (int, long, float, complex)):
             raise TypeError()
         if l == 1 or self._i == 0:
-            return values.copy()
+            return np.array(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
         output = np.empty((l,), dtype=float)

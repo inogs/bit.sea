@@ -1,14 +1,14 @@
 import numpy as np
 from scipy.signal import gaussian
 
-class mean():
+class Mean(object):
     def __init__(self, interval):
         raise NotImplementedError()
 
     def compute(self, values):
         raise NotImplementedError()
 
-class gaussianmean(mean):
+class GaussianMean(mean):
     '''
     Gaussian weighted moving average helper object
     '''
@@ -28,13 +28,15 @@ class gaussianmean(mean):
 
     def compute(self, values):
         l = len(values)
+        if l==0:
+            return values.copy()
         if not isinstance(values[0], (int, long, float, complex)):
             raise TypeError()
         if l == 1 or self._i == 0:
-            return values
+            return values.copy()
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
-        output = np.empty([l,], dtype=float)
+        output = np.empty((l,), dtype=float)
         #Build gaussian weights
         w = gaussian(self._i, self._sigma)
         for i in range(l):

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import gaussian
 from mean import GaussianMean
+from math import exp
 
 class PGaussianMean(GaussianMean):
     '''
@@ -40,4 +41,43 @@ class PGaussianMean(GaussianMean):
                 wm[j] = wm[j] / d
                 k = k + 1
             output[i] = sum((values[rbegin:rend] * wm[wbegin:wend])) / sum(wm[wbegin:wend])
+        return output
+
+class PLGaussianMean(GaussianMean):
+
+    def _gaussian(self, value):
+        return exp(-0.5*(value / self._sigma)**2)
+
+    def compute(self, values, pressure_values):
+        if self._check_compute_input(values, pressure_values) == False:
+            return np.array(values)
+        if pressure_values == None:
+            raise TypeError("pressure_values must be defined")
+        l = len(values)
+        #Ensure we have np.arrays
+        values = np.array(values, dtype=float)
+        pressure_values = np.array(pressure_values, dtype=float)
+        output = np.empty((l,), dtype=float)
+        w = np.zeroes(self._i, dtype=float)
+        for i in range(l):
+            #Build indices
+            rbegin = (i - (self._i // 2))
+            rend = (i + (self._i // 2)) + 1
+            wbegin = 0
+            if rbegin < 0:
+                wbegin = -rbegin
+                rbegin = 0
+            if rend > l:
+                rend = l
+            wend = (rend - rbegin) + wbegin
+            #Build distances vector
+            dvals = (pressure_values[rbegin:rend] - pressure_values[i]).abs()
+            dmax = max(dvals)
+            k = 0
+            #Build pressure-modified weights
+            for j in range(wbegin, wend):
+                w[j] = self._gaussian(dvals[k]/dmax)
+                k = k + 1
+            #Perform the weighted average
+            output[i] = sum((values[rbegin:rend] * w[wbegin:wend])) / sum(w[wbegin:wend])
         return output

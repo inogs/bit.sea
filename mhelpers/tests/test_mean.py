@@ -6,6 +6,8 @@ from numpy import linspace
 from numpy import nan
 from numpy import isnan
 
+epsilon = 1e-16
+
 def test_initial():
     assert True
 
@@ -90,7 +92,7 @@ def test_gm_compute_nparrays_three_points_interval():
     result = obj.compute(a, None)
     assert len(result) == len(a)
     for i in range(len(a)):
-        assert abs(result[i] - a[i]) < 1e-16
+        assert abs(result[i] - a[i]) < epsilon
 
 #Test numerical stability
 def test_gm_compute_1001nparray_symmetrical():
@@ -103,4 +105,4 @@ def test_gm_compute_1001nparray_symmetrical():
         obj = gm(i)
         result = obj.compute(a, None)
         assert len(result) == len(a)
-        assert abs(result[500]) < 1e-16
+        assert abs(result[500]) < epsilon

@@ -15,6 +15,7 @@ class PGaussianMean(GaussianMean):
         l = len(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
+        pressure_values = np.array(pressure_values, dtype=float)
         output = np.empty((l,), dtype=float)
         #Build base gaussian weights
         w = gaussian(self._i, self._sigma)
@@ -38,6 +39,5 @@ class PGaussianMean(GaussianMean):
                     d = 1
                 wm[j] = wm[j] / d
                 k = k + 1
-            print "wm: " + str(wm[wbegin:wend])
             output[i] = sum((values[rbegin:rend] * wm[wbegin:wend])) / sum(wm[wbegin:wend])
         return output

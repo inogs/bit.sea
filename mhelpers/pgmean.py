@@ -58,7 +58,7 @@ class PLGaussianMean(GaussianMean):
         values = np.array(values, dtype=float)
         pressure_values = np.array(pressure_values, dtype=float)
         output = np.empty((l,), dtype=float)
-        w = np.zeroes(self._i, dtype=float)
+        w = np.zeros(self._i, dtype=float)
         for i in range(l):
             #Build indices
             rbegin = (i - (self._i // 2))
@@ -71,7 +71,7 @@ class PLGaussianMean(GaussianMean):
                 rend = l
             wend = (rend - rbegin) + wbegin
             #Build distances vector
-            dvals = (pressure_values[rbegin:rend] - pressure_values[i]).abs()
+            dvals = np.absolute(pressure_values[rbegin:rend] - pressure_values[i])
             dmax = max(dvals)
             k = 0
             #Build pressure-modified weights

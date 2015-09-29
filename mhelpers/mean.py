@@ -58,3 +58,30 @@ class GaussianMean(Mean):
             wend = (rend - rbegin) + wbegin
             output[i] = sum((values[rbegin:rend] * w[wbegin:wend])) / sum(w[wbegin:wend])
         return output
+
+class MovingAverage(Mean):
+
+    def __init__(self, interval):
+        if isinstance(interval, (int, long )):
+            self._i = interval
+        elif isinstance(int(interval), (int, long)):
+            self._i = int(interval)
+        if self._i < 0:
+            raise ValueError("interval should be positive")
+
+    def compute(self, values, pressure_values):
+        if self._check_compute_input(values, pressure_values) == False:
+            return np.array(values)
+        l = len(values)
+        #Ensure we have np.arrays
+        values = np.array(values, dtype=float)
+        output = values.copy()
+        for i in range(l):
+            rbegin = (i - (self._i // 2))
+            rend = (i + (self._i // 2)) + 1
+            if rbegin < 0:
+                rbegin = 0
+            if rend > l:
+                rend = l
+            output[i] = sum(output[rbegin:rend]) / (rend-rbegin)
+        return output

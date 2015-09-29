@@ -6,7 +6,7 @@ from numpy import linspace
 from numpy import nan
 from numpy import isnan
 
-epsilon = 1e-16
+epsilon = 2.22e-16
 
 def test_initial():
     assert True

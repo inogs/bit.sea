@@ -1,5 +1,6 @@
 from nose.tools import *
 from ..pgmean import PGaussianMean as gm
+from ..pgmean import PLGaussianMean as pgm
 from numpy import array
 from numpy import linspace
 from numpy import nan
@@ -50,3 +51,23 @@ def test_pgm_compute_1001nparray_symmetrical():
         result = obj.compute(a, b)
         assert len(result) == len(a)
         assert abs(result[500]) < epsilon
+
+#PLGaussianMean Tests
+def test_create_plgmean_object():
+    obj = pgm(0)
+
+def test_plgm_compute_1001nparray_symmetrical():
+    #Generate symmetric array of 1001 elements from -500 to 500 included
+    #a[500] is always 0
+    a = linspace(-500, 500, 1001)
+    assert a[500] == 0.0
+    #Generate pressures array
+    b = linspace(0,1001,1001)
+    #Test 3,5,7,9,11,13 and 15 elements-long intervals
+    for i in range(3,16,2):
+        obj = pgm(i)
+        result = obj.compute(a, b)
+        assert len(result) == len(a)
+        if abs(result[500]) > epsilon:
+            raise ValueError("result (%s) is greater than epsilon (%e) by %e" % (abs(result[500]), epsilon, (abs(result[500]) - epsilon)))
+

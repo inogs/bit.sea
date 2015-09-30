@@ -110,6 +110,18 @@ class Bio_Float():
         return Pres[~bad], Profile[~bad]
         #return Pres, Profile
 
+    def read(self, var, mean=None):
+        '''
+        Reads profile data from file and optionally applies a filter to the data
+        '''
+        pres, prof = self._readrow(var)
+        if mean == None:
+            if Bio_Float.default_mean != None:
+                return pres, Bio_Float.default_mean.compute(prof, pres)
+            else:
+                return pres, prof
+        else:
+            return pres, mean.compute(prof, pres)
 
     def plot(self,Pres,profile):
         pl.figure()

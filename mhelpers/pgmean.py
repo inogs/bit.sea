@@ -9,10 +9,8 @@ class PGaussianMean(GaussianMean):
     '''
 
     def compute(self, values, pressure_values):
-        if self._check_compute_input(values, pressure_values) == False:
+        if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
             return np.array(values)
-        if pressure_values == None:
-            raise TypeError("pressure_values must be defined")
         l = len(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
@@ -49,10 +47,8 @@ class PLGaussianMean(GaussianMean):
         return exp(-0.5*(value / self._sigma)**2)
 
     def compute(self, values, pressure_values):
-        if self._check_compute_input(values, pressure_values) == False:
+        if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
             return np.array(values)
-        if pressure_values == None:
-            raise TypeError("pressure_values must be defined")
         l = len(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)

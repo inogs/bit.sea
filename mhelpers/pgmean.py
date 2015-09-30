@@ -32,11 +32,19 @@ class PGaussianMean(GaussianMean):
             wm = w.copy()
             pvals = pressure_values[rbegin:rend]
             k = 0
+            #Build distances vector
+            dvals = np.absolute(pressure_values[rbegin:rend] - pressure_values[i])
+            dmin = np.inf
+            for d in dvals:
+                if d > 0 and d < dmin:
+                   dmin = d
             for j in range(wbegin, wend):
-                d = abs(pvals[k] - pressure_values[i])
+                d = dvals[k]
                 if d == 0:
                     d = 1
-                wm[j] = wm[j] / d
+                else:
+                    d = (dmin / d)
+                wm[j] = wm[j] * d
                 k = k + 1
             output[i] = sum((values[rbegin:rend] * wm[wbegin:wend])) / sum(wm[wbegin:wend])
         return output

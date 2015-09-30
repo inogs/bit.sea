@@ -1,6 +1,7 @@
 from nose.tools import *
 from ..mean import Mean as m
 from ..mean import GaussianMean as gm
+from ..mean import MovingAverage as ma
 from numpy import array
 from numpy import linspace
 from numpy import nan
@@ -106,3 +107,45 @@ def test_gm_compute_1001nparray_symmetrical():
         result = obj.compute(a, None)
         assert len(result) == len(a)
         assert abs(result[500]) < epsilon
+
+#Tests for MovingAverage class
+def test_create_ma_object():
+    obj = ma(0)
+
+@raises(ValueError)
+def test_create_ma_object_negative_interval():
+    obj = ma(-1)
+
+def test_create_ma_object_valid_string():
+    obj = ma('0')
+
+@raises(ValueError)
+def test_create_ma_object_invalid_string():
+    obj = ma('hello')
+
+def test_ma_compute_single_value():
+    obj = ma(3)
+    result = obj.compute([1])
+    assert len(result) == 1
+    assert result[0] == 1
+
+def test_ma_compute_nparrays_three_points_interval():
+    obj = ma(3)
+    a = array([1, 1, 1])
+    result = obj.compute(a, None)
+    assert len(result) == len(a)
+    for i in range(len(a)):
+        assert abs(result[i] - a[i]) < epsilon
+
+def test_ma_compute_1001nparray_symmetrical():
+    #Generate symmetric array of 1001 elements from -500 to 500 included
+    #a[500] is always 0
+    a = linspace(-500, 500, 1001)
+    assert a[500] == 0.0
+    #Test 3,5,7,9,11,13 and 15 elements-long intervals
+    for i in range(3,16,2):
+        obj = ma(i)
+        result = obj.compute(a, None)
+        assert len(result) == len(a)
+        assert abs(result[500]) < epsilon
+

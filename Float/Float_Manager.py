@@ -98,7 +98,9 @@ class Bio_Float():
         ncIN.close()
 
         # Elimination of negative pressures or nans
-        badPres    = (Pres<=0) | (np.isnan(Pres))
+        nanPres = np.isnan(Pres)
+        Pres[nanPres] = 1 # just for not complaining
+        badPres    = (Pres<=0) | nanPres
         badProfile = np.isnan(Profile)
         bad = badPres | badProfile
 

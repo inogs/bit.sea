@@ -2,9 +2,9 @@ import scipy.io.netcdf as NC
 import numpy as np
 import os
 from postproc.Timelist import *
-from matchup import *
+from matchup.matchup import *
 from basins.region import *
-import Float_Manager
+import Float.Float_Manager as Float_Manager
 from shared_data import *
 
 
@@ -33,8 +33,8 @@ def getMatchups(FloatList,Coupled_List,model_varname,ref_varname):
     
     
     for f in FloatList:
-        for Model_time,INTERESTED_FLOATS in Coupled_List:
-            if f.filename in [ff.filename for ff in INTERESTED_FLOATS]:
+        for Model_time,INTERESTED_Indices in Coupled_List:
+            if f.filename in [ALL_FLOAT_LIST[ii].filename for ii in INTERESTED_Indices]:
                 break
         Modelfile = MODEL_PROFILES_DIR + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
         ModelProfile = getModelProfile(Modelfile, model_varname, f.wmo)
@@ -63,7 +63,7 @@ ncIN.close()
 
 # getting Coupled list for all the data
 # ----------------  init ------------------------------
-TL = TimeList(DATESTART, DATE__END, INPUTDIR,"ave*.nc",'postproc/IOnames.xml')
+TL = TimeList(DATESTART, DATE__END, INPUTDIR,"ave*.nc",'../postproc/IOnames.xml')
 TI = Float_Manager.Time_Interval(DATESTART,DATE__END,'%Y%m%d-%H:%M:%S')
 R = Rectangle(-6,36,30,46)
 ALL_FLOAT_LIST=Float_Manager.FloatSelector(None, TI, R)
@@ -73,14 +73,19 @@ All_Coupled_List = TL.couple_with(datetimelist)
 
 
 MODELVARS={'DOXY':'O2o', \
-           'NITRATE':'N3n'}
+           'NITRATE':'N3n',  \
+           'CHLA':'P_i'}
+           
 
 R1 = Rectangle(-6,10,30,46)
 R2 = Rectangle(10,36,30,46)
 
 
-VARLIST=[ 'DOXY','CHL']
+VARLIST=[ 'DOXY','CHLA']
 SUBLIST = [R1,R2]
+import basins.OGS as OGS
+SUBLIST = [sub for sub in OGS.P]
+
 LAYERLIST = [Layer(0,10), Layer(10,50), Layer(50,100), Layer(100,150), Layer(150,300),Layer(300,600), Layer(600,1000)]
 
 TI = Float_Manager.Time_Interval("20150903", "20150917", "%Y%m%d")
@@ -88,22 +93,36 @@ TI = Float_Manager.Time_Interval("20150903", "20150917", "%Y%m%d")
 nVars = len(VARLIST)
 nSub  = len(SUBLIST)
 nLay  = len(LAYERLIST)
-nStats = 5
 
-STATS = np.zeros((nVars,nSub,nLay,nStats),np.float32)
+METRICS_NAMES=['number of data values',\
+               'mean of product',\
+               'mean of reference',\
+               'mean squared error',\
+               'variance of product',\
+               'variance of reference']
+
+nMetrics = len(METRICS_NAMES)
+
+STATS = np.zeros((nVars,nSub,nLay,nMetrics),np.float32)
 
 
 for ivar, ref_varname  in enumerate(VARLIST):
     model_varname = MODELVARS[ref_varname]
+    print model_varname
     for isub, sub in enumerate(SUBLIST) :
+        print sub
         FLOAT_LIST=Float_Manager.FloatSelector(ref_varname, TI, sub)
         Matchup = getMatchups(FLOAT_LIST,All_Coupled_List,model_varname,ref_varname)
     
         for ilayer, layer in enumerate(LAYERLIST) :
+            print layer
             Mlayer = Matchup.subset(layer)
             
-            STATS[ivar, isub, ilayer, 0] = Mlayer.correlation()
-            
+            STATS[ivar, isub, ilayer, 0] = Mlayer.number()
+            STATS[ivar, isub, ilayer, 1] = Mlayer.Model.mean()
+            STATS[ivar, isub, ilayer, 2] = Mlayer.Ref.mean()
+            STATS[ivar, isub, ilayer, 3] = np.median(Mlayer.Model)
+            STATS[ivar, isub, ilayer, 4] = np.median(Mlayer.Ref)
          
 
 outfilename = "outfile.nc"
@@ -111,9 +130,10 @@ ncOUT = NC.netcdf_file(outfilename,'w')
 ncOUT.createDimension('nVars', nVars)
 ncOUT.createDimension('nSub', nSub)
 ncOUT.createDimension('nLay', nLay)
-ncOUT.createDimension('nStats',nStats)
+ncOUT.createDimension("metrics",nMetrics     )
 
-ncvar=ncOUT.createVariable('STATS', 'f', (nVars,nSub,nLay,nStats))
+
+ncvar=ncOUT.createVariable('METRICS', 'f', ('nVars','nSub','nLay','metrics'))
 ncvar[:] = STATS
 
 

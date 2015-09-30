@@ -8,8 +8,12 @@ class Mean(object):
     def compute(self, values, pressure_values):
         raise NotImplementedError()
 
-    def _check_compute_input(self, values, pressure_values):
-        assert pressure_values == None or len(values) == len(pressure_values)
+    def _check_compute_input(self, values, pressure_values, pressure_required=False):
+        assert values != None
+        if pressure_required:
+            assert pressure_values != None and len(values) == len(pressure_values)
+        else:
+            assert pressure_values == None or len(values) == len(pressure_values)
         l = len(values)
         if l==0:
             return False

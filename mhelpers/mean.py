@@ -37,7 +37,7 @@ class GaussianMean(Mean):
             else:
                 raise ValueError("sigma should be positive")
 
-    def compute(self, values, pressure_values):
+    def compute(self, values, pressure_values=None):
         if self._check_compute_input(values, pressure_values) == False:
             return np.array(values)
         l = len(values)
@@ -69,7 +69,7 @@ class MovingAverage(Mean):
         if self._i < 0:
             raise ValueError("interval should be positive")
 
-    def compute(self, values, pressure_values):
+    def compute(self, values, pressure_values=None):
         if self._check_compute_input(values, pressure_values) == False:
             return np.array(values)
         l = len(values)

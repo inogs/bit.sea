@@ -31,7 +31,7 @@ def test_pgm_compute_nparrays_three_points_interval():
     for i in range(len(a)):
         assert abs(result[i] - a[i]) < epsilon
 
-@raises(TypeError)
+@raises(AssertionError)
 def test_pgm_compute_nparray_None():
     obj = gm(3)
     a = array([1, 1, 1])
@@ -55,6 +55,11 @@ def test_pgm_compute_1001nparray_symmetrical():
 #PLGaussianMean Tests
 def test_create_plgmean_object():
     obj = pgm(0)
+
+@raises(AssertionError)
+def test_plgm_compute_null_pressures():
+    obj = pgm(3)
+    obj.compute([1,2,3], None)
 
 def test_plgm_compute_1001nparray_symmetrical():
     #Generate symmetric array of 1001 elements from -500 to 500 included

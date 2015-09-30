@@ -1,3 +1,4 @@
+import numpy as np
 class Layer():
     def __init__(self,top, bottom):
         self.top = top
@@ -9,13 +10,19 @@ class matchup():
     def __init__(self,Model,Ref):
         self.Model = Model
         self.Ref   = Ref
-        self.diff = Ref - Model
-        self.n = len(Model)
 
+    def diff(self):
+        return self.Ref - self.Model
+    def number(self):
+        
+        return len(self.Model)
     def variances(self):
         return self.Ref.std()**2, self.Model.std()**2
 
     def medians(self):
+        '''
+        return median(Reference), median(Model)
+        '''
         return np.median(self.Ref), np.median(self.Model)
 
     def covariance(self):
@@ -32,7 +39,7 @@ class matchup():
         Calculates the mean error.
         Result of zero does not necessarily indicate low error due to cancellation.
         '''
-        return self.diff.mean();
+        return self.diff().mean();
 
     def MSE(self):
         '''Mean Square Error
@@ -40,7 +47,7 @@ class matchup():
         Calculates a mean error (in data units squared), which is not effected by cancellation.
         Squaring the data may cause bias towards large events.
         '''
-        return (self.diff**2).mean()
+        return (self.diff()**2).mean()
 
     def RMSE(self):
         ''' Root mean Square Error
@@ -57,14 +64,14 @@ class matchup():
         the bias towards large events; however, it also produces a non-smooth operator
         when used in optimisation.
         '''
-        return (np.abs(self.diff)).mean()
+        return (np.abs(self.diff())).mean()
 
     def AME(self):
         '''Absolute Maximum Error
         ID 4.7
         Records the maximum absolute error.
         '''
-        return (np.abs(self.diff)).max()
+        return (np.abs(self.diff())).max()
 
 
 
@@ -169,7 +176,7 @@ class FloatMatchup(matchup):
     def extend(self,fm):
         self.Model = np.concatenate((self.Model, fm.Model))
         self.Ref   = np.concatenate((self.Ref,   fm.Ref))
-        self.Depth = np.concatenate((self.Depth, fm.Ref))
+        self.Depth = np.concatenate((self.Depth, fm.Depth))
         self.Lon   = np.concatenate((self.Lon,   fm.Lon))
         self.Lat   = np.concatenate((self.Lat,   fm.Lat))
 

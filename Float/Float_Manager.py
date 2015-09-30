@@ -74,7 +74,7 @@ class Bio_Float():
 
         return M_RES
 
-    def readrow(self,var):
+    def _readrow(self,var):
         '''
         Reads data from file
         '''

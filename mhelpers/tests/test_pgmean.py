@@ -62,6 +62,7 @@ def test_plgm_compute_null_pressures():
     obj.compute([1,2,3], None)
 
 def test_plgm_compute_1001nparray_symmetrical():
+    epsilon = 1e-14
     #Generate symmetric array of 1001 elements from -500 to 500 included
     #a[500] is always 0
     a = linspace(-500, 500, 1001)

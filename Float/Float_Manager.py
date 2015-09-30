@@ -12,6 +12,9 @@ class Time_Interval():
 
 
 class Bio_Float():
+
+    default_mean = None
+
     def __init__(self,lon,lat,time,filename,available_params):
         self.lon = lon
         self.lat = lat

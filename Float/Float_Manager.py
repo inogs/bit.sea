@@ -22,7 +22,7 @@ class Bio_Float():
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
 
-    def __searchVariable_on_parameters__(self,var):
+    def __searchVariable_on_parameters(self,var):
         '''
         returns index of profile on which variable has to be read,
         -1 if fails (PARAMETERS variable is blank)
@@ -44,14 +44,14 @@ class Bio_Float():
                     if s==var:
                         return iprof
 
-    def __fillnan__(self, ncObj,var):
+    def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
         fillvalue  =varObj._FillValue
         M     = varObj.data.copy()
         M[M==fillvalue] = np.NaN;
         return M
 
-    def __merge_profile_with_adjusted__(self,profile, profile_adj):
+    def __merge_profile_with_adjusted(self,profile, profile_adj):
         N_LEV = profile.size
         res = np.zeros_like(profile)
         if np.isnan(profile_adj).all():
@@ -64,13 +64,13 @@ class Bio_Float():
                     res[k] = profile_adj[k]
         return res
 
-    def __merge_var_with_adjusted__(self, ncObj,var):
+    def __merge_var_with_adjusted(self, ncObj,var):
         N_PROF= ncObj.dimensions['N_PROF']
-        M     = self.__fillnan__(ncObj, var)
-        M_ADJ = self.__fillnan__(ncObj, var + "_ADJUSTED")
+        M     = self.__fillnan(ncObj, var)
+        M_ADJ = self.__fillnan(ncObj, var + "_ADJUSTED")
         M_RES = M
         for iprof in range(N_PROF):
-            M_RES[iprof,:] = self.__merge_profile_with_adjusted__(M[iprof,:], M_ADJ[iprof,:])
+            M_RES[iprof,:] = self.__merge_profile_with_adjusted(M[iprof,:], M_ADJ[iprof,:])
 
         return M_RES
 
@@ -78,11 +78,11 @@ class Bio_Float():
         '''
         Reads data from file
         '''
-        iProf = self.__searchVariable_on_parameters__(var); #print iProf
+        iProf = self.__searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
 
         if iProf== -1 :
-            M = self.__merge_var_with_adjusted__(ncIN, var)
+            M = self.__merge_var_with_adjusted(ncIN, var)
             N_PROF= ncIN.dimensions['N_PROF']
             N_MEAS = np.zeros((N_PROF),np.int32)
             for iprof in range(N_PROF):
@@ -91,8 +91,8 @@ class Bio_Float():
             iProf = N_MEAS.argmax()
             print "iprof new value", iProf
 
-        M = self.__merge_var_with_adjusted__(ncIN, var)
-        PRES    = self.__merge_var_with_adjusted__(ncIN, 'PRES')
+        M = self.__merge_var_with_adjusted(ncIN, var)
+        PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
         Profile =  M[iProf,:]
         Pres    =  PRES[iProf,:]
         ncIN.close()
@@ -167,5 +167,3 @@ if __name__ == '__main__':
         PS,S = TheFloat.read('PSAL')
         PT,T = TheFloat.read('TEMP')
 
-  
-            

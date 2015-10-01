@@ -1,4 +1,6 @@
 import numpy as np
+import pylab as pl
+
 class Layer():
     def __init__(self,top, bottom):
         self.top = top
@@ -161,14 +163,18 @@ class FloatMatchup(matchup):
             self.Depth = np.array([],np.float32)
             self.Lon   = np.array([],np.float32)
             self.Lat   = np.array([],np.float32)
+            self.Lengths = []
         else:
             self.Model = Model
             self.Ref   = Ref
             self.Depth = Depth
             self.Lon   = Lon
             self.Lat   = Lat
+            self.Lengths = [len(Model)]
         
     def subset(self,layer):
+        if self.number() ==0:
+            return self
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)        
         return FloatMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii])
 
@@ -179,18 +185,52 @@ class FloatMatchup(matchup):
         self.Depth = np.concatenate((self.Depth, fm.Depth))
         self.Lon   = np.concatenate((self.Lon,   fm.Lon))
         self.Lat   = np.concatenate((self.Lat,   fm.Lat))
+        self.Lengths.extend([ len(fm.Model)])
+    def plot(self):
+        '''
+        Red lines are reference (biofloat)
+        Blue lines are model
+        '''
+
+        pl.figure()
+        StartInd=0
+        for length in self.Lengths:
+            End_Ind = StartInd + length
+            model = self.Model[StartInd:End_Ind]
+            ref   = self.Ref[StartInd:End_Ind]
+            pres  = self.Depth[StartInd:End_Ind]
+
+            pl.plot(model,pres,'b', ref,pres,'r')
+            pl.gca().invert_yaxis()
+            pl.show(block=False)
+            StartInd = End_Ind
+
 
 class SingleFloatMatchup():
     def __init__(self, Model, Ref, Depth, biofloatObj):
+        bads = np.isnan(Model)
+        if bads.any() :
+            print "Nans in model "
+            Model = Model[~bads]
+            Ref   = Ref  [~bads]
+            Depth = Depth[~bads]
+
         self.Model = Model
         self.Ref   = Ref
         self.Depth = Depth
         self.Float = biofloatObj
         self.Lon   = np.ones_like(Model)*self.Float.lon
         self.Lat   = np.ones_like(Model)*self.Float.lat
-        
+
     def plot(self):
-        return 1
+        '''
+        Red line is reference (biofloat)
+        Blue line is model
+        '''
+        pl.figure()
+        pl.plot(self.Model,self.Depth,'b', self.Ref,self.Depth,'r')
+        pl.gca().invert_yaxis()
+        pl.show(block=False)
 
             
 

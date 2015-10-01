@@ -103,7 +103,7 @@ METRICS_NAMES=['number of data values',\
 
 nMetrics = len(METRICS_NAMES)
 
-STATS = np.zeros((nVars,nSub,nLay,nMetrics),np.float32)
+STATS = np.ones((nVars,nSub,nLay,nMetrics),np.float32)*np.nan
 
 
 for ivar, ref_varname  in enumerate(VARLIST):
@@ -118,11 +118,14 @@ for ivar, ref_varname  in enumerate(VARLIST):
             print layer
             Mlayer = Matchup.subset(layer)
             
-            STATS[ivar, isub, ilayer, 0] = Mlayer.number()
-            STATS[ivar, isub, ilayer, 1] = Mlayer.Model.mean()
-            STATS[ivar, isub, ilayer, 2] = Mlayer.Ref.mean()
-            STATS[ivar, isub, ilayer, 3] = np.median(Mlayer.Model)
-            STATS[ivar, isub, ilayer, 4] = np.median(Mlayer.Ref)
+            n = Mlayer.number()
+            if n>0:
+                STATS[ivar, isub, ilayer, 0] = n 
+                STATS[ivar, isub, ilayer, 1] = Mlayer.Model.mean()
+                STATS[ivar, isub, ilayer, 2] = Mlayer.Ref.mean()
+                STATS[ivar, isub, ilayer, 3] = Mlayer.MSE()
+                STATS[ivar, isub, ilayer, 4] = np.median(Mlayer.Model)
+                STATS[ivar, isub, ilayer, 5] = np.median(Mlayer.Ref)
          
 
 outfilename = "outfile.nc"

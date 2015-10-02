@@ -1,8 +1,5 @@
-INPUTDIR="/pico/home/usera07ogs/a07ogs00/OPA/V4/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/"
+INPUTDIR="/pico/scratch/userexternal/gbolzon0/PROFILATORE/AVE_FAKE/"
 BASEDIR='/pico/scratch/userexternal/gbolzon0/PROFILATORE/'
-MODEL_PROFILES_DIR =BASEDIR + "PROFILES/"
-TMPSDIR =           BASEDIR + "TMP/"
-PUNTI_DIR =         BASEDIR + "PUNTI/"
 
 DATESTART = '20150901-00:00:00'
 DATE__END = '20150917-00:00:00'

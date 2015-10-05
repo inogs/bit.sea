@@ -9,11 +9,14 @@ sys.path.append("/home/skyglobe/git-repos/bit.sea/matchup")
 #Layer Object
 from matchup.matchup import Layer
 
+#Mask object
+from mask import Mask
+
 class NamedLayer(Layer):
     """
     Holds layer information taken from a NetCDF file
     """
-    def __init__(self, top, bottom, varname, filename):
+    def __init__(self, top, bottom, varname, filename, mask=None):
         t = float(top)
         b = float(bottom)
         if t < b:
@@ -35,6 +38,13 @@ class NamedLayer(Layer):
         except:
             raise
 
+        if mask != None:
+            if not isinstance(mask, (Mask,)):
+                raise ValueError("mask must be a Mask object")
+            #else:
+                #TODO: test dimensions
+            #Preserve mask reference
+            self._mask = mask
 
     @property
     def top(self):

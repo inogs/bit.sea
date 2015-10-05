@@ -21,8 +21,20 @@ class NamedLayer(Layer):
             self.__bottom = b
         else:
             raise ValueError("top must be above of bottom")
-        self.__varname = str(varname)
-        self.__filename = str(filename)
+
+        fn = str(filename)
+        v = str(varname)
+        try:
+            #Try open the NetCDF file and search for var
+            dset = netCDF4.Dataset(fn)
+            if not v in dset.variables:
+                raise ValueError("variable '%s' not found" % (var, ))
+            dset.close()
+            self.__filename = fn
+            self.__varname = v
+        except:
+            raise
+
 
     @property
     def top(self):

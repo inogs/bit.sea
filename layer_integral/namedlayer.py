@@ -1,7 +1,7 @@
 import sys
 import os
 import numpy as np
-import netCDF4 as nc
+import netCDF4
 
 #Kludge added for testing purpose TO BE REMOVED
 sys.path.append("/home/skyglobe/git-repos/bit.sea/matchup")
@@ -13,7 +13,7 @@ class NamedLayer(Layer):
     """
     Holds layer information taken from a NetCDF file
     """
-    def __init__(self, top, bottom, var, ncfilename):
+    def __init__(self, top, bottom, varname, filename):
         t = float(top)
         b = float(bottom)
         if t < b:
@@ -21,8 +21,8 @@ class NamedLayer(Layer):
             self.__bottom = b
         else:
             raise ValueError("top must be above of bottom")
-        self._var = str(var)
-        self._ncfilename = str(ncfilename)
+        self.__varname = str(varname)
+        self.__filename = str(filename)
 
     @property
     def top(self):
@@ -32,3 +32,10 @@ class NamedLayer(Layer):
     def bottom(self):
         return self.__bottom
 
+    @property
+    def filename(self):
+        return self.__filename
+
+    @property
+    def varname(self):
+        return self.__varname

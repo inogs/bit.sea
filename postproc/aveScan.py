@@ -385,7 +385,7 @@ def dumpPointProfiles(var):
     ncOUT_Pprofiles.createDimension("Ncruise"   ,nCruise)
     ncOUT_Pprofiles.createDimension("z"         ,jpk)            
     global VAR
-    VAR = VAR.copy()
+    #VAR = VAR.copy()
     VAR[~tmask]=np.NaN    
     P=PointProfiles(var)
     ncvar    = ncOUT_Pprofiles.createVariable(var  ,'f',('Ncruise','z'))    
@@ -531,13 +531,13 @@ for ip in PROCESSES[rank::nranks]:
     nDim = len(ncIN.variables[var].dimensions)
     if var_dim [ivar] == '3D':
         
-        if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:]
-        if nDim==3 : VAR   = ncIN.variables[var].data
+        if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
+        if nDim==3 : VAR   = ncIN.variables[var].data.copy()
 
     else:
         VAR        = np.zeros((jpk,jpj,jpi),np.float32)
-        if nDim==3 : VAR[0,:,:] = ncIN.variables[var].data[0,:,:]
-        if nDim==2 : VAR[0,:,:] = ncIN.variables[var].data
+        if nDim==3 : VAR[0,:,:] = ncIN.variables[var].data[0,:,:].copy()
+        if nDim==2 : VAR[0,:,:] = ncIN.variables[var].data.copy()
     
     if doStatistics:
         if var_dim [ivar] == '3D':
@@ -574,17 +574,17 @@ for avefile in aveLIST[rank::nranks]:
             ncIN__profiles = NC.netcdf_file(tmp__profiles,"r")
             ncIN_integrals = NC.netcdf_file(tmp_integrals,"r")                
             ncvar    = ncOUT__profiles.createVariable(var  ,'f',('sub','coast','z'    ,'stat'))    
-            ncvar[:] = ncIN__profiles.variables[var].data
+            ncvar[:] = ncIN__profiles.variables[var].data.copy()
             if var_dim[ivar] == '3D':  
                 ncvar    = ncOUT_integrals.createVariable(var, 'f', ('sub','coast','depth','stat'))
-                ncvar[:] = ncIN_integrals.variables[var].data
+                ncvar[:] = ncIN_integrals.variables[var].data.copy()
             ncIN__profiles.close()
             ncIN_integrals.close()
         
         if doPointProfiles:
             ncIN_Pprofiles = NC.netcdf_file(tmp_Pprofiles,"r")
             ncvar    = ncOUT_Pprofiles.createVariable(var  ,'f',('Ncruise','z'))
-            ncvar[:] = ncIN_Pprofiles.variables[var].data       
+            ncvar[:] = ncIN_Pprofiles.variables[var].data.copy()       
             ncIN_Pprofiles.close()
                 
 
@@ -606,7 +606,7 @@ for avefile in aveLIST[rank::nranks]:
     datestr = os.path.basename(avefile)[4:21]
     ncIN = NC.netcdf_file(avefile,"r")
     
-    VAR   = ncIN.variables[var].data[0,:,:,:]
+    VAR   = ncIN.variables[var].data[0,:,:,:].copy()
     
     ave_integrals = OUTPUT_DIR_PPN + "ave." + datestr + ".col_integrals.nc"
     ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")

@@ -22,13 +22,13 @@ jpi=M.dimensions['x']
 jpj=M.dimensions['y']
 jpk=M.dimensions['z']
 
-tmask   = (M.variables['tmask'].data[0,:,:,:]).astype(np.bool)
-nav_lev =  M.variables['nav_lev'].data
-Lon     =  M.variables['glamt'].data[0,0,:,:]
-Lat     =  M.variables['gphit'].data[0,0,:,:]
+tmask   = (M.variables['tmask'].data[0,:,:,:]).copy().astype(np.bool)
+nav_lev =  M.variables['nav_lev'].data.copy()
+Lon     =  M.variables['glamt'].data[0,0,:,:].copy()
+Lat     =  M.variables['gphit'].data[0,0,:,:].copy()
 
-area    = (M.variables['e1t'].data[0,0,:,:])*(M.variables['e2t'].data[0,0,:,:])
-e3t     =  M.variables['e3t'].data[0,:,0,0]
+area    = (M.variables['e1t'].data[0,0,:,:].copy())*(M.variables['e2t'].data[0,0,:,:].copy())
+e3t     =  M.variables['e3t'].data[0,:,0,0].copy()
 
 tk_m     = getDepthIndex(nav_lev,200.0)
 MEDmask      = tmask.copy()
@@ -85,7 +85,7 @@ struct.append(('med',np.bool))
 SUB=np.array(np.zeros((jpk,jpj,jpi)),dtype=struct)
 
 for sub in SUBlist:
-    SUB[sub] = sbIN.variables[sub].data
+    SUB[sub] = sbIN.variables[sub].data.copy()
 sbIN.close()
 SUB['med']=MEDmask
 

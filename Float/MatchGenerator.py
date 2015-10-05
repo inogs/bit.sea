@@ -11,8 +11,12 @@ class Float_Matchup_Manager():
     '''
     Main class for Float Matchup generation.
     '''
-    def __init__(self,DATESTART,DATE__END,INPUTDIR):
-        self.profilingDir='BasedirToDefine'
+    def __init__(self,DATESTART,DATE__END,INPUTDIR,Outpudir):
+        '''
+                Outpudir is intended as the outputdir of aveScan, 
+        point profiles will be produced in outputdir/PROFILES.
+        '''
+        self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = INPUTDIR
         if os.path.exists(INPUTDIR):
             self.TL = TimeList(DATESTART, DATE__END, self.AVE_INPUT_DIR,"ave*.nc",'../postproc/IOnames.xml')
@@ -36,20 +40,17 @@ class Float_Matchup_Manager():
         F.writelines(LINES)
         F.close()
 
-    def writefiles_for_profiling(self, filename, outputdir):
+    def writefiles_for_profiling(self, filename):
         '''
         Preparation of launch of aveScan.py, in order to generate profiles.
         
         The file produced - first argument - is a wrapper of aveScan, to call it over times.
         For every launch of aveScan a different punti*.dat files will be used, depending on Biofloats present
         at that time.
-        Outpudir is intended as the outputdir of aveScan, 
-        point profiles will be produced in outputdir/PROFILES.
         
         
         '''
         
-        self.profilingDir = outputdir
         TMPSDIR =           self.profilingDir + "TMP/"
         PUNTI_DIR =         self.profilingDir + "PUNTI/"
         
@@ -58,7 +59,7 @@ class Float_Matchup_Manager():
         
         JOB_LINES.append("export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc \n")
         JOB_LINES.append("export SUBMASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/POSTPROC/submask.nc \n")
-        JOB_LINES.append("cd postproc \n")
+        JOB_LINES.append("cd ../postproc \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
             INTERESTED_FLOATS = [self.FLOAT_LIST[k] for k in t[1]] #t[1]
@@ -93,6 +94,7 @@ class Float_Matchup_Manager():
         TMPSDIR =           self.profilingDir + "TMP/"
         os.system("mkdir -p " + MODEL_PROFILES_DIR)
         os.system("mkdir -p " + TMPSDIR)
+        os.chmod(profilername, 0755)
         os.system(profilername)
 
     def readModelProfile(self, filename,var, wmo):
@@ -139,7 +141,7 @@ class Float_Matchup_Manager():
                 if f.filename in [self.FLOAT_LIST[ii].filename for ii in INTERESTED_Indices]:
                     break
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
-            ModelProfile = self.getModelProfile(Modelfile, model_varname, f.wmo)
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, f.wmo)
             seaPoints = ~np.isnan(ModelProfile)
                     
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask         

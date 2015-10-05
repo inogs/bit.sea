@@ -1,9 +1,9 @@
 from shared_data import *
 import MatchGenerator
 
-M = MatchGenerator.Float_Matchup_Manager(DATESTART,DATE__END,INPUTDIR)
-M.writefiles_for_profiling('jobProfiler.sh',BASEDIR)
-M.dumpModelProfiles('jobProfiler.sh')
+M = MatchGenerator.Float_Matchup_Manager(DATESTART,DATE__END,INPUTDIR,BASEDIR)
+M.writefiles_for_profiling('./jobProfiler.sh')
+M.dumpModelProfiles('./jobProfiler.sh')
 
 
 

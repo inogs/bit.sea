@@ -5,12 +5,12 @@ from postproc.Timelist import *
 from matchup.matchup import *
 from basins.region import *
 import Float.Float_Manager as Float_Manager
-
+from shared_data import *
 
 import MatchGenerator 
 import basins.OGS as OGS
   
-M = MatchGenerator.Float_Matchup_Manager()
+M = MatchGenerator.Float_Matchup_Manager(DATESTART,DATE__END,INPUTDIR,BASEDIR)
 
 maskfile    = os.getenv("MASKFILE"); 
 ncIN=NC.netcdf_file(maskfile,"r")

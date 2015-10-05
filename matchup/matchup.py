@@ -1,12 +1,20 @@
 import numpy as np
 import pylab as pl
 
-class Layer():
+class Layer(object):
     def __init__(self,top, bottom):
-        self.top = top
-        self.bottom = bottom
+        self.__top = top
+        self.__bottom = bottom
     def __str__(self):
-        return "Layer %d-%d m" %(self.top, self.bottom)
+        return "Layer %d-%d m" %(self.__top, self.__bottom)
+
+    @property
+    def top(self):
+        return self.__top
+
+    @property
+    def bottom(self):
+        return self.__bottom
 
 class matchup():
     def __init__(self,Model,Ref):

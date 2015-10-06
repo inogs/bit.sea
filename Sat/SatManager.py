@@ -17,7 +17,8 @@ def readfromfile(filename):
     varObj = ncIN.variables['CHL']
     ndims = len(varObj.shape)
     if ndims==2: CHL_IN=varObj.data.copy()
-    if ndims==3: CHL_IN=varObj.data[0,:,:].copy()    
+    if ndims==3: CHL_IN=varObj.data[0,:,:].copy()
+    del varObj
     ncIN.close()
     return CHL_IN
 

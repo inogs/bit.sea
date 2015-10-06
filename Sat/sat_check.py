@@ -1,4 +1,3 @@
-import postproc
 from postproc.Timelist import *
 import numpy as np
 
@@ -7,6 +6,8 @@ import SatManager as Sat
 ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/"
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
 CLIM_FILE="/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/DA/CHECKSAT/SatClimatology.nc"
+
+reset = False
 
 Timestart="19500101"
 Time__end="20500101"
@@ -17,16 +18,19 @@ TLCheck = TimeList(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
 ORIG_NAMES=[os.path.basename(i) for i in TL_orig.filelist]
 CHECKNAMES=[os.path.basename(i) for i in TLCheck.filelist]
 
+if reset : CHECKNAMES = []
+
+
 toCheckList=[]
 for iTimeorig, filename in enumerate(ORIG_NAMES):
-    if filename in CHECKNAMES:
-        mystring= filename + " already existing."
-    else:
+    if filename not in CHECKNAMES:
         toCheckList.append((filename,iTimeorig))
 
         
 if len(toCheckList)>0:
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
+else:
+    print "All checks done"
 
 for filename, iTimeorig in toCheckList:
     julian = int( TL_orig.Timelist[iTimeorig].strftime("%j") )

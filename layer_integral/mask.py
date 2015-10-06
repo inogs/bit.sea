@@ -11,6 +11,7 @@ class Mask(object):
             if maskvarname in dset.variables:
                 #TODO: should it be converted to a NumPy array?
                 self.__mask = dset.variables[maskvarname]
+                self.__shape = self.__mask.shape
             else:
                 raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
             if zlevelsvar in dset.variables:
@@ -28,3 +29,7 @@ class Mask(object):
     @property
     def zlevels(self):
         return self.__zlevels
+
+    @property
+    def shape(self):
+        return self.__shape

@@ -13,7 +13,7 @@ class NamedLayer(Layer):
     """
     Holds layer information taken from a NetCDF file
     """
-    def __init__(self, top, bottom, varname, filename, mask=None):
+    def __init__(self, top, bottom, varname, filename, mask):
         t = float(top)
         b = float(bottom)
         if t < b:
@@ -37,13 +37,15 @@ class NamedLayer(Layer):
         except:
             raise
 
-        if mask != None:
-            if not isinstance(mask, (Mask,)):
-                raise ValueError("mask must be a Mask object")
-            #else:
-                #TODO: test dimensions
-            #Preserve mask reference
-            self._mask = mask
+        if not isinstance(mask, (Mask,)):
+            raise ValueError("mask must be a Mask object")
+        else:
+            #test dimensions
+            if self.__shape != mask.shape:
+                if self.__shape[1:] != mask.shape:
+                    raise ValueError("mask must have the same shape of the data")
+        #Preserve mask reference
+        self._mask = mask
 
     @property
     def top(self):

@@ -1,3 +1,4 @@
+import numpy as np
 import netCDF4
 
 class Mask(object):
@@ -9,14 +10,23 @@ class Mask(object):
         try:
             dset = netCDF4.Dataset(filename)
             if maskvarname in dset.variables:
-                #TODO: should it be converted to a NumPy array?
-                self.__mask = dset.variables[maskvarname]
+                m = dset.variables[maskvarname]
+                if len(m.shape) == 4:
+                    self.__mask = np.array(m[0,:,:,:], dtype=np.bool)
+                elif len(m.shape) == 3:
+                    self.__mask = np.array(m[:,:,:], dtype=np.bool)
+                else:
+                    raise ValueError("Wrong shape: %s" % (m.shape,))
                 self.__shape = self.__mask.shape
             else:
                 raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
             if zlevelsvar in dset.variables:
-                #TODO: should it be converted to a NumPy array?
-                self.__zlevels = dset.variables[zlevelsvar]
+                z = dset.variables[zlevelsvar]
+                if len(z.shape) != 1:
+                    raise ValueError("zlevelsvar must have only one dimension")
+                if not z.shape[0] in self.__shape:
+                    raise ValueError("cannot match %s lenght with any of %s dimensions" % (zlevelsvar, maskvarname))
+                self.__zlevels = np.array(dset.variables[zlevelsvar])
             else:
                 raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
         except:

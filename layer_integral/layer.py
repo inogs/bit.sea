@@ -1,0 +1,21 @@
+class Layer(object):
+    def __init__(self,top, bottom):
+        t = float(top)
+        b = float(bottom)
+        if t < b:
+            self.__top = t
+            self.__bottom = b
+        else:
+            raise ValueError("top must be above of bottom")
+
+    def __str__(self):
+        return "Layer %d-%d m" %(self.__top, self.__bottom)
+
+    @property
+    def top(self):
+        return self.__top
+
+    @property
+    def bottom(self):
+        return self.__bottom
+

@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Stefano Piani <stefano.piani@exact-lab.it>
 from time import strftime
 
 def now_as_string():

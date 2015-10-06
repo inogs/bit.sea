@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from nose.tools import *
 from ..pgmean import PGaussianMean as gm
 from ..pgmean import PLGaussianMean as pgm

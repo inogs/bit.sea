@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Stefano Piani <stefano.piani@exact-lab.it>
 from __future__ import print_function
 
 from ftplib import FTP

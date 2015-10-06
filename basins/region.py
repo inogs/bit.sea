@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Stefano Piani <stefano.piani@exact-lab.it>
 import numpy as np
 from matplotlib.path import Path
 

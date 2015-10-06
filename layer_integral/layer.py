@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 class Layer(object):
     def __init__(self,top, bottom):
         t = float(top)

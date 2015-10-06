@@ -11,9 +11,13 @@ class Mask(object):
             if maskvarname in dset.variables:
                 #TODO: should it be converted to a NumPy array?
                 self.__mask = dset.variables[maskvarname]
+            else:
+                raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
             if zlevelsvar in dset.variables:
                 #TODO: should it be converted to a NumPy array?
                 self.__zlevels = dset.variables[zlevelsvar]
+            else:
+                raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
         except:
             raise
 

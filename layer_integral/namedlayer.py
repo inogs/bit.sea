@@ -47,6 +47,9 @@ class NamedLayer(Layer):
         #Preserve mask reference
         self._mask = mask
 
+    def __str__(self):
+        return "Layer %d-%d m (%s)" % (self.__top, self.__bottom, self.__varname)
+
     @property
     def top(self):
         return self.__top

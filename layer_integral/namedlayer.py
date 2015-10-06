@@ -3,11 +3,8 @@ import os
 import numpy as np
 import netCDF4
 
-#Kludge added for testing purpose TO BE REMOVED
-sys.path.append("/home/skyglobe/git-repos/bit.sea/matchup")
-
 #Layer Object
-from matchup.matchup import Layer
+from layer import Layer
 
 #Mask object
 from mask import Mask

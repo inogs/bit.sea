@@ -69,3 +69,13 @@ class NamedLayer(Layer):
     @property
     def shape(self):
         return self.__shape
+
+    def get_raw_profile_data(self, x, y, timestep=0, fill_value=np.nan):
+        indices = [np.logical_and(self._mask.zlevels >= self.__top, self._mask.zlevels < self.__bottom)]
+        dset = netCDF4.Dataset(self.__filename)
+        v = dset.variables[self.__varname][timestep,:,y,x]
+        fill_val = dset.variables[self.__varname].missing_value
+        dset.close()
+        v = np.array(v[indices])
+        v[v == fill_val] = fill_value
+        return np.array(self._mask.zlevels[indices]), v

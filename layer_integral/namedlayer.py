@@ -29,6 +29,8 @@ class NamedLayer(Layer):
             dset = netCDF4.Dataset(fn)
             if not v in dset.variables:
                 raise ValueError("variable '%s' not found" % (var, ))
+            else:
+                self.__shape = dset.variables[v].shape
             dset.close()
             self.__filename = fn
             self.__varname = v
@@ -58,3 +60,7 @@ class NamedLayer(Layer):
     @property
     def varname(self):
         return self.__varname
+
+    @property
+    def shape(self):
+        return self.__shape

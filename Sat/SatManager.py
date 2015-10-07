@@ -9,12 +9,12 @@ V4 = masks.V4mesh
 fillValue = -999.0
 
     
-def readfromfile(filename):
+def readfromfile(filename,var='CHL'):
     '''
     returns CHL
     ''' 
     ncIN = NC.netcdf_file(filename,'r')
-    varObj = ncIN.variables['CHL']
+    varObj = ncIN.variables[var]
     ndims = len(varObj.shape)
     if ndims==2: CHL_IN=varObj.data.copy()
     if ndims==3: CHL_IN=varObj.data[0,:,:].copy()

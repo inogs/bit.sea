@@ -92,18 +92,27 @@ class TimeList():
         self.Timelist.sort()        
         self.inputFrequency= self.__searchFrequency__()
         
-        for iFrame, t in enumerate(External_timelist):
-            s1,e1 = computeTimeWindow(self.inputFrequency, t)
-            if isInWindow(s1, e1, self.datestart, self.dateend):
-                self.filelist.append(External_filelist[iFrame])
-                self.Timelist.append(External_timelist[iFrame])
-        self.filelist.sort()
-        self.Timelist.sort()
+        if self.inputFrequency is not None:
+            for iFrame, t in enumerate(External_timelist):
+                s1,e1 = computeTimeWindow(self.inputFrequency, t)
+                if isInWindow(s1, e1, self.datestart, self.dateend):
+                    self.filelist.append(External_filelist[iFrame])
+                    self.Timelist.append(External_timelist[iFrame])
+            self.filelist.sort()
+            self.Timelist.sort()
         self.nTimes   =len(self.filelist)
         
+        if self.inputFrequency == 'daily':
+            for iFrame, t in enumerate(self.Timelist):
+                if t.hour==0:
+                    newt = datetime.datetime(t.year,t.month,t.day,12,0,0)
+                    self.Timelist[iFrame] = newt
+
+
     def __searchFrequency__(self):
         if len(self.Timelist)<2:
-            print "Frequency cannot be calculated in " + self.inputdir
+            timestr = self.datestart.strftime(" between %Y%m%d and ") +  self.dateend.strftime("%Y%m%d")
+            print "Frequency cannot be calculated in " + self.inputdir + timestr
             return None
         mydiff = self.Timelist[1]-self.Timelist[0]
         if mydiff.days == 1:
@@ -234,15 +243,23 @@ class TimeList():
         
         Returns an ordered list of requestors, Weekly_req objects.
         '''
-        L=[0,1,2,3,-3,-2,-1]
-        index= abs(weekday - self.datestart.isoweekday())
-        starting_centered_day = self.Timelist[0] + datetime.timedelta(days=L[index])
+
+        PossibleShifts=[3,2,1,-0,-1,-2,-3]
+        for counter,day in enumerate(range(weekday-3,weekday+4)):
+            interested_weekday = (day)%7
+            if interested_weekday ==0 : interested_weekday = 7
+            if interested_weekday == self.datestart.isoweekday():
+                index = counter
+
+        starting_centered_day = self.datestart + datetime.timedelta(days=PossibleShifts[index])
 
         TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=7")
         REQ_LIST=[]
         for t in TL:
             m = requestors.Weekly_req(t.year,t.month,t.day)
-            REQ_LIST.append(m)
+            indexes,_ = self.select(m)
+            if len(indexes)>0:
+                REQ_LIST.append(m)
         return REQ_LIST             
             
     def getMonthlist(self, extrap=False):

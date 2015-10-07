@@ -117,9 +117,9 @@ class TimeList():
         mydiff = self.Timelist[1]-self.Timelist[0]
         if mydiff.days == 1:
             return "daily"
-        if (mydiff.days) > 6 & (mydiff.days < 8 ) : 
+        if (mydiff.days > 6 ) & (mydiff.days < 8 ) :
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
-        if (mydiff.days > 28) & (mydiff.days < 32) :
+        if (mydiff.days > 26) & (mydiff.days < 32) :
             return "monthly"
         
     

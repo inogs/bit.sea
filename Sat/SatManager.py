@@ -41,8 +41,15 @@ def filterOnBathymetry(chl,Bathy,bathy_threshold=0):
     return CHL
 
 def convertinV4format(CHL):
+    '''
+    Returns V4 formatted matrix having nans
+    '''
+    jpj,jpi = CHL.shape
+    assert jpj == NativeMesh.jpj
+    assert jpi == NativeMesh.jpi
     chl = np.ones((V4.jpj, V4.jpi) ,np.float32) * fillValue
     chl[1:,:] = CHL[0:-1:,11:]
+    chl[chl==fillValue] = np.nan
     return chl
 
 def interpOnV1(CHL_16,bathy_threshold = 0):
@@ -131,7 +138,9 @@ def dumpV4file(filename,CHL):
     ncOUT.createDimension('lat',V4.jpj)
     
     ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
-    ncvar[:] = convertinV4format(CHL)
+    CHLv4 = convertinV4format(CHL)
+    CHLv4[np.isnan(CHLv4)] = fillValue
+    ncvar[:] = CHLv4
     setattr(ncvar, 'missing_value', fillValue)
     setattr(ncvar, '_FillValue', fillValue)
     ncvar = ncOUT.createVariable('depth','f',('depth',))

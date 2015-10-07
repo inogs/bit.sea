@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Stefano Piani <stefano.piani@exact-lab.it>
 from subprocess import Popen, PIPE
 from time import time
 from sys import version_info

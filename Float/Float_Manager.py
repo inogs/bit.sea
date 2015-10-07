@@ -77,7 +77,7 @@ class Bio_Float():
 
         return M_RES
 
-    def _readrow(self,var):
+    def read_raw(self,var):
         '''
         Reads data from file
         '''
@@ -114,7 +114,7 @@ class Bio_Float():
         '''
         Reads profile data from file and optionally applies a filter to the data
         '''
-        pres, prof = self._readrow(var)
+        pres, prof = self.read_raw(var)
         if mean == None:
             if Bio_Float.default_mean != None:
                 return pres, Bio_Float.default_mean.compute(prof, pres)

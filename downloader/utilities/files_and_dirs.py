@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Stefano Piani <stefano.piani@exact-lab.it>
 from os import makedirs
 from os.path import exists, isdir
 

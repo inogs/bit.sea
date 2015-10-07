@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
 from scipy.signal import gaussian
 from mean import GaussianMean

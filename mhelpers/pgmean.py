@@ -6,11 +6,42 @@ from mean import GaussianMean
 from math import exp
 
 class PGaussianMean(GaussianMean):
-    '''
-    Gaussian weighted against pressure moving average helper object
-    '''
+    """Gaussian weighted against pressure moving average helper object
+
+    This class extends GaussianMean and modifies the way the weights are
+    computed taking into account the pressure values. First the weights are
+    computed like the ones used in GaussianMean, then a distance vector is
+    computed for the samples in the current interval. The distances are then
+    normalized according to the following formula::
+
+        if d[i] != 0:
+            d[i] = d_min / d[i]
+        else:
+            d[i] = 1
+
+    Where d_min is the minimum non-zero distance. E.G.::
+
+        [3, 2, 1, 0, 10, 20, 30]
+
+    becomes::
+
+        [1/3, 1/2, 1, 1, 1/10, 1/20, 1/30]
+
+    This new vector is then multiplied element-by-element with the weight
+    vector and these new weights are then used to compute the moving average::
+
+            output[i] = sum((values[(i - interval // 2):(i + (interval // 2 ) + 1)] * weights)) / sum(weights)
+
+    """
 
     def compute(self, values, pressure_values):
+        """Performs the computation.
+
+        Args:
+            - *values*: the array of values to smooth.
+            - *pressure_values*: the array of pressure values to be used on the
+              weights. MUST have the same length of values.
+        """
         if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
             return np.array(values)
         l = len(values)
@@ -52,11 +83,40 @@ class PGaussianMean(GaussianMean):
         return output
 
 class PLGaussianMean(GaussianMean):
+    """Logarithmic-like smoothing helper object.
+
+    This class smooths the values according to the following algorithm:
+
+    1. Build a distance vector as long as the current interval based on
+       pressure_values and centered on the current sample.
+    2. Normalize the distances::
+
+        d[i] = d[i] / d_max
+
+       where d_max is the maximum distance.
+    3. Compute the weights based on the normalized distances::
+
+        weights[i] = exp(-0.5*(d[i] / sigma)**2)
+
+    4. Compute the output::
+
+            output[i] = sum((values[(i - interval // 2):(i + (interval // 2 ) + 1)] * weights)) / sum(weights)
+
+    Basically instead of weighting the weights it takes different points on the
+    Gauss bell curve according to the distance from the current sample.
+    """
 
     def _gaussian(self, value):
         return exp(-0.5*(value / self._sigma)**2)
 
     def compute(self, values, pressure_values):
+        """Performs the computation.
+
+        Args:
+            - *values*: the array of values to smooth.
+            - *pressure_values*: the array of pressure values to be used on the
+              weights. MUST have the same length of values.
+        """
         if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
             return np.array(values)
         l = len(values)

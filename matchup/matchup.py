@@ -129,7 +129,7 @@ class matchup():
 
         array_denom = np.abs(self.Model - self.Ref.mean()) + np.abs(self.Model + self.Ref.mean())
         denom = (array_denom**2).sum()
-        return 1.0 - self.n*self.MSE()/denom
+        return 1.0 - self.number()*self.MSE()/denom
 
     def PI(self):
         '''Persistence Index
@@ -139,9 +139,9 @@ class matchup():
         Similar to 6.1 except the performance of the model is being compared to the previous value.
         '''
         s = 0
-        for i in range(2,self.n):
+        for i in range(2,self.number()):
             s+=(self.Ref[i] - self.Ref[i-1])**2
-        norm = s/self.n
+        norm = s/self.number()
         return 1.0 - self.MSE()/norm
 
 

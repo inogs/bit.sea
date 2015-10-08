@@ -7,7 +7,7 @@ class Mask(object):
     """
     Defines a mask from a NetCDF file
     """
-    def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon"):
+    def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t"):
         filename = str(filename)
         try:
             dset = netCDF4.Dataset(filename)
@@ -31,6 +31,10 @@ class Mask(object):
                 self.__zlevels = np.array(dset.variables[zlevelsvar])
             else:
                 raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
+            if dzvarname in dset.variables:
+                self.__dz = np.array(dset.variables[dzvarname][0,:,0,0])
+            else:
+                raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
                 self.__ylevels = np.array(dset.variables[ylevelsmatvar][:,0])
             else:
@@ -49,6 +53,10 @@ class Mask(object):
     @property
     def zlevels(self):
         return self.__zlevels
+
+    @property
+    def dz(self):
+        return self.__dz
 
     @property
     def shape(self):

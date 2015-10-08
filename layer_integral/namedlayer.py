@@ -82,39 +82,3 @@ class NamedLayer(Layer):
         v[v == fill_val] = fill_value
         return np.array(self._mask.zlevels[indices]), v
 
-    def get_integral(self, timestep=0, fill_value=np.nan):
-        """Returns a 2D NumPy array with the integral over depth.
-        """
-        dset = netCDF4.Dataset(self.__filename)
-        #Find Z indices
-        top_index = np.where(self._mask.zlevels >= self.__top)[0][0]
-        bottom_index = np.where(self._mask.zlevels < self.__bottom)[0][-1]
-        if top_index == bottom_index:
-            #Just one layer so we return the sliced data
-            output = np.array(dset.variables[self.__varname][timestep,top_index,:,:])
-            fv = dset.variables[self.__varname].missing_value
-            output[output == fv] = fill_value
-            dset.close()
-            return output
-        #Workaround for Python ranges
-        bottom_index += 1
-        #Build local mask matrix
-        lmask = np.array(self._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-        #Build dz matrix
-        dzm = np.ones_like(lmask, dtype=np.double)
-        j = 0
-        for i in range(top_index, bottom_index):
-            dzm[j,:,:] = self._mask.dz[i]
-            j += 1
-        #Get the slice of the values
-        v = np.array(dset.variables[self.__varname][timestep,top_index:bottom_index,:,:])
-        #Build integral matrix (2D)
-        integral = (v * dzm * lmask).sum(axis=0)
-        #Build height matrix (2D)
-        height = (dzm * lmask).sum(axis=0)
-        indexmask = [height > 0]
-        #Build output matrix (2D)
-        output = np.full_like(integral, fill_value, dtype=np.double)
-        output[indexmask] = integral[indexmask] / height[indexmask]
-        dset.close()
-        return output

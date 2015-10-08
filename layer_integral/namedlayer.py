@@ -4,12 +4,16 @@ import sys
 import os
 import numpy as np
 import netCDF4
+import pylab as pl
 
 #Layer Object
 from layer import Layer
 
 #Mask object
 from mask import Mask
+
+#Data extractor
+from dataextractor import DataExtractor
 
 class NamedLayer(Layer):
     """
@@ -82,3 +86,10 @@ class NamedLayer(Layer):
         v[v == fill_val] = fill_value
         return np.array(self._mask.zlevels[indices]), v
 
+    def plot(self, timestep=0, fill_value=np.nan):
+        de = DataExtractor(self.varname, self.filename, self._mask, fill_value)
+        data =de.get_layer_average(self, timestep)
+        plot_data = np.flipud(o)
+        pl.imshow(plot_data)
+        pl.colorbar()
+        pl.show()

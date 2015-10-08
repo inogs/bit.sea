@@ -88,8 +88,8 @@ class NamedLayer(Layer):
 
     def plot(self, timestep=0, fill_value=np.nan):
         de = DataExtractor(self.varname, self.filename, self._mask, fill_value)
-        data =de.get_layer_average(self, timestep)
-        plot_data = np.flipud(o)
+        data = de.get_layer_average(self, timestep)
+        plot_data = np.flipud(data)
         pl.imshow(plot_data)
         pl.colorbar()
         pl.show()

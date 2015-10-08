@@ -30,7 +30,7 @@ class NamedLayer(Layer):
             #Try open the NetCDF file and search for var
             dset = netCDF4.Dataset(fn)
             if not v in dset.variables:
-                raise ValueError("variable '%s' not found" % (var, ))
+                raise ValueError("variable '%s' not found" % (varname, ))
             else:
                 self.__shape = dset.variables[v].shape
             dset.close()
@@ -85,6 +85,7 @@ class NamedLayer(Layer):
     def get_integral(self, timestep=0, fill_value=np.nan):
         """Returns a 2D NumPy array with the integral over depth.
         """
+        dset = netCDF4.Dataset(self.__filename)
         #Find Z indices
         top_index = np.where(self._mask.zlevels >= self.__top)[0][0]
         bottom_index = np.where(self._mask.zlevels < self.__bottom)[0][-1]
@@ -93,6 +94,7 @@ class NamedLayer(Layer):
             output = np.array(dset.variables[self.__varname][timestep,top_index,:,:])
             fv = dset.variables[self.__varname].missing_value
             output[output == fv] = fill_value
+            dset.close()
             return output
         #Workaround for Python ranges
         bottom_index += 1
@@ -114,4 +116,5 @@ class NamedLayer(Layer):
         #Build output matrix (2D)
         output = np.full_like(integral, fill_value, dtype=np.double)
         output[indexmask] = integral[indexmask] / height[indexmask]
+        dset.close()
         return output

@@ -49,9 +49,9 @@ class Mean(object):
         """
         assert values != None
         if pressure_required:
-            assert pressure_values != None and len(values) == len(pressure_values)
+            assert (pressure_values != None) and (len(values) == len(pressure_values))
         else:
-            assert pressure_values == None or len(values) == len(pressure_values)
+            assert (pressure_values == None) or (len(values) == len(pressure_values))
         l = len(values)
         if l==0:
             return False

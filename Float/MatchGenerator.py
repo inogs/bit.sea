@@ -6,6 +6,9 @@ import numpy as np
 import matchup
 import os
 
+from mhelpers.pgmean import PLGaussianMean
+meanObj = PLGaussianMean(5,1.0)
+
 class Float_Matchup_Manager():
     
     '''
@@ -138,7 +141,7 @@ class Float_Matchup_Manager():
         
         for f in FloatList:
             for Model_time,INTERESTED_Indices in self.Coupled_List:
-                if f.filename in [self.FLOAT_LIST[ii].filename for ii in INTERESTED_Indices]:
+                if f.filename in [self.FLOAT_LIST[k].filename for k in INTERESTED_Indices]:
                     break
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
             ModelProfile = self.readModelProfile(Modelfile, model_varname, f.wmo)
@@ -148,7 +151,7 @@ class Float_Matchup_Manager():
                 print "No model data for (lon,lat) = (%g, %g) " %(f.lon, f.lat)
                 continue
             
-            FloatPres, FloatProfile = f.read(ref_varname)
+            FloatPres, FloatProfile = f.read(ref_varname,meanObj)
             
             MODEL_ON_SPACE_OBS=np.interp(FloatPres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                     

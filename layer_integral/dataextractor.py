@@ -13,8 +13,20 @@ from mask import Mask
 
 class DataExtractor(object):
     """Extracts data from a NetCDF model file.
+
+    This class is meant to be used to read data from a model file and provide
+    some facilities to access to the post-processed data
     """
     def __init__(self, varname, filename, mask, fill_value=np.nan):
+        """DataExtractor constructor.
+
+        Args:
+            - *varname*: the name of the variable of interest.
+            - *filename*: the name of the NetCDF file containing the data.
+            - *mask*: a mask object.
+            _ *fill_value* (optional): the value that will be used when there's
+              no data (default: np.nan)
+        """
         fn = str(filename)
         v = str(varname)
         self.__fill_value = fill_value
@@ -46,6 +58,12 @@ class DataExtractor(object):
 
     def get_layer_average(self, layer, timestep=0):
         """Returns a 2D NumPy array with the average weighted over depth.
+
+        Args:
+            - *layer*: a Layer object that contains the vertical boundaries for
+              the computation.
+            - *timestep* (optional): the index of the first dimension (time) in
+              the model data. Default: 0.
         """
         if not isinstance(layer, (Layer,)):
             raise ValueError("layer must be a Layer object")

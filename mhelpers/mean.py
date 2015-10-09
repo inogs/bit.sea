@@ -55,7 +55,7 @@ class Mean(object):
         l = len(values)
         if l==0:
             return False
-        if not isinstance(values[0], (int, long, float, complex)):
+        if not isinstance(values[0], (int, long, float, complex, np.float32)):
             raise TypeError()
         if l == 1 or self._i == 0:
             return False

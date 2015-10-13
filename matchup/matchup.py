@@ -209,9 +209,9 @@ class FloatMatchup(matchup):
             pres  = self.Depth[StartInd:End_Ind]
 
             pl.plot(model,pres,'b', ref,pres,'r')
-            pl.gca().invert_yaxis()
-            pl.show(block=False)
             StartInd = End_Ind
+        pl.gca().invert_yaxis()
+        pl.show(block=False)
 
 
 class SingleFloatMatchup():

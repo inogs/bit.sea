@@ -3,7 +3,15 @@
 
 <Layers>
 
+<!-- try 1 -->
 <plot depth1="50" depth2="100" var="N1p" clim="[0,0.5]" ></plot>
+
+<!-- try 2, more refined -->
+<plot var="N1p" clim="[0,0.5]" >
+<depth top= "50" bottom="100"></depth>
+<depth top="100" bottom="200"></depth>
+<depth top="200" bottom="500"></depth>
+</plot>
 
 </Layers>
 

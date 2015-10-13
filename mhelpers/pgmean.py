@@ -139,6 +139,9 @@ class PLGaussianMean(GaussianMean):
             #Build distances vector
             dvals = np.absolute(pressure_values[rbegin:rend] - pressure_values[i])
             dmax = max(dvals)
+            #Prevent division by zero error
+            if dmax == 0:
+                dmax = 1.0
             k = 0
             #Build pressure-modified weights
             for j in range(wbegin, wend):

@@ -129,6 +129,32 @@ class Bio_Float():
         pl.gca().invert_yaxis()
         pl.show(block=False)
 
+    @staticmethod
+    def fromfile(filename):
+        '''
+        Returns the single Bio_Float instance corresponding to filename
+        '''
+        mydtype= np.dtype([
+                  ('file_name','S200'),
+                  ('lat',np.float32),
+                  ('lon',np.float32),
+                  ('time','S17'),
+                  ('parameters','S200')] )
+
+        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+        INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
+        nFiles=INDEX_FILE.size
+        for iFile in range(nFiles):
+            timestr          = INDEX_FILE['time'][iFile]
+            lon              = INDEX_FILE['lon' ][iFile]
+            lat              = INDEX_FILE['lat' ][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile]
+            available_params = INDEX_FILE['parameters'][iFile]
+            float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+            if filename == thefilename :
+                        return Bio_Float(lon,lat,float_time,filename,available_params)
+        return None
+
 def FloatSelector(var, T, region):
     '''
     Arguments:
@@ -143,11 +169,11 @@ def FloatSelector(var, T, region):
               ('lon',np.float32),
               ('time','S17'),
               ('parameters','S200')] )
-    
+
     FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
     #FloatIndexer="Float_Index.txt"
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
-    nFiles=INDEX_FILE.size    
+    nFiles=INDEX_FILE.size
     SELECTED=[]
     for iFile in range(nFiles):
         timestr          = INDEX_FILE['time'][iFile]
@@ -168,6 +194,7 @@ def FloatSelector(var, T, region):
                     SELECTED.append(Bio_Float(lon,lat,float_time,filename,available_params))
                       
     return SELECTED
+
 
 if __name__ == '__main__':
     from basins.region import Region, Rectangle

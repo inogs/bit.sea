@@ -5,7 +5,6 @@ import os,glob
 #dump_index.py prints the index float file 
 #e.g. lines as 
 #/Users/gbolzon/Documents/OGS/COPERNICUS/bit.sea/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEM
-# To be provided: input dir LOC and file for stdout
 
 
 VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP']
@@ -41,8 +40,9 @@ for DIR in DIRLIST:
     dirpath=LOC + DIR
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
-        line=file_header_content(filename)
-        if line is not None: LINES.append(line+"\n")
+        if filename[-4:]!='D.nc':
+            line=file_header_content(filename)
+            if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')
 F.writelines(LINES)

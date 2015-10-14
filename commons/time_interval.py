@@ -1,3 +1,5 @@
+import datetime
+
 class TimeInterval():
     def __init__(self, starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
         self.start_time = datetime.datetime.strptime(starttime, dateformat)

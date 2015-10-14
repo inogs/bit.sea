@@ -1,11 +1,12 @@
 import scipy.io.netcdf as NC
 import numpy as np
+import datetime
 import os
 
 from instruments.instrument import Instrument, Profile
 from commons.time_interval import TimeInterval
 
-class BioFloatProfile(Profile)
+class BioFloatProfile(Profile):
     def __init__(self, var, time, lon, lat, my_float, mean=None):
         self.var = var
         self.time = time

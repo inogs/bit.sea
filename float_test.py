@@ -1,5 +1,6 @@
 from basins.region import Region, Rectangle
-from Float.float_manager import FloatSelector, TimeInterval
+from commons.time_interval import TimeInterval
+from instruments.bio_float import FloatSelector
 
 if __name__ == '__main__':
     var = 'NITRATE'

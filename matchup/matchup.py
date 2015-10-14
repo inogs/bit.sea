@@ -2,7 +2,7 @@ import numpy as np
 import pylab as pl
 
 class Layer(object):
-    def __init__(self,top, bottom):
+    def __init__(self, top, bottom):
         self.__top = top
         self.__bottom = bottom
     def __str__(self):
@@ -17,15 +17,16 @@ class Layer(object):
         return self.__bottom
 
 class matchup():
-    def __init__(self,Model,Ref):
+    def __init__(self, Model, Ref):
         self.Model = Model
         self.Ref   = Ref
 
     def diff(self):
         return self.Ref - self.Model
-    def number(self):
-        
+
+    def number(self):        
         return len(self.Model)
+
     def variances(self):
         return self.Ref.std()**2, self.Model.std()**2
 

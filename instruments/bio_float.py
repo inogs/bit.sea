@@ -1,17 +1,43 @@
+import scipy.io.netcdf as NC
 import numpy as np
 import datetime
-import scipy.io.netcdf as NC
-import pylab as pl
 import os
 
+from instruments.instrument import Instrument, Profile
+from commons.time_interval import TimeInterval
 
-class Time_Interval():
-    def __init__(self,starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
-        self.starttime=datetime.datetime.strptime(starttime,dateformat)
-        self.end__time=datetime.datetime.strptime(endtime  ,dateformat)
+class BioFloatProfile(Profile):
+    def __init__(self, var, time, lon, lat, my_float, mean=None):
+        self.var = var
+        self.time = time
+        self.lon = lon
+        self.lat = lat
+        self._my_float = my_float
+        self.mean = mean
+
+        self._read_values = False
+        self._pres = None
+        self._data = None
+
+    def _read_profile(self):
+        self._pres, self._data = self._my_float.read(self.var, self.mean)
+        self._read_values = True
+
+    @property
+    def pres(self):
+        if not self._read_values:
+            self._read_profile()
+        return self._pres
+
+    @property
+    def data(self):
+        if not self._read_values:
+            self._read_profile()
+        return self._data
 
 
-class Bio_Float():
+
+class BioFloat(Instrument):
 
     default_mean = None
 
@@ -21,11 +47,11 @@ class Bio_Float():
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        wmo,cycle=os.path.basename(filename).rsplit("_")
+        wmo, cycle = os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
 
-    def __searchVariable_on_parameters(self,var):
+    def __searchVariable_on_parameters(self, var):
         '''
         returns index of profile on which variable has to be read,
         -1 if fails (PARAMETERS variable is blank)
@@ -33,24 +59,24 @@ class Bio_Float():
         '''
 
         ncIN = NC.netcdf_file(self.filename,'r')
-        N_PROF   =ncIN.dimensions['N_PROF']
-        N_PARAM  =ncIN.dimensions['N_PARAM']
-        PARAMETER=ncIN.variables['PARAMETER'].data.copy()
+        N_PROF    = ncIN.dimensions['N_PROF']
+        N_PARAM   = ncIN.dimensions['N_PARAM']
+        PARAMETER = ncIN.variables['PARAMETER'].data.copy()
         ncIN.close()
+
         if PARAMETER.tostring().rstrip() == '':
-            iProf      = -1
-            return iProf
+            return -1
         else:
             for iprof in range(N_PROF):
                 for iparam in range(N_PARAM):
-                    s=PARAMETER[iprof,0,iparam,:].tostring().rstrip()
+                    s = PARAMETER[iprof,0,iparam,:].tostring().rstrip()
                     if s==var:
                         return iprof
 
     def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
-        fillvalue  =varObj._FillValue
-        M     = varObj.data.copy()
+        fillvalue = varObj._FillValue
+        M = varObj.data.copy()
         M[M==fillvalue] = np.NaN;
         return M
 
@@ -76,6 +102,7 @@ class Bio_Float():
             M_RES[iprof,:] = self.__merge_profile_with_adjusted(M[iprof,:], M_ADJ[iprof,:])
 
         return M_RES
+
 
     def read_raw(self,var):
         '''
@@ -116,8 +143,8 @@ class Bio_Float():
         '''
         pres, prof = self.read_raw(var)
         if mean == None:
-            if Bio_Float.default_mean != None:
-                return pres, Bio_Float.default_mean.compute(prof, pres)
+            if BioFloat.default_mean != None:
+                return pres, BioFloat.default_mean.compute(prof, pres)
             else:
                 return pres, prof
         else:
@@ -129,8 +156,11 @@ class Bio_Float():
         pl.gca().invert_yaxis()
         pl.show(block=False)
 
+    def profiles(self, var, mean=None):
+        return [BioFloatProfile(var, self.time, self.lon, self.lat, self, mean)]
+
     @staticmethod
-    def fromfile(filename):
+    def from_file(filename):
         '''
         Returns the single Bio_Float instance corresponding to filename
         '''
@@ -155,12 +185,13 @@ class Bio_Float():
                         return Bio_Float(lon,lat,float_time,filename,available_params)
         return None
 
+
 def FloatSelector(var, T, region):
     '''
     Arguments:
        var is a string indicating variable, 
           if var is None, no selection is done about variable
-       T is as Time_Interval istance
+       T is as TimeInterval istance
        region is a region istance
     '''
     mydtype= np.dtype([
@@ -169,12 +200,12 @@ def FloatSelector(var, T, region):
               ('lon',np.float32),
               ('time','S17'),
               ('parameters','S200')] )
-
+    
     FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
     #FloatIndexer="Float_Index.txt"
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
-    nFiles=INDEX_FILE.size
-    SELECTED=[]
+    nFiles=INDEX_FILE.size    
+    selected = []
     for iFile in range(nFiles):
         timestr          = INDEX_FILE['time'][iFile]
         lon              = INDEX_FILE['lon' ][iFile]
@@ -182,30 +213,14 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+
         if var is None :
             VarCondition = True
         else:
             VarCondition = var in available_params
 
-
         if VarCondition:
-            if (float_time >= T.starttime) & (float_time <T.end__time):
-                if region.is_inside(lon, lat):
-                    SELECTED.append(Bio_Float(lon,lat,float_time,filename,available_params))
+            if T.contains(float_time) and region.is_inside(lon, lat):
+                selected.append(BioFloat(lon,lat,float_time,filename,available_params))
                       
-    return SELECTED
-
-
-if __name__ == '__main__':
-    from basins.region import Region, Rectangle
-    var = 'NITRATE'
-    TI = Time_Interval('20150520','20150830','%Y%m%d')
-    R = Rectangle(-6,36,30,46)
-    
-    FLOAT_LIST=FloatSelector(var, TI, R)
-
-    for TheFloat in FLOAT_LIST[:1]:
-        PN,N = TheFloat.read(var)
-        PS,S = TheFloat.read('PSAL')
-        PT,T = TheFloat.read('TEMP')
-
+    return selected

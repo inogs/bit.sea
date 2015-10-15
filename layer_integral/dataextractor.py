@@ -12,7 +12,7 @@ class DataExtractor(object):
     """Extracts data from a NetCDF model file.
 
     This class is meant to be used to read data from a model file and provide
-    some facilities to access to the post-processed data
+    some facilities to access to the data
     """
     def __init__(self, varname, filename, mask, fill_value=np.nan):
         """DataExtractor constructor.
@@ -53,3 +53,23 @@ class DataExtractor(object):
         #Preserve mask reference
         self._mask = mask
 
+    @property
+    def values(self):
+        """Get the variable values Numpy array as extracted from the file.
+        """
+        return self.__values
+
+    @property
+    def data_fill_value(self):
+        """Get the missing data fill value as defined in the source file.
+        """
+        return self.__dset_fillvalue
+
+    @property
+    def filled_values(self):
+        """Get a copy of the values but fill the missing values with
+        self.fill_value.
+        """
+        output = np.copy(self.__values)
+        output[self.__values == self.__dset_fillvalue] = self.fill_value
+        return output

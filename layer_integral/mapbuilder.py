@@ -1,6 +1,35 @@
 import numpy as np
 from commons.layer import Layer
+from commons.helpers import is_number
 from dataextractor import DataExtractor
+
+class Plot(object):
+    def __init__(self, varname, layerlist, clim):
+        #Input validation
+        self.__varname = str(varname)
+        if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
+            raise ValueError("layerlist must be a list of Layers")
+        self.__layerlist = layerlist
+        if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
+            raise ValueError("clim must be a list of two numbers")
+        self.__clim = clim
+
+    @property
+    def varname(self):
+        return self.__varname
+
+    @property
+    def layerlist(self):
+        return self.__layerlist
+
+    @property
+    def clim(self):
+        return self.__clim
+
+    def append_layer(self, layer):
+        if not isinstance(layer, (Layer,)):
+            raise ValueError("layer must be a Layer object")
+        self.__layerlist.append(layer)
 
 class MapBuilder(object):
 

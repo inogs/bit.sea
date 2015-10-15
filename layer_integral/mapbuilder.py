@@ -2,6 +2,15 @@ import numpy as np
 from commons.layer import Layer
 from commons.helpers import is_number
 from dataextractor import DataExtractor
+from mask import Mask
+from xml.dom import minidom
+from ast import literal_eval
+
+def get_subelements(node, tag):
+    return [e for e in node.childNodes if (e.nodeType == e.ELEMENT_NODE and e.localName == tag)]
+
+def get_node_attr(node, attribute):
+    return node.attributes[attribute].value
 
 class Plot(object):
     def __init__(self, varname, layerlist, clim):
@@ -32,6 +41,25 @@ class Plot(object):
         self.__layerlist.append(layer)
 
 class MapBuilder(object):
+
+    def __init__(self, plotlistfile, netcdffileslist, maskfile):
+        if isinstance(netcdffileslist, (list, tuple)):
+            self.__netcdffileslist = netcdffileslist
+        else:
+            self.__netcdffileslist = [ str(netcdffileslist) ]
+        self.__mask = Mask(maskfile)
+        xmldoc = minidom.parse(plotlistfile)
+        self.__plotlist = list()
+        #For each LayersMaps element
+        for lm in xmldoc.getElementsByTagName("LayersMaps"):
+            #For each plots element
+            for pdef in get_subelements(lm, "plots"):
+                clim = literal_eval(get_node_attr(pdef, "clim"))
+                plot = Plot(get_node_attr(pdef, "var"), [], clim)
+                #For each depth element
+                for d in get_subelements(pdef, "depth"):
+                    plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")))
+                self.__plotlist.append(plot)
 
     @staticmethod
     def get_layer_average(data_extractor, layer, timestep=0):

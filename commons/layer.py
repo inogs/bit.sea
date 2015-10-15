@@ -10,8 +10,11 @@ class Layer(object):
         else:
             raise ValueError("top must be above of bottom")
 
+    def __repr__(self):
+        return "Layer %g-%g m" %(self.__top, self.__bottom)
+
     def __str__(self):
-        return "Layer %d-%d m" %(self.__top, self.__bottom)
+        return "layer%g-%g" %(self.__top, self.__bottom)
 
     @property
     def top(self):

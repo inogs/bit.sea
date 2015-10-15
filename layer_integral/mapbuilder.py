@@ -61,6 +61,16 @@ class MapBuilder(object):
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")))
                 self.__plotlist.append(plot)
 
+    def get_maps_data(self):
+        output = list()
+        for f in self.__netcdffileslist:
+            for p in self.__plotlist:
+                de = DataExtractor(p.varname, f, self.__mask)
+                for l in p.layerlist:
+                    mapdata = MapBuilder.get_layer_average(de, l)
+                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata})
+        return output
+
     @staticmethod
     def get_layer_average(data_extractor, layer, timestep=0):
         """Returns a 2D NumPy array with the average weighted over depth.

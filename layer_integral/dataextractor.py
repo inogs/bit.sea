@@ -5,9 +5,6 @@ import os
 import numpy as np
 import netCDF4
 
-#Layer Object
-from layer import Layer
-
 #Mask object
 from mask import Mask
 
@@ -56,43 +53,3 @@ class DataExtractor(object):
         #Preserve mask reference
         self._mask = mask
 
-    def get_layer_average(self, layer, timestep=0):
-        """Returns a 2D NumPy array with the average weighted over depth.
-
-        Args:
-            - *layer*: a Layer object that contains the vertical boundaries for
-              the computation.
-            - *timestep* (optional): the index of the first dimension (time) in
-              the model data. Default: 0.
-        """
-        if not isinstance(layer, (Layer,)):
-            raise ValueError("layer must be a Layer object")
-        #Find Z indices
-        top_index = np.where(self._mask.zlevels >= layer.top)[0][0]
-        bottom_index = np.where(self._mask.zlevels < layer.bottom)[0][-1]
-        if top_index == bottom_index:
-            #Just one layer so we return the sliced data
-            output = np.array(self.__values[timestep,top_index,:,:])
-            output[output == self.__dset_fillvalue] == self.__fill_value
-            return output
-        #Workaround for Python ranges
-        bottom_index += 1
-        #Build local mask matrix
-        lmask = np.array(self._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-        #Build dz matrix
-        dzm = np.ones_like(lmask, dtype=np.double)
-        j = 0
-        for i in range(top_index, bottom_index):
-            dzm[j,:,:] = self._mask.dz[i]
-            j += 1
-        #Get the slice of the values
-        v = np.array(self.__values[timestep,top_index:bottom_index,:,:])
-        #Build integral matrix (2D)
-        integral = (v * dzm * lmask).sum(axis=0)
-        #Build height matrix (2D)
-        height = (dzm * lmask).sum(axis=0)
-        indexmask = [height > 0]
-        #Build output matrix (2D)
-        output = np.full_like(integral, self.__fill_value, dtype=np.double)
-        output[indexmask] = integral[indexmask] / height[indexmask]
-        return output

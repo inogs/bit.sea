@@ -26,7 +26,7 @@ class DataExtractor(object):
         """
         fn = str(filename)
         v = str(varname)
-        self.__fill_value = fill_value
+        self.fill_value = fill_value
         try:
             #Try open the NetCDF file and search for var
             dset = netCDF4.Dataset(fn)

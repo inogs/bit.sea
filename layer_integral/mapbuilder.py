@@ -25,7 +25,7 @@ class MapBuilder(object):
         bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
         if top_index == bottom_index:
             #Just one layer so we return the sliced data
-            output = data_extractor.get_filled_values()[timestep,top_index,:,:]
+            output = data_extractor.get_filled_values[timestep,top_index,:,:]
             return output
         #Workaround for Python ranges
         bottom_index += 1

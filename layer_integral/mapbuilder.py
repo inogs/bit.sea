@@ -5,12 +5,20 @@ from dataextractor import DataExtractor
 from mask import Mask
 from xml.dom import minidom
 from ast import literal_eval
+import re
+
+#Helpers function to navigate the DOM
 
 def get_subelements(node, tag):
     return [e for e in node.childNodes if (e.nodeType == e.ELEMENT_NODE and e.localName == tag)]
 
 def get_node_attr(node, attribute):
     return node.attributes[attribute].value
+
+#Date extractor
+def get_date_string(s):
+    m = re.search('.*([0-9]{4})([0-9]{2})([0-9]{2}).*',s)
+    return "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
 
 class Plot(object):
     def __init__(self, varname, layerlist, clim):
@@ -64,11 +72,12 @@ class MapBuilder(object):
     def get_maps_data(self):
         output = list()
         for f in self.__netcdffileslist:
+            date = get_date_string(f)
             for p in self.__plotlist:
                 de = DataExtractor(p.varname, f, self.__mask)
                 for l in p.layerlist:
                     mapdata = MapBuilder.get_layer_average(de, l)
-                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata})
+                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':date})
         return output
 
     @staticmethod

@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as pl
 
-def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8):
+def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     """Map plotting procedure (draft)
 
     Args:
@@ -11,6 +11,12 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8):
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
     """
+    if (not mask is None) and coastline:
+        coast_m = np.array(mask.mask[0,:,:], dtype=np.float32)
+        coast_m[coast_m != 0] = np.nan
+        pl.imshow(coast_m, cmap='hot')
+        pl.gca().invert_yaxis()
+        pl.hold(True)
     clim = map_dict['clim']
     title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     pl.imshow(map_dict['data'])

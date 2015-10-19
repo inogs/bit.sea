@@ -1,11 +1,13 @@
+import os
+import re
 import numpy as np
+from xml.dom import minidom
+from ast import literal_eval
+
 from commons.layer import Layer
 from commons.helpers import is_number
 from dataextractor import DataExtractor
 from mask import Mask
-from xml.dom import minidom
-from ast import literal_eval
-import re
 
 #Helpers function to navigate the DOM
 

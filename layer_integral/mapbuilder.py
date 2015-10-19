@@ -8,6 +8,7 @@ from commons.layer import Layer
 from commons.helpers import is_number
 from dataextractor import DataExtractor
 from mask import Mask
+from mapplot import mapplot
 
 #Helpers function to navigate the DOM
 
@@ -54,11 +55,15 @@ class Plot(object):
 
 class MapBuilder(object):
 
-    def __init__(self, plotlistfile, netcdffileslist, maskfile):
+    def __init__(self, plotlistfile, netcdffileslist, maskfile, outputdir):
         if isinstance(netcdffileslist, (list, tuple)):
             self.__netcdffileslist = netcdffileslist
         else:
             self.__netcdffileslist = [ str(netcdffileslist) ]
+        if os.path.isdir(outputdir):
+            self.__outputdir = outputdir
+        else:
+            raise ValueError("outputdir must be a path to a directory")
         self._mask = Mask(maskfile)
         xmldoc = minidom.parse(plotlistfile)
         self.__plotlist = list()
@@ -73,16 +78,16 @@ class MapBuilder(object):
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")))
                 self.__plotlist.append(plot)
 
-    def get_maps_data(self):
-        output = list()
+    def plot_maps_data(self, min_ticks=4, max_ticks=8):
         for f in self.__netcdffileslist:
             longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
                 de = DataExtractor(p.varname, f, self._mask)
                 for l in p.layerlist:
+                    outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)
-                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate})
-        return output
+                    fig = mapplot({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate}, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
+                    fig.savefig(outfilename)
 
     @staticmethod
     def get_layer_average(data_extractor, layer, timestep=0):

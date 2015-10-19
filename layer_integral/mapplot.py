@@ -52,5 +52,4 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
         ax.set_yticklabels(y_labels)
     fig.suptitle(title)
     ax.grid()
-    fig.show()
-
+    return fig

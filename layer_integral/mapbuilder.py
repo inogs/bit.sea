@@ -55,7 +55,7 @@ class MapBuilder(object):
             self.__netcdffileslist = netcdffileslist
         else:
             self.__netcdffileslist = [ str(netcdffileslist) ]
-        self.__mask = Mask(maskfile)
+        self._mask = Mask(maskfile)
         xmldoc = minidom.parse(plotlistfile)
         self.__plotlist = list()
         #For each LayersMaps element

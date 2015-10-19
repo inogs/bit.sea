@@ -74,7 +74,7 @@ class MapBuilder(object):
         for f in self.__netcdffileslist:
             date = get_date_string(f)
             for p in self.__plotlist:
-                de = DataExtractor(p.varname, f, self.__mask)
+                de = DataExtractor(p.varname, f, self._mask)
                 for l in p.layerlist:
                     mapdata = MapBuilder.get_layer_average(de, l)
                     output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':date})

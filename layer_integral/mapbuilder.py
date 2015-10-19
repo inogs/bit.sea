@@ -18,7 +18,9 @@ def get_node_attr(node, attribute):
 #Date extractor
 def get_date_string(s):
     m = re.search('.*([0-9]{4})([0-9]{2})([0-9]{2}).*',s)
-    return "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
+    longdate = "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
+    shortdate = "%s%s%s" % (m.group(1), m.group(2), m.group(3))
+    return longdate , shortdate
 
 class Plot(object):
     def __init__(self, varname, layerlist, clim):
@@ -72,12 +74,12 @@ class MapBuilder(object):
     def get_maps_data(self):
         output = list()
         for f in self.__netcdffileslist:
-            date = get_date_string(f)
+            longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
                 de = DataExtractor(p.varname, f, self._mask)
                 for l in p.layerlist:
                     mapdata = MapBuilder.get_layer_average(de, l)
-                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':date})
+                    output.append({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate})
         return output
 
     @staticmethod

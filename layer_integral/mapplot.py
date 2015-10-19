@@ -1,5 +1,5 @@
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 
 def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     """Map plotting procedure (draft)

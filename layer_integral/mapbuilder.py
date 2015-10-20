@@ -10,7 +10,7 @@ from commons.mask import Mask
 from commons.layer import Layer
 from commons.helpers import is_number
 from commons.xml import *
-from dataextractor import DataExtractor
+from commons.dataextractor import DataExtractor
 from mapplot import mapplot
 
 #Date extractor

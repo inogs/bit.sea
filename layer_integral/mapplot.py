@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
+def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:
@@ -12,7 +12,10 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
     """
+    shape = map_dict['data'].shape
     fig , ax = pl.subplots()
+    fig.set_dpi(dpi)
+    fig.set_size_inches(shape[1] / dpi, shape[0] / dpi)
     if (not mask is None) and coastline:
         coast_m = np.array(mask.mask[0,:,:], dtype=np.float32)
         coast_m[coast_m != 0] = np.nan
@@ -29,7 +32,6 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     fig.colorbar(im, cax=cax)
     ax.invert_yaxis()
     if not mask is None:
-        shape = map_dict['data'].shape
         #Decide who gets the most ticks
         if shape[0] > shape[1]:
             x_ticks = min_ticks

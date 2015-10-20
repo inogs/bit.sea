@@ -83,6 +83,7 @@ class MapBuilder(object):
                     mapdata = MapBuilder.get_layer_average(de, l)
                     fig = mapplot({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate}, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
                     fig.savefig(outfilename)
+                    fig.clear()
 
     @staticmethod
     def get_layer_average(data_extractor, layer, timestep=0):

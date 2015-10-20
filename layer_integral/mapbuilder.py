@@ -6,11 +6,11 @@ import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
 
+from commons.mask import Mask
 from commons.layer import Layer
 from commons.helpers import is_number
 from commons.xml import *
 from dataextractor import DataExtractor
-from mask import Mask
 from mapplot import mapplot
 
 #Date extractor

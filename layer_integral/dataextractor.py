@@ -6,7 +6,7 @@ import numpy as np
 import netCDF4
 
 #Mask object
-from mask import Mask
+from commons.mask import Mask
 
 class DataExtractor(object):
     """Extracts data from a NetCDF model file.

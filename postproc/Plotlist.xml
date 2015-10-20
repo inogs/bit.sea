@@ -19,7 +19,20 @@
 
 </LayersMaps>
 
+<Transects>
+<vars 
+<var name="N3n" clim="[10,15]" ></var>
+<var name="N1p" clim="[0,0.5]" ></var>
+<var name="P_i" clim="[0,1.0]" ></var>
+</vars>
 
+<transect  lonmin="15" lonmax="15" latmin="30" latmax="42" ></transect>
+<transect  lonmin="20" lonmax="20" latmin="30" latmax="42" ></transect>
+
+<transect  lonmin="5" lonmax="15" latmin="40" latmax="40" ></transect>
+<transect  lonmin="5" lonmax="35" latmin="40" latmax="40" ></transect>
+
+</Transects>
 
 
 

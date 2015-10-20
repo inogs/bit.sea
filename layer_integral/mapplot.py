@@ -5,7 +5,7 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     """Map plotting procedure (draft)
 
     Args:
-        - *map_dict*: a dictionary as returned by get_maps_data method of
+        - *map_dict*: a dictionary as built by get_maps_data method of
           MapBuilder.
         - *mask* (optional): a Mask object that will be used to set the ticks.
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
@@ -21,6 +21,7 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     clim = map_dict['clim']
     title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     im = ax.imshow(map_dict['data'])
+    #Set color bar
     im.set_clim(clim[0], clim[1])
     fig.colorbar(im)
     ax.invert_yaxis()
@@ -40,14 +41,14 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
         x_points = np.linspace(0,shape[1]-1,x_ticks).tolist()
         x_labels = list()
         for x in x_points:
-            x_labels.append(mask.convert_x_y_to_lon_lat(int(x), 0)[0])
+            x_labels.append(int(round(mask.convert_x_y_to_lon_lat(int(x), 0)[0])))
         ax.set_xticks(x_points)
         ax.set_xticklabels(x_labels)
         #Set Y axis ticks
         y_points = np.linspace(0,shape[0]-1,y_ticks).tolist()
         y_labels = list()
         for y in y_points:
-            y_labels.append(mask.convert_x_y_to_lon_lat(0, int(y))[1])
+            y_labels.append(int(round(mask.convert_x_y_to_lon_lat(0, int(y))[1])))
         ax.set_yticks(y_points)
         ax.set_yticklabels(y_labels)
     fig.suptitle(title)

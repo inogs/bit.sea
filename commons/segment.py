@@ -27,6 +27,12 @@ class Segment(object):
         self.__lon_max = lon_lat_max[0]
         self.__lat_max = lon_lat_max[1]
 
+    def __str__(self):
+        return "Segment from %g,%g to %g,%g" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+
+    def __repr__(self):
+        return "Segment((%f,%f), (%f,%f))" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+
     @property
     def lon_min(self):
         return self.__lon_min

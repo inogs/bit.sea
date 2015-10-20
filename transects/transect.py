@@ -71,6 +71,10 @@ class Transect(object):
             de = DataExtractor(self.__varname, datafilepath, mask, fill_value)
             self.__datacache['filename'] = datafilepath
             self.__datacache['data'] = de.filled_values
+        #Check for single point case
+        if (x_min == x_max) and (y_min == y_max):
+            raise ValueError("Invalid segment: %s" % (seg,))
+        #Get the output data
         if x_min == x_max:
             data = np.array(self.__datacache['data'][timestep,:,y_min:y_max,x_min], dtype=float)
         elif y_min == y_max:

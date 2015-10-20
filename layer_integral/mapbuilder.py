@@ -6,17 +6,10 @@ from ast import literal_eval
 
 from commons.layer import Layer
 from commons.helpers import is_number
+from commons.xml import *
 from dataextractor import DataExtractor
 from mask import Mask
 from mapplot import mapplot
-
-#Helpers function to navigate the DOM
-
-def get_subelements(node, tag):
-    return [e for e in node.childNodes if (e.nodeType == e.ELEMENT_NODE and e.localName == tag)]
-
-def get_node_attr(node, attribute):
-    return node.attributes[attribute].value
 
 #Date extractor
 def get_date_string(s):

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False, dpi=72.0):
+def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:
@@ -27,9 +27,14 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False, dpi=
     im = ax.imshow(map_dict['data'])
     #Set color bar
     im.set_clim(clim[0], clim[1])
+    cbar_ticks_list = np.linspace(clim[0], clim[1], cbar_ticks).tolist()
+    cbar_ticks_labels = list()
+    for t in cbar_ticks_list:
+        cbar_ticks_labels.append("%g" % (t,))
     div = make_axes_locatable(ax)
     cax = div.append_axes("right", size="3%", pad=0.05)
-    fig.colorbar(im, cax=cax)
+    cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
+    cbar.ax.set_yticklabels(cbar_ticks_labels)
     ax.invert_yaxis()
     if not mask is None:
         #Decide who gets the most ticks

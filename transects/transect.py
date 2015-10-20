@@ -1,3 +1,5 @@
+# Copyright (c) 2015 eXact Lab srl
+# Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from xml.dom import minidom
 from ast import literal_eval
 from commons.segment import Segment

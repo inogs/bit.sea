@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as pl
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     """Map plotting procedure (draft)
@@ -23,7 +24,9 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, coastline=False):
     im = ax.imshow(map_dict['data'])
     #Set color bar
     im.set_clim(clim[0], clim[1])
-    fig.colorbar(im)
+    div = make_axes_locatable(ax)
+    cax = div.append_axes("right", size="3%", pad=0.05)
+    fig.colorbar(im, cax=cax)
     ax.invert_yaxis()
     if not mask is None:
         shape = map_dict['data'].shape

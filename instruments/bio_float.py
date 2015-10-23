@@ -104,7 +104,8 @@ class BioFloat(Instrument):
         return M_RES
 
 
-    def read_raw(self,var):
+    
+    def read_very_raw(self,var):
         '''
         Reads data from file
         '''
@@ -126,22 +127,62 @@ class BioFloat(Instrument):
         Profile =  M[iProf,:]
         Pres    =  PRES[iProf,:]
         ncIN.close()
+        
+        return Pres, Profile
 
+    def read_raw(self,var):
+        '''
+        Reads a clean profile data
+         - without nans
+         - without repetition of the same pressure
+        '''
+        rawPres, rawProfile = self.read_very_raw(var)
+ 
         # Elimination of negative pressures or nans
-        nanPres = np.isnan(Pres)
-        Pres[nanPres] = 1 # just for not complaining
-        badPres    = (Pres<=0) | nanPres
-        badProfile = np.isnan(Profile)
+        nanPres = np.isnan(rawPres)
+        rawPres[nanPres] = 1 # just for not complaining
+        badPres    = (rawPres<=0) | nanPres
+        badProfile = np.isnan(rawProfile)
         bad = badPres | badProfile
-
-        return Pres[~bad], Profile[~bad]
-        #return Pres, Profile
-
+        
+        Pres    =    rawPres[~bad]
+        Profile = rawProfile[~bad]
+        
+        uniquePres,index=np.unique(Pres,return_index=True)
+        uniqueProfile =  Profile[index]
+        
+        
+        return uniquePres, uniqueProfile
+               
+    def rarefy(self,Pres,minimumdelta):
+        '''
+        Used to reduce the amount of data 
+        ( e.g the profiles having data every 0.2m ) to match with model profiles.
+        minimumdelta is expressed in meters.
+        
+        Returns a numpy array of indexes that ensure that
+        Pres[indexes] has steps greater then minimumdelta
+        
+        '''
+        indexes=[0]
+        lastind=0
+        for i,p in enumerate(Pres):
+            if p >= Pres[lastind]+minimumdelta:
+                indexes.append(i)
+                lastind = i
+        
+        return np.array(indexes)        
+        
     def read(self, var, mean=None):
         '''
-        Reads profile data from file and optionally applies a filter to the data
+        Reads profile data from file, applies a rarefaction and optionally a filter to the data
         '''
         pres, prof = self.read_raw(var)
+        
+        ii = self.rarefy(pres, 1.0)
+        pres = pres[ii]
+        prof = prof[ii]
+        
         if mean == None:
             if BioFloat.default_mean != None:
                 return pres, BioFloat.default_mean.compute(prof, pres)

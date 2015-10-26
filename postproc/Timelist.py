@@ -4,27 +4,9 @@ import os,glob
 import datetime
 import numpy as np
 import IOnames
+from commons.time_interval import TimeInterval
 
-def isInWindow( s1, e1, s2, e2):
-    overlap = min(e1,e2) - max(s1,s2)
-    res     = np.double( overlap.days*86400 + overlap.seconds )
-    return res > 0
-def overlapTime(s1,e1,s2,e2):
 
-#------------------s1++++++++++e1--------------------- # Window of temporal average of model output file
-#                              | 
-#--------------------------s2++++++++++e2------------- # Window of aggregation defined in PLOT_LIST
-#                           |  |
-#--------------------------<++++>--------------------- # overlapping time window = theWindow
-
-    theWindow = min(e1,e2) - max(s1,s2)     
-
-# Convert time window in seconds and nornamlize over the aggreation time window
-    res       = np.double( theWindow.days*86400 + theWindow.seconds ) 
-
-# return only non-negative results
-
-    return max( 0, res)
 
 def computeTimeWindow(freqString,currentDate):
 
@@ -32,7 +14,7 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
 
-    return req.starttime, req.endtime
+    return TimeInterval.fromdatetimes(req.starttime, req.endtime)
 
 def getSeason(datetime_obj):
     '''
@@ -64,11 +46,10 @@ class TimeList():
     INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
     TL = TimeList('20141201-00:00:00','20150701-00:00:00', INPUTDIR,"ave*N1p.nc", 'IOnames.xml')
     '''       
-    def __init__(self, datestart,dateend, inputdir,searchstring,IOnamesfile):
+    def __init__(self, timeinterval, inputdir,searchstring,IOnamesfile):
      
         IOname = IOnames.IOnames(IOnamesfile)
-        self.datestart     = datetime.datetime.strptime(datestart,IOname.Input.dateformat)
-        self.dateend       = datetime.datetime.strptime(dateend  ,IOname.Input.dateformat)
+        self.timeinterval  = timeinterval
         self.inputdir      = inputdir
         self.searchstring  = searchstring
         
@@ -81,7 +62,7 @@ class TimeList():
             filename   = os.path.basename(pathfile)
             datestr     = filename[IOname.Input.date_startpos:IOname.Input.date_endpos]
             actualtime = datetime.datetime.strptime(datestr,IOname.Input.dateformat)
-            if actualtime >= self.datestart and actualtime <= self.dateend:        
+            if self.timeinterval.contains(actualtime) :         
                 self.filelist.append(pathfile)
                 self.Timelist.append(actualtime)
             else:
@@ -94,8 +75,8 @@ class TimeList():
         
         if self.inputFrequency is not None:
             for iFrame, t in enumerate(External_timelist):
-                s1,e1 = computeTimeWindow(self.inputFrequency, t)
-                if isInWindow(s1, e1, self.datestart, self.dateend):
+                TimInt = computeTimeWindow(self.inputFrequency, t)
+                if self.timeinterval.isInWindow(TimInt):
                     self.filelist.append(External_filelist[iFrame])
                     self.Timelist.append(External_timelist[iFrame])
             self.filelist.sort()
@@ -111,7 +92,7 @@ class TimeList():
 
     def __searchFrequency__(self):
         if len(self.Timelist)<2:
-            timestr = self.datestart.strftime(" between %Y%m%d and ") +  self.dateend.strftime("%Y%m%d")
+            timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
             print "Frequency cannot be calculated in " + self.inputdir + timestr
             return None
         mydiff = self.Timelist[1]-self.Timelist[0]
@@ -134,10 +115,9 @@ class TimeList():
                         weights.append(1.)
             if self.inputFrequency in ['weekly','monthly']:
                 for t in self.Timelist:
-                    s1,e1 = computeTimeWindow(self.inputFrequency,t);
-                    s2    = requestor.starttime
-                    e2    = requestor.endtime
-                    weight = overlapTime(s1,e1,s2,e2)
+                    t1 = computeTimeWindow(self.inputFrequency,t);
+                    t2 = TimeInterval.fromdatetimes(requestor.starttime, requestor.endtime)
+                    weight = t1.overlapTime(t2)
                     if (weight > 0. ) : 
                         SELECTION.append(t)
                         weights.append(weight)
@@ -164,10 +144,9 @@ class TimeList():
                         weights.append(1.)
             if self.inputFrequency == 'weekly':
                 for it,t in enumerate(self.Timelist):
-                    s1,e1 = computeTimeWindow("weekly",t);
-                    s2    = requestor.starttime
-                    e2    = requestor.endtime
-                    weight = overlapTime(s1,e1,s2,e2); 
+                    t1 = computeTimeWindow("weekly",t);
+                    t2 = TimeInterval.fromdatetimes(requestor.starttime, requestor.endtime)
+                    weight = t1.overlapTime(t2); 
                     if (weight > 0. ) : 
                         SELECTION.append(it)
                         weights.append(weight)
@@ -248,10 +227,10 @@ class TimeList():
         for counter,day in enumerate(range(weekday-3,weekday+4)):
             interested_weekday = (day)%7
             if interested_weekday ==0 : interested_weekday = 7
-            if interested_weekday == self.datestart.isoweekday():
+            if interested_weekday == self.timeinterval.start_time.isoweekday():
                 index = counter
 
-        starting_centered_day = self.datestart + datetime.timedelta(days=PossibleShifts[index])
+        starting_centered_day = self.timeinterval.start_time + datetime.timedelta(days=PossibleShifts[index])
 
         TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=7")
         REQ_LIST=[]
@@ -277,8 +256,8 @@ class TimeList():
             pass
         else:
             MONTH_LIST_RED=[]
-            firstMonth = datetime.datetime(self.datestart.year,self.datestart.month,1)
-            lastMonth  = datetime.datetime(self.dateend.year,  self.dateend.month  ,1)
+            firstMonth = datetime.datetime(self.timeinterval.start_time.year, self.timeinterval.start_time.month,1)
+            lastMonth  = datetime.datetime(self.timeinterval.end_time.year,  self.timeinterval.end_time.month  ,1)
             for month in MONTH_LIST:
                 firstOfMonth = datetime.datetime(month[0],month[1],1)
                 if (firstOfMonth >= firstMonth) & (firstOfMonth <=lastMonth):
@@ -299,7 +278,7 @@ class TimeList():
         '''
         Returns an list of requestors, Yearly_req objects.
         '''        
-        YEARLIST=[self.datestart.year]
+        YEARLIST=[self.timeinterval.start_time.year]
         for t in self.Timelist:
             if t.year not in YEARLIST: YEARLIST.append(t.year)
         REQ_LIST=[]
@@ -325,8 +304,8 @@ class TimeList():
             pass
         else:
             SEASON_LIST_RED=[]
-            firstSeason=requestors.Season_req(self.datestart.year, getSeason(self.datestart))
-            lastSeason = requestors.Season_req(self.dateend.year,  getSeason(self.dateend))
+            firstSeason=requestors.Season_req(self.timeinterval.start_time.year, getSeason(self.timeinterval.start_time))
+            lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  getSeason(self.timeinterval.end_time))
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1])
                 if (req.starttime >= firstSeason.starttime) & (req.endtime <=lastSeason.endtime):

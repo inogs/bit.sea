@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
+def mapplot(map_dict, fig=None, ax=None, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:
@@ -15,7 +15,9 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastli
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
     """
     shape = map_dict['data'].shape
-    fig , ax = pl.subplots()
+    if (fig is None) or (ax is None):
+        fig , ax = pl.subplots()
+    ax.clear()
     fig.set_dpi(dpi)
     fig.set_size_inches(shape[1] / dpi, shape[0] / dpi)
     if (not mask is None) and coastline:
@@ -65,4 +67,4 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastli
         ax.set_yticklabels(y_labels)
     fig.suptitle(title)
     ax.grid()
-    return fig
+    return fig, ax

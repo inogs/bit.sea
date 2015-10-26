@@ -74,6 +74,8 @@ class MapBuilder(object):
                 self.__plotlist.append(plot)
 
     def plot_maps_data(self, min_ticks=4, max_ticks=8):
+        fig = None
+        ax = None
         for f in self.__netcdffileslist:
             longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
@@ -81,9 +83,10 @@ class MapBuilder(object):
                 for l in p.layerlist:
                     outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)
-                    fig = mapplot({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate}, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
+                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
                     fig.savefig(outfilename)
-                    fig.clear()
+                fig = None
+                ax = None
 
     @staticmethod
     def get_layer_average(data_extractor, layer, timestep=0):

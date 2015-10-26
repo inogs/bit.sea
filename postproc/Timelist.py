@@ -71,7 +71,7 @@ class TimeList():
         
         self.filelist.sort()
         self.Timelist.sort()        
-        self.inputFrequency= self.__searchFrequency__()
+        self.inputFrequency= self.__searchFrequency()
         
         if self.inputFrequency is not None:
             for iFrame, t in enumerate(External_timelist):
@@ -90,7 +90,7 @@ class TimeList():
                     self.Timelist[iFrame] = newt
 
 
-    def __searchFrequency__(self):
+    def __searchFrequency(self):
         if len(self.Timelist)<2:
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
             print "Frequency cannot be calculated in " + self.inputdir + timestr
@@ -104,7 +104,7 @@ class TimeList():
             return "monthly"
         
     
-    def __generaltimeselector__(self,requestor):
+    def __generaltimeselector(self,requestor):
             SELECTION=[]
             weights  =[]
             
@@ -170,10 +170,10 @@ class TimeList():
         
         
         if isinstance(requestor, requestors.Season_req):
-            return self.__generaltimeselector__(requestor)
+            return self.__generaltimeselector(requestor)
                 
         if isinstance(requestor, requestors.Yearly_req):
-            return self.__generaltimeselector__(requestor)
+            return self.__generaltimeselector(requestor)
         
         if isinstance(requestor, requestors.Decadal_req):
             return self.__generaltimeselector__(requestor)

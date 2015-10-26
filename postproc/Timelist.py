@@ -109,17 +109,17 @@ class TimeList():
             weights  =[]
             
             if self.inputFrequency == "daily":
-                for t in self.Timelist:
+                for it, t in enumerate(self.Timelist):
                     if (t>=requestor.starttime)  & (t<=requestor.endtime):
-                        SELECTION.append(t)
+                        SELECTION.append(it)
                         weights.append(1.)
             if self.inputFrequency in ['weekly','monthly']:
-                for t in self.Timelist:
+                for it, t in enumerate(self.Timelist):
                     t1 = computeTimeWindow(self.inputFrequency,t);
                     t2 = TimeInterval.fromdatetimes(requestor.starttime, requestor.endtime)
                     weight = t1.overlapTime(t2)
                     if (weight > 0. ) : 
-                        SELECTION.append(t)
+                        SELECTION.append(it)
                         weights.append(weight)
             return SELECTION , np.array(weights)           
         
@@ -176,7 +176,7 @@ class TimeList():
             return self.__generaltimeselector(requestor)
         
         if isinstance(requestor, requestors.Decadal_req):
-            return self.__generaltimeselector__(requestor)
+            return self.__generaltimeselector(requestor)
         
         if isinstance(requestor, requestors.Clim_day):
             assert self.inputFrequency == 'daily'

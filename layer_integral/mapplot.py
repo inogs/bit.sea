@@ -4,20 +4,31 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
+def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:
         - *map_dict*: a dictionary as built by get_maps_data method of
           MapBuilder.
+        - *fig*: a reference to a Figure object, if None mapplot will create a new Figure.
+        - *ax*: a reference to an Axes object, if None mapplot will create a new Figure.
         - *mask* (optional): a Mask object that will be used to set the ticks.
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
+        - *cbar_ticks* (optional): Number of ticks on the colorbar (default: 5).
+        - *coastline* (optional): If set to True draws the coast (default: False).
+        - *dpi* (optional): sets the DPI (default: 72.0).
+    Returns:
+        A figure and an Axes object that can be passed again to mapplot
     """
     shape = map_dict['data'].shape
-    fig , ax = pl.subplots()
-    fig.set_dpi(dpi)
-    fig.set_size_inches(shape[1] / dpi, shape[0] / dpi)
+    if (fig is None) or (ax is None):
+        fig , ax = pl.subplots()
+        fig.set_dpi(dpi)
+        fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
+    else:
+        fig.clf()
+        fig.add_axes(ax)
     if (not mask is None) and coastline:
         coast_m = np.array(mask.mask[0,:,:], dtype=np.float32)
         coast_m[coast_m != 0] = np.nan
@@ -65,4 +76,4 @@ def mapplot(map_dict, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastli
         ax.set_yticklabels(y_labels)
     fig.suptitle(title)
     ax.grid()
-    return fig
+    return fig, ax

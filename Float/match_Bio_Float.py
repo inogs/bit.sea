@@ -4,13 +4,16 @@ import os
 from postproc.Timelist import *
 from matchup.matchup import *
 from basins.region import *
-import Float.Float_Manager as Float_Manager
+import instruments.bio_float as Float_Manager
 from shared_data import *
 
 import MatchGenerator 
 import basins.OGS as OGS
-  
-M = MatchGenerator.Float_Matchup_Manager(DATESTART,DATE__END,INPUTDIR,BASEDIR)
+
+from commons.time_interval import TimeInterval
+
+T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
+M = MatchGenerator.Float_Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 
 maskfile    = os.getenv("MASKFILE"); 
 ncIN=NC.netcdf_file(maskfile,"r")
@@ -33,7 +36,7 @@ SUBLIST = [sub for sub in OGS.P]
 
 LAYERLIST = [Layer(0,10), Layer(10,50), Layer(50,100), Layer(100,150), Layer(150,300),Layer(300,600), Layer(600,1000)]
 
-TI = Float_Manager.Time_Interval("20150903", "20150917", "%Y%m%d")
+TI = TimeInterval("20150903", "20150917", "%Y%m%d")
 
 nVars = len(VARLIST)
 nSub  = len(SUBLIST)

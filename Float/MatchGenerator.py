@@ -14,7 +14,7 @@ class Float_Matchup_Manager():
     '''
     Main class for Float Matchup generation.
     '''
-    def __init__(self,DATESTART,DATE__END,INPUTDIR,Outpudir):
+    def __init__(self,timeinterval,INPUTDIR,Outpudir):
         '''
                 Outpudir is intended as the outputdir of aveScan, 
         point profiles will be produced in outputdir/PROFILES.
@@ -22,8 +22,8 @@ class Float_Matchup_Manager():
         self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = INPUTDIR
         if os.path.exists(INPUTDIR):
-            self.TL = TimeList(DATESTART, DATE__END, self.AVE_INPUT_DIR,"ave*.nc",'../postproc/IOnames.xml')
-            self.TI = Float_Manager.Time_Interval(DATESTART,DATE__END,'%Y%m%d-%H:%M:%S')
+            self.TL = TimeList(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'../postproc/IOnames.xml')
+            self.TI = timeinterval
             All_Med = Rectangle(-6,36,30,46)
             self.FLOAT_LIST=Float_Manager.FloatSelector(None, self.TI, All_Med)
             datetimelist = [f.time for f in self.FLOAT_LIST]

@@ -17,9 +17,11 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     shape = map_dict['data'].shape
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
-    ax.clear()
-    fig.set_dpi(dpi)
-    fig.set_size_inches(shape[1] / dpi, shape[0] / dpi)
+        fig.set_dpi(dpi)
+        fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
+    else:
+        fig.clf()
+        fig.add_axes(ax)
     if (not mask is None) and coastline:
         coast_m = np.array(mask.mask[0,:,:], dtype=np.float32)
         coast_m[coast_m != 0] = np.nan

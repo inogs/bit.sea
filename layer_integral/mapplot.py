@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, fig=None, ax=None, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
+def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:

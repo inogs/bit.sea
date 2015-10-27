@@ -10,9 +10,16 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     Args:
         - *map_dict*: a dictionary as built by get_maps_data method of
           MapBuilder.
+        - *fig*: a reference to a Figure object, if None mapplot will create a new Figure.
+        - *ax*: a reference to an Axes object, if None mapplot will create a new Figure.
         - *mask* (optional): a Mask object that will be used to set the ticks.
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
+        - *cbar_ticks* (optional): Number of ticks on the colorbar (default: 5).
+        - *coastline* (optional): If set to True draws the coast (default: False).
+        - *dpi* (optional): sets the DPI (default: 72.0).
+    Returns:
+        A figure and an Axes object that can be passed again to mapplot
     """
     shape = map_dict['data'].shape
     if (fig is None) or (ax is None):

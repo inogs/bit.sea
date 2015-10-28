@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-
+from time_interval import TimeInterval
 
 class Clim_season():
     ''' 
@@ -22,7 +22,7 @@ class Clim_season():
         self.season=season
         a=Season_req(2000,season)
         self.string = a.longname
-    def __str__(self):
+    def __repr__(self):
         return "Climatologic Seasonal requestor object : "  + self.string
 
 class Clim_month():
@@ -37,7 +37,7 @@ class Clim_month():
         assert month in range(1,13)
         self.month = month
         self.string = '%02d' %month
-    def __str__(self):
+    def __repr__(self):
         return "Climatologic Monthly requestor object : "  + self.string  
 
 class Clim_day():
@@ -48,7 +48,7 @@ class Clim_day():
         self.month = month
         self.day   = day
         self.string = a.strftime("%m%d")
-    def __str__(self):
+    def __repr__(self):
         return "Climatologic Daily requestor object : "  + self.string        
 
 class Monthly_req():
@@ -58,9 +58,11 @@ class Monthly_req():
         self.year=year
         self.month=month
         self.string = "%d%02d" % (self.year, self.month)
-        self.starttime  = datetime.datetime(self.year, self.month,1)
-        self.endtime    = self.starttime + relativedelta(months = 1)
-    def __str__(self):
+        t = TimeInterval()
+        t.start_time  = datetime.datetime(self.year, self.month,1)
+        t.end_time    = t.start_time + relativedelta(months = 1)
+        self.time_interval = t
+    def __repr__(self):
         return "Monthly requestor object: " + self.string   
         
         
@@ -69,10 +71,12 @@ class Yearly_req():
     '''
     def __init__(self,year):
         self.year=year
-        self.starttime = datetime.datetime(year  ,1,1)
-        self.endtime   = datetime.datetime(year+1,1,1)
+        t = TimeInterval()
+        t.start_time = datetime.datetime(year  ,1,1)
+        t.end_time   = datetime.datetime(year+1,1,1)
+        self.time_interval =t
         self.string    = str(year)
-    def __str__(self):
+    def __repr__(self):
         return "Yearly requestor object: " + self.string
 
 class Weekly_req():
@@ -88,12 +92,14 @@ class Weekly_req():
         self.year   = year
         self.month  = month
         self.day    = day
-        centertime     = datetime.datetime(self.year,self.month,self.day,12) 
-        self.starttime = centertime - datetime.timedelta(days=3.5)
-        self.endtime = centertime + datetime.timedelta(days=3.5)
+        centertime     = datetime.datetime(self.year,self.month,self.day,12)
+        t = TimeInterval() 
+        t.start_time = centertime - datetime.timedelta(days=3.5)
+        t.end_time   = centertime + datetime.timedelta(days=3.5)
+        self.time_interval = t
         self.string  = centertime.strftime("%Y%m%d")
         self.isoweekday = centertime.isoweekday()
-    def __str__(self):
+    def __repr__(self):
         return "Weekly requestor object: " + self.string 
 
 
@@ -108,10 +114,12 @@ class Daily_req():
         self.year   = year
         self.month  = month
         self.day    = day 
-        self.starttime =  datetime.datetime(self.year,self.month,self.day,0)
-        self.endtime = self.starttime + datetime.timedelta(days=1)
-        self.string  = self.starttime.strftime("%Y%m%d")
-    def __str__(self):
+        t = TimeInterval()
+        t.start_time =  datetime.datetime(self.year,self.month,self.day,0)
+        t.end_time   = t.start_time + datetime.timedelta(days=1)
+        self.time_interval = t
+        self.string  = t.start_time.strftime("%Y%m%d")
+    def __repr__(self):
         return "Daily requestor object: " + self.string 
 
 class Season_req():
@@ -134,30 +142,32 @@ class Season_req():
         self.season = season
         
         assert season in [0,1,2,3]
-        
+        t = TimeInterval()
         if season == 0: #win
-            self.starttime = datetime.datetime(year ,  1, 1, 0, 0)
-            self.endtime   = datetime.datetime(year ,  4, 1, 0, 0)
-            self.string    = 'win %d' %year 
-            self.longname  = "Winter"
+            t.start_time  = datetime.datetime(year ,  1, 1, 0, 0)
+            t.end_time    = datetime.datetime(year ,  4, 1, 0, 0)
+            self.string   = 'win %d' %year 
+            self.longname = "Winter"
         if season == 1 : 
-            self.starttime = datetime.datetime(year ,  4, 1, 0, 0)
-            self.endtime   = datetime.datetime(year ,  7, 1, 0, 0)
-            self.string    = 'spr %d' %year
-            self.longname  = 'Spring'
+            t.start_time  = datetime.datetime(year ,  4, 1, 0, 0)
+            t.end_time    = datetime.datetime(year ,  7, 1, 0, 0)
+            self.string   = 'spr %d' %year
+            self.longname = 'Spring'
         if season == 2 :
-            self.starttime = datetime.datetime(year ,  7, 1, 0, 0)
-            self.endtime   = datetime.datetime(year , 10, 1, 0, 0)
-            self.string    = 'sum %d' %year
-            self.longname  = 'Summer'
+            t.start_time  = datetime.datetime(year ,  7, 1, 0, 0)
+            t.end_time    = datetime.datetime(year , 10, 1, 0, 0)
+            self.string   = 'sum %d' %year
+            self.longname = 'Summer'
             
         if season == 3 :
-            self.starttime = datetime.datetime(year , 10, 1, 0, 0)
-            self.endtime   = datetime.datetime(year+1, 1, 1, 0, 0)
-            self.string    = 'fal %d' %year 
-            self.longname  = 'Fall'
+            t.start_time  = datetime.datetime(year , 10, 1, 0, 0)
+            t.end_time    = datetime.datetime(year+1, 1, 1, 0, 0)
+            self.string   = 'fal %d' %year 
+            self.longname = 'Fall'
+        
+        self.timeinterval = t
             
-    def __str__(self):
+    def __repr__(self):
         return "Season requestor object :" + self.string       
         
 
@@ -177,12 +187,13 @@ class Decadal_req():
         
         q,r=divmod(decad, 10)
         assert r in [0,1]
-        
+        t = TimeInterval()
         self.startyear = decad                   
         self.end__year = self.startyear+9
-        self.starttime = datetime.datetime(self.startyear  ,1,1,0,0,0)
-        self.endtime   = datetime.datetime(self.end__year+1,1,1,0,0,0)
-    def __str__(self):
+        t.start_time = datetime.datetime(self.startyear  ,1,1,0,0,0)
+        t.end_time   = datetime.datetime(self.end__year+1,1,1,0,0,0)
+        self.timeinterval = t
+    def __repr__(self):
         return "Decadal requestor object : %d ... %d"  %(self.startyear, self.end__year)
 
 

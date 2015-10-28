@@ -2,38 +2,21 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 import os
+import pylab as pl
 
 from instruments.instrument import Instrument, Profile
 from commons.time_interval import TimeInterval
 
 class BioFloatProfile(Profile):
-    def __init__(self, var, time, lon, lat, my_float, mean=None):
-        self.var = var
+    def __init__(self, time, lon, lat, my_float, mean=None):
         self.time = time
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
         self.mean = mean
 
-        self._read_values = False
-        self._pres = None
-        self._data = None
-
-    def _read_profile(self):
-        self._pres, self._data = self._my_float.read(self.var, self.mean)
-        self._read_values = True
-
-    @property
-    def pres(self):
-        if not self._read_values:
-            self._read_profile()
-        return self._pres
-
-    @property
-    def data(self):
-        if not self._read_values:
-            self._read_profile()
-        return self._data
+    def read(self,var):
+        return self._my_float.read(var, self.mean)
 
 
 
@@ -223,7 +206,7 @@ class BioFloat(Instrument):
             available_params = INDEX_FILE['parameters'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
             if filename == thefilename :
-                        return Bio_Float(lon,lat,float_time,filename,available_params)
+                return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 
 
@@ -262,6 +245,7 @@ def FloatSelector(var, T, region):
 
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
-                selected.append(BioFloat(lon,lat,float_time,filename,available_params))
+                thefloat = BioFloat(lon,lat,float_time,filename,available_params)
+                selected.append(BioFloatProfile(float_time,lon,lat, thefloat))
                       
     return selected

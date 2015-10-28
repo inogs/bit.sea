@@ -201,7 +201,7 @@ def add_log_level(l):
         if self.get_verbosity_level() >= l:
             txt = self._format_text(kwargs, first_word, txt)
             print(txt, *args, **kwargs)
-    setattr(Log, LOG_LEVELS[i], f)
+    setattr(Log, LOG_LEVELS[l], f)
 
 
 # Now we add a new method for every element of the LOG_LEVELS

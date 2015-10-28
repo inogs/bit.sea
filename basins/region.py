@@ -3,46 +3,24 @@
 import numpy as np
 from matplotlib.path import Path
 
-class Region():
+class Region(object):
     def is_inside(self, lon, lat):
         raise NotImplementedError
     
     def __add__(self, r):
         return RegionUnion(self, r)
     
-    def __mul__(self, r):
-        return RegionIntersection(self,r)
-    
-    def __neg__(self):
-        return RegionComplement(self)
-    
-    def __sub__(self, r):
-        return self * (-r)
 
-
-class Rectangle(Region):
-    def __init__(self, lonmin, lonmax, latmin, latmax):
-        self.lonmin = lonmin
-        self.lonmax = lonmax
-        self.latmin = latmin
-        self.latmax = latmax
-    
+class EmptyRegion(Region):
     def is_inside(self, lon, lat):
-        lat_inside = (lat>= self.latmin) * (lat <= self.latmax) 
-        lon_inside = (lon >= self.lonmin) * (lon <= self.lonmax)
-        inside = np.bool_(lat_inside * lon_inside)
-        return inside
+        if hasattr(lon,"__len__"):
+            assert len(lon) == len(lat)
+            return np.zeros((len(lon),), dtype=np.bool_)
+        else:
+            return False
 
-
-class Circle(Region):
-    def __init__(self, center_lon, center_lat, radious):
-        self.center_lon = center_lon
-        self.center_lat = center_lat
-        self.radious = radious
-    
-    def is_inside(self, lon, lat):
-        distance = (lon - self.center_lon)**2 + (lat - self.center_lat)**2
-        return distance < self.radious**2
+    def cross(self, another_region):
+        return False
 
 
 class Polygon(Region):
@@ -73,19 +51,19 @@ class Polygon(Region):
         self.path = Path(coords, codes)
         
     def is_inside(self, lon, lat):
-            points_coord = np.array((lon,lat)).T
-            
-            reshaped = False
-            if len(points_coord.shape) < 2:
-                points_coord = points_coord.reshape(1,2)
-                reshaped = True
+        points_coord = np.array((lon,lat)).T
 
-            inside = self.path.contains_points(points_coord)
+        reshaped = False
+        if len(points_coord.shape) < 2:
+            points_coord = points_coord.reshape(1,2)
+            reshaped = True
 
-            if reshaped:
-                return inside[0]
-            else:
-                return inside
+        inside = self.path.contains_points(points_coord)
+
+        if reshaped:
+            return inside[0]
+        else:
+            return inside
     
     @property 
     def border_latitudes(self):
@@ -104,6 +82,41 @@ class Polygon(Region):
             output.append((lon, lat))
         return tuple(output)
 
+    def cross(self, another_region):
+        # The following lines are useful if another_region is a basin
+        if hasattr(another_region, "region"):
+            another_region = another_region.region
+
+        if isinstance(another_region, Polygon):
+            return np.bool_(self.path.intersects_path(another_region.path, filled=True))
+        elif isinstance(another_region, RegionUnion):
+            return another_region.cross(self)
+        elif isinstance(another_region, EmptyRegion):
+            return False
+        else:
+            raise NotImplementedError
+
+
+class Rectangle(Polygon):
+    def __init__(self, lonmin, lonmax, latmin, latmax):
+        self.lonmin = lonmin
+        self.lonmax = lonmax
+        self.latmin = latmin
+        self.latmax = latmax
+
+        lonlist = [lonmin, lonmax, lonmax, lonmin, lonmin]
+        latlist = [latmin, latmin, latmax, latmax, latmin]
+
+        super(Rectangle, self).__init__(lonlist, latlist)
+
+
+    def is_inside(self, lon, lat):
+        lat_inside = (lat>= self.latmin) * (lat <= self.latmax) 
+        lon_inside = (lon >= self.lonmin) * (lon <= self.lonmax)
+        inside = np.bool_(lat_inside * lon_inside)
+        return inside
+
+
 
 class RegionUnion(Region):
     def __init__(self, r1, r2):
@@ -115,26 +128,7 @@ class RegionUnion(Region):
         ins2 = self._r2.is_inside(lon,lat)
         return np.bool_(ins1 + ins2)
 
-
-class RegionIntersection(Region):
-    def __init__(self, r1, r2):
-        self._r1 = r1
-        self._r2 = r2
-    
-    def is_inside(self, lon, lat):
-        ins1 = self._r1.is_inside(lon,lat)
-        ins2 = self._r2.is_inside(lon,lat)
-        return np.bool_(ins1 * ins2)
-
-
-class RegionComplement(Region):
-    def __init__(self, r):
-        self._r = r
-
-    def is_inside(self, lon, lat):
-        try:
-            inside = not self._r.is_inside(lon, lat)
-        except ValueError:
-            inside = ~self._r.is_inside(lon, lat)
-        
-        return inside
+    def cross(self, another_region):
+        cross1 = self._r1.cross(another_region)
+        cross2 = self._r2.cross(another_region)
+        return np.bool_(cross1+cross2)

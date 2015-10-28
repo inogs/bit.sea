@@ -81,3 +81,8 @@ class Mask(object):
         d_lat = np.array(self.__ylevels - lat)
         d_lat *= d_lat
         return np.where(d_lon == min(d_lon))[0][0] , np.where(d_lat == min(d_lat))[0][0]
+
+    def convert_x_y_to_lon_lat(self, x, y):
+        """Converts x and y coordinates to longitude and latitude.
+        """
+        return (self.__xlevels[x], self.__ylevels[y])

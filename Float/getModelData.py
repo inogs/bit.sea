@@ -1,7 +1,10 @@
 from shared_data import *
 import MatchGenerator
+from commons.time_interval import TimeInterval
 
-M = MatchGenerator.Float_Matchup_Manager(DATESTART,DATE__END,INPUTDIR,BASEDIR)
+T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
+
+M = MatchGenerator.Float_Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 M.writefiles_for_profiling('./jobProfiler.sh')
 M.dumpModelProfiles('./jobProfiler.sh')
 

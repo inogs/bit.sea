@@ -10,10 +10,10 @@ import pylab as pl
 from layer import Layer
 
 #Mask object
-from mask import Mask
+from commons.mask import Mask
 
 #Data extractor
-from dataextractor import DataExtractor
+from commons.dataextractor import DataExtractor
 
 class NamedLayer(Layer):
     """

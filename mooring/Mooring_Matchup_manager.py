@@ -47,15 +47,18 @@ class Mooring_Matchup_Manager():
         Profile = M[iProfile,:]
         
         return Profile
-    
+    def getModelTime(self,profileid):
+        for Model_time,INTERESTED_Indices in self.Coupled_List:
+            if profileid in [self.profileList[k] for k in INTERESTED_Indices]:
+                break
+        return Model_time        
+        
     def getMatchups(self,MooringList,nav_lev,model_varname,ref_varname):
         
         for m in MooringList:
             profilelist=m.getProfileList()
             for p in profilelist:
-                for Model_time,INTERESTED_Indices in self.Coupled_List:
-                    if p in [self.profileList[k] for k in INTERESTED_Indices]:
-                        break
+                Model_time = self.getModelTime(p)
                 Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, m.name)
                 seaPoints = ~np.isnan(ModelProfile)

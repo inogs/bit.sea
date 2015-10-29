@@ -311,11 +311,10 @@
 <var name="O3c" units="mmol/m3" clim="[26000 29000]" ></var>
 </vars>
 
-<transect  lonmin="8" lonmax="8" latmin="37" latmax="42" ></transect>
-<transect  lonmin="20" lonmax="20" latmin="30" latmax="42" ></transect>
-
-<transect  lonmin="5" lonmax="15" latmin="40" latmax="40" ></transect>
-<transect  lonmin="5" lonmax="35" latmin="40" latmax="40" ></transect>
+<transect  lonmin="8" lonmax="8" latmin="37" latmax="43" ></transect>
+<transect  lonmin="0" lonmax="11.5" latmin="38" latmax="38" ></transect>
+<transect  lonmin="11.5" lonmax="15" latmin="38" latmax="33.2" ></transect>
+<transect  lonmin="15" lonmax="35" latmin="33.2" latmax="33.2" ></transect>
 
 </Transects>
 

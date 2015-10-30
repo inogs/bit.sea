@@ -34,6 +34,9 @@ class TimeInterval():
     def isInWindow(self,T2):
         return self.overlapTime(T2) > 0
     
+    def isInside(self,T2):
+        raise NotImplementedError
+    
     @staticmethod
     def fromdatetimes(timestart,time_end):
         TI = TimeInterval()

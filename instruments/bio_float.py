@@ -6,16 +6,31 @@ import pylab as pl
 
 from instruments.instrument import Instrument, Profile
 from commons.time_interval import TimeInterval
+from mhelpers.pgmean import PLGaussianMean
+meanObj = PLGaussianMean(5,1.0)
+
+
+
+#DOXY:units = "micromole/kg" ;
+#CHLA:units = "mg/m3" ;
+#NITRATE:units = "micromole/kg" ;
 
 class BioFloatProfile(Profile):
-    def __init__(self, time, lon, lat, my_float, mean=None):
+    def __init__(self, time, lon, lat, my_float, available_params,mean=None):
         self.time = time
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
+        self.available_params = available_params
         self.mean = mean
 
     def read(self,var):
+        '''
+        Reads profile data from file. Wrapper for BioFloat.read()
+
+        Takes var as string
+        Returns Pres, Profile, as numpy arrays '''
+
         return self._my_float.read(var, self.mean)
 
 
@@ -158,7 +173,11 @@ class BioFloat(Instrument):
         
     def read(self, var, mean=None):
         '''
+
         Reads profile data from file, applies a rarefaction and optionally a filter to the data
+
+        Takes var as string
+        Returns Pres, Profile, as numpy arrays
         '''
         pres, prof = self.read_raw(var)
         
@@ -246,6 +265,6 @@ def FloatSelector(var, T, region):
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
                 thefloat = BioFloat(lon,lat,float_time,filename,available_params)
-                selected.append(BioFloatProfile(float_time,lon,lat, thefloat))
+                selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
                       
     return selected

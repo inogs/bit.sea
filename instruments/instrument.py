@@ -1,9 +1,9 @@
-class Profile(object): pass
+class Profile(object):
+    def read(self,var):
+        raise NotImplementedError
 
 class Instrument(object):
-    def profiles(self, var):
-        '''
-        Return a list of all the profiles for a particular variable
-        recorded by the instrument
-        '''
-        raise NotImplementedError
+    pass
+
+
+

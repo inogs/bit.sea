@@ -4,24 +4,29 @@ from instruments.instrument import Instrument, Profile
 import scipy.io.netcdf as NC
 
 from commons.time_interval import TimeInterval
+
 basetime = datetime.datetime(1950,1,1,0,0,0)
 
+#DOX1:units = "ml/l" ;
+#CPHL:units = "milligram/m3" ;
+
 class MooringProfile(Profile):
-    def __init__(self,time,lat,lon, my_mooring):
+    def __init__(self,time,lat,lon, my_mooring,available_params):
         self.time = time
         self.lat  = lat
         self.lon  = lon
-        self.my_mooring = my_mooring
+        self.available_params = available_params
+        self._my_mooring = my_mooring
 
     def read(self,var):
-        return self.my_mooring.read(var,self.time)
+        return self._my_mooring.read(var,self.time)
 
 class Mooring(Instrument):
-    def __init__(self, lon, lat, filename, params):
+    def __init__(self, lon, lat, filename, available_params):
         self.lon = lat
         self.lat = lat
         self.filename = filename
-        self.available_params = params
+        self.available_params = available_params
     
     def profiles(self):
         raise NotImplementedError
@@ -39,7 +44,7 @@ class Mooring(Instrument):
         #returns array(times,depths) 
     
     def read(self, var, time=None ):
-
+        fillValue = -9999
         ncIN = NC.netcdf_file(self.filename,'r')
         timesInFile = ncIN.variables['TIME'].data.copy()
         VAR         = ncIN.variables[var   ].data.copy()
@@ -54,7 +59,11 @@ class Mooring(Instrument):
                 if dateprofile == time:
                     Pres   = PRES[it,:]
                     Profile = VAR[it,:]
-            return Pres,Profile
+            badProfile = (Profile<fillValue) | (Profile == 0.0 )
+            badPres    = (Pres   <fillValue) | (Pres    == 0.0 )
+            bad = badPres | badProfile
+            
+            return Pres[~bad], Profile[~bad]
 
 def MooringSelector(var, T, region):
     filename = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/index_monthly.txt"
@@ -93,8 +102,9 @@ def MooringSelector(var, T, region):
         else:
             VarCondition = var in parameters
 
-        condition = VarCondition & (filename[:2]=='MO') & (ti.isInWindow(T)) & region.is_inside(lon, lat)
-        if condition :
+        Filecondition = VarCondition & (filename[:2]=='MO') & ("mooring" in A['file_name'][i])
+        
+        if Filecondition & (ti.isInWindow(T)) & region.is_inside(lon, lat):
             filepath =  LOC + os.path.basename(A[i]['file_name'])
             ncIN = NC.netcdf_file(filepath,'r')
             timesInFile = ncIN.variables['TIME'].data.copy() # days since 1950-01-01T00:00:00Z
@@ -106,6 +116,6 @@ def MooringSelector(var, T, region):
                 dateprofile = basetime + datetime.timedelta(days = t)
                 if T.contains(dateprofile):
                     M = Mooring(lon,lat,filepath,available_params)
-                    mp = MooringProfile(dateprofile,lon,lat,M)
+                    mp = MooringProfile(dateprofile,lon,lat,M,available_params)
                     selected.append(mp)
     return selected

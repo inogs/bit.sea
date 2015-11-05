@@ -1,15 +1,16 @@
-import Float_Manager
-from postproc.Timelist import TimeList
+import os
+from commons.time_interval import TimeInterval
+from commons.Timelist import TimeList
 from basins.region import Rectangle
+
+import instruments
 import scipy.io.netcdf as NC
 import numpy as np
+
 import matchup
-import os
 
-from mhelpers.pgmean import PLGaussianMean
-meanObj = PLGaussianMean(5,1.0)
 
-class Float_Matchup_Manager():
+class Matchup_Manager():
     
     '''
     Main class for Float Matchup generation.
@@ -25,18 +26,17 @@ class Float_Matchup_Manager():
             self.TL = TimeList(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'../postproc/IOnames.xml')
             self.TI = timeinterval
             All_Med = Rectangle(-6,36,30,46)
-            self.FLOAT_LIST=Float_Manager.FloatSelector(None, self.TI, All_Med)
-            datetimelist = [f.time for f in self.FLOAT_LIST]
+            self.PROFILE_LIST = instruments.Selector(None, self.TI, All_Med)
+            datetimelist = [f.time for f in self.PROFILE_LIST]
             self.Coupled_List = self.TL.couple_with(datetimelist)
         else:
             print INPUTDIR + " not existing"
 
-
-    def _dump_punti_for_aveScan(self,Floatlist,filename):
+    def _dump_punti_for_aveScan(self,Profilelist,filename):
         LINES=[]
         LINES.append('NOME    Longitutine E    Latitudine N \n')
-        for f in Floatlist:
-            line = "%s %g %g \n" %(f.wmo,f.lon, f.lat)
+        for p in Profilelist:
+            line = "%s %g %g \n" %(p.name(), p.lon, p.lat)
             LINES.append(line)
         
         F = open(filename, "w")
@@ -65,11 +65,11 @@ class Float_Matchup_Manager():
         JOB_LINES.append("cd ../postproc \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
-            INTERESTED_FLOATS = [self.FLOAT_LIST[k] for k in t[1]] #t[1]
+            INTERESTED_PROFILES = [self.PROFILE_LIST[k] for k in t[1]] #t[1]
 
             
             outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
-            self._dump_punti_for_aveScan(INTERESTED_FLOATS, outpuntifile)
+            self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \
                 ' -l '  + Model_time.strftime("ave.%Y%m%d*")  + \
                 ' -i '  + self.AVE_INPUT_DIR  +  \
@@ -116,7 +116,7 @@ class Float_Matchup_Manager():
         return Profile
     
     
-    def getMatchups(self,FloatList,nav_lev,model_varname,ref_varname):
+    def getMatchups(self,Profilelist,nav_lev,model_varname,ref_varname):
         ''' 
         Float list is a list of Bio_Float objects 
         It depends on a user selection in space and time
@@ -139,23 +139,23 @@ class Float_Matchup_Manager():
         Group_Matchup = matchup.matchup.FloatMatchup()
         
         
-        for f in FloatList:
+        for p in Profilelist:
             for Model_time,INTERESTED_Indices in self.Coupled_List:
-                if f.filename in [self.FLOAT_LIST[k].filename for k in INTERESTED_Indices]:
+                if p in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
                     break
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
-            ModelProfile = self.readModelProfile(Modelfile, model_varname, f.wmo)
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
             seaPoints = ~np.isnan(ModelProfile)
                     
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask         
-                print "No model data for (lon,lat) = (%g, %g) " %(f.lon, f.lat)
+                print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
                 continue
             
-            FloatPres, FloatProfile = f.read(ref_varname,meanObj)
+            Pres, Profile = p.read(ref_varname)
             
-            MODEL_ON_SPACE_OBS=np.interp(FloatPres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
+            MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                     
-            Matchup = matchup.matchup.SingleFloatMatchup(MODEL_ON_SPACE_OBS, FloatProfile, FloatPres,f)
+            Matchup = matchup.matchup.SingleFloatMatchup(MODEL_ON_SPACE_OBS, Profile, Pres,p)
             
             Group_Matchup.extend(Matchup)
     

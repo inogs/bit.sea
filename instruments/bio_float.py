@@ -33,6 +33,11 @@ class BioFloatProfile(Profile):
 
         return self._my_float.read(var, self.mean)
 
+    def name(self):
+        '''returns a string, the wmo of the associated BioFloat.
+        '''
+        return self._my_float.wmo
+
 
 
 class BioFloat(Instrument):

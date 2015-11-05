@@ -1,6 +1,6 @@
 import numpy as np
 import os,datetime
-from instruments.instrument import Instrument, Profile
+from instrument import Instrument, Profile
 import scipy.io.netcdf as NC
 
 from commons.time_interval import TimeInterval
@@ -21,12 +21,18 @@ class MooringProfile(Profile):
     def read(self,var):
         return self._my_mooring.read(var,self.time)
 
+    def name(self):
+        '''returns a string, the MyOcean identifier of the mooring.
+        '''
+        return self._my_mooring.name
+
 class Mooring(Instrument):
     def __init__(self, lon, lat, filename, available_params):
         self.lon = lat
         self.lat = lat
         self.filename = filename
         self.available_params = available_params
+        self.name = os.path.basename(filename)[10:-3]
     
     def profiles(self):
         raise NotImplementedError

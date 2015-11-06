@@ -4,7 +4,7 @@ import datetime
 import os
 import pylab as pl
 
-from instruments.instrument import Instrument, Profile
+from instrument import Instrument, Profile
 from commons.time_interval import TimeInterval
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
@@ -23,6 +23,15 @@ class BioFloatProfile(Profile):
         self._my_float = my_float
         self.available_params = available_params
         self.mean = mean
+
+    def __eq__(self, other):
+        if isinstance(other, BioFloatProfile):
+            if (self.lon == other.lon) & (self.lat == other.lat) & (self.time == other.time):
+                return self._my_float == other._my_float
+            else:
+                return False
+        else:
+            return False
 
     def read(self,var):
         '''
@@ -53,6 +62,15 @@ class BioFloat(Instrument):
         wmo, cycle = os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
+
+    def __eq__(self,other):
+        if isinstance(other, BioFloat):
+            if (self.filename  == other.filename):
+                return (self.lon == other.lon ) & (self.lat == other.lat) & (self.time == other.time)
+            else:
+                return False
+        else:
+            return False
 
     def __searchVariable_on_parameters(self, var):
         '''

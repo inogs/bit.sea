@@ -18,6 +18,15 @@ class MooringProfile(Profile):
         self.available_params = available_params
         self._my_mooring = my_mooring
 
+    def __eq__(self, other):
+        if isinstance(other, MooringProfile):
+            if (self.lon == other.lon) & (self.lat == other.lat) & (self.time == other.time):
+                return self._my_mooring == other._my_mooring
+            else:
+                return False
+        else:
+            return False
+
     def read(self,var):
         return self._my_mooring.read(var,self.time)
 
@@ -33,9 +42,16 @@ class Mooring(Instrument):
         self.filename = filename
         self.available_params = available_params
         self.name = os.path.basename(filename)[10:-3]
+
+    def __eq__(self,other):
+        if isinstance(other, Mooring):
+            if (self.filename  == other.filename):
+                return (self.lon == other.lon ) & (self.lat == other.lat) 
+            else:
+                return False
+        else:
+            return False
     
-    def profiles(self):
-        raise NotImplementedError
     
     def read_raw(self, var, profile=None):
         '''

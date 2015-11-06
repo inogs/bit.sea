@@ -114,7 +114,12 @@ class Matchup_Manager():
         Profile = M[iProfile,:]
         
         return Profile
-    
+
+    def modeltime(self,profile):
+        for Model_time,INTERESTED_Indices in self.Coupled_List:
+            if profile in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
+                break
+        return Model_time
     
     def getMatchups(self,Profilelist,nav_lev,model_varname,ref_varname):
         ''' 
@@ -136,13 +141,11 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
     
-        Group_Matchup = matchup.matchup.FloatMatchup()
+        Group_Matchup = matchup.matchup.ProfilesMatchup()
         
         
         for p in Profilelist:
-            for Model_time,INTERESTED_Indices in self.Coupled_List:
-                if p in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
-                    break
+            Model_time = self.modeltime(p)
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
             seaPoints = ~np.isnan(ModelProfile)
@@ -155,7 +158,7 @@ class Matchup_Manager():
             
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                     
-            Matchup = matchup.matchup.SingleFloatMatchup(MODEL_ON_SPACE_OBS, Profile, Pres,p)
+            Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres,p)
             
             Group_Matchup.extend(Matchup)
     

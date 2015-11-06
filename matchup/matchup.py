@@ -164,7 +164,7 @@ class matchup():
         return self.RMSE()/self.Ref.std()
 
 
-class FloatMatchup(matchup):
+class ProfilesMatchup(matchup):
     def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None):        
         if Model is None:
             self.Model = np.array([],np.float32)
@@ -215,8 +215,8 @@ class FloatMatchup(matchup):
         pl.show(block=False)
 
 
-class SingleFloatMatchup():
-    def __init__(self, Model, Ref, Depth, biofloatObj):
+class ProfileMatchup():
+    def __init__(self, Model, Ref, Depth, profileObj):
         bads = np.isnan(Model)
         if bads.any() :
             print "Nans in model "
@@ -227,13 +227,13 @@ class SingleFloatMatchup():
         self.Model = Model
         self.Ref   = Ref
         self.Depth = Depth
-        self.Float = biofloatObj
-        self.Lon   = np.ones_like(Model)*self.Float.lon
-        self.Lat   = np.ones_like(Model)*self.Float.lat
+        self.instrument = profileObj
+        self.Lon   = np.ones_like(Model)*profileObj.lon
+        self.Lat   = np.ones_like(Model)*profileObj.lat
 
     def plot(self):
         '''
-        Red line is reference (biofloat)
+        Red line is reference (biofloat, mooring or vessel)
         Blue line is model
         '''
         pl.figure()

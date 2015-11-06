@@ -1,20 +1,6 @@
 import numpy as np
 import pylab as pl
-
-class Layer(object):
-    def __init__(self, top, bottom):
-        self.__top = top
-        self.__bottom = bottom
-    def __str__(self):
-        return "Layer %d-%d m" %(self.__top, self.__bottom)
-
-    @property
-    def top(self):
-        return self.__top
-
-    @property
-    def bottom(self):
-        return self.__bottom
+from commons.layer import Layer
 
 class matchup():
     def __init__(self, Model, Ref):
@@ -185,7 +171,7 @@ class ProfilesMatchup(matchup):
         if self.number() ==0:
             return self
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)        
-        return FloatMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii])
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii])
 
     
     def extend(self,fm):
@@ -246,6 +232,6 @@ class ProfileMatchup():
 if __name__ == '__main__':
     import numpy as np
     Depth = np.arange(10.)/10
-    a=FloatMatchup(np.arange(10),np.arange(10)+1,Depth,Depth,Depth  )
+    a=ProfilesMatchup(np.arange(10),np.arange(10)+1,Depth,Depth,Depth  )
     L=Layer(0.3, 0.8)
     b = a.subset(L)

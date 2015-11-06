@@ -46,7 +46,7 @@ class Mooring(Instrument):
     def __eq__(self,other):
         if isinstance(other, Mooring):
             if (self.filename  == other.filename):
-                return (self.lon == other.lon ) & (self.lat == other.lat) 
+                return (self.lon == other.lon ) & (self.lat == other.lat)
             else:
                 return False
         else:

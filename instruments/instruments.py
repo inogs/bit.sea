@@ -11,6 +11,17 @@ MOORINGVARS={'O2o':'DOX1', \
              'P_i':'CPHL'}  
 
 def Selector(var,T,region):
+    '''
+    Arguments:
+       var is a string indicating variable,
+          if var is None, no selection is done about variable
+       T is as TimeInterval istance
+       region is a region istance
+
+    Returns
+       a list of profile objects:
+       they can be either BioFloatProfile or MooringProfile instances
+    '''
     
     if var is None:
         floatvar = None

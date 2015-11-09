@@ -7,7 +7,7 @@ import instruments
 import scipy.io.netcdf as NC
 import numpy as np
 
-import matchup
+import matchup.matchup
 
 
 class Matchup_Manager():
@@ -121,7 +121,14 @@ class Matchup_Manager():
                 break
         return Model_time
     
-    def getMatchups(self,Profilelist,nav_lev,model_varname,ref_varname):
+    def reference_var(self,p,var):
+        if isinstance(p, instruments.bio_float.BioFloatProfile):
+            return instruments.FLOATVARS[var]
+        if isinstance(p, instruments.mooring.MooringProfile):
+            return instruments.MOORINGVARS[var]
+
+
+    def getMatchups(self,Profilelist,nav_lev,model_varname):
         ''' 
         Float list is a list of Bio_Float objects 
         It depends on a user selection in space and time
@@ -146,6 +153,10 @@ class Matchup_Manager():
         
         for p in Profilelist:
             Model_time = self.modeltime(p)
+            if not self.TI.contains(Model_time) :
+                print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                continue
+
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
             seaPoints = ~np.isnan(ModelProfile)
@@ -153,7 +164,9 @@ class Matchup_Manager():
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask         
                 print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
                 continue
-            
+
+
+            ref_varname = self.reference_var(p, model_varname)
             Pres, Profile = p.read(ref_varname)
             
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)

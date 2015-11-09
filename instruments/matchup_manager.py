@@ -23,7 +23,7 @@ class Matchup_Manager():
         self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = INPUTDIR
         if os.path.exists(INPUTDIR):
-            self.TL = TimeList(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'../postproc/IOnames.xml')
+            self.TL = TimeList(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'postproc/IOnames.xml')
             self.TI = timeinterval
             All_Med = Rectangle(-6,36,30,46)
             self.PROFILE_LIST = instruments.Selector(None, self.TI, All_Med)
@@ -62,7 +62,7 @@ class Matchup_Manager():
         
         JOB_LINES.append("export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc \n")
         JOB_LINES.append("export SUBMASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/POSTPROC/submask.nc \n")
-        JOB_LINES.append("cd ../postproc \n")
+        JOB_LINES.append("cd postproc \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
             INTERESTED_PROFILES = [self.PROFILE_LIST[k] for k in t[1]] #t[1]

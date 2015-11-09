@@ -14,7 +14,7 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
 
-    return TimeInterval.fromdatetimes(req.starttime, req.endtime)
+    return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 def getSeason(datetime_obj):
     '''
@@ -348,7 +348,7 @@ class TimeList():
         for ir, req in enumerate(self.getOwnList()):
             LIST_of_IND=[]
             for ind_date, d in enumerate(datetimelist):
-                if (d >= req.starttime) & (d <= req.endtime) :
+                if req.time_interval.contains(d):
                     LIST_of_IND.append(ind_date)
             if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
         return Coupled_List

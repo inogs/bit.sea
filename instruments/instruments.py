@@ -12,10 +12,15 @@ MOORINGVARS={'O2o':'DOX1', \
 
 def Selector(var,T,region):
     
- 
+    if var is None:
+        floatvar = None
+        mooringvar = None
+    else:
+        floatvar = FLOATVARS[var]
+        mooringvar = MOORINGVARS[var]
     
     LIST=[]
-    LIST.append(bio_float.FloatSelector(  FLOATVARS[var], T, region))
-    LIST.append(mooring.MooringSelector(MOORINGVARS[var], T, region))
+    LIST.extend(bio_float.FloatSelector(floatvar  , T, region))
+    LIST.extend(mooring.MooringSelector(mooringvar, T, region))
     return LIST
 

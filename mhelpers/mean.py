@@ -47,7 +47,7 @@ class Mean(object):
         Raises:
             - *TypeError* if values is not an array of numbers.
         """
-        assert values != None
+        assert not values is None
         if pressure_required:
             assert (not (pressure_values is None)) and (len(values) == len(pressure_values))
         else:

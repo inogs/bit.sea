@@ -1,6 +1,6 @@
 import numpy as np
 import os, datetime
-
+import index_reader
 dateformat17='%Y%m%d-%H:%M:%S'
 # USER SELECTION ---------------------
 DATESTART=datetime.datetime.strptime('20140101-00:00:00',dateformat17)

@@ -2,11 +2,13 @@ import numpy as np
 import os,datetime
 from instrument import Instrument, Profile
 import scipy.io.netcdf as NC
+import index_reader
+
 
 from commons.time_interval import TimeInterval
 
 basetime = datetime.datetime(1950,1,1,0,0,0)
-
+INDEX_FILE=index_reader()
 #DOX1:units = "ml/l" ;
 #CPHL:units = "milligram/m3" ;
 
@@ -87,27 +89,27 @@ class Mooring(Instrument):
             
             return Pres[~bad], Profile[~bad]
 
+    @staticmethod
+    def fromfile(filename):
+
+        nFiles=INDEX_FILE.size
+        for iFile in range(nFiles):
+
+            lon              = INDEX_FILE['geospatial_lon_min'][iFile]
+            lat              = INDEX_FILE['geospatial_lat_min'][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile]
+            available_params = INDEX_FILE['parameters'][iFile]
+            if filename == thefilename :
+                return Mooring(lon,lat,filename,available_params)
+        return None
+
 def MooringSelector(var, T, region):
-    filename = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/index_monthly.txt"
+
     LOC      = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/mooring/"
-    mydtype= np.dtype([('catalog_id','S20'),
-              ('file_name','S200'),
-              ('geospatial_lat_min',np.float32),
-              ('geospatial_lat_max',np.float32),
-              ('geospatial_lon_min',np.float32),
-              ('geospatial_lon_max',np.float32),
-              ('time_coverage_start','S19'),
-              ('time_coverage_end','S19'),
-              ('provider','S30'),
-              ('date_update','S30'),
-              ('data_mode','S1'),
-              ('parameters','S200')] )
 
-    ALLVARLIST=['PHOS','SLCA','AMON','DOX1','DOX2','CPHL','NTRZ','NTRA','NTRI','PHPH']
     INTEREST_VARLIST=['PHOS','SLCA','CPHL','NTRA','PHPH']
-    #NTRZ:long_name = "nitrate + nitrite" ;
+    A = INDEX_FILE
 
-    A=np.loadtxt(filename,dtype=mydtype, delimiter=",", skiprows=6 )
     nFiles=A.size
     selected = []
     for i in range(nFiles):

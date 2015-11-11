@@ -3,7 +3,7 @@ import glob
 import os
 import numpy as np
 import read_descriptor
-import IOnames as IOname
+import commons.IOnames as IOname
 import argparse
 
 

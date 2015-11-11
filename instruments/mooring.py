@@ -8,7 +8,7 @@ import index_reader
 from commons.time_interval import TimeInterval
 
 basetime = datetime.datetime(1950,1,1,0,0,0)
-INDEX_FILE=index_reader()
+INDEX_FILE=index_reader.index_reader()
 #DOX1:units = "ml/l" ;
 #CPHL:units = "milligram/m3" ;
 

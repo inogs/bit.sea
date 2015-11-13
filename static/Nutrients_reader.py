@@ -4,6 +4,7 @@ import datetime
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 
+
 class LeslieProfile():
     def __init__(self,lon,lat,time, depth, values,name):
         self.lon = lon
@@ -28,9 +29,10 @@ def unique_rows(data, prec=5):
 
 class NutrientsReader():
     def __init__(self):
-
+        '''
+        Reads the NetCDF Dataset
+        '''
         filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
-        
         ncIN=NC.netcdf_file(filename,'r')
         self.DATA     = ncIN.variables['DATA'].data.copy()
         self.UNITS    = ncIN.variables['UNITS'].data.copy()
@@ -43,7 +45,9 @@ class NutrientsReader():
         for istring in range(nStrings):
             strippedstring=STRINGLIST[istring,:].tostring().strip()
             if strippedstring == thestring: break
-            
+        else:
+            print thestring + " Not Found"
+            raise NameError
         return istring
 
     def _profileGenerator(self,TIME,lon,lat,values,depth,dataset):
@@ -79,15 +83,19 @@ class NutrientsReader():
 
 
     def CruiseSelector(self, var,Cruisename):
-        ''' Variable can be one of these:
+        '''
+        Returns a profile list  by selecting for
+        variable (string) and
+        Cruisename (string)
+
+        var can be one of these:
          - nitrate
          - phosphate
          - silicate
          - oxygen
-         
-         Cruise name can be one of these
-            06MT51/2
-            BIOPT06
+
+         Cruisename can be one of these
+            06MT51/2  BIOPT06
             CANARI
             DYFAMED
             DYFAMED/PAPADOC - 99
@@ -99,7 +107,8 @@ class NutrientsReader():
             POSEIDONE1M3A
             PROSOPE
             RHOFI 1   RHOFI 2   RHOFI 3
-            SINAPSI-3   SINAPSI-4 
+            SINAPSI-3   SINAPSI-4
+
          Returns a profile list
          
          '''
@@ -127,19 +136,22 @@ class NutrientsReader():
         return self._profileGenerator(TIME, lon, lat, values, depth, dataset)
     
     def Selector(self,var,T_int, region):
-        ''' Variable can be one of these:
+        '''
+        Returns a profile list by selecting for
+          variable (string),
+          T_int   (TimeInterval object)
+          region  (region object)
+
+        var can be one of these:
          - nitrate
          - phosphate
          - silicate
          - oxygen
-         
-         Returns a profile list
          '''
         
-        ivar = self._find_index(var, self.VARIABLES)
-        
+        ivar  = self._find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]
-        good = (values < 1e+19) & (values > 0)
+        good  = (values < 1e+19) & (values > 0)
         
         values = values[good]
         

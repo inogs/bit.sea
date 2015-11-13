@@ -4,18 +4,16 @@ from basins.region import Rectangle
 from DatasetExtractor import DatasetExtractor
 
 
-class NutrientsReader():
-    
-    
+class CarbonReader(DatasetExtractor):
     
     def __init__(self):
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
+        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
-
+ 
     def CruiseSelector(self, var,Cruisename):
         '''
         Returns a profile list  by selecting for
@@ -23,25 +21,34 @@ class NutrientsReader():
         Cruisename (string)
 
         var can be one of these:
+         - DIC
+         - ALK
+         - temp
+         - theta
+         - salinity
+         - silicate
          - nitrate
          - phosphate
-         - silicate
          - oxygen
+         - sigma_theta
+         - density
+         - sigma_t
+         - pH25_sws
+         - pH25_T
 
          Cruisename can be one of these
-            06MT51/2  BIOPT06
-            CANARI
-            DYFAMED
-            DYFAMED/PAPADOC - 99
-            MEDCIESM
-            MEDGOOS2  MEDGOOS3  MEDGOOS4  MEDGOOS5
-            MELISSA 2004
-            MT84_3
-            NORBAL  NORBAL2 NORBAL3  NORBAL4
-            POSEIDONE1M3A
+            METEOR   METEOR51   METEOR95
+            BOUM 2008
             PROSOPE
-            RHOFI 1   RHOFI 2   RHOFI 3
-            SINAPSI-3   SINAPSI-4
+            EGEO APRIL          EGEO SEPT
+            REGINA MARIS
+            Garcia del Cid
+            SESAME - ADRIATICO 2008
+            CARBOGIB 1     CARBOGIB 2    CARBOGIB 3
+            CARBOGIB 4     CARBOGIB 5    CARBOGIB 6
+            GIFT 1      GIFT 2
+            DYFAMED
+
 
          Returns a profile list
          
@@ -56,24 +63,35 @@ class NutrientsReader():
           region  (region object)
 
         var can be one of these:
+         - DIC
+         - ALK
+         - temp
+         - theta
+         - salinity
+         - silicate
          - nitrate
          - phosphate
-         - silicate
          - oxygen
+         - sigma_theta
+         - density
+         - sigma_t
+         - pH25_sws
+         - pH25_T
          '''
         return self.DataExtractor.selector(var, T_int, region)
+        
+
+
 
 if __name__ == '__main__':
     
     var= 'nitrate';
-    TI = TimeInterval('20020101','20030101','%Y%m%d')
-    Reg= Rectangle(0,20,30,46)
-    A = NutrientsReader()
-    ProfileLIST = A.Selector('nitrate', TI, Reg)
+    TI = TimeInterval('19900101','2010101','%Y%m%d')
+    Reg= Rectangle(-6,36,30,46)
+    A = CarbonReader()
+    ProfileLIST = A.Selector('density', TI, Reg)
     
-    
-    Cruisename='MELISSA 2004'
-    ProfileLIST2 = A.CruiseSelector(var, Cruisename)
+    ProfileLIST2 = A.CruiseSelector('density', 'CARBOGIB 6')
 
 
         

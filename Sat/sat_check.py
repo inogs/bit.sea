@@ -1,5 +1,7 @@
-from postproc.Timelist import *
+from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
 import numpy as np
+import os
 
 import SatManager as Sat
 
@@ -12,8 +14,9 @@ reset = False
 Timestart="19500101"
 Time__end="20500101"
 IonamesFile = '../postproc/IOnames_sat.xml'
-TL_orig = TimeList(Timestart,Time__end, ORIGDIR ,"*.nc",IonamesFile)
-TLCheck = TimeList(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
+TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
+TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",IonamesFile)
+TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",IonamesFile)
 
 ORIG_NAMES=[os.path.basename(i) for i in TL_orig.filelist]
 CHECKNAMES=[os.path.basename(i) for i in TLCheck.filelist]

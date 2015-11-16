@@ -23,7 +23,7 @@ class Matchup_Manager():
         self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = INPUTDIR
         if os.path.exists(INPUTDIR):
-            self.TL = TimeList(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'postproc/IOnames.xml')
+            self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'postproc/IOnames.xml')
             self.TI = timeinterval
             All_Med = Rectangle(-6,36,30,46)
             self.PROFILE_LIST = instruments.Selector(None, self.TI, All_Med)

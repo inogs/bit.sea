@@ -1,5 +1,6 @@
-import postproc.Timelist as Timelist
-import postproc.IOnames as IOnames
+from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
+import commons.IOnames as IOnames
 import numpy as np
 import SatManager as Sat
 import matchup.matchup as matchup
@@ -14,7 +15,8 @@ Timestart="20150701"
 Time__end="20151001"
 IonamesFile = '../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
-model_TL = Timelist.TimeList(Timestart,Time__end, MODEL_DIR,"*.nc",IonamesFile)
+TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc",IonamesFile)
 ngib=52
 
 for itime, time in enumerate(model_TL.Timelist[:1]):

@@ -33,61 +33,87 @@ def getSeason(datetime_obj):
     return 3
 
 class TimeList():
-    '''
-    HYPOTHESIS: 
-     - the Input directory has files containing a date in their names
-     - every file refers to a single time frame
-     - The date of in the file name can be considered as centered in their period
-    The generated datetime list has all the files concerning the period indicated by datestart, dateend. 
-    Some of these files can have the centered date out of that period.
-    
-    Example:
-    
-    INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
-    TL = TimeList('20141201-00:00:00','20150701-00:00:00', INPUTDIR,"ave*N1p.nc", 'IOnames.xml')
-    '''       
-    def __init__(self, timeinterval, inputdir,searchstring,IOnamesfile):
+
+    def __init__(self,datelist):
+        '''
+        TimeList object is created by providing a list of datetime objects
+        (At least 2).
+        '''
+        self.Timelist = datelist
+        self.Timelist.sort()
+        self.nTimes   =len(self.Timelist)
+        self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
+        self.inputdir     = None
+        self.searchstring = None
+        self.filelist     = None
+        self.inputFrequency= self.__searchFrequency()
+
+
+    @staticmethod
+    def fromfilenames(timeinterval, inputdir,searchstring,IOnamesfile):
+        '''
+        Generates a TimeList object by reading a directory
+        
+        HYPOTHESIS: 
+         - the Input directory has files containing a date in their names
+         - every file refers to a single time frame
+         - The date of in the file name can be considered as centered in their period
+        The generated datetime list has all the files concerning the period indicated in the timeinterval. 
+        Some of these files can have the centered date out of that period.
+        
+        Example:
+        
+        INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
+        Time_int = TimeInterval('20141201-00:00:00','20150701-00:00:00',"%Y%m%d-%H:%M:%S")
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*N1p.nc", 'IOnames.xml')
+        '''    
      
         IOname = IOnames.IOnames(IOnamesfile)
-        self.timeinterval  = timeinterval
-        self.inputdir      = inputdir
-        self.searchstring  = searchstring
         
-        filelist_ALL = glob.glob(self.inputdir + self.searchstring)
-        self.filelist=[]
-        self.Timelist=[]
+        filelist_ALL = glob.glob(inputdir + searchstring)
+        filenamelist=[]
+        datetimelist=[]
         External_filelist=[]
         External_timelist=[]
         for pathfile in filelist_ALL:
             filename   = os.path.basename(pathfile)
             datestr     = filename[IOname.Input.date_startpos:IOname.Input.date_endpos]
             actualtime = datetime.datetime.strptime(datestr,IOname.Input.dateformat)
-            if self.timeinterval.contains(actualtime) :         
-                self.filelist.append(pathfile)
-                self.Timelist.append(actualtime)
+            if timeinterval.contains(actualtime) :
+                filenamelist.append(pathfile)
+                datetimelist.append(actualtime)
             else:
                 External_filelist.append(pathfile)
                 External_timelist.append(actualtime)
         
-        self.filelist.sort()
-        self.Timelist.sort()        
-        self.inputFrequency= self.__searchFrequency()
-        
-        if self.inputFrequency is not None:
+        TimeListObj = TimeList(datetimelist)
+        filenamelist.sort()
+        TimeListObj.timeinterval = timeinterval
+        TimeListObj.inputdir     = inputdir
+        TimeListObj.searchstring = searchstring
+        TimeListObj.filelist = filenamelist
+
+
+
+        if TimeListObj.inputFrequency is not None:
             for iFrame, t in enumerate(External_timelist):
-                TimInt = computeTimeWindow(self.inputFrequency, t)
-                if self.timeinterval.isInWindow(TimInt):
-                    self.filelist.append(External_filelist[iFrame])
-                    self.Timelist.append(External_timelist[iFrame])
-            self.filelist.sort()
-            self.Timelist.sort()
-        self.nTimes   =len(self.filelist)
-        
-        if self.inputFrequency == 'daily':
-            for iFrame, t in enumerate(self.Timelist):
+                TimInt = computeTimeWindow(TimeListObj.inputFrequency, t)
+                if TimeListObj.timeinterval.isInWindow(TimInt):
+                    TimeListObj.filelist.append(External_filelist[iFrame])
+                    TimeListObj.Timelist.append(External_timelist[iFrame])
+            TimeListObj.filelist.sort()
+            TimeListObj.Timelist.sort()
+        TimeListObj.nTimes   =len(TimeListObj.filelist)
+
+
+        # we force daily datetimes to have hours = 12
+        if TimeListObj.inputFrequency == 'daily':
+            for iFrame, t in enumerate(TimeListObj.Timelist):
                 if t.hour==0:
                     newt = datetime.datetime(t.year,t.month,t.day,12,0,0)
-                    self.Timelist[iFrame] = newt
+                    TimeListObj.Timelist[iFrame] = newt
+
+        return TimeListObj
 
 
     def __searchFrequency(self):
@@ -102,7 +128,11 @@ class TimeList():
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
         if (mydiff.days > 26) & (mydiff.days < 32) :
             return "monthly"
-        
+        if (mydiff.days == 0):
+            hours = mydiff.seconds/3600
+            #we want an integer number of hours
+            if (float(mydiff.seconds)/3600. == hours):
+                return "%dhours" % hours
     
     def __generaltimeselector(self,requestor):
             SELECTION=[]
@@ -132,7 +162,19 @@ class TimeList():
         
          
         '''
-            
+
+        if isinstance(requestor,requestors.Daily_req):
+            # hourly values are treated as instantaneous values, not time averages
+            SELECTION=[]
+            weights = []
+            if self.inputFrequency[1:] =="hours" :
+                for it,t in enumerate(self.Timelist):
+                    if requestor.time_interval.contains(t):
+                        SELECTION.append(it)
+                        weights.append(1.)
+                return SELECTION , np.array(weights)
+
+
         if isinstance(requestor, requestors.Monthly_req):
             SELECTION=[]
             weights = []
@@ -211,8 +253,23 @@ class TimeList():
                 SELECTION.extend(s)
                 weights.extend(w)
             return SELECTION , np.array(weights)           
-            
-            
+
+
+    def getDailyList(self):
+        '''
+        Tested only for mooring case, interval = 3 hours
+        '''
+        REQ_LIST=[]
+        t = self.Timelist[0]
+        starting_centered_day = datetime.datetime(t.year,t.month,t.day)
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=1")
+        for t in TL:
+            d = requestors.Daily_req(t.year,t.month,t.day)
+            indexes,_ = self.select(d)
+            if len(indexes)>0:
+                REQ_LIST.append(d)
+        return REQ_LIST
+
     def getWeeklyList(self,weekday):
         '''
         

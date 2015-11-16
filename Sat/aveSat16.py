@@ -1,5 +1,5 @@
-import postproc.Timelist as Timelist
-import postproc.IOnames as IOnames
+from commons.Timelist import TimeList
+from commons import IOnames
 import numpy as np
 import os
 import SatManager as Sat
@@ -12,7 +12,7 @@ reset = False
 Timestart="19500101"
 Time__end="20500101"
 IonamesFile = '../postproc/IOnames_sat.xml'
-TLCheck = Timelist.TimeList(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
+TLCheck = TimeList.fromfilenames(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
 IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)

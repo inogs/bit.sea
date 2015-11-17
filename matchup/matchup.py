@@ -4,6 +4,60 @@ from commons.layer import Layer
 from statistics import matchup
 
 
+class FloatProfilesMatchup(ProfilesMatchup):
+    def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, time=None, qc=None, name=None, cycle=None):        
+        if Model is None:
+            self.Model = np.array([],np.float32)
+            self.Ref   = np.array([],np.float32)
+            self.Depth = np.array([],np.float32)
+            self.Lon   = np.array([],np.float32)
+            self.Lat   = np.array([],np.float32)
+            self.Time  = np.array([],np.float32)
+            self.Qc    = np.array([],np.float32)
+            self.name  = np.array([],np.float32)
+            self.cycle = np.array([],np.float32)
+            self.Lengths = []
+        else:
+            self.Model = Model
+            self.Ref   = Ref
+            self.Depth = Depth
+            self.Lon   = Lon
+            self.Lat   = Lat
+            self.Time  = time
+            self.Qc    = qc
+            self.name  = name
+            self.cycle = cycle
+            self.Lengths = [len(Model)]
+
+
+    def extend(self,fm):
+        self.Model = np.concatenate((self.Model, fm.Model))
+        self.Ref   = np.concatenate((self.Ref,   fm.Ref))
+        self.Depth = np.concatenate((self.Depth, fm.Depth))
+        lenfm = fm.Model.size
+        self.Lon   = np.concatenate((self.Lon,   np.ones(lenfm,)*fm.instrument.lon))
+        self.Lat   = np.concatenate((self.Lat,   np.ones(lenfm,)*fm.instrument.lat))
+        t = fm.instrument.time
+        instrumenttime = t.toordinal()+366 + float(t.hour)/24 + float(t.minute)/(24.*60)
+
+        self.Time  = np.concatenate((self.Time,  np.ones(lenfm,)*instrumenttime))
+        self.Qc    = np.concatenate((self.Qc,    fm.Qc ))
+        self.name  = np.concatenate((self.name,  np.ones(lenfm,)*int(fm.instrument.name()) ))
+        self.cycle = np.concatenate((self.cycle, np.ones(lenfm,)*fm.instrument._my_float.cycle))
+        self.Lengths.extend([ len(fm.Model)])
+
+    def export(self,directory,prefix):
+
+        self.Model.tofile(directory + prefix + "model.txt",sep="\n",format="%10.5f")
+        self.Ref.tofile(  directory + prefix + "ref.txt"  ,sep="\n",format="%10.5f")
+        self.Lon.tofile(  directory + prefix + "lon.txt"  ,sep="\n",format="%10.5f")
+        self.Lat.tofile(  directory + prefix + "lat.txt"  ,sep="\n",format="%10.5f")
+        self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
+        self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
+        self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
+        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
+        self.cycle.tofile(directory + prefix + "cycle.txt",sep="\n",format="%d")
+
 
 class ProfilesMatchup(matchup):
     def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None):        

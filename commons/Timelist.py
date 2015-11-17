@@ -129,10 +129,11 @@ class TimeList():
         if (mydiff.days > 26) & (mydiff.days < 32) :
             return "monthly"
         if (mydiff.days == 0):
-            hours = mydiff.seconds/3600
+            return "hourly"
+            #hours = mydiff.seconds/3600
             #we want an integer number of hours
-            if (float(mydiff.seconds)/3600. == hours):
-                return "%dhours" % hours
+            #if (float(mydiff.seconds)/3600. == hours):
+
     
     def __generaltimeselector(self,requestor):
             SELECTION=[]
@@ -167,7 +168,7 @@ class TimeList():
             # hourly values are treated as instantaneous values, not time averages
             SELECTION=[]
             weights = []
-            if self.inputFrequency[1:] =="hours" :
+            if self.inputFrequency =="hourly" : # how many does not matter
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)

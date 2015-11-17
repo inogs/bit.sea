@@ -9,6 +9,7 @@ from commons.time_interval import TimeInterval
 
 basetime = datetime.datetime(1950,1,1,0,0,0)
 INDEX_FILE=index_reader.index_reader()
+fillValue = -9999
 #DOX1:units = "ml/l" ;
 #CPHL:units = "milligram/m3" ;
 
@@ -55,25 +56,26 @@ class Mooring(Instrument):
             return False
     
     
-    def read_raw(self, var, profile=None):
+    def read_raw(self, var):
         '''
         If profile is None the entire 2d array (depth,time) is returned
         If a profile object is provided, a 1d array (dimension depth) is returned
         corresponding to the pointprofile provided
         '''
-        raise NotImplementedError
-        if profile is None:
-            pass
-            
-        #returns array(times,depths) 
-    
-    def read(self, var, time=None ):
-        fillValue = -9999
         ncIN = NC.netcdf_file(self.filename,'r')
         timesInFile = ncIN.variables['TIME'].data.copy()
         VAR         = ncIN.variables[var   ].data.copy()
-        PRES        = ncIN.variables['PRES'].data.copy()
+        if ncIN.variables.has_key('PRES'):
+            PRES        = ncIN.variables['PRES'].data.copy()
+        else:
+            PRES        = ncIN.variables['DEPH'].data.copy()
         ncIN.close()
+        return VAR, PRES, timesInFile
+
+
+    def read(self, var, time=None ):
+
+        VAR, PRES, timesInFile = self.read_raw(var)
         if time is None:
             return PRES,VAR  #returns array(times,depths)
 
@@ -99,7 +101,7 @@ class Mooring(Instrument):
             lat              = INDEX_FILE['geospatial_lat_min'][iFile]
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
-            if filename == thefilename :
+            if os.path.basename(filename) == os.path.basename(thefilename):
                 return Mooring(lon,lat,filename,available_params)
         return None
 

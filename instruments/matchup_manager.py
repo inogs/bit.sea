@@ -167,11 +167,11 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            Pres, Profile = p.read(ref_varname)
+            Pres, Profile, Qc = p.read(ref_varname)
             
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                     
-            Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres,p)
+            Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
             
             Group_Matchup.extend(Matchup)
     

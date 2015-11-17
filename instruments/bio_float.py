@@ -143,13 +143,16 @@ class BioFloat(Instrument):
             iProf = N_MEAS.argmax()
             print "iprof new value", iProf
 
-        M = self.__merge_var_with_adjusted(ncIN, var)
+        M       = self.__fillnan(ncIN, var + "_ADJUSTED")
+        #M      = self.__merge_var_with_adjusted(ncIN, var) # to have not only adjusted
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
+        QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
         Profile =  M[iProf,:]
         Pres    =  PRES[iProf,:]
+        Qc      = QC[iProf,:]
         ncIN.close()
         
-        return Pres, Profile
+        return Pres, Profile,Qc
 
     def read_raw(self,var):
         '''
@@ -157,23 +160,26 @@ class BioFloat(Instrument):
          - without nans
          - without repetition of the same pressure
         '''
-        rawPres, rawProfile = self.read_very_raw(var)
+        rawPres, rawProfile, rawQc = self.read_very_raw(var)
  
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
         badProfile = np.isnan(rawProfile)
-        bad = badPres | badProfile
+        goodQc     = (rawQc == '2' ) | (rawQc == '1' )
+        bad = badPres | badProfile | (~goodQc )
+        
         
         Pres    =    rawPres[~bad]
         Profile = rawProfile[~bad]
+        Qc      =     (rawQc[~bad]).astype(np.int)
         
         uniquePres,index=np.unique(Pres,return_index=True)
         uniqueProfile =  Profile[index]
+        uniqueQc      =       Qc[index]
         
-        
-        return uniquePres, uniqueProfile
+        return uniquePres, uniqueProfile, uniqueQc
                
     def rarefy(self,Pres,minimumdelta):
         '''
@@ -202,11 +208,14 @@ class BioFloat(Instrument):
         Takes var as string
         Returns Pres, Profile, as numpy arrays
         '''
-        pres, prof = self.read_raw(var)
+        pres, prof, qc = self.read_raw(var)
+        if pres.size ==0:
+            return pres, prof, qc
         
-        ii = self.rarefy(pres, 1.0)
+        ii = self.rarefy(pres, 2.0)
         pres = pres[ii]
         prof = prof[ii]
+        qc   =   qc[ii]
         
         if mean == None:
             if BioFloat.default_mean != None:
@@ -214,7 +223,7 @@ class BioFloat(Instrument):
             else:
                 return pres, prof
         else:
-            return pres, mean.compute(prof, pres)
+            return pres, mean.compute(prof, pres), mean.compute(qc,pres)
 
     def plot(self,Pres,profile):
         pl.figure()

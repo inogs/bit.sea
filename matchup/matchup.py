@@ -57,7 +57,7 @@ class ProfilesMatchup(matchup):
 
 
 class ProfileMatchup():
-    def __init__(self, Model, Ref, Depth, profileObj):
+    def __init__(self, Model, Ref, Depth, Qc, profileObj):
         bads = np.isnan(Model)
         if bads.any() :
             print "Nans in model "
@@ -68,6 +68,7 @@ class ProfileMatchup():
         self.Model = Model
         self.Ref   = Ref
         self.Depth = Depth
+        self.Qc    = Qc
         self.instrument = profileObj
         self.Lon   = np.ones_like(Model)*profileObj.lon
         self.Lat   = np.ones_like(Model)*profileObj.lat

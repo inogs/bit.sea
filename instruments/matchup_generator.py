@@ -4,14 +4,11 @@ import os
 from commons.time_interval import TimeInterval
 from commons.layer import Layer
 
-from profiler import T_INT,INPUTDIR,BASEDIR
-
+from profiler import *
 import basins.OGS as OGS
-
 import instruments
-import matchup_manager 
 
-M = matchup_manager.Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
+M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 
 maskfile    = os.getenv("MASKFILE"); 
 ncIN=NC.netcdf_file(maskfile,"r")

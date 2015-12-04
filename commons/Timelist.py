@@ -43,8 +43,8 @@ class TimeList():
         assert  nTimes > 1
         self.Timelist = datelist
         self.Timelist.sort()
-        self.nTimes   = nTimes 
-        
+        self.nTimes   = nTimes
+
         self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
         self.inputdir     = None
         self.searchstring = None
@@ -210,7 +210,7 @@ class TimeList():
             
             if self.inputFrequency == "daily":
                 for it,t in enumerate(self.Timelist):
-                    if (t>=requestor.starttime) & (t<=requestor.endtime):
+                    if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)                     
             return SELECTION , np.array(weights)

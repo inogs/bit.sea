@@ -16,31 +16,29 @@ Time__end="20500101"
 IonamesFile = '../postproc/IOnames_sat.xml'
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",IonamesFile)
-TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",IonamesFile)
 
-ORIG_NAMES=[os.path.basename(i) for i in TL_orig.filelist]
-CHECKNAMES=[os.path.basename(i) for i in TLCheck.filelist]
+somecheck = False
+for filename in TL_orig.filelist:
+    outfile = CHECKDIR + os.path.basename(filename)
+    if not os.path.exists(outfile) :
+        somecheck = True
+        break 
 
-if reset : CHECKNAMES = []
-
-
-toCheckList=[]
-for iTimeorig, filename in enumerate(ORIG_NAMES):
-    if filename not in CHECKNAMES:
-        toCheckList.append((filename,iTimeorig))
-
-        
-if len(toCheckList)>0:
+if somecheck:
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
 else:
     print "All checks done"
 
-for filename, iTimeorig in toCheckList:
-    julian = int( TL_orig.Timelist[iTimeorig].strftime("%j") )
+for iTime, filename in enumerate(TL_orig.filelist):
+    outfile = CHECKDIR + os.path.basename(filename)
+    exit_condition = os.path.exists(outfile) and (not reset) 
+    if exit_condition: 
+        continue
+    julian = int( TL_orig.Timelist[iTime].strftime("%j") )
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
-    CHL_IN = Sat.readfromfile(TL_orig.filelist[iTimeorig])
+    CHL_IN = Sat.readfromfile(filename)
     CHL_IN[581:,164:] = Sat.fillValue # BLACK SEA
     cloudsLandTIME = CHL_IN         == Sat.fillValue
     cloudlandsCLIM = DAILY_REF_MEAN == Sat.fillValue
@@ -60,7 +58,7 @@ for filename, iTimeorig in toCheckList:
     print filename
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpfile(CHECKDIR + filename, CHL_OUT)
+    Sat.dumpfile(outfile, CHL_OUT)
 
 
     

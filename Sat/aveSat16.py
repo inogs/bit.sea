@@ -1,4 +1,5 @@
 from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
 from commons import IOnames
 import numpy as np
 import os
@@ -12,7 +13,8 @@ reset = False
 Timestart="19500101"
 Time__end="20500101"
 IonamesFile = '../postproc/IOnames_sat.xml'
-TLCheck = TimeList.fromfilenames(Timestart,Time__end, CHECKDIR,"*.nc",IonamesFile)
+TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
+TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",IonamesFile)
 IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)

@@ -39,9 +39,12 @@ class TimeList():
         TimeList object is created by providing a list of datetime objects
         (At least 2).
         '''
+        nTimes = len(datelist)
+        assert  nTimes > 1
         self.Timelist = datelist
         self.Timelist.sort()
-        self.nTimes   =len(self.Timelist)
+        self.nTimes   = nTimes 
+        
         self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
         self.inputdir     = None
         self.searchstring = None
@@ -71,6 +74,7 @@ class TimeList():
         IOname = IOnames.IOnames(IOnamesfile)
         
         filelist_ALL = glob.glob(inputdir + searchstring)
+        assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]
         External_filelist=[]

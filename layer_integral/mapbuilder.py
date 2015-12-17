@@ -31,6 +31,7 @@ class Plot(object):
             if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
                 raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
+        self.__climslist = list()
 
     @property
     def varname(self):
@@ -44,10 +45,15 @@ class Plot(object):
     def clim(self):
         return self.__clim
 
-    def append_layer(self, layer):
+    @property
+    def climlist(self):
+        return self.__climslist
+
+    def append_layer(self, layer, clim=None):
         if not isinstance(layer, (Layer,)):
             raise ValueError("layer must be a Layer object")
         self.__layerlist.append(layer)
+        self.__climslist.append(clim)
 
 class MapBuilder(object):
 

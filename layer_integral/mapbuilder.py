@@ -27,8 +27,9 @@ class Plot(object):
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
-        if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
-            raise ValueError("clim must be a list of two numbers")
+        if not (clim is None):
+            if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
+                raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
 
     @property

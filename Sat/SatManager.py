@@ -137,7 +137,7 @@ def dumpV4file(filename,CHL):
     ncOUT.createDimension('lon',V4.jpi)
     ncOUT.createDimension('lat',V4.jpj)
     
-    ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
+    ncvar = ncOUT.createVariable('lchlm', 'f', ('lat','lon'))
     CHLv4 = convertinV4format(CHL)
     CHLv4[np.isnan(CHLv4)] = fillValue
     ncvar[:] = CHLv4

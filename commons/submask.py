@@ -45,3 +45,22 @@ class SubMask(Mask):
                 prism[:,y,x] = basin.is_inside(lon,lat)
         # submask = original mask * prism mask
         self._mask = self._mask * prism
+
+    def save_as_netcdf(self, filename, descr=None):
+        if descr is None:
+            descr = repr(self._basin) + " mask"
+        netCDF_out = netCDF4.Dataset(filename, "w", format="NETCDF4")
+        netCDF_out.descr = descr
+        netCDF_out.createDimension('z', self._shape[0])
+        netCDF_out.createDimension('y', self._shape[1])
+        netCDF_out.createDimension('x', self._shape[2])
+        mask = netCDF_out.createVariable('mask', 'u1', ('z', 'y', 'x'))
+        mask[:,:,:] = self._mask[:,:,:]
+        nav_lev = netCDF_out.createVariable('nav_lev', 'f4', ('z',))
+        nav_lev[:] = self._zlevels
+        zero_mat = np.zeros((self._shape[1], self._shape[2]), np.float32)
+        nav_lat = netCDF_out.createVariable('nav_lat', 'f4', ('y', 'x'))
+        nav_lat[:,:] = self._ylevels[:,np.newaxis] + zero_mat
+        nav_lon = netCDF_out.createVariable('nav_lon', 'f4', ('y', 'x'))
+        nav_lon[:,:] = self._xlevels[np.newaxis,:] + zero_mat
+        netCDF_out.close()

@@ -27,9 +27,11 @@ class Plot(object):
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
-        if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
-            raise ValueError("clim must be a list of two numbers")
+        if not (clim is None):
+            if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
+                raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
+        self.__climslist = list()
 
     @property
     def varname(self):
@@ -43,10 +45,15 @@ class Plot(object):
     def clim(self):
         return self.__clim
 
-    def append_layer(self, layer):
+    @property
+    def climlist(self):
+        return self.__climslist
+
+    def append_layer(self, layer, clim=None):
         if not isinstance(layer, (Layer,)):
             raise ValueError("layer must be a Layer object")
         self.__layerlist.append(layer)
+        self.__climslist.append(clim)
 
 class MapBuilder(object):
 
@@ -66,11 +73,16 @@ class MapBuilder(object):
         for lm in xmldoc.getElementsByTagName("LayersMaps"):
             #For each plots element
             for pdef in get_subelements(lm, "plots"):
-                clim = literal_eval(get_node_attr(pdef, "clim"))
+                clim = get_node_attr(pdef, "clim")
+                if not (clim is None):
+                    clim = literal_eval(clim)
                 plot = Plot(get_node_attr(pdef, "var"), [], clim)
                 #For each depth element
                 for d in get_subelements(pdef, "depth"):
-                    plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")))
+                    clim = get_node_attr(d, "clim")
+                    if not (clim is None):
+                        clim = literal_eval(clim)
+                    plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
                 self.__plotlist.append(plot)
 
     def plot_maps_data(self, min_ticks=4, max_ticks=8):
@@ -80,10 +92,19 @@ class MapBuilder(object):
             longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
                 de = DataExtractor(p.varname, f, self._mask)
-                for l in p.layerlist:
+                for i,l in enumerate(p.layerlist):
                     outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)
-                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':p.clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
+                    try:
+                        clim = p.climlist[i]
+                        if clim is None:
+                            raise ValueError
+                    except ValueError:
+                        if p.clim is None:
+                            raise ValueError("No clim defined for %s %s" % (p.varname, repr(l)))
+                        else:
+                            clim = p.clim
+                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks)
                     fig.savefig(outfilename)
                 fig = None
                 ax = None

@@ -32,7 +32,7 @@ class SubMask(Mask):
             self._zlevels = maskobject.zlevels
             self._dz = maskobject.dz
         elif not (filename is None):
-            super(SubMask, self).__init__(filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t")
+            super(SubMask, self).__init__(filename, maskvarname, zlevelsvar, ylevelsmatvar, xlevelsmatvar, dzvarname)
         if isinstance(basin, Basin):
             self._basin = basin
         else:

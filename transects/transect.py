@@ -5,7 +5,7 @@ from xml.dom import minidom
 from ast import literal_eval
 from commons.segment import Segment
 from commons.helpers import is_number
-from commons.xml import *
+from commons.xml_module import *
 from commons.mask import Mask
 from commons.dataextractor import DataExtractor
 
@@ -21,6 +21,8 @@ class Transect(object):
               maximum)
             - *segmentlist*: a list Segment objects. Can be an empty list.
         """
+        if varname is None:
+            raise ValueError("varname cannot be None")
         self.__varname = str(varname)
         if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
             raise ValueError("clim must be a list of two numbers")
@@ -97,12 +99,25 @@ class Transect(object):
                 lon_max = literal_eval(get_node_attr(sdef, "lonmax"))
                 lat_max = literal_eval(get_node_attr(sdef, "latmax"))
                 if (lon_min != lon_max) and (lat_min != lat_max):
-                    raise NotImplementedError("You have to fix a coordinate. Either Longitude or Latitude.")
+                    raise NotImplementedError(
+                    "Invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
+                    (lon_min, lat_min, lon_max, lat_max))
                 segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max)))
             #For each vars list
             for vl in get_subelements(t, "vars"):
                 for v in get_subelements(vl, "var"):
                     varname = get_node_attr(v, "name")
-                    clim = literal_eval(get_node_attr(v, "clim"))
+                    if varname is None:
+                        raise SyntaxError("name is not defined")
+                    clim = get_node_attr(v, "clim")
+                    if clim is None:
+                        raise ValueError("clim not set for variable %s" % (varname,))
+                    try:
+                        clim = literal_eval(get_node_attr(v, "clim"))
+                    except SyntaxError as e:
+                        msg = "Variable %s invalid syntax for clim: %s" % (varname, e.text)
+                        raise SyntaxError(msg)
+                    except:
+                        raise
                     output.append(Transect(varname, clim, segmentlist))
         return output

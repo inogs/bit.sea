@@ -14,33 +14,33 @@ class Mask(object):
             if maskvarname in dset.variables:
                 m = dset.variables[maskvarname]
                 if len(m.shape) == 4:
-                    self.__mask = np.array(m[0,:,:,:], dtype=np.bool)
+                    self._mask = np.array(m[0,:,:,:], dtype=np.bool)
                 elif len(m.shape) == 3:
-                    self.__mask = np.array(m[:,:,:], dtype=np.bool)
+                    self._mask = np.array(m[:,:,:], dtype=np.bool)
                 else:
                     raise ValueError("Wrong shape: %s" % (m.shape,))
-                self.__shape = self.__mask.shape
+                self._shape = self._mask.shape
             else:
                 raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
             if zlevelsvar in dset.variables:
                 z = dset.variables[zlevelsvar]
                 if len(z.shape) != 1:
                     raise ValueError("zlevelsvar must have only one dimension")
-                if not z.shape[0] in self.__shape:
+                if not z.shape[0] in self._shape:
                     raise ValueError("cannot match %s lenght with any of %s dimensions" % (zlevelsvar, maskvarname))
-                self.__zlevels = np.array(dset.variables[zlevelsvar])
+                self._zlevels = np.array(dset.variables[zlevelsvar])
             else:
                 raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
             if dzvarname in dset.variables:
-                self.__dz = np.array(dset.variables[dzvarname][0,:,0,0])
+                self._dz = np.array(dset.variables[dzvarname][0,:,0,0])
             else:
                 raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
-                self.__ylevels = np.array(dset.variables[ylevelsmatvar][:,0])
+                self._ylevels = np.array(dset.variables[ylevelsmatvar][:,0])
             else:
                 raise ValueError("ylevelsmatvar '%s' not found" % (str(ylevelsmatvar),))
             if xlevelsmatvar in dset.variables:
-                self.__xlevels = np.array(dset.variables[xlevelsmatvar][0,:])
+                self._xlevels = np.array(dset.variables[xlevelsmatvar][0,:])
             else:
                 raise ValueError("xlevelsmatvar '%s' not found" % (str(xlevelsmatvar),))
         except:
@@ -48,19 +48,27 @@ class Mask(object):
 
     @property
     def mask(self):
-        return self.__mask
+        return self._mask
+
+    @property
+    def xlevels(self):
+        return self._xlevels
+
+    @property
+    def ylevels(self):
+        return self._ylevels
 
     @property
     def zlevels(self):
-        return self.__zlevels
+        return self._zlevels
 
     @property
     def dz(self):
-        return self.__dz
+        return self._dz
 
     @property
     def shape(self):
-        return self.__shape
+        return self._shape
 
     def convert_lon_lat_to_indices(self, lon, lat):
         """Converts longitude and latitude to the nearest indices on the mask.
@@ -72,17 +80,17 @@ class Mask(object):
         #Input validation
         lon = float(lon)
         lat = float(lat)
-        if lon > max(self.__xlevels) or lon < min(self.__xlevels):
-            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min(self.__xlevels), max(self.__xlevels)))
-        if lat > max(self.__ylevels) or lat < min(self.__ylevels):
-            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min(self.__ylevels), max(self.__ylevels)))
-        d_lon = np.array(self.__xlevels - lon)
+        if lon > max(self._xlevels) or lon < min(self._xlevels):
+            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min(self._xlevels), max(self._xlevels)))
+        if lat > max(self._ylevels) or lat < min(self._ylevels):
+            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min(self._ylevels), max(self._ylevels)))
+        d_lon = np.array(self._xlevels - lon)
         d_lon *= d_lon
-        d_lat = np.array(self.__ylevels - lat)
+        d_lat = np.array(self._ylevels - lat)
         d_lat *= d_lat
         return np.where(d_lon == min(d_lon))[0][0] , np.where(d_lat == min(d_lat))[0][0]
 
     def convert_x_y_to_lon_lat(self, x, y):
         """Converts x and y coordinates to longitude and latitude.
         """
-        return (self.__xlevels[x], self.__ylevels[y])
+        return (self._xlevels[x], self._ylevels[y])

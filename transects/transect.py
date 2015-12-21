@@ -31,7 +31,7 @@ class Transect(object):
             raise ValueError("segmentlist must be a list of Segments")
         self.__segmentlist = segmentlist
         #Variable data cache
-        self.__datacache = { 'filename':None, 'data':None }
+        self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
 
     @property
     def varname(self):
@@ -121,3 +121,24 @@ class Transect(object):
                         raise
                     output.append(Transect(varname, clim, segmentlist))
         return output
+
+    #Private methods
+    def __get_segment_data(self, segment_index):
+        #Input validation
+        if not is_number(segment_index):
+            raise ValueError("'%s' is not a number." % (segment_index,))
+        seg = self.__segmentlist[segment_index]
+        #Retrieve indices
+        x_min, y_min = mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
+        x_max, y_max = mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
+        #Check for single point case
+        if (x_min == x_max) and (y_min == y_max):
+            raise ValueError("Invalid segment: %s" % (seg,))
+        #Get the output data
+        if x_min == x_max:
+            data = np.array(self.__datacache['data'][:, :, y_min:y_max, x_min], dtype=float)
+        elif y_min == y_max:
+            data = np.array(self.__datacache['data'][:, :, y_min, x_min:x_max], dtype=float)
+        else:
+            raise ValueError("Invalid segment: %s" % (seg,))
+        return data

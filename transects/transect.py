@@ -45,6 +45,17 @@ class Transect(object):
     def segmentlist(self):
         return self.__segmentlist
 
+    @property
+    def segmentdata(self, timestep=0):
+        if self.__datacache['segmentdata'] is None:
+            if self.__datacache['data'] is None:
+                return None
+            else:
+                self.__build_segmentdata_cache()
+                return self.__datacache['segmentdata'][timestep,:,:,:]
+        else:
+            return self.__datacache['segmentdata'][timestep,:,:,:]
+
     def fill_data_cache(self, mask, datafilepath, fill_value=np.nan):
         """Fills the object cache with data from a NetCDF file
 
@@ -137,3 +148,18 @@ class Transect(object):
         else:
             raise ValueError("Invalid segment: %s" % (seg,))
         return data
+
+    def __build_segmentdata_cache(self):
+        alldata = self.__datacache['data']
+        #Get the number of segments
+        segnum=len(self.__segmentlist)
+        #Build an empty cache
+        segmentcache = np.empty([segnum] + list(alldata.shape), dtype=float)
+        #For each segment
+        for i in range(segnum):
+            #Get segment data
+            d = self.__get_segment_data(i)
+            #Save it in the cache
+            segmentcache[i,:,:,:,:] = d[:,:,:,:]
+        #Store the date in the object cache
+        self.__datacache['segmentdata'] = segmentcache

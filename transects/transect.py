@@ -76,33 +76,9 @@ class Transect(object):
             - *timestep* (optional): the time index (default: 0).
         Returns: a NumPy array that contains the requested data.
         """
-        #Input validation
-        if not is_number(segment_index):
-            raise ValueError("'%s' is not a number." % (segment_index,))
-        seg = self.__segmentlist[segment_index]
-        if not isinstance(mask, (Mask,)):
-            raise ValueError("mask must be a Mask object.")
-        datafilepath = str(datafilepath)
-        #Retrieve indices
-        x_min, y_min = mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
-        x_max, y_max = mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
-        #Check if we don't have cached data
-        if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
-            #Read data from the NetCDF file
-            de = DataExtractor(self.__varname, datafilepath, mask, fill_value)
-            self.__datacache['filename'] = datafilepath
-            self.__datacache['data'] = de.filled_values
-        #Check for single point case
-        if (x_min == x_max) and (y_min == y_max):
-            raise ValueError("Invalid segment: %s" % (seg,))
-        #Get the output data
-        if x_min == x_max:
-            data = np.array(self.__datacache['data'][timestep,:,y_min:y_max,x_min], dtype=float)
-        elif y_min == y_max:
-            data = np.array(self.__datacache['data'][timestep,:,y_min,x_min:x_max], dtype=float)
-        else:
-            raise ValueError("Invalid segment: %s" % (seg,))
-        return data
+        self.fill_data_cache(mask, datafilepath, fill_value)
+        data = self.__get_segment_data(segment_index)
+        return data[timestep,:,:,:]
 
     @staticmethod
     def get_list_from_XML_file(plotlistfile):

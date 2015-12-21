@@ -45,6 +45,25 @@ class Transect(object):
     def segmentlist(self):
         return self.__segmentlist
 
+    def fill_data_cache(self, mask, datafilepath, fill_value=np.nan):
+        """Fills the object cache with data from a NetCDF file
+
+        Args:
+            - *mask*: a commons.Mask object.
+            - *datafilepath*: path to the NetCDF data file.
+            - *fill_value* (optional): value to use when there's no data
+              available (default: np.nan).
+        """
+        if not isinstance(mask, (Mask,)):
+            raise ValueError("mask must be a Mask object.")
+        #Check if we don't have cached data
+        datafilepath = str(datafilepath)
+        if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
+            #Read data from the NetCDF file
+            de = DataExtractor(self.__varname, datafilepath, mask, fill_value)
+            self.__datacache['filename'] = datafilepath
+            self.__datacache['data'] = de.filled_values
+
     def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan, timestep=0):
         """Extracts transect data from a NetCDF file.
 

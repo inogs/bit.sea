@@ -71,7 +71,7 @@ class Transect(object):
         datafilepath = str(datafilepath)
         if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
             #Read data from the NetCDF file
-            de = DataExtractor(self.__varname, datafilepath, mask, fill_value)
+            de = DataExtractor(mask, filename=datafilepath, varname=self.__varname, fill_value=fill_value)
             self.__datacache['filename'] = datafilepath
             self.__datacache['data'] = de.filled_values
 

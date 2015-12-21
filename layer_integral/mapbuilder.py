@@ -91,7 +91,7 @@ class MapBuilder(object):
         for f in self.__netcdffileslist:
             longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
-                de = DataExtractor(p.varname, f, self._mask)
+                de = DataExtractor(self._mask, filename=f, varname=p.varname)
                 for i,l in enumerate(p.layerlist):
                     outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)

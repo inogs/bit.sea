@@ -9,7 +9,7 @@ import os
 from glob import glob
 
 try:
-    from mapbuilder import MapBuilder
+    from layer_integral.mapbuilder import MapBuilder
 except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)

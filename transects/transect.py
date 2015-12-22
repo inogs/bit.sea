@@ -81,6 +81,20 @@ class Transect(object):
             self.__datacache['filename'] = datafilepath
             self.__datacache['data'] = de.filled_values
 
+    def get_segment_data(self):
+        """Retrieves the requested segments data.
+
+        Returns: a list of tuples. The first element of a tuple is the segment,
+                 the second element is a Numpy array containing the data.
+        """
+        if self.__mask is None:
+            raise ValueError("Missing mask data. Try call fill_data_cache before asking for segment data")
+        output = list()
+        for i,s in enumerate(self.__segmentlist):
+            data = self.__get_segment_data(i)
+            output.append((s, data))
+        return output
+
     def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan):
         """Extracts transect data from a NetCDF file.
 

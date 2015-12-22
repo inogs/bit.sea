@@ -46,7 +46,22 @@ class Transect(object):
     def segmentlist(self):
         return self.__segmentlist
 
-    def fill_data_cache(self, mask, datafilepath, fill_value=np.nan):
+    def fill_data_cache(self, mask, data):
+        """Fills the object cache with data from a Numpy array
+
+        Args:
+            - *mask*: a commons.Mask object.
+            - *data*: a numpy.ndarray containing the data to slice.
+        """
+        if not isinstance(mask, (Mask,)):
+            raise ValueError("mask must be a Mask object.")
+        self.__mask = mask
+        if not isinstance(data, np.ndarray):
+            raise ValueError("data must be a Numpy array")
+        self.__datacache['filename'] = None
+        self.__datacache['data'] = data
+
+    def fill_data_cache_from_file(self, mask, datafilepath, fill_value=np.nan):
         """Fills the object cache with data from a NetCDF file
 
         Args:
@@ -78,7 +93,7 @@ class Transect(object):
             - *timestep* (optional): the time index (default: 0).
         Returns: a NumPy array that contains the requested data.
         """
-        self.fill_data_cache(mask, datafilepath, fill_value)
+        self.fill_data_cache_from_file(mask, datafilepath, fill_value)
         data = self.__get_segment_data(segment_index)
         return data
 

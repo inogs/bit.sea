@@ -120,7 +120,7 @@ class MapBuilder(object):
                 ax = None
 
     @staticmethod
-    def get_layer_average(data_extractor, layer, timestep=0):
+    def get_layer_average(data_extractor, layer):
         """Returns a 2D NumPy array with the average weighted over depth.
 
         Args:
@@ -128,8 +128,6 @@ class MapBuilder(object):
               extract.
             - *layer*: a Layer object that contains the vertical boundaries for
               the computation.
-            - *timestep* (optional): the index of the first dimension (time) in
-              the model data. Default: 0.
         """
         if not isinstance(layer, (Layer,)):
             raise ValueError("layer must be a Layer object")
@@ -140,7 +138,7 @@ class MapBuilder(object):
         bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
         if top_index == bottom_index:
             #Just one layer so we return the sliced data
-            output = data_extractor.get_filled_values[timestep,top_index,:,:]
+            output = data_extractor.get_filled_values[top_index,:,:]
             return output
         #Workaround for Python ranges
         bottom_index += 1
@@ -153,7 +151,7 @@ class MapBuilder(object):
             dzm[j,:,:] = data_extractor._mask.dz[i]
             j += 1
         #Get the slice of the values
-        v = np.array(data_extractor.values[timestep,top_index:bottom_index,:,:])
+        v = np.array(data_extractor.values[top_index:bottom_index,:,:])
         #Build integral matrix (2D)
         integral = (v * dzm * lmask).sum(axis=0)
         #Build height matrix (2D)

@@ -55,8 +55,13 @@ class DataExtractor(object):
                 if not v in dset.variables:
                     raise NotFoundError("variable '%s' not found" % (varname, ))
                 else:
-                    self.__shape = dset.variables[v].shape
-                    self.__values = np.array(dset.variables[v])
+                    ndims = len(dset.variables[v].shape)
+                    
+                    if ndims == 3 : self.__values = np.array(dset.variables[v])
+                    if ndims == 4 : self.__values = np.array(dset.variables[v])[0,:,:,:]
+                    self.__shape = self.__values.shape
+                    
+                    
                     fv = dset.variables[v].missing_value
                     self.__dset_fillvalue = fv
                 dset.close()

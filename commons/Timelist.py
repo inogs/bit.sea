@@ -370,7 +370,7 @@ class TimeList():
             lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  getSeason(self.timeinterval.end_time))
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1])
-                if (req.starttime >= firstSeason.starttime) & (req.endtime <=lastSeason.endtime):
+                if (req.timeinterval.start_time >= firstSeason.timeinterval.start_time) & (req.timeinterval.end_time <=lastSeason.timeinterval.end_time):
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
                  

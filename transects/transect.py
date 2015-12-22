@@ -32,6 +32,7 @@ class Transect(object):
         self.__segmentlist = segmentlist
         #Variable data cache
         self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
+        self.__mask = None
 
     @property
     def varname(self):
@@ -45,17 +46,6 @@ class Transect(object):
     def segmentlist(self):
         return self.__segmentlist
 
-    @property
-    def segmentdata(self, timestep=0):
-        if self.__datacache['segmentdata'] is None:
-            if self.__datacache['data'] is None:
-                return None
-            else:
-                self.__build_segmentdata_cache()
-                return self.__datacache['segmentdata'][timestep,:,:,:]
-        else:
-            return self.__datacache['segmentdata'][timestep,:,:,:]
-
     def fill_data_cache(self, mask, datafilepath, fill_value=np.nan):
         """Fills the object cache with data from a NetCDF file
 
@@ -67,6 +57,7 @@ class Transect(object):
         """
         if not isinstance(mask, (Mask,)):
             raise ValueError("mask must be a Mask object.")
+        self.__mask = mask
         #Check if we don't have cached data
         datafilepath = str(datafilepath)
         if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
@@ -75,7 +66,7 @@ class Transect(object):
             self.__datacache['filename'] = datafilepath
             self.__datacache['data'] = de.filled_values
 
-    def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan, timestep=0):
+    def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan):
         """Extracts transect data from a NetCDF file.
 
         Args:
@@ -89,7 +80,7 @@ class Transect(object):
         """
         self.fill_data_cache(mask, datafilepath, fill_value)
         data = self.__get_segment_data(segment_index)
-        return data[timestep,:,:,:]
+        return data
 
     @staticmethod
     def get_list_from_XML_file(plotlistfile):
@@ -135,8 +126,8 @@ class Transect(object):
             raise ValueError("'%s' is not a number." % (segment_index,))
         seg = self.__segmentlist[segment_index]
         #Retrieve indices
-        x_min, y_min = mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
-        x_max, y_max = mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
+        x_min, y_min = self.__mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
+        x_max, y_max = self.__mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
         #Check for single point case
         if (x_min == x_max) and (y_min == y_max):
             raise ValueError("Invalid segment: %s" % (seg,))
@@ -149,17 +140,3 @@ class Transect(object):
             raise ValueError("Invalid segment: %s" % (seg,))
         return data
 
-    def __build_segmentdata_cache(self):
-        alldata = self.__datacache['data']
-        #Get the number of segments
-        segnum=len(self.__segmentlist)
-        #Build an empty cache
-        segmentcache = np.empty([segnum] + list(alldata.shape), dtype=float)
-        #For each segment
-        for i in range(segnum):
-            #Get segment data
-            d = self.__get_segment_data(i)
-            #Save it in the cache
-            segmentcache[i,:,:,:,:] = d[:,:,:,:]
-        #Store the date in the object cache
-        self.__datacache['segmentdata'] = segmentcache

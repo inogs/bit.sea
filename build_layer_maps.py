@@ -9,7 +9,7 @@ import os
 from glob import glob
 
 try:
-    from mapbuilder import MapBuilder
+    from layer_integral.mapbuilder import MapBuilder
 except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)
@@ -41,9 +41,10 @@ Usage:
     print("Default plot list file: '%s'" % (str(plotlistfile),))
     print("Default mask file: '%s'" % (str(maskfile),))
 
-def die(why, exit_code=1):
+def die(why, exit_code=1, print_usage=True):
     print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    usage()
+    if print_usage:
+        usage()
     sys.exit(exit_code)
 
 def is_valid_path(path, is_dir_check=False):
@@ -97,4 +98,4 @@ if __name__ == "__main__":
         mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
         mb.plot_maps_data()
     except Exception as e:
-        die(e)
+        die(e, 2, False)

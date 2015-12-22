@@ -31,7 +31,7 @@ class Transect(object):
             raise ValueError("segmentlist must be a list of Segments")
         self.__segmentlist = segmentlist
         #Variable data cache
-        self.__datacache = { 'filename':None, 'data':None }
+        self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
 
     @property
     def varname(self):
@@ -45,6 +45,36 @@ class Transect(object):
     def segmentlist(self):
         return self.__segmentlist
 
+    @property
+    def segmentdata(self, timestep=0):
+        if self.__datacache['segmentdata'] is None:
+            if self.__datacache['data'] is None:
+                return None
+            else:
+                self.__build_segmentdata_cache()
+                return self.__datacache['segmentdata'][timestep,:,:,:]
+        else:
+            return self.__datacache['segmentdata'][timestep,:,:,:]
+
+    def fill_data_cache(self, mask, datafilepath, fill_value=np.nan):
+        """Fills the object cache with data from a NetCDF file
+
+        Args:
+            - *mask*: a commons.Mask object.
+            - *datafilepath*: path to the NetCDF data file.
+            - *fill_value* (optional): value to use when there's no data
+              available (default: np.nan).
+        """
+        if not isinstance(mask, (Mask,)):
+            raise ValueError("mask must be a Mask object.")
+        #Check if we don't have cached data
+        datafilepath = str(datafilepath)
+        if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
+            #Read data from the NetCDF file
+            de = DataExtractor(mask, filename=datafilepath, varname=self.__varname, fill_value=fill_value)
+            self.__datacache['filename'] = datafilepath
+            self.__datacache['data'] = de.filled_values
+
     def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan, timestep=0):
         """Extracts transect data from a NetCDF file.
 
@@ -57,33 +87,9 @@ class Transect(object):
             - *timestep* (optional): the time index (default: 0).
         Returns: a NumPy array that contains the requested data.
         """
-        #Input validation
-        if not is_number(segment_index):
-            raise ValueError("'%s' is not a number." % (segment_index,))
-        seg = self.__segmentlist[segment_index]
-        if not isinstance(mask, (Mask,)):
-            raise ValueError("mask must be a Mask object.")
-        datafilepath = str(datafilepath)
-        #Retrieve indices
-        x_min, y_min = mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
-        x_max, y_max = mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
-        #Check if we don't have cached data
-        if (self.__datacache['filename'] is None) or (self.__datacache['filename'] != datafilepath):
-            #Read data from the NetCDF file
-            de = DataExtractor(self.__varname, datafilepath, mask, fill_value)
-            self.__datacache['filename'] = datafilepath
-            self.__datacache['data'] = de.filled_values
-        #Check for single point case
-        if (x_min == x_max) and (y_min == y_max):
-            raise ValueError("Invalid segment: %s" % (seg,))
-        #Get the output data
-        if x_min == x_max:
-            data = np.array(self.__datacache['data'][timestep,:,y_min:y_max,x_min], dtype=float)
-        elif y_min == y_max:
-            data = np.array(self.__datacache['data'][timestep,:,y_min,x_min:x_max], dtype=float)
-        else:
-            raise ValueError("Invalid segment: %s" % (seg,))
-        return data
+        self.fill_data_cache(mask, datafilepath, fill_value)
+        data = self.__get_segment_data(segment_index)
+        return data[timestep,:,:,:]
 
     @staticmethod
     def get_list_from_XML_file(plotlistfile):
@@ -121,3 +127,39 @@ class Transect(object):
                         raise
                     output.append(Transect(varname, clim, segmentlist))
         return output
+
+    #Private methods
+    def __get_segment_data(self, segment_index):
+        #Input validation
+        if not is_number(segment_index):
+            raise ValueError("'%s' is not a number." % (segment_index,))
+        seg = self.__segmentlist[segment_index]
+        #Retrieve indices
+        x_min, y_min = mask.convert_lon_lat_to_indices(seg.lon_min, seg.lat_min)
+        x_max, y_max = mask.convert_lon_lat_to_indices(seg.lon_max, seg.lat_max)
+        #Check for single point case
+        if (x_min == x_max) and (y_min == y_max):
+            raise ValueError("Invalid segment: %s" % (seg,))
+        #Get the output data
+        if x_min == x_max:
+            data = np.array(self.__datacache['data'][:, :, y_min:y_max, x_min], dtype=float)
+        elif y_min == y_max:
+            data = np.array(self.__datacache['data'][:, :, y_min, x_min:x_max], dtype=float)
+        else:
+            raise ValueError("Invalid segment: %s" % (seg,))
+        return data
+
+    def __build_segmentdata_cache(self):
+        alldata = self.__datacache['data']
+        #Get the number of segments
+        segnum=len(self.__segmentlist)
+        #Build an empty cache
+        segmentcache = np.empty([segnum] + list(alldata.shape), dtype=float)
+        #For each segment
+        for i in range(segnum):
+            #Get segment data
+            d = self.__get_segment_data(i)
+            #Save it in the cache
+            segmentcache[i,:,:,:,:] = d[:,:,:,:]
+        #Store the date in the object cache
+        self.__datacache['segmentdata'] = segmentcache

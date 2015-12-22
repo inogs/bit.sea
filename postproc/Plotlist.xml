@@ -221,27 +221,27 @@
 <depth top= "0050" bottom="0100"  clim="[2350,2730]"> </depth>
 <depth top= "0100" bottom="0150"  clim="[2350,2730]"> </depth>
 <depth top= "0150" bottom="0200"  clim="[2350,2730]"> </depth>
-<depth top= "0200" bottom="0500"  clim="[2500 2700]"> </depth>
-<depth top= "0500" bottom="1000"  clim="[2500 2700]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[2500 2700]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[2500 2700]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[2500 2700]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[2500 2700]"> </depth>
+<depth top= "0200" bottom="0500"  clim="[2500,2700]"> </depth>
+<depth top= "0500" bottom="1000"  clim="[2500,2700]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[2500,2700]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[2500,2700]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[2500,2700]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[2500,2700]"> </depth>
 </plots>
 
 <!--  PH @ insitu total scale -->
 <plots var="PH_" units="@Tinsitu, Total Scale">
-<depth top= "0000" bottom="0010"  clim="[7.95 8.25]"> </depth>
-<depth top= "0000" bottom="0050"  clim="[7.95 8.25]"> </depth>
-<depth top= "0050" bottom="0100"  clim="[7.95 8.25]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[7.95 8.25]"> </depth>
-<depth top= "0150" bottom="0200"  clim="[7.95 8.25]"> </depth>
-<depth top= "0200" bottom="0500"  clim="[7.95 8.25]"> </depth>
-<depth top= "0500" bottom="1000"  clim="[7.95 8.25]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[7.95 8.25]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[7.95 8.25]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[7.95 8.25]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[7.95 8.25]"> </depth>
+<depth top= "0000" bottom="0010"  clim="[7.95,8.25]"> </depth>
+<depth top= "0000" bottom="0050"  clim="[7.95,8.25]"> </depth>
+<depth top= "0050" bottom="0100"  clim="[7.95,8.25]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[7.95,8.25]"> </depth>
+<depth top= "0150" bottom="0200"  clim="[7.95,8.25]"> </depth>
+<depth top= "0200" bottom="0500"  clim="[7.95,8.25]"> </depth>
+<depth top= "0500" bottom="1000"  clim="[7.95,8.25]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[7.95,8.25]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[7.95,8.25]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[7.95,8.25]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[7.95,8.25]"> </depth>
 </plots>
 
 <!--  pCO -->
@@ -306,9 +306,9 @@
 <var name="DIC" units="umol/kg" clim="[2150,2350]" ></var>
 <var name="AC_" units="umol/kg" clim="[2450,2720]" ></var>
 <var name="PH_" units="@Tinsitu Tscale" clim="[7.95,8.25]" ></var>
-<var name="pCO" units="uatm" clim="[200 550]" ></var>
-<var name="O3h" units="mmol/m3" clim="[2450 2800]" ></var>
-<var name="O3c" units="mmol/m3" clim="[26000 29000]" ></var>
+<var name="pCO" units="uatm" clim="[200,550]" ></var>
+<var name="O3h" units="mmol/m3" clim="[2450,2800]" ></var>
+<var name="O3c" units="mmol/m3" clim="[26000,29000]" ></var>
 </vars>
 
 <transect  lonmin="8" lonmax="8" latmin="37" latmax="43" ></transect>

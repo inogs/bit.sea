@@ -8,6 +8,9 @@ import netCDF4
 #Mask object
 from commons.mask import Mask
 
+class NotFoundError(Exception):
+    pass
+
 class DataExtractor(object):
     """Extracts data from a NetCDF model file.
 
@@ -50,7 +53,7 @@ class DataExtractor(object):
                 #Try open the NetCDF file and search for var
                 dset = netCDF4.Dataset(fn)
                 if not v in dset.variables:
-                    raise ValueError("variable '%s' not found" % (varname, ))
+                    raise NotFoundError("variable '%s' not found" % (varname, ))
                 else:
                     self.__shape = dset.variables[v].shape
                     self.__values = np.array(dset.variables[v])

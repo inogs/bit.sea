@@ -1,6 +1,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import os
+import warnings
 import re
 import numpy as np
 from xml.dom import minidom
@@ -11,6 +12,7 @@ from commons.layer import Layer
 from commons.helpers import is_number
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
+from commons.dataextractor import NotFoundError
 from mapplot import mapplot
 
 #Date extractor
@@ -19,6 +21,9 @@ def get_date_string(s):
     longdate = "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
     shortdate = "%s%s%s" % (m.group(1), m.group(2), m.group(3))
     return longdate , shortdate
+
+def warn_user(msg):
+    warnings.warn(msg, SyntaxWarning, stacklevel=2)
 
 class Plot(object):
     def __init__(self, varname, layerlist, clim):
@@ -91,7 +96,12 @@ class MapBuilder(object):
         for f in self.__netcdffileslist:
             longdate , shortdate = get_date_string(f)
             for p in self.__plotlist:
-                de = DataExtractor(self._mask, filename=f, varname=p.varname)
+                try:
+                    de = DataExtractor(self._mask, filename=f, varname=p.varname)
+                except NotFoundError as e:
+                    msg="File: %s\n%s" % (f, e)
+                    warn_user(msg)
+                    continue
                 for i,l in enumerate(p.layerlist):
                     outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)

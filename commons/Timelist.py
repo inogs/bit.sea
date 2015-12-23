@@ -224,6 +224,8 @@ class TimeList():
         
         if isinstance(requestor, requestors.Decadal_req):
             return self.__generaltimeselector(requestor)
+        if isinstance(requestor, requestors.Generic_req):
+            return self.__generaltimeselector(requestor)
         
         if isinstance(requestor, requestors.Clim_day):
             assert self.inputFrequency == 'daily'

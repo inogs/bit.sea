@@ -198,6 +198,18 @@ class Decadal_req():
 
 
 
+class Generic_req():
+    ''' Generic requestor
+        Based on timeinterval object, for non standard times.
+        For example, an year defined between 
+    '''
+    
+    def __init__(self,ti):
+
+        self.timeinterval = ti
+    def __repr__(self):
+        return "Generic requestor object definded by: %s  "  %self.timeinterval.__repr__() 
+
 
 
 

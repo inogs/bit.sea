@@ -22,7 +22,7 @@ for filename in TL_orig.filelist:
     outfile = CHECKDIR + os.path.basename(filename)
     if not os.path.exists(outfile) :
         somecheck = True
-        break 
+        break
 
 if somecheck:
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
@@ -31,8 +31,8 @@ else:
 
 for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + os.path.basename(filename)
-    exit_condition = os.path.exists(outfile) and (not reset) 
-    if exit_condition: 
+    exit_condition = os.path.exists(outfile) and (not reset)
+    if exit_condition:
         continue
     julian = int( TL_orig.Timelist[iTime].strftime("%j") )
     DAILY_REF_MEAN = MEAN[julian-1,:,:]

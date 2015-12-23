@@ -122,6 +122,11 @@ class Matchup_Manager():
         return Model_time
     
     def reference_var(self,p,var):
+        '''
+        returns the reference varname, for a given profile object and
+        a model varname
+        For BioFloats reference_var(p,'O2o') returns 'DOXY'
+        '''
         if isinstance(p, instruments.bio_float.BioFloatProfile):
             return instruments.FLOATVARS[var]
         if isinstance(p, instruments.mooring.MooringProfile):

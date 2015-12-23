@@ -1,3 +1,10 @@
+# OUTPUTS
+# BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN
+# BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN
+# BGC_CLASS4_CHL_RMS_SURF_BASIN
+# BGC_CLASS4_CHL_BIAS_SURF_BASIN
+# of CMEMS-Med-biogeochemistry-ScCP-1.0.pdf
+
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 import commons.IOnames as IOnames

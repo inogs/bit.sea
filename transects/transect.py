@@ -58,6 +58,8 @@ class Transect(object):
         self.__mask = mask
         if not isinstance(data, np.ndarray):
             raise ValueError("data must be a Numpy array")
+        if len(data.shape) != 3:
+            raise ValueError("data must be a tridimensional matrix")
         self.__datacache['filename'] = None
         self.__datacache['data'] = data
 
@@ -162,9 +164,9 @@ class Transect(object):
             raise ValueError("Invalid segment: %s" % (seg,))
         #Get the output data
         if x_min == x_max:
-            data = np.array(self.__datacache['data'][:, :, y_min:y_max, x_min], dtype=float)
+            data = np.array(self.__datacache['data'][:, y_min:y_max, x_min], dtype=float)
         elif y_min == y_max:
-            data = np.array(self.__datacache['data'][:, :, y_min, x_min:x_max], dtype=float)
+            data = np.array(self.__datacache['data'][:, y_min, x_min:x_max], dtype=float)
         else:
             raise ValueError("Invalid segment: %s" % (seg,))
         return data

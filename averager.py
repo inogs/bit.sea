@@ -25,7 +25,7 @@ INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/MODEL/AVE_
 OUTPUTDIR = "/pico/scratch/userexternal/gbolzon0/GB/"
 
 LAYERLIST=[Layer(0,50), Layer(50,100), Layer(100,150), Layer(150,200), Layer(200,500), Layer(500,1000), Layer(1000,1500), Layer(1500,4000)]
-VARLIST=['DIC','AC_','pH_','pCO']
+VARLIST=['DIC','AC_','PH_','pCO']
 
 
 
@@ -38,6 +38,7 @@ for req in Seas_reqs:
     indexes, weights = TL.select(req)
     prefix = req.string.replace(" ","")
     for var in VARLIST:
+        print var
         # setting up filelist for requested season -----------------
         filelist=[]
         for k in indexes:
@@ -51,7 +52,7 @@ for req in Seas_reqs:
             print layer
             De         = DataExtractor(TheMask,rawdata=M3d)
             integrated = MapBuilder.get_layer_average(De, layer)
-            outfile    = OUTPUTDIR + prefix + '.' +  var + ".nc"
+            outfile    = OUTPUTDIR + prefix + '.' +  var + "." + layer.string() +  ".nc"
             NCwriter(integrated,var,outfile,TheMask)
 
 
@@ -67,6 +68,7 @@ req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)
 
 for var in VARLIST:
+    print var
     # setting up filelist for requested period -----------------
     filelist=[]
     for k in indexes:
@@ -78,6 +80,6 @@ for var in VARLIST:
     for layer in LAYERLIST:
         De      = DataExtractor(TheMask,rawdata=M3d)
         integrated = MapBuilder.get_layer_average(De, layer)
-        outfile    = OUTPUTDIR + "year." + var + "nc"
+        outfile    = OUTPUTDIR + "year." + var + "." + layer.string() + ".nc"
         NCwriter(integrated,var,outfile,TheMask)
 

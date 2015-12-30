@@ -15,6 +15,9 @@ class Layer(object):
 
     def __str__(self):
         return "layer%g-%g" %(self.__top, self.__bottom)
+    
+    def string(self):
+        return "%g-%gm" %(self.__top, self.__bottom)
 
     @property
     def top(self):

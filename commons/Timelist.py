@@ -121,18 +121,30 @@ class TimeList():
 
 
     def __searchFrequency(self):
+        '''
+        Returns strings: 'daily','weekly','monthly','hourly'
+        '''
         if len(self.Timelist)<2:
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
             print "Frequency cannot be calculated in " + self.inputdir + timestr
             return None
-        mydiff = self.Timelist[1]-self.Timelist[0]
-        if mydiff.days == 1:
+        
+        DIFFS = np.zeros((self.nTimes-1),np.float64)
+        for iTime in range(1,self.nTimes):
+            mydiff = self.Timelist[iTime]-self.Timelist[iTime-1]
+            DIFFS[iTime-1] = mydiff.total_seconds()
+
+        UniqueDiffs, nRepetions = np.unique(DIFFS,return_counts=True)
+        moda = UniqueDiffs[nRepetions.argmax()]
+        days = moda/(3600.*24)
+        
+        if days == 1:
             return "daily"
-        if (mydiff.days > 6 ) & (mydiff.days < 8 ) :
+        if (days > 6 ) & (days < 8 ) :
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
-        if (mydiff.days > 26) & (mydiff.days < 32) :
+        if (days > 26) & (days < 32) :
             return "monthly"
-        if (mydiff.days == 0):
+        if (days < 1 ):
             return "hourly"
             #hours = mydiff.seconds/3600
             #we want an integer number of hours

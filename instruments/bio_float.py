@@ -33,14 +33,15 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var,read_adjusted):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
         Takes var as string
+              read_adjusted as logical
         Returns Pres, Profile, as numpy arrays '''
 
-        return self._my_float.read(var, self.mean)
+        return self._my_float.read(var, mean=self.mean,read_adjusted)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -125,10 +126,11 @@ class BioFloat(Instrument):
         return M_RES
 
 
-    
+
     def read_very_raw(self,var):
         '''
         Reads data from file
+        Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
         '''
         iProf = self.__searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
@@ -143,25 +145,31 @@ class BioFloat(Instrument):
             iProf = N_MEAS.argmax()
             print "iprof new value", iProf
 
-        M       = self.__fillnan(ncIN, var + "_ADJUSTED")
+
+        M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+        M       = self.__fillnan(ncIN, var )
         #M      = self.__merge_var_with_adjusted(ncIN, var) # to have not only adjusted
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
         QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
-        Profile =  M[iProf,:]
-        Pres    =  PRES[iProf,:]
-        Qc      = QC[iProf,:]
+        Profile     =     M[iProf,:]
+        Profile_adj = M_ADJ[iProf,:]
+        Pres        =  PRES[iProf,:]
+        Qc          =    QC[iProf,:]
         ncIN.close()
         
-        return Pres, Profile,Qc
+        return Pres, Profile,Profile_adj, Qc
 
-    def read_raw(self,var):
+    def read_raw(self,var,read_adjusted=True):
         '''
         Reads a clean profile data
          - without nans
          - without repetition of the same pressure
+        Inputs:
+          var (string)
+          read_adjusted (logical)
         '''
-        rawPres, rawProfile, rawQc = self.read_very_raw(var)
- 
+        rawPres, rawProfile, rawQc = self.read_very_raw(var,read_adjusted)
+
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
@@ -169,27 +177,27 @@ class BioFloat(Instrument):
         badProfile = np.isnan(rawProfile)
         goodQc     = (rawQc == '2' ) | (rawQc == '1' )
         bad = badPres | badProfile | (~goodQc )
-        
-        
+
+
         Pres    =    rawPres[~bad]
         Profile = rawProfile[~bad]
         Qc      =     (rawQc[~bad]).astype(np.int)
-        
+
         uniquePres,index=np.unique(Pres,return_index=True)
         uniqueProfile =  Profile[index]
         uniqueQc      =       Qc[index]
-        
+
         return uniquePres, uniqueProfile, uniqueQc
-               
+
     def rarefy(self,Pres,minimumdelta):
         '''
         Used to reduce the amount of data 
         ( e.g the profiles having data every 0.2m ) to match with model profiles.
         minimumdelta is expressed in meters.
-        
+
         Returns a numpy array of indexes that ensure that
         Pres[indexes] has steps greater then minimumdelta
-        
+
         '''
         indexes=[0]
         lastind=0
@@ -197,26 +205,27 @@ class BioFloat(Instrument):
             if p >= Pres[lastind]+minimumdelta:
                 indexes.append(i)
                 lastind = i
-        
-        return np.array(indexes)        
-        
-    def read(self, var, mean=None):
+
+        return np.array(indexes)
+
+    def read(self, var, mean=None, read_adjusted=True):
         '''
 
         Reads profile data from file, applies a rarefaction and optionally a filter to the data
 
         Takes var as string
+              read_adjusted as logical
         Returns Pres, Profile, as numpy arrays
         '''
-        pres, prof, qc = self.read_raw(var)
+        pres, prof, qc = self.read_raw(var,read_adjusted)
         if pres.size ==0:
             return pres, prof, qc
-        
+
         ii = self.rarefy(pres, 2.0)
         pres = pres[ii]
         prof = prof[ii]
         qc   =   qc[ii]
-        
+
         if mean == None:
             if BioFloat.default_mean != None:
                 return pres, BioFloat.default_mean.compute(prof, pres)
@@ -275,11 +284,11 @@ def FloatSelector(var, T, region):
               ('lon',np.float32),
               ('time','S17'),
               ('parameters','S200')] )
-    
+
     FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
     #FloatIndexer="Float_Index.txt"
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
-    nFiles=INDEX_FILE.size    
+    nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
         timestr          = INDEX_FILE['time'][iFile]
@@ -298,5 +307,5 @@ def FloatSelector(var, T, region):
             if T.contains(float_time) and region.is_inside(lon, lat):
                 thefloat = BioFloat(lon,lat,float_time,filename,available_params)
                 selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
-                      
+
     return selected

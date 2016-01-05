@@ -133,7 +133,7 @@ class Matchup_Manager():
             return instruments.MOORINGVARS[var]
 
 
-    def getMatchups(self,Profilelist,nav_lev,model_varname):
+    def getMatchups(self,Profilelist,nav_lev,model_varname, read_adjusted=True):
         ''' 
         Float list is a list of Bio_Float objects 
         It depends on a user selection in space and time
@@ -172,7 +172,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            Pres, Profile, Qc = p.read(ref_varname)
+            Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
             
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                     

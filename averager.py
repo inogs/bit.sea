@@ -7,8 +7,10 @@ from commons.mask import Mask
 from commons.layer import Layer
 
 from layer_integral.mapbuilder import MapBuilder
+from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
+import pylab as pl
 
 def NCwriter(M2d,varname,outfile,mask):
     ncOUT = NC.netcdf_file(outfile,'w')
@@ -22,7 +24,7 @@ def NCwriter(M2d,varname,outfile,mask):
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/MODEL/AVE_FREQ_2/"
-OUTPUTDIR = "/pico/scratch/userexternal/gbolzon0/GB/"
+OUTPUTDIR = "/pico/scratch/userexternal/gcossari/Carbonatic-17/"
 
 LAYERLIST=[Layer(0,50), Layer(50,100), Layer(100,150), Layer(150,200), Layer(200,500), Layer(500,1000), Layer(1000,1500), Layer(1500,4000)]
 VARLIST=['DIC','AC_','PH_','pCO']
@@ -33,6 +35,8 @@ TI = TimeInterval('20140404','20150629',"%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
 Seas_reqs = TL.getSeasonList()
 
+
+# AC_2014.aut.0000-0050m.nc
 for req in Seas_reqs:
     print req
     indexes, weights = TL.select(req)
@@ -52,8 +56,13 @@ for req in Seas_reqs:
             print layer
             De         = DataExtractor(TheMask,rawdata=M3d)
             integrated = MapBuilder.get_layer_average(De, layer)
-            outfile    = OUTPUTDIR + prefix + '.' +  var + "." + layer.string() +  ".nc"
-            NCwriter(integrated,var,outfile,TheMask)
+            clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
+            fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated, 'date':req.string},fig=None,ax=None,mask=TheMask)
+            #outfile    = OUTPUTDIR + prefix + '.' +  var + "." + layer.longname() +  ".nc"
+            #NCwriter(integrated,var,outfile,TheMask)
+            outfile    = OUTPUTDIR + var + "." + prefix  +  "." + layer.longname() +  ".png"
+            fig.savefig(outfile)
+            pl.close(fig)
 
 
 
@@ -80,6 +89,10 @@ for var in VARLIST:
     for layer in LAYERLIST:
         De      = DataExtractor(TheMask,rawdata=M3d)
         integrated = MapBuilder.get_layer_average(De, layer)
-        outfile    = OUTPUTDIR + "year." + var + "." + layer.string() + ".nc"
-        NCwriter(integrated,var,outfile,TheMask)
+        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
+        fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated, 'date':'annual'},fig=None,ax=None,mask=TheMask)
+        outfile    = OUTPUTDIR + var + "." + "annual."  + layer.longname() + ".png"
+        fig.savefig(outfile)
+        pl.close(fig)
+        #NCwriter(integrated,var,outfile,TheMask)
 

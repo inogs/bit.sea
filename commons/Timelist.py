@@ -209,7 +209,12 @@ class TimeList():
                     if (weight > 0. ) : 
                         SELECTION.append(it)
                         weights.append(weight)
-                    
+            if self.inputFrequency == 'monthly':
+                print "Not time aggregation"
+                for it,t in enumerate(self.Timelist):
+                    if requestor.time_interval.contains(t):
+                        SELECTION.append(it)
+                        weights.append(1.)
             return SELECTION , np.array(weights)
 
         

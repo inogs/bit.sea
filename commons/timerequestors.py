@@ -146,24 +146,24 @@ class Season_req():
         if season == 0: #win
             t.start_time  = datetime.datetime(year ,  1, 1, 0, 0)
             t.end_time    = datetime.datetime(year ,  4, 1, 0, 0)
-            self.string   = 'win %d' %year 
+            self.string   = '%d win' %year
             self.longname = "Winter"
         if season == 1 : 
             t.start_time  = datetime.datetime(year ,  4, 1, 0, 0)
             t.end_time    = datetime.datetime(year ,  7, 1, 0, 0)
-            self.string   = 'spr %d' %year
+            self.string   = '%d spr' %year
             self.longname = 'Spring'
         if season == 2 :
             t.start_time  = datetime.datetime(year ,  7, 1, 0, 0)
             t.end_time    = datetime.datetime(year , 10, 1, 0, 0)
-            self.string   = 'sum %d' %year
+            self.string   = '%dsum' %year
             self.longname = 'Summer'
             
         if season == 3 :
             t.start_time  = datetime.datetime(year , 10, 1, 0, 0)
             t.end_time    = datetime.datetime(year+1, 1, 1, 0, 0)
-            self.string   = 'fal %d' %year 
-            self.longname = 'Fall'
+            self.string   = '%d aut' %year
+            self.longname = 'Autumn'
         
         self.timeinterval = t
             

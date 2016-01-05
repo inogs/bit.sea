@@ -14,6 +14,8 @@ class ProfilesMatchup(matchup):
             self.Depth = np.array([],np.float32)
             self.Lon   = np.array([],np.float32)
             self.Lat   = np.array([],np.float32)
+            self.Time  = np.array([],np.float32)
+            self.Qc    = np.array([],np.float32)
             self.Lengths = []
         else:
             self.Model = Model

@@ -41,7 +41,7 @@ class BioFloatProfile(Profile):
               read_adjusted as logical
         Returns Pres, Profile, as numpy arrays '''
 
-        return self._my_float.read(var, mean=self.mean,read_adjusted)
+        return self._my_float.read(var, mean=self.mean,read_adjusted=read_adjusted)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -168,7 +168,10 @@ class BioFloat(Instrument):
           var (string)
           read_adjusted (logical)
         '''
-        rawPres, rawProfile, rawQc = self.read_very_raw(var,read_adjusted)
+        rawPres, rawProfile, rawProfile_adj, rawQc = self.read_very_raw(var)
+
+        if read_adjusted: rawProfile = rawProfile_adj
+        
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)

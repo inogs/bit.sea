@@ -2,13 +2,7 @@
 import bio_float
 import mooring
 
-FLOATVARS={'O2o':'DOXY', \
-           'N3n':'NITRATE',  \
-           'P_i':'CHLA'}   
-
-MOORINGVARS={'O2o':'DOX1', \
-             'N3n':'NOTFOUND',  \
-             'P_i':'CPHL'}  
+from var_conversions import FLOATVARS, MOORINGVARS
 
 def Selector(var,T,region):
     '''

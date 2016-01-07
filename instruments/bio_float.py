@@ -11,10 +11,6 @@ meanObj = PLGaussianMean(5,1.0)
 
 
 
-#DOXY:units = "micromole/kg" ;
-#CHLA:units = "mg/m3" ;
-#NITRATE:units = "micromole/kg" ;
-
 class BioFloatProfile(Profile):
     def __init__(self, time, lon, lat, my_float, available_params,mean=None):
         self.time = time

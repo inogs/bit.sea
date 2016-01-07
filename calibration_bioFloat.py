@@ -33,14 +33,30 @@ for isub, sub in enumerate(SUBlist):
     Profilelist=bio_float.FloatSelector(FLOATVARS[modelvarname],T_INT,sub)
     nP = len(Profilelist)
     
-    TIMESERIES = np.zeros((nP,),dtype=[('corr',np.float32),('rmse',np.float32)])
+    PROFILEStimeSERIES    = np.zeros((nP,),dtype=[('corr',np.float32),('rmse',np.float32)])
+    PROFILEStimeSERIES[:] = np.nan
     
     for ip, p in enumerate(Profilelist):
         singlefloatmatchup = M.getMatchups([p], nav_lev, modelvarname,read_adjusted=True)
         if singlefloatmatchup.number() > 1 :
-            TIMESERIES['corr'][ip] = singlefloatmatchup.correlation()
-            TIMESERIES['rmse'][ip] = singlefloatmatchup.RMSE()
+            PROFILEStimeSERIES['corr'][ip] = singlefloatmatchup.correlation()
+            PROFILEStimeSERIES['rmse'][ip] = singlefloatmatchup.RMSE()
     
-    BGC_CLASS4_CHL_CORR_PROF_BASIN[isub] = TIMESERIES['corr'].mean()
+    BGC_CLASS4_CHL_CORR_PROF_BASIN[isub] = np.nanmean(PROFILEStimeSERIES['corr'])
 
 
+
+# These lines just to prove that DOXY and NITRATE do not have ADJUSTED values
+import sys
+sys.exit()
+
+for modelvarname in ['O2o','N3n']:
+    Profilelist=bio_float.FloatSelector(FLOATVARS[modelvarname],T_INT, OGS.med)
+    m     = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True )
+    m_raw = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=False)
+    print modelvarname, "Raw and adjusted values: ", m_raw.number(), m.number()
+
+#Then,
+#BGC-CLASS4-O2-CORR-PROF-BASIN
+#BGC-CLASS4-NIT-CORR-PROF-BASIN
+# are not provided.

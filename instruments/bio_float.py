@@ -166,15 +166,19 @@ class BioFloat(Instrument):
         '''
         rawPres, rawProfile, rawProfile_adj, rawQc = self.read_very_raw(var)
 
-        if read_adjusted: rawProfile = rawProfile_adj
         
+        if read_adjusted:
+            rawProfile = rawProfile_adj
+        else:
+            for i in range(len(rawQc)): rawQc[i]='2' # to force goodQc = True
+
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
-        badProfile = np.isnan(rawProfile)
         goodQc     = (rawQc == '2' ) | (rawQc == '1' )
+        badProfile = np.isnan(rawProfile)
         bad = badPres | badProfile | (~goodQc )
 
 

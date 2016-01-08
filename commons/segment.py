@@ -5,7 +5,7 @@ from commons.helpers import is_number
 class Segment(object):
     """Holds a segment.
     """
-    def __init__(self, lon_lat_min, lon_lat_max):
+    def __init__(self, lon_lat_min, lon_lat_max, name=None):
         """Segment constructor.
 
         Args:
@@ -13,7 +13,12 @@ class Segment(object):
               longitude and latitude.
             - *lon_lat_max*: tuple or list with Segment's ending point in
               longitude and latitude.
+            - *name* (optional): a string defining the name of the segment (default: None).
         """
+        if name is None:
+            self.__name = None
+        else:
+            self.__name = str(name)
         if not (isinstance(lon_lat_min, (list, tuple)) and isinstance(lon_lat_max, (list, tuple))):
             raise ValueError("lon_lat_min and lon_lat_max must be tuples or lists")
         if not ((len(lon_lat_min) == 2) and (len(lon_lat_max) == 2)):
@@ -28,10 +33,16 @@ class Segment(object):
         self.__lat_max = lon_lat_max[1]
 
     def __str__(self):
-        return "Segment from %g,%g to %g,%g" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+        if self.__name is None:
+            return "Segment from %g,%g to %g,%g" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+        else:
+            return "Segment %s from %g,%g to %g,%g" % (self.__name, self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
 
     def __repr__(self):
-        return "Segment((%f,%f), (%f,%f))" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+        if self.__name is None:
+            return "Segment((%f,%f), (%f,%f))" % (self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
+        else:
+            return "Segment %s ((%f,%f), (%f,%f))" % (self.__name, self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
 
     @property
     def lon_min(self):

@@ -143,6 +143,7 @@ class Transect(object):
             #Build the segment list
             segmentlist = list()
             for sdef in get_subelements(t, "transect"):
+                sname = get_node_attr(sdef, "name")
                 lon_min = literal_eval(get_node_attr(sdef, "lonmin"))
                 lat_min = literal_eval(get_node_attr(sdef, "latmin"))
                 lon_max = literal_eval(get_node_attr(sdef, "lonmax"))
@@ -152,7 +153,7 @@ class Transect(object):
                     "Skipping invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
                     (lon_min, lat_min, lon_max, lat_max))
                     continue
-                segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max)))
+                segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max),sname))
             #For each vars list
             for vl in get_subelements(t, "vars"):
                 for v in get_subelements(vl, "var"):

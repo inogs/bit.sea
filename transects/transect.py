@@ -13,18 +13,24 @@ from commons.dataextractor import DataExtractor
 class Transect(object):
     """Stores a multiple segment transect definition.
     """
-    def __init__(self, varname, clim, segmentlist):
+    def __init__(self, varname, clim, segmentlist, name=None):
         """Transect constructor.
 
         Args:
             - *varname*: the name of the variable to extract.
             - *clim*: a list or tuple with the two limit values (minimum and
-              maximum)
+              maximum).
             - *segmentlist*: a list Segment objects. Can be an empty list.
+            - *name* (optional): a string defining the transect's name. If set
+              to None it will be set to varname (default: None).
         """
         if varname is None:
             raise ValueError("varname cannot be None")
         self.__varname = str(varname)
+        if name is None:
+            self.__name = self.__varname
+        else:
+            self.__name = str(name)
         if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
             raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
@@ -34,6 +40,10 @@ class Transect(object):
         #Variable data cache
         self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
         self.__mask = None
+
+    @property
+    def name(self):
+        return self.__name
 
     @property
     def varname(self):

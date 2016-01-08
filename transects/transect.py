@@ -38,7 +38,7 @@ class Transect(object):
             raise ValueError("segmentlist must be a list of Segments")
         self.__segmentlist = segmentlist
         #Variable data cache
-        self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
+        self.__datacache = { 'filename':None, 'data':None }
         self.__mask = None
 
     @property

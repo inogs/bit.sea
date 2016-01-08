@@ -45,6 +45,10 @@ class Segment(object):
             return "Segment %s ((%f,%f), (%f,%f))" % (self.__name, self.__lon_min, self.__lat_min, self.__lon_max, self.__lat_max)
 
     @property
+    def name(self):
+        return self.__name
+
+    @property
     def lon_min(self):
         return self.__lon_min
 

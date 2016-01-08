@@ -1,5 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
+import warnings
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
@@ -127,7 +128,7 @@ class Transect(object):
                 lon_max = literal_eval(get_node_attr(sdef, "lonmax"))
                 lat_max = literal_eval(get_node_attr(sdef, "latmax"))
                 if (lon_min != lon_max) and (lat_min != lat_max):
-                    raise NotImplementedError(
+                    warnings.warn(
                     "Invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
                     (lon_min, lat_min, lon_max, lat_max))
                 segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max)))

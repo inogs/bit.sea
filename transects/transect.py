@@ -117,8 +117,8 @@ class Transect(object):
             raise ValueError("Missing mask data. Try call fill_data_cache before asking for segment data")
         output = list()
         for i,s in enumerate(self.__segmentlist):
-            data = self.__get_segment_data(i)
-            output.append({'segment': s, 'data': data, 'h_vals': None, 'z_vals': None})
+            data, h_vals, z_vals = self.__get_segment_data(i)
+            output.append({'segment': s, 'data': data, 'h_vals': h_vals, 'z_vals': z_vals})
         return output
 
     def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan):
@@ -134,7 +134,7 @@ class Transect(object):
         Returns: a NumPy array that contains the requested data.
         """
         self.fill_data_cache_from_file(mask, datafilepath, fill_value)
-        data = self.__get_segment_data(segment_index)
+        data, _, _ = self.__get_segment_data(segment_index)
         return data
 
     @staticmethod
@@ -191,9 +191,12 @@ class Transect(object):
         #Get the output data
         if x_min == x_max:
             data = np.array(self.__datacache['data'][:, y_min:y_max, x_min], dtype=float)
+            h_vals = self.__mask.ylevels[y_min:y_max]
         elif y_min == y_max:
             data = np.array(self.__datacache['data'][:, y_min, x_min:x_max], dtype=float)
+            h_vals = self.__mask.xlevels[x_min:x_max]
         else:
             raise ValueError("Invalid segment: %s" % (seg,))
-        return data
+        z_vals = self.__mask.zlevels
+        return data, h_vals, z_vals
 

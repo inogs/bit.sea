@@ -129,8 +129,9 @@ class Transect(object):
                 lat_max = literal_eval(get_node_attr(sdef, "latmax"))
                 if (lon_min != lon_max) and (lat_min != lat_max):
                     warnings.warn(
-                    "Invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
+                    "Skipping invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
                     (lon_min, lat_min, lon_max, lat_max))
+                    continue
                 segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max)))
             #For each vars list
             for vl in get_subelements(t, "vars"):

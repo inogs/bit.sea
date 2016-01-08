@@ -13,7 +13,7 @@ from commons.dataextractor import DataExtractor
 class Transect(object):
     """Stores a multiple segment transect definition.
     """
-    def __init__(self, varname, clim, segmentlist, name=None):
+    def __init__(self, varname, clim, segmentlist, name=None, unit=None):
         """Transect constructor.
 
         Args:
@@ -23,6 +23,8 @@ class Transect(object):
             - *segmentlist*: a list Segment objects. Can be an empty list.
             - *name* (optional): a string defining the transect's name. If set
               to None it will be set to varname (default: None).
+            - *unit* (optional): a string defining the transect's measurement
+              unit (default: None).
         """
         if varname is None:
             raise ValueError("varname cannot be None")
@@ -31,6 +33,10 @@ class Transect(object):
             self.__name = self.__varname
         else:
             self.__name = str(name)
+        if unit is None:
+            self.__unit = None
+        else:
+            self.__unit = str(unit)
         if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
             raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
@@ -52,6 +58,10 @@ class Transect(object):
     @property
     def clim(self):
         return self.__clim
+
+    @property
+    def unit(self):
+        return self.__unit
 
     @property
     def segmentlist(self):

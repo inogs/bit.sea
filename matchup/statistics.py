@@ -1,6 +1,6 @@
 import numpy as np
 
-class matchup():
+class matchup(object):
     def __init__(self, Model, Ref):
         self.Model = Model
         self.Ref   = Ref

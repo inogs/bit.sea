@@ -94,3 +94,28 @@ class Mask(object):
         """Converts x and y coordinates to longitude and latitude.
         """
         return (self._xlevels[x], self._ylevels[y])
+
+    def getDepthIndex(self, z):
+        '''Converts a depth expressed in meters in the corresponding index level
+        The returned value is an integer indicating the previous (not nearest) depth in the z-levels.
+
+        Example:
+        M = Mask(filename)
+        k = M.getDepthIndex(200.)
+        M.zlevels[k]
+          returns 192.60
+        '''
+        jk_m = 0
+        for jk,depth in enumerate(self.zlevels):
+            if depth < z:
+                jk_m=jk
+        return jk_m
+
+    def mask_at_level(self,z):
+        '''
+        Returns a 2d map of logicals, for the depth (m) provided as argument.
+        as a slice of the tmask.
+        '''
+        jk_m = self.getDepthIndex(z)
+        level_mask = self.mask[jk_m,:,:].copy()
+        return level_mask

@@ -25,7 +25,7 @@ class matchup():
         return array.mean()
 
     def correlation(self):
-        return self.covariance()/(np.sqrt(self.Model.std()* self.Ref.std()))
+        return self.covariance()/(self.Model.std()* self.Ref.std())
 
     def bias(self):
         '''

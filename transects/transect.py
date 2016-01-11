@@ -1,5 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
+import warnings
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
@@ -12,18 +13,30 @@ from commons.dataextractor import DataExtractor
 class Transect(object):
     """Stores a multiple segment transect definition.
     """
-    def __init__(self, varname, clim, segmentlist):
+    def __init__(self, varname, clim, segmentlist, name=None, unit=None):
         """Transect constructor.
 
         Args:
             - *varname*: the name of the variable to extract.
             - *clim*: a list or tuple with the two limit values (minimum and
-              maximum)
+              maximum).
             - *segmentlist*: a list Segment objects. Can be an empty list.
+            - *name* (optional): a string defining the transect's name. If set
+              to None it will be set to varname (default: None).
+            - *unit* (optional): a string defining the transect's measurement
+              unit (default: None).
         """
         if varname is None:
             raise ValueError("varname cannot be None")
         self.__varname = str(varname)
+        if name is None:
+            self.__name = self.__varname
+        else:
+            self.__name = str(name)
+        if unit is None:
+            self.__unit = None
+        else:
+            self.__unit = str(unit)
         if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
             raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
@@ -31,8 +44,12 @@ class Transect(object):
             raise ValueError("segmentlist must be a list of Segments")
         self.__segmentlist = segmentlist
         #Variable data cache
-        self.__datacache = { 'filename':None, 'data':None, 'segmentdata':None }
+        self.__datacache = { 'filename':None, 'data':None }
         self.__mask = None
+
+    @property
+    def name(self):
+        return self.__name
 
     @property
     def varname(self):
@@ -41,6 +58,10 @@ class Transect(object):
     @property
     def clim(self):
         return self.__clim
+
+    @property
+    def unit(self):
+        return self.__unit
 
     @property
     def segmentlist(self):
@@ -86,15 +107,18 @@ class Transect(object):
     def get_segment_data(self):
         """Retrieves the requested segments data.
 
-        Returns: a list of tuples. The first element of a tuple is the segment,
-                 the second element is a Numpy array containing the data.
+        Returns: a list of dictionaries. Each dictionary contains the following keys:
+                 - segment: the Segment instance
+                 - data: the corresponding data (Numpy ndarray).
+                 - h_vals: the degrees of each point.
+                 - z_vals: the depth in meters of each point.
         """
         if self.__mask is None:
             raise ValueError("Missing mask data. Try call fill_data_cache before asking for segment data")
         output = list()
         for i,s in enumerate(self.__segmentlist):
-            data = self.__get_segment_data(i)
-            output.append((s, data))
+            data, h_vals, z_vals = self.__get_segment_data(i)
+            output.append({'segment': s, 'data': data, 'h_vals': h_vals, 'z_vals': z_vals})
         return output
 
     def get_transect_data(self, segment_index, mask, datafilepath, fill_value=np.nan):
@@ -110,7 +134,7 @@ class Transect(object):
         Returns: a NumPy array that contains the requested data.
         """
         self.fill_data_cache_from_file(mask, datafilepath, fill_value)
-        data = self.__get_segment_data(segment_index)
+        data, _, _ = self.__get_segment_data(segment_index)
         return data
 
     @staticmethod
@@ -122,15 +146,17 @@ class Transect(object):
             #Build the segment list
             segmentlist = list()
             for sdef in get_subelements(t, "transect"):
+                sname = get_node_attr(sdef, "name")
                 lon_min = literal_eval(get_node_attr(sdef, "lonmin"))
                 lat_min = literal_eval(get_node_attr(sdef, "latmin"))
                 lon_max = literal_eval(get_node_attr(sdef, "lonmax"))
                 lat_max = literal_eval(get_node_attr(sdef, "latmax"))
                 if (lon_min != lon_max) and (lat_min != lat_max):
-                    raise NotImplementedError(
-                    "Invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
+                    warnings.warn(
+                    "Skipping invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
                     (lon_min, lat_min, lon_max, lat_max))
-                segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max)))
+                    continue
+                segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max),sname))
             #For each vars list
             for vl in get_subelements(t, "vars"):
                 for v in get_subelements(vl, "var"):
@@ -165,9 +191,12 @@ class Transect(object):
         #Get the output data
         if x_min == x_max:
             data = np.array(self.__datacache['data'][:, y_min:y_max, x_min], dtype=float)
+            h_vals = self.__mask.ylevels[y_min:y_max]
         elif y_min == y_max:
             data = np.array(self.__datacache['data'][:, y_min, x_min:x_max], dtype=float)
+            h_vals = self.__mask.xlevels[x_min:x_max]
         else:
             raise ValueError("Invalid segment: %s" % (seg,))
-        return data
+        z_vals = self.__mask.zlevels
+        return data, h_vals, z_vals
 

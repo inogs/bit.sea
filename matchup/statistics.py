@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from taylorDiagram import TaylorDiagram
 
 class matchup(object):
     def __init__(self, Model, Ref):
@@ -149,7 +150,7 @@ class matchup(object):
         return self.RMSE()/self.Ref.std()
 
     def densityplot(self, bins, dpi=72):
-        """
+        '''
         Plots the density of Model data against Reference data.
 
         Args:
@@ -157,7 +158,7 @@ class matchup(object):
             - *dpi* (optional): the figure's DPI (default: 72).
 
         Returns: a matplotlib Figure object and a matplotlib Axes object
-        """
+        '''
         #Set the figure
         fig, ax = plt.subplots()
         fig.set_dpi(dpi)
@@ -170,3 +171,26 @@ class matchup(object):
         #Plot the 2D histogram
         im = ax.imshow(H, interpolation='nearest', extent=extent, aspect='auto')
         return fig, ax
+
+    def taylorplot(self, dpi=72):
+        '''
+        Plots the Taylor diagram for this matchup.
+
+        Args:
+            - *dpi* (optional): the figure's DPI (default: 72).
+
+        Returns: a matplotlib Figure object and a matplotlib Axes object
+        '''
+        #Create the figure
+        fig = plt.figure()
+        fig.set_dpi(dpi)
+        #Create the TaylorDiagram object
+        dia = TaylorDiagram(self.Ref.std(), fig=fig, label="Reference")
+        #Calculate the correlation coefficient
+        corr = self.correlation()
+        #Plot the model point
+        dia.add_sample(self.Model.std(), corr, marker='s')
+        # Add RMS contours, and label them
+        contours = dia.add_contours(colors='0.5')
+        plt.clabel(contours, inline=1, fontsize=10)
+        return fig, dia.ax

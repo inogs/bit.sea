@@ -1,6 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-class matchup():
+class matchup(object):
     def __init__(self, Model, Ref):
         self.Model = Model
         self.Ref   = Ref
@@ -146,3 +147,26 @@ class matchup():
         of the observed values (Moriasi et al., 2007)
         '''
         return self.RMSE()/self.Ref.std()
+
+    def densityplot(self, bins, dpi=72):
+        """
+        Plots the density of Model data against Reference data.
+
+        Args:
+            - *bins* : number of bins for the histogram.
+            - *dpi* (optional): the figure's DPI (default: 72).
+
+        Returns: a matplotlib Figure object and a matplotlib Axes object
+        """
+        #Set the figure
+        fig, ax = plt.subplots()
+        fig.set_dpi(dpi)
+        #Ensure that each bin is at least 10 pixels wide.
+        fig.set_size_inches((bins * 10) / float(dpi), (bins * 10) / float(dpi))
+        #Compute the 2D histogram
+        H, xedges, yedges = np.histogram2d(self.Model, self.Ref, bins)
+        #Set the axes extent
+        extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+        #Plot the 2D histogram
+        im = ax.imshow(H, interpolation='nearest', extent=extent, aspect='auto')
+        return fig, ax

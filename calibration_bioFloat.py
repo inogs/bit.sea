@@ -1,4 +1,5 @@
 # Author: Giorgio Bolzon <gbolzon@ogs.trieste.it>
+
 #OUTPUTS
 #BGC-CLASS4-O2-CORR-PROF-BASIN
 #BGC-CLASS4-NIT-CORR-PROF-BASIN
@@ -14,7 +15,7 @@ from profiler import *
 import basins.OGS as OGS
 from instruments import bio_float
 from instruments.var_conversions import FLOATVARS
-
+from commons.layer import Layer
 M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 
 
@@ -25,6 +26,7 @@ ncIN.close()
 
 SUBlist=[OGS.wes, OGS.eas]
 nSUB = len(SUBlist)
+layer = Layer(0,200)
 BGC_CLASS4_CHL_CORR_PROF_BASIN = np.zeros((nSUB,), dtype=np.float32)
 
 modelvarname = 'P_i'
@@ -38,9 +40,10 @@ for isub, sub in enumerate(SUBlist):
     
     for ip, p in enumerate(Profilelist):
         singlefloatmatchup = M.getMatchups([p], nav_lev, modelvarname,read_adjusted=True)
-        if singlefloatmatchup.number() > 1 :
-            PROFILEStimeSERIES['corr'][ip] = singlefloatmatchup.correlation()
-            PROFILEStimeSERIES['rmse'][ip] = singlefloatmatchup.RMSE()
+        sfm_top = singlefloatmatchup.subset(layer)
+        if sfm_top.number() > 1 :
+            PROFILEStimeSERIES['corr'][ip] = sfm_top.correlation()
+            PROFILEStimeSERIES['rmse'][ip] = sfm_top.RMSE()
     
     BGC_CLASS4_CHL_CORR_PROF_BASIN[isub] = np.nanmean(PROFILEStimeSERIES['corr'])
 
@@ -48,13 +51,21 @@ for isub, sub in enumerate(SUBlist):
 
 # These lines just to prove that DOXY and NITRATE do not have ADJUSTED values
 import sys
-sys.exit()
+#sys.exit()
 
 for modelvarname in ['O2o','N3n']:
     Profilelist=bio_float.FloatSelector(FLOATVARS[modelvarname],T_INT, OGS.med)
+    WMO = set()
+    for p in Profilelist: WMO.add(p._my_float.wmo)
     m     = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True )
     m_raw = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=False)
-    print modelvarname, "Raw and adjusted values: ", m_raw.number(), m.number()
+    print modelvarname
+    print "Raw      values: " , m_raw.number()
+    print "adjusted values: " , m.number()
+    print "Number of files having a void ADJUSTED variable:" , len(Profilelist)
+    print "The associated wmo list is :"
+    for wmo in WMO:
+        print wmo
 
 #Then,
 #BGC-CLASS4-O2-CORR-PROF-BASIN

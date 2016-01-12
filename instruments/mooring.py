@@ -40,7 +40,7 @@ class MooringProfile(Profile):
 
 class Mooring(Instrument):
     def __init__(self, lon, lat, filename, available_params):
-        self.lon = lat
+        self.lon = lon
         self.lat = lat
         self.filename = filename
         self.available_params = available_params

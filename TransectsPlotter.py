@@ -79,7 +79,7 @@ if __name__ == "__main__":
             #For each segment
             for s in t.segmentlist:
                 #Plot segment data
-                sd, fig, ax = transectplot(t, s, date, segmentdata=sd, dpi=20.0)
+                sd, fig, ax = transectplot(t, s, date, segmentdata=sd, dpi=18)
                 #Save figure
                 outfilename = "%s/ave.%s.%s.%s.png" % (OUTPUTDIR, shortdate, t.varname, s.name)
                 fig.savefig(outfilename)

@@ -31,7 +31,15 @@ def transectplot(transect, segment, date, segmentdata=None, fig=None, ax=None, d
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
         fig.set_dpi(dpi)
-        fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
+        height = shape[0]
+        h_inch = float(height) / float(dpi)
+        width = shape[1]
+        w_inch = float(width) / float(dpi)
+        if w_inch < 7.0:
+            w_inch = 7.0
+        if h_inch < 6.2:
+            h_inch = 6.2
+        fig.set_size_inches(w_inch, h_inch)
     else:
         #Clear the figure before plotting
         fig.clf()

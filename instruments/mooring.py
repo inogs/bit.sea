@@ -14,7 +14,7 @@ fillValue = -9999
 #CPHL:units = "milligram/m3" ;
 
 class MooringProfile(Profile):
-    def __init__(self,time,lat,lon, my_mooring,available_params):
+    def __init__(self,time,lon,lat, my_mooring,available_params):
         self.time = time
         self.lat  = lat
         self.lon  = lon

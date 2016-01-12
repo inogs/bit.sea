@@ -56,11 +56,18 @@ def transectplot(transect, segment, date, segmentdata=None, fig=None, ax=None, d
     #Set Y axis ticks
     ax.set_yticks(z_in)
     ax.set_yticklabels(z_vals)
-    #Add title to figure
+    #Find fixed coordinate
     if segment.lon_min == segment.lon_max:
         fixed_coord = "lon=%g" % segment.lon_min
+        changing_coord = "Latitude (deg)"
     elif segment.lat_min == segment.lat_max:
         fixed_coord = "lat=%g" % segment.lat_min
+        changing_coord = "Longitude (deg)"
+    #Add vertical axis label
+    ax.set_ylabel("Depth (m)")
+    #Add horizontal axis label
+    ax.set_xlabel(changing_coord)
+    #Add title to figure
     title = "%s %s:%s %s" % (date, segment.name, fixed_coord, transect.varname)
     fig.suptitle(title)
     return segmentdata, fig, ax

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from taylorDiagram import TaylorDiagram
 
 class matchup(object):
@@ -170,6 +171,10 @@ class matchup(object):
         extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
         #Plot the 2D histogram
         im = ax.imshow(H, interpolation='nearest', extent=extent, aspect='auto')
+        #Set the color bar
+        div = make_axes_locatable(ax)
+        cax = div.append_axes("right", size="3%", pad=0.05)
+        cbar = fig.colorbar(im, cax=cax)
         return fig, ax
 
     def taylorplot(self, dpi=72):

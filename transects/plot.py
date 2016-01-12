@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def decimate(a, how_many):
-    #selector = np.mod(np.array(range(len(a))),len(a)/how_many) == 0
     indices = np.linspace(0, len(a)-1, how_many)
     data = list()
     for i in indices:
@@ -48,7 +47,7 @@ def transectplot(transect, segment, date, segmentdata=None, fig=None, ax=None, d
     for t in cbar_ticks_list:
         cbar_ticks_labels.append("%g" % (t,))
     div = make_axes_locatable(ax)
-    cax = div.append_axes("right", size="3%", pad=0.05)
+    cax = div.append_axes("right", size=0.30, pad=0.05)
     cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
     cbar.ax.set_yticklabels(cbar_ticks_labels)
     #Set X axis ticks

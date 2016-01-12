@@ -57,6 +57,10 @@ def transectplot(transect, segment, date, segmentdata=None, fig=None, ax=None, d
     ax.set_yticks(z_in)
     ax.set_yticklabels(z_vals)
     #Add title to figure
-    title = "%s %s %s" % (date, segment.name, transect.varname)
+    if segment.lon_min == segment.lon_max:
+        fixed_coord = "lon=%g" % segment.lon_min
+    elif segment.lat_min == segment.lat_max:
+        fixed_coord = "lat=%g" % segment.lat_min
+    title = "%s %s:%s %s" % (date, segment.name, fixed_coord, transect.varname)
     fig.suptitle(title)
     return segmentdata, fig, ax

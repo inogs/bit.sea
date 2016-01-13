@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from taylorDiagram import TaylorDiagram
+from targetDiagram import TargetDiagram
 
 class matchup(object):
     def __init__(self, Model, Ref):
@@ -176,6 +177,22 @@ class matchup(object):
         cax = div.append_axes("right", size="3%", pad=0.05)
         cbar = fig.colorbar(im, cax=cax)
         return fig, ax
+
+    def targetplot(self, dpi=72):
+        '''
+        Plots the Taylor diagram for this matchup.
+
+        Args:
+            - *dpi* (optional): the figure's DPI (default: 72).
+
+        Returns: a matplotlib Figure object and a matplotlib Axes object
+        '''
+        #Create the figure
+        fig = plt.figure()
+        fig.set_dpi(dpi)
+        #Create the TargetDiagram object
+        dia = TargetDiagram(self.Model, self.Ref, fig=fig)
+        return fig, dia.ax
 
     def taylorplot(self, dpi=72):
         '''

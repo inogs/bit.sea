@@ -5,7 +5,10 @@ import os
 import numpy as np
 import netCDF4
 from commons.mask import *
+from commons.helpers import is_number
 from basins.basin import Basin
+from basins.basin import SimpleBasin
+from basins.region import Rectangle
 
 class SubMask(Mask):
     """ Defines a submask starting from a Basin object and a NetCDF file or a Mask object
@@ -100,3 +103,73 @@ class SubMask(Mask):
 
         # Close the file
         netCDF_out.close()
+
+    @staticmethod
+    def from_square_cutting(mask, degrees, start_lon, start_lat):
+        """
+        Creates a list of SubMask objects from cutting a Mask object into
+        square sections.  The cutting starts from a point and proceeds to cut
+        along longitude then along latitude.
+
+        ++++++++    ++++++++    s->+++++
+        ++++++++ -> s->+++++ -> ssssssss
+        s->+++++    ssssssss    ssssssss
+
+        Args:
+            - *mask*: a Mask object.
+            - *degrees*: number of degrees for a sigle section side.
+            - *start_lon*: starting longitude point.
+            - *start_lat*: starting latitude point.
+
+        Returns: a list of SubMasks mapping a single section each.
+        """
+        # Input validation
+        if not isinstance(maskobject, Mask):
+            raise ValueError("mask must be an instance of Mask")
+        if not is_number(degrees):
+            raise ValueError("degrees must be a number")
+        if not is_number(start_lon):
+            raise ValueError("start_lon must be a number")
+        if not is_number(start_lat):
+            raise ValueError("start_lat must be a number")
+        # Get mask dimensions
+        min_lon = min(mask.xlevels)
+        max_lon = max(mask.xlevels)
+        min_lat = min(mask.ylevels)
+        max_lat = max(mask.ylevels)
+        # Compute maximum value for degrees
+        max_deg = min([(max_lon - min_lon), (max_lat - min_lat)])
+        if degrees <= 0:
+            raise ValueError("degrees must be greater than 0.")
+        if degrees > max_deg:
+            raise ValueError("The degrees value of %g is too big for this mask (maximum: %g)" % (degrees, max_deg))
+        # Check if starting point is inside the original mask
+        if (start_lon > max_lon) or (start_lon < min_lon):
+            raise ValueError("Invalid longitude %g (min: %g, max: %g)" % (start_lon, min_lon, max_lon))
+        if (start_lat > max_lat) or (start_lat < min_lat):
+            raise ValueError("Invalid latitude %g (min: %g, max: %g)" % (start_lat, min_lat, max_lat))
+        output = list()
+        # Bottom Left point
+        BL_point = (start_lon, start_lat)
+        # Top Right point
+        TR_point = (start_lon + degrees, start_lat + degrees)
+        # Section indices
+        lon_in = 0
+        lat_in = 0
+        # Latitude cycle
+        while (TR_point[1] <= max_lat):
+            # Longitude cycle
+            while (TR_point[0] <= max_lon):
+                # Create the Rectagle
+                rect = Rectangle(BL_point[0], TR_point[0], BL_point[1], TR_point[1])
+                # Create the basin
+                basin = SimpleBasin("section%d%d" % (lon_in, lat_in), rect)
+                # Create the SubMask and append it to output
+                output.append(SubMask(basin, maskobject=mask))
+                # Increment longitude
+                BL_point[0] += degrees
+                TR_point[0] += degrees
+            # Increment latitude
+            BL_point[1] += degrees
+            TR_point[1] += degrees
+        return output

@@ -172,4 +172,7 @@ class SubMask(Mask):
             # Increment latitude
             BL_point[1] += degrees
             TR_point[1] += degrees
+            # Reset Longitude
+            BL_point[0] = start_lon
+            TR_point[0] = start_lon + degrees
         return output

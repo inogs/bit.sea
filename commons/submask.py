@@ -58,45 +58,45 @@ class SubMask(Mask):
             - *maskvarname*: the name of the variable to use inside the NetCDF
               file (optional, defaults to 'mask').
         """
-        #Set description
+        # Set description
         if descr is None:
             descr = repr(self._basin) + " mask"
 
         if os.path.exists(filename):
-            #Open the file for appending
+            # Open the file for appending
             netCDF_out = netCDF4.Dataset(filename, "a", format="NETCDF4")
         else:
-            #Open the file for writing
+            # Open the file for writing
             netCDF_out = netCDF4.Dataset(filename, "w", format="NETCDF4")
 
-            #Add the spatial dimensions
+            # Add the spatial dimensions
             netCDF_out.createDimension('z', self._shape[0])
             netCDF_out.createDimension('y', self._shape[1])
             netCDF_out.createDimension('x', self._shape[2])
 
-            #Add nav_lev data
+            # Add nav_lev data
             nav_lev = netCDF_out.createVariable('nav_lev', 'f4', ('z',))
             nav_lev[:] = self._zlevels
 
-            #Prepare a zero-filled matrix capable of holding the nav_lat and nav_lon values
+            # Prepare a zero-filled matrix capable of holding the nav_lat and nav_lon values
             zero_mat = np.zeros((self._shape[1], self._shape[2]), np.float32)
 
-            #Create the nav_lat NetCDF variable
+            # Create the nav_lat NetCDF variable
             nav_lat = netCDF_out.createVariable('nav_lat', 'f4', ('y', 'x'))
             nav_lat[:,:] = self._ylevels[:,np.newaxis] + zero_mat
 
-            #Create the nav_lon NetCDF variable
+            # Create the nav_lon NetCDF variable
             nav_lon = netCDF_out.createVariable('nav_lon', 'f4', ('y', 'x'))
             nav_lon[:,:] = self._xlevels[np.newaxis,:] + zero_mat
 
-        #Create a variable to hold the data
+        # Create a variable to hold the data
         mask = netCDF_out.createVariable(maskvarname, 'u1', ('z', 'y', 'x'))
 
-        #Assign the data to the NetCDF variable
+        # Assign the data to the NetCDF variable
         mask[:,:,:] = self._mask[:,:,:]
 
-        #Write the description
+        # Write the description
         mask.descr = descr
 
-        #Close the file
+        # Close the file
         netCDF_out.close()

@@ -124,7 +124,7 @@ class SubMask(Mask):
         Returns: a list of SubMasks mapping a single section each.
         """
         # Input validation
-        if not isinstance(maskobject, Mask):
+        if not isinstance(mask, Mask):
             raise ValueError("mask must be an instance of Mask")
         if not is_number(degrees):
             raise ValueError("degrees must be a number")
@@ -150,9 +150,9 @@ class SubMask(Mask):
             raise ValueError("Invalid latitude %g (min: %g, max: %g)" % (start_lat, min_lat, max_lat))
         output = list()
         # Bottom Left point
-        BL_point = (start_lon, start_lat)
+        BL_point = [start_lon, start_lat]
         # Top Right point
-        TR_point = (start_lon + degrees, start_lat + degrees)
+        TR_point = [start_lon + degrees, start_lat + degrees]
         # Section indices
         lon_in = 0
         lat_in = 0

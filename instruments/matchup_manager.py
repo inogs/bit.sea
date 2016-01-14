@@ -65,9 +65,9 @@ class Matchup_Manager():
         JOB_LINES.append("cd postproc \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
-            INTERESTED_PROFILES = [self.PROFILE_LIST[k] for k in t[1]] #t[1]
+            INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]
 
-            
+
             outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
             self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \

@@ -30,7 +30,10 @@ class MooringProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var, read_adjusted):
+        '''
+        read_adjusted is an unused parameter
+        '''
         return self._my_mooring.read(var,self.time)
 
     def name(self):
@@ -65,17 +68,18 @@ class Mooring(Instrument):
         ncIN = NC.netcdf_file(self.filename,'r')
         timesInFile = ncIN.variables['TIME'].data.copy()
         VAR         = ncIN.variables[var   ].data.copy()
+        QC         = ncIN.variables[var + "_QC"  ].data.copy()
         if ncIN.variables.has_key('PRES'):
             PRES        = ncIN.variables['PRES'].data.copy()
         else:
             PRES        = ncIN.variables['DEPH'].data.copy()
         ncIN.close()
-        return VAR, PRES, timesInFile
+        return VAR, PRES, QC, timesInFile
 
 
     def read(self, var, time=None ):
 
-        VAR, PRES, timesInFile = self.read_raw(var)
+        VAR, PRES, QC, timesInFile = self.read_raw(var)
         if time is None:
             return PRES,VAR  #returns array(times,depths)
 
@@ -85,11 +89,12 @@ class Mooring(Instrument):
                 if dateprofile == time:
                     Pres   = PRES[it,:]
                     Profile = VAR[it,:]
-            badProfile = (Profile<fillValue) | (Profile == 0.0 )
+                    Qc      =  QC[it,:]
+            badProfile = (Profile<fillValue) | (Profile == 0.0 ) | (Qc != 4) # 4 is a good data
             badPres    = (Pres   <fillValue) | (Pres    == 0.0 )
             bad = badPres | badProfile
             
-            return Pres[~bad], Profile[~bad]
+            return Pres[~bad], Profile[~bad], Qc[~bad]
 
     @staticmethod
     def fromfile(filename):
@@ -109,7 +114,8 @@ def MooringSelector(var, T, region):
 
     LOC      = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/mooring/"
 
-    INTEREST_VARLIST=['PHOS','SLCA','CPHL','NTRA','PHPH']
+    INTEREST_VARLIST=['PHOS','SLCA','CPHL','NTRA','PHPH','DOX1']
+    ALLVARLIST=['PHOS','SLCA','AMON','DOX1','DOX2','CPHL','NTRZ','NTRA','NTRI','PHPH']
     A = INDEX_FILE
 
     nFiles=A.size
@@ -123,7 +129,7 @@ def MooringSelector(var, T, region):
 
         if var is None:
             VarCondition = False
-            for thevar in INTEREST_VARLIST:
+            for thevar in ALLVARLIST:
                 if thevar in parameters: VarCondition = True
         else:
             VarCondition = var in parameters

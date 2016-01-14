@@ -171,7 +171,7 @@ class matchup(object):
         #Set the axes extent
         extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
         #Plot the 2D histogram
-        im = ax.imshow(H, interpolation='nearest', extent=extent, aspect='auto')
+        im = ax.imshow(H, interpolation='nearest', extent=extent, aspect='auto', cmap="Blues")
         #Set the color bar
         div = make_axes_locatable(ax)
         cax = div.append_axes("right", size="3%", pad=0.05)

@@ -48,7 +48,7 @@ def divide_in_sections(rect, lon_side, lat_side, start_lon, start_lat):
             # Create the section
             s = Rectangle(BL_point[0], TR_point[0], BL_point[1], TR_point[1])
             # Create and append the basin to output
-            output.append(SimpleBasin("section%d%d" % (lon_in, lat_in), rect))
+            output.append(SimpleBasin("section_%d_%d" % (lat_in, lon_in), rect))
             # Increment longitude index
             lon_in += 1
             # Increment longitude
@@ -57,6 +57,8 @@ def divide_in_sections(rect, lon_side, lat_side, start_lon, start_lat):
         # Reset longitude
         BL_point[0] = start_lon
         TR_point[0] = start_lon + lon_side
+        # Reset longitude index
+        lon_in = 0
         # Increment latitude index
         lat_in += 1
         # Increment latitude

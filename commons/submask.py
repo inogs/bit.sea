@@ -163,15 +163,21 @@ class SubMask(Mask):
                 # Create the Rectagle
                 rect = Rectangle(BL_point[0], TR_point[0], BL_point[1], TR_point[1])
                 # Create the basin
-                basin = SimpleBasin("section%d%d" % (lon_in, lat_in), rect)
+                basin = SimpleBasin("section_%d_%d" % (lat_in, lon_in), rect)
                 # Create the SubMask and append it to output
                 output.append(SubMask(basin, maskobject=mask))
+                # Increment longitude index
+                lon_in += 1
                 # Increment longitude
                 BL_point[0] += degrees
                 TR_point[0] += degrees
+            # Increment latitude index
+            lat_in += 1
             # Increment latitude
             BL_point[1] += degrees
             TR_point[1] += degrees
+            # Reset Longitude index
+            lon_in = 0
             # Reset Longitude
             BL_point[0] = start_lon
             TR_point[0] = start_lon + degrees

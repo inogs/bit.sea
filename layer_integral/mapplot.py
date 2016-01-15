@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline=False, dpi=72.0):
+def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0):
     """Map plotting procedure (draft)
 
     Args:
@@ -16,7 +16,8 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
         - *min_ticks* (optional): Number of ticks to set in the shorter axis.
         - *max_ticks* (optional): Number of ticks to set in the longer axis.
         - *cbar_ticks* (optional): Number of ticks on the colorbar (default: 5).
-        - *coastline* (optional): If set to True draws the coast (default: False).
+        - *coastline_lon* (optional): Numpy array defining the coastline longitudes.
+        - *coastline_lat* (optional): Numpy array defining the coastline latitudes.
         - *dpi* (optional): sets the DPI (default: 72.0).
     Returns:
         A figure and an Axes object that can be passed again to mapplot
@@ -29,15 +30,16 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     else:
         fig.clf()
         fig.add_axes(ax)
-    if (not mask is None) and coastline:
-        coast_m = np.array(mask.mask[0,:,:], dtype=np.float32)
-        coast_m[coast_m != 0] = np.nan
-        ax.imshow(coast_m, cmap='hot')
-        ax.invert_yaxis()
-        fig.hold(True)
     clim = map_dict['clim']
     title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
-    im = ax.imshow(map_dict['data'])
+    if not(mask is None):
+        lon_min = min(mask.xlevels)
+        lon_max = max(mask.xlevels)
+        lat_min = min(mask.ylevels)
+        lat_max = max(mask.ylevels)
+        im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min])
+    else:
+        im = ax.imshow(map_dict['data'])
     #Set color bar
     im.set_clim(clim[0], clim[1])
     cbar_ticks_list = np.linspace(clim[0], clim[1], cbar_ticks).tolist()
@@ -61,19 +63,19 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
             x_ticks = max_ticks
             y_ticks = max_ticks
         #Set X axis ticks
-        x_points = np.linspace(0,shape[1]-1,x_ticks).tolist()
-        x_labels = list()
-        for x in x_points:
-            x_labels.append(int(round(mask.convert_x_y_to_lon_lat(int(x), 0)[0])))
+        x_points = np.linspace(lon_min,lon_max,x_ticks).tolist()
         ax.set_xticks(x_points)
-        ax.set_xticklabels(x_labels)
         #Set Y axis ticks
-        y_points = np.linspace(0,shape[0]-1,y_ticks).tolist()
-        y_labels = list()
-        for y in y_points:
-            y_labels.append(int(round(mask.convert_x_y_to_lon_lat(0, int(y))[1])))
+        y_points = np.linspace(lat_min,lat_max,y_ticks).tolist()
         ax.set_yticks(y_points)
-        ax.set_yticklabels(y_labels)
+        if not ((coastline_lon is None) or (coastline_lat is None)):
+            # Flatten coastline arrays
+            coastline_lon = np.ravel(coastline_lon)
+            coastline_lat = np.ravel(coastline_lat)
+            if len(coastline_lon) != len(coastline_lat):
+                raise ValueError("coastline arrays must have the same length")
+            #Draw coastline
+            ax.plot(coastline_lon,coastline_lat, color='#000000')
     fig.suptitle(title)
     ax.grid()
     return fig, ax

@@ -76,6 +76,8 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
                 raise ValueError("coastline arrays must have the same length")
             #Draw coastline
             ax.plot(coastline_lon,coastline_lat, color='#000000')
+            ax.set_xlim([lon_min, lon_max])
+            ax.set_ylim([lat_min, lat_max])
     fig.suptitle(title)
     ax.grid()
     return fig, ax

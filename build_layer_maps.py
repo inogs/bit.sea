@@ -6,6 +6,7 @@
 from __future__ import print_function
 import sys
 import os
+import numpy as np
 from glob import glob
 
 try:
@@ -93,9 +94,17 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
+        coastline=np.load('Coastline.npy')
+        c_lon=coastline['Lon']
+        c_lat=coastline['Lat']
+    except:
+        c_lon=None
+        c_lat=None
+
+    try:
         validate_arguments(inputdir, outputdir, plotlistfile, maskfile)
         file_list = glob(inputdir + "/" + file_pattern)
         mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
-        mb.plot_maps_data()
+        mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
     except Exception as e:
         die(e, 2, False)

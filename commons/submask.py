@@ -44,10 +44,17 @@ class SubMask(Mask):
             raise ValueError("basin must be an instance of Basin")
         # Build the prism mask
         prism = np.zeros_like(self._mask)
-        for x in range(prism.shape[2]):
-            for y in range(prism.shape[1]):
-                lon,lat = self.convert_x_y_to_lon_lat(x,y)
-                prism[:,y,x] = basin.is_inside(lon,lat)
+        jpk = self.shape[0]
+        if isinstance(basin.region, Rectangle): #faster algorithm for rectangle
+            rect = basin.region
+            ii=(self._xlevels>=rect.lonmin) & (self._xlevels <=rect.lonmax) & (self._ylevels>=rect.latmin) & (self._ylevels <=rect.latmax)
+            for jk in range(jpk):
+                prism[jk,:,:] = ii
+        else: # algorithm for generic basin
+            for x in range(prism.shape[2]):
+                for y in range(prism.shape[1]):
+                    lon,lat = self.convert_x_y_to_lon_lat(x,y)
+                    prism[:,y,x] = basin.is_inside(lon,lat)
         # submask = original mask * prism mask
         self._mask = self._mask * prism
 
@@ -121,7 +128,7 @@ class SubMask(Mask):
             - *start_lon*: starting longitude point.
             - *start_lat*: starting latitude point.
 
-        Returns: a list of SubMasks mapping a single section each.
+        Returns: a list of basins mapping a single section each.
         """
         # Input validation
         if not isinstance(mask, Mask):
@@ -133,10 +140,10 @@ class SubMask(Mask):
         if not is_number(start_lat):
             raise ValueError("start_lat must be a number")
         # Get mask dimensions
-        min_lon = min(mask.xlevels)
-        max_lon = max(mask.xlevels)
-        min_lat = min(mask.ylevels)
-        max_lat = max(mask.ylevels)
+        min_lon = mask.xlevels.min()
+        max_lon = mask.xlevels.max()
+        min_lat = mask.ylevels.min()
+        max_lat = mask.ylevels.max()
         # Compute maximum value for degrees
         max_deg = min([(max_lon - min_lon), (max_lat - min_lat)])
         if degrees <= 0:
@@ -144,10 +151,7 @@ class SubMask(Mask):
         if degrees > max_deg:
             raise ValueError("The degrees value of %g is too big for this mask (maximum: %g)" % (degrees, max_deg))
         # Check if starting point is inside the original mask
-        if (start_lon > max_lon) or (start_lon < min_lon):
-            raise ValueError("Invalid longitude %g (min: %g, max: %g)" % (start_lon, min_lon, max_lon))
-        if (start_lat > max_lat) or (start_lat < min_lat):
-            raise ValueError("Invalid latitude %g (min: %g, max: %g)" % (start_lat, min_lat, max_lat))
+
         output = list()
         # Bottom Left point
         BL_point = [start_lon, start_lat]
@@ -165,7 +169,7 @@ class SubMask(Mask):
                 # Create the basin
                 basin = SimpleBasin("section_%d_%d" % (lat_in, lon_in), rect)
                 # Create the SubMask and append it to output
-                output.append(SubMask(basin, maskobject=mask))
+                output.append(basin)
                 # Increment longitude index
                 lon_in += 1
                 # Increment longitude

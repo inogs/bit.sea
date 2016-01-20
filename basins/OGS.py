@@ -45,8 +45,15 @@ atl = Polygon([ -5.5, -5.5, -9.0, -9.0],
               [ 32.0, 40.0, 40.0, 32.0])
 atl = SimplePolygonalBasin('atl', atl)
 
-wes = ComposedBasin('wes', [alb, sww, swe, nwm, tyr], 'West Mediterranean Sea')
-eas = ComposedBasin('eas', [ion, lev])
-med = ComposedBasin('med', [alb, sww, swe, nwm, tyr, ion, lev])
 
-P = ComposedBasin('P',[alb ,sww,swe,nwm,tyr,adn,ads,aeg,ion,lev])
+med = Polygon([ -5.5, 36.0, 36.0,  -5.5],
+              [ 29.0, 29.0, 46.0,  46.0])
+med = SimplePolygonalBasin('med',med,'Mediterranean Sea')
+
+wes = ComposedBasin('wes', [alb, sww, swe, nwm, tyr], 'West Mediterranean Sea')
+eas = ComposedBasin('eas', [ion, lev], 'East Mediterranean Sea')
+mnm = ComposedBasin('mnm', [alb, sww, swe, nwm, tyr, ion, lev],"Med without marginal seas")
+
+Pred = ComposedBasin('Pr',[alb ,sww,swe,nwm,tyr,adn,ads,aeg,ion,lev])
+P    = ComposedBasin('P',[alb ,sww,swe,nwm,tyr,adn,ads,aeg,ion,lev,med])
+

@@ -36,13 +36,16 @@ class Mask(object):
             else:
                 raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
-                self._ylevels = np.array(dset.variables[ylevelsmatvar][:,0])
+                self._ylevels = np.array(dset.variables[ylevelsmatvar])
             else:
                 raise ValueError("ylevelsmatvar '%s' not found" % (str(ylevelsmatvar),))
             if xlevelsmatvar in dset.variables:
-                self._xlevels = np.array(dset.variables[xlevelsmatvar][0,:])
+                self._xlevels = np.array(dset.variables[xlevelsmatvar])
             else:
                 raise ValueError("xlevelsmatvar '%s' not found" % (str(xlevelsmatvar),))
+            e1t = np.array(dset.variables['e1t'][0,0,:,:]).astype(np.float32)
+            e2t = np.array(dset.variables['e2t'][0,0,:,:]).astype(np.float32)
+            self._area = e1t*e2t
         except:
             raise
 
@@ -69,6 +72,9 @@ class Mask(object):
     @property
     def shape(self):
         return self._shape
+    @property
+    def area(self):
+        return self._area
 
     def convert_lon_lat_to_indices(self, lon, lat):
         """Converts longitude and latitude to the nearest indices on the mask.
@@ -93,7 +99,7 @@ class Mask(object):
     def convert_x_y_to_lon_lat(self, x, y):
         """Converts x and y coordinates to longitude and latitude.
         """
-        return (self._xlevels[x], self._ylevels[y])
+        return (self._xlevels[y,x], self._ylevels[y,x])
 
     def getDepthIndex(self, z):
         '''Converts a depth expressed in meters in the corresponding index level

@@ -54,6 +54,9 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN      = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN     = np.zeros((nFrames,nSUB),np.float32)
 MODEL_MEAN                         = np.zeros((nFrames,nSUB),np.float32)
 SAT___MEAN                         = np.zeros((nFrames,nSUB),np.float32)
+BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nFrames,nSUB),np.float32)
+BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
+
 # This is the surface layer choosen to match satellite chl data
 surf_layer = Layer(0,10)
 
@@ -88,13 +91,22 @@ for itime, modeltime in enumerate(model_TL.Timelist):
         weight = TheMask.area[selection]
         MODEL_MEAN[itime,isub] = weighted_mean( M.Model,weight)
         SAT___MEAN[itime,isub] = weighted_mean( M.Ref,  weight)
-    
+
+        Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
+        BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[itime,isub]  = Mlog.RMSE()
+        BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[itime,isub] = Mlog.bias()
+ 
 BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
 BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
 
 
 import pickle
-LIST=[model_TL.Timelist, BGC_CLASS4_CHL_RMS_SURF_BASIN, BGC_CLASS4_CHL_BIAS_SURF_BASIN,MODEL_MEAN, SAT___MEAN]
+LIST=[model_TL.Timelist, 
+BGC_CLASS4_CHL_RMS_SURF_BASIN, 
+BGC_CLASS4_CHL_BIAS_SURF_BASIN,
+MODEL_MEAN, SAT___MEAN, 
+BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG,
+BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG]
 fid = open('export_data_ScMYValidation_plan.pkl','wb')
 pickle.dump(LIST, fid)
 fid.close()

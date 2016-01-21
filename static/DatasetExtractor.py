@@ -2,6 +2,8 @@ import numpy as np
 import scipy.io.netcdf as NC
 import datetime
 from instruments.instrument import ContainerProfile
+import seawater
+from seawater.library import T90conv
 
 
 class DatasetExtractor():
@@ -70,9 +72,41 @@ class DatasetExtractor():
           region  (region object)
 
          '''
-        
+
         ivar  = self.find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]
+        units = self.UNITS[ivar,:].tostring()
+
+        if units =="\mumol/kg":
+            print "needed conversion"
+            itemp  = self.find_index('temp'    , self.VARIABLES)
+            ipsal  = self.find_index('salinity', self.VARIABLES)
+            idens  = self.find_index('density' , self.VARIABLES)
+            temp   = self.DATA[itemp,:]
+            sali   = self.DATA[ipsal,:]
+            pres   = self.DATA[5,:]
+            dens   = self.DATA[idens,:]
+            good_rho  = (sali < 1.e+19 ) & (sali>0) & (temp < 1.e+19 ) & (temp>0) & (pres < 1.e+19 ) & (pres>0)
+            t = T90conv(temp)
+            n = len(values)
+            calculated_rho  = np.ones((n),np.float32)*np.nan
+            assumed_density = np.ones((n),np.float32)*np.nan
+            calculated_rho[good_rho]  = seawater.dens(sali[good_rho],t[good_rho],pres[good_rho])
+
+
+            good_dens = (dens < 1.e+19 ) & (dens>0)
+            for i in range(n):
+                if good_dens[i]:
+                    assumed_density[i] = dens[i]
+                else:
+                    if good_rho[i]:
+                        assumed_density[i] = calculated_rho[i]
+
+
+            good = ~np.isnan(assumed_density)
+            values[good] = values[good] * assumed_density[good] /1000.
+            values[~good] = 1.e+20
+
         good  = (values < 1e+19) & (values > 0)
         
         values = values[good]

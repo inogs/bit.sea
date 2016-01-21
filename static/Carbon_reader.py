@@ -13,6 +13,14 @@ class CarbonReader(DatasetExtractor):
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
+        # DATA ELIMINATION in order to not duplicate values with nutrients dataset
+        for cruisename in ['METEOR','METEOR51', 'METEOR95','PROSOPE']:
+            iCruise = self.DataExtractor.find_index(cruisename, self.DataExtractor.CRUISES)
+            for var in ['nitrate','phosphate','silicate','oxygen']:
+                ivar    = self.DataExtractor.find_index(var, self.DataExtractor.VARIABLES)
+                ii = self.DataExtractor.DATA[-1,:] == (iCruise+1)
+                self.DataExtractor.DATA[ivar,ii] = -999.0
+
  
     def CruiseSelector(self, var,Cruisename):
         '''
@@ -78,6 +86,11 @@ class CarbonReader(DatasetExtractor):
          - pH25_sws
          - pH25_T
          '''
+
+        if var is None:
+            Profilelist = ()
+            for myvar in ['nitrate','phosphate','oxygen','silicate','DIC','ALK','temp','salinity','pH25_T']:
+                Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
         return self.DataExtractor.selector(var, T_int, region)
         
 
@@ -86,12 +99,15 @@ class CarbonReader(DatasetExtractor):
 if __name__ == '__main__':
     
     var= 'nitrate';
-    TI = TimeInterval('19900101','2010101','%Y%m%d')
+    TI = TimeInterval('19900101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     A = CarbonReader()
-    ProfileLIST = A.Selector('density', TI, Reg)
+    ProfileLIST = A.Selector('nitrate', TI, Reg)
+    p = ProfileLIST[0]
+    a = p.read('nitrate')
+    print a
     
-    ProfileLIST2 = A.CruiseSelector('density', 'CARBOGIB 6')
+    ProfileLIST2 = A.CruiseSelector('nitrate', 'PROSOPE')
 
 
         

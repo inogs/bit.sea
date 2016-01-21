@@ -55,13 +55,19 @@ class NutrientsReader():
           T_int   (TimeInterval object)
           region  (region object)
 
-        var can be one of these:
+        can be one of these:
          - nitrate
          - phosphate
          - silicate
          - oxygen
+         if var is None, no selection is done about variable
          '''
-        return self.DataExtractor.selector(var, T_int, region)
+        if var is None:
+            Profilelist=list()
+            for myvar in ['nitrate','phosphate','silicate','oxygen']:
+                Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
+        else:
+            return self.DataExtractor.selector(var, T_int, region)
 
 if __name__ == '__main__':
     

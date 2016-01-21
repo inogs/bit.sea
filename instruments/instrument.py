@@ -16,8 +16,18 @@ class ContainerProfile(Profile):
         self.time    = time
         self.pres    = depth
         self.profile = values
-        self.name    = name
+        self._name    = name
+
+    def __eq__(self, other):
+        if isinstance(other, ContainerProfile):
+            if (self.lon == other.lon) & (self.lat == other.lat) & (self.time == other.time):
+                True
+        else:
+            return False
 
     def read(self,var):
         return self.pres, self.profile
+
+    def name(self):
+        return self._name
 

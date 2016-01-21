@@ -36,7 +36,7 @@ class Matchup_Manager():
         LINES=[]
         LINES.append('NOME    Longitutine E    Latitudine N \n')
         for p in Profilelist:
-            line = "%s %g %g \n" %(p.name(), p.lon, p.lat)
+            line = "%s\t%g\t%g \n" %(p.name(), p.lon, p.lat)
             LINES.append(line)
         
         F = open(filename, "w")

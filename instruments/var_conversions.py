@@ -22,3 +22,13 @@ VESSELVARS={'O2o':'DOX1', \
              'N1p':'PHOS', \
              'N5s':'SLCA', \
              'pH_':'PHPH'}
+
+CARBONVARS={'O2o':'oxygen', \
+            'N3n':'nitrate',  \
+            'N1p':'phosphate', \
+            'N5s':'silicate'}
+
+NUTRVARS={'O2o':'oxygen', \
+             'N3n':'nitrate',  \
+             'N1p':'phosphate', \
+             'N5s':'silicate'}

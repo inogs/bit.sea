@@ -77,7 +77,7 @@ class DatasetExtractor():
         values= self.DATA[ivar,:]
         units = self.UNITS[ivar,:].tostring()
 
-        if units =="\mumol/kg":
+        if units =="\\mumol/kg":
             print "needed conversion"
             itemp  = self.find_index('temp'    , self.VARIABLES)
             ipsal  = self.find_index('salinity', self.VARIABLES)
@@ -120,7 +120,6 @@ class DatasetExtractor():
         dataset = self.DATA[-1,good]
         
         nValues=values.size
-        
         Selected = np.zeros((nValues,),dtype=np.bool)
         TIME     = np.zeros((nValues), dtype=np.int32)
         for i in range(nValues):

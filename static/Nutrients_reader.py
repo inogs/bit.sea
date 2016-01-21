@@ -66,6 +66,7 @@ class NutrientsReader():
             Profilelist=list()
             for myvar in ['nitrate','phosphate','silicate','oxygen']:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
+            return Profilelist
         else:
             return self.DataExtractor.selector(var, T_int, region)
 
@@ -74,12 +75,12 @@ if __name__ == '__main__':
     var= 'nitrate';
     TI = TimeInterval('20020101','20030101','%Y%m%d')
     Reg= Rectangle(0,20,30,46)
-    A = NutrientsReader()
-    ProfileLIST = A.Selector('nitrate', TI, Reg)
+    N = NutrientsReader()
+    ProfileLIST = N.Selector('nitrate', TI, Reg)
     
     
     Cruisename='MELISSA 2004'
-    ProfileLIST2 = A.CruiseSelector(var, Cruisename)
+    ProfileLIST2 = N.CruiseSelector(var, Cruisename)
 
 
         

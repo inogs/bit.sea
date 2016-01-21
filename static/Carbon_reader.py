@@ -88,9 +88,10 @@ class CarbonReader(DatasetExtractor):
          '''
 
         if var is None:
-            Profilelist = ()
+            Profilelist = list()
             for myvar in ['nitrate','phosphate','oxygen','silicate','DIC','ALK','temp','salinity','pH25_T']:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
+            return Profilelist
         return self.DataExtractor.selector(var, T_int, region)
         
 
@@ -101,13 +102,14 @@ if __name__ == '__main__':
     var= 'nitrate';
     TI = TimeInterval('19900101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
-    A = CarbonReader()
-    ProfileLIST = A.Selector('nitrate', TI, Reg)
+    C = CarbonReader()
+    ProfileLIST = C.Selector('nitrate', TI, Reg)
     p = ProfileLIST[0]
     a = p.read('nitrate')
     print a
     
-    ProfileLIST2 = A.CruiseSelector('nitrate', 'PROSOPE')
+    ProfileLIST2 = C.CruiseSelector('nitrate', 'PROSOPE')
+    LIST3 = C.Selector(None, TI, Reg)
 
 
         

@@ -1,3 +1,4 @@
+import numpy as np
 class Profile(object):
     def read(self,var):
         raise NotImplementedError
@@ -21,12 +22,16 @@ class ContainerProfile(Profile):
     def __eq__(self, other):
         if isinstance(other, ContainerProfile):
             if (self.lon == other.lon) & (self.lat == other.lat) & (self.time == other.time):
-                True
+                return True
         else:
             return False
 
-    def read(self,var):
-        return self.pres, self.profile
+    def read(self,var,read_adjusted=True):
+        '''
+        Return pres, profile, Qc
+        Qc is a dummy np.array of 2
+        '''
+        return self.pres, self.profile, np.ones_like(self.pres, np.int)*2
 
     def name(self):
         return self._name

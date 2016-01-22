@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from taylorDiagram import TaylorDiagram
 from targetDiagram import TargetDiagram
+from matplotlib.cm import ScalarMappable as ScalarMappable
 
 class matchup(object):
     def __init__(self, Model, Ref):
@@ -177,6 +178,41 @@ class matchup(object):
         cax = div.append_axes("right", size="3%", pad=0.05)
         cbar = fig.colorbar(im, cax=cax)
         return fig, ax
+    
+    def densityplot2(self,modelname='Model',refname='Ref',units = 'mmol m-3'):
+        '''
+        opectool like density plot
+        
+        Ref is in x axis
+        Model  in y axis
+        
+        Args
+         - *modelname* (optional) string , default ='Model'
+         - *refname*   (optional) string , default ='Ref'
+         - *units*     (optional) string , default ='mmol m-3'
+        
+        
+        
+        Returns: a matplotlib Figure object and a matplotlib Axes object
+        '''
+        
+        fig, ax = plt.subplots()
+        plt.title('Density plot of %s and %s\nNumber of considered matchups: %s' % (modelname, refname, self.number()))
+        cmap = 'spectral_r'
+        axis_min = min(self.Ref.min(),self.Model.min())
+        axis_max = max(self.Ref.max(),self.Model.max())
+        extent = [axis_min, axis_max, axis_min, axis_max]
+
+        hexbin = ax.hexbin(self.Ref, self.Model, bins=None, extent=extent, cmap=cmap)
+        data = hexbin.get_array()
+
+        mappable = ScalarMappable(cmap=cmap)
+        mappable.set_array(data)
+        fig.colorbar(mappable, ax=ax)
+        ax.set_xlabel('%s %s' % (refname,  units))
+        ax.set_ylabel('%s %s' % (modelname,units))
+        ax.grid()
+        return fig,ax
 
     def targetplot(self, dpi=72):
         '''
@@ -216,3 +252,14 @@ class matchup(object):
         contours = dia.add_contours(colors='0.5')
         plt.clabel(contours, inline=1, fontsize=10)
         return fig, dia.ax
+
+
+if __name__ == "__main__" :
+    n = 5000
+    x = 4.0 + np.random.randn(n)
+    y = 3.0 + np.random.randn(n)
+    M = matchup(x,y)
+    fig, ax = M.densityplot2(modelname='s1',refname='s2',units='Kg/m3')
+    fig.show()
+    
+    

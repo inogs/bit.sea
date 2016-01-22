@@ -78,7 +78,6 @@ class DatasetExtractor():
         units = self.UNITS[ivar,:].tostring()
 
         if units =="\\mumol/kg":
-            print "needed conversion"
             itemp  = self.find_index('temp'    , self.VARIABLES)
             ipsal  = self.find_index('salinity', self.VARIABLES)
             idens  = self.find_index('density' , self.VARIABLES)

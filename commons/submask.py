@@ -128,7 +128,7 @@ class SubMask(Mask):
             - *start_lon*: starting longitude point.
             - *start_lat*: starting latitude point.
 
-        Returns: a list of basins mapping a single section each.
+        Returns: a list of SubMasks mapping a single section each.
         """
         # Input validation
         if not isinstance(mask, Mask):
@@ -151,7 +151,10 @@ class SubMask(Mask):
         if degrees > max_deg:
             raise ValueError("The degrees value of %g is too big for this mask (maximum: %g)" % (degrees, max_deg))
         # Check if starting point is inside the original mask
-
+        if (start_lon > max_lon) or (start_lon < min_lon):
+            raise ValueError("Invalid longitude %g (min: %g, max: %g)" % (start_lon, min_lon, max_lon))
+        if (start_lat > max_lat) or (start_lat < min_lat):
+            raise ValueError("Invalid latitude %g (min: %g, max: %g)" % (start_lat, min_lat, max_lat))
         output = list()
         # Bottom Left point
         BL_point = [start_lon, start_lat]
@@ -169,7 +172,7 @@ class SubMask(Mask):
                 # Create the basin
                 basin = SimpleBasin("section_%d_%d" % (lat_in, lon_in), rect)
                 # Create the SubMask and append it to output
-                output.append(basin)
+                output.append(SubMask(basin, maskobject=mask))
                 # Increment longitude index
                 lon_in += 1
                 # Increment longitude

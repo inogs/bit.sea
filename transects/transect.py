@@ -191,10 +191,10 @@ class Transect(object):
         #Get the output data
         if x_min == x_max:
             data = np.array(self.__datacache['data'][:, y_min:y_max, x_min], dtype=float)
-            h_vals = self.__mask.ylevels[y_min:y_max]
+            h_vals = self.__mask.ylevels[y_min:y_max,x_min]
         elif y_min == y_max:
             data = np.array(self.__datacache['data'][:, y_min, x_min:x_max], dtype=float)
-            h_vals = self.__mask.xlevels[x_min:x_max]
+            h_vals = self.__mask.xlevels[y_min,x_min:x_max]
         else:
             raise ValueError("Invalid segment: %s" % (seg,))
         z_vals = self.__mask.zlevels

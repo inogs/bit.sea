@@ -82,16 +82,13 @@ class ComposedSubMask(Mask):
             nav_lev = netCDF_out.createVariable('nav_lev', 'f4', ('z',))
             nav_lev[:] = self._zlevels
 
-            # Prepare a zero-filled matrix capable of holding the nav_lat and nav_lon values
-            zero_mat = np.zeros((self._shape[1], self._shape[2]), np.float32)
-
             # Create the nav_lat NetCDF variable
             nav_lat = netCDF_out.createVariable('nav_lat', 'f4', ('y', 'x'))
-            nav_lat[:,:] = self._ylevels[:,np.newaxis] + zero_mat
+            nav_lat[:,:] = self._ylevels[:,:]
 
             # Create the nav_lon NetCDF variable
             nav_lon = netCDF_out.createVariable('nav_lon', 'f4', ('y', 'x'))
-            nav_lon[:,:] = self._xlevels[np.newaxis,:] + zero_mat
+            nav_lon[:,:] = self._xlevels[:,:]
 
         # For each sub-basin
         for b in self._basin:

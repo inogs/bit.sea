@@ -33,10 +33,10 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     clim = map_dict['clim']
     title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     if not(mask is None):
-        lon_min = min(mask.xlevels)
-        lon_max = max(mask.xlevels)
-        lat_min = min(mask.ylevels)
-        lat_max = max(mask.ylevels)
+        lon_min = mask.xlevels.min()
+        lon_max = mask.xlevels.max()
+        lat_min = mask.ylevels.min()
+        lat_max = mask.ylevels.max()
         im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min])
     else:
         im = ax.imshow(map_dict['data'])

@@ -8,6 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def decimate(a, how_many):
     indices = np.linspace(0, len(a)-1, how_many)
+    indices = indices.round()
     data = list()
     for i in indices:
         data.append(a[i])

@@ -82,19 +82,32 @@ class Mask(object):
         Args:
             - *lon*: Longitude in degrees.
             - *lat*: Latitude in degrees.
+        Returns: a tuple of numbers, the first one is the longitude index and
+        the other one is the latitude index.
         """
         #Input validation
         lon = float(lon)
         lat = float(lat)
-        if lon > max(self._xlevels) or lon < min(self._xlevels):
-            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min(self._xlevels), max(self._xlevels)))
-        if lat > max(self._ylevels) or lat < min(self._ylevels):
-            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min(self._ylevels), max(self._ylevels)))
+        min_lon = self._xlevels.min()
+        max_lon = self._xlevels.max()
+        min_lat = self._ylevels.min()
+        max_lat = self._ylevels.max()
+        if lon > max_lon or lon < min_lon:
+            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min_lon, max_lon))
+        if lat > max_lat or lat < min_lat:
+            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min_lat, max_lat))
+        #Longitude distances matrix
         d_lon = np.array(self._xlevels - lon)
         d_lon *= d_lon
+        #Latitude distances matrix
         d_lat = np.array(self._ylevels - lat)
         d_lat *= d_lat
-        return np.where(d_lon == min(d_lon))[0][0] , np.where(d_lat == min(d_lat))[0][0]
+        #Compute minimum indices
+        min_d_lon = d_lon.min()
+        min_d_lat = d_lat.min()
+        lon_indices = np.where(d_lon == min_d_lon)
+        lat_indices = np.where(d_lat == min_d_lat)
+        return lon_indices[1][0], lat_indices[0][0]
 
     def convert_x_y_to_lon_lat(self, x, y):
         """Converts x and y coordinates to longitude and latitude.

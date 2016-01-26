@@ -72,11 +72,17 @@ def transectplot(transect, segment, date, segmentdata=None, fig=None, ax=None, d
     elif segment.lat_min == segment.lat_max:
         fixed_coord = "lat=%g" % segment.lat_min
         changing_coord = "Longitude (deg)"
+    else:
+        fixed_coord = None
+        changing_coord = ""
     #Add vertical axis label
     ax.set_ylabel("Depth (m)")
     #Add horizontal axis label
     ax.set_xlabel(changing_coord)
     #Add title to figure
-    title = "%s %s:%s %s" % (date, segment.name, fixed_coord, transect.varname)
+    if fixed_coord is None:
+        title = "%s %s %s" % (date, segment.name, transect.varname)
+    else:
+        title = "%s %s:%s %s" % (date, segment.name, fixed_coord, transect.varname)
     fig.suptitle(title)
     return segmentdata, fig, ax

@@ -151,11 +151,6 @@ class Transect(object):
                 lat_min = literal_eval(get_node_attr(sdef, "latmin"))
                 lon_max = literal_eval(get_node_attr(sdef, "lonmax"))
                 lat_max = literal_eval(get_node_attr(sdef, "latmax"))
-                if (lon_min != lon_max) and (lat_min != lat_max):
-                    warnings.warn(
-                    "Skipping invalid segment: from %g, %g to %g, %g . You have to fix a coordinate: either Longitude or Latitude." %
-                    (lon_min, lat_min, lon_max, lat_max))
-                    continue
                 segmentlist.append(Segment((lon_min, lat_min),(lon_max, lat_max),sname))
             #For each vars list
             for vl in get_subelements(t, "vars"):
@@ -196,7 +191,20 @@ class Transect(object):
             data = np.array(self.__datacache['data'][:, y_min, x_min:x_max], dtype=float)
             h_vals = self.__mask.xlevels[y_min,x_min:x_max]
         else:
-            raise ValueError("Invalid segment: %s" % (seg,))
+            #Divide the segment in points
+            xs = np.linspace(x_min,x_max,num=seg.points)
+            ys = np.linspace(y_min,y_max,num=seg.points)
+            xs = np.round(xs)
+            ys = np.round(ys)
+            #Fill data with the nearest neighbour
+            data = list()
+            for i in range(seg.points):
+                data.append(self.__datacache['data'][:,ys[i],xs[i]])
+            #Convert data to a Numpy array
+            data = np.array(data)
+            data = data.transpose()
+            #TODO: find a meaningful array for h_vals.
+            h_vals = np.array(range(seg.points))
         z_vals = self.__mask.zlevels
         return data, h_vals, z_vals
 

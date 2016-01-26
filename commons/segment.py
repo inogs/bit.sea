@@ -5,7 +5,7 @@ from commons.helpers import is_number
 class Segment(object):
     """Holds a segment.
     """
-    def __init__(self, lon_lat_min, lon_lat_max, name=None):
+    def __init__(self, lon_lat_min, lon_lat_max, name=None, points=50):
         """Segment constructor.
 
         Args:
@@ -14,6 +14,9 @@ class Segment(object):
             - *lon_lat_max*: tuple or list with Segment's ending point in
               longitude and latitude.
             - *name* (optional): a string defining the name of the segment (default: None).
+            - *points* (optional): the number of points of the segment
+              (default: 50). It is a required argument for diagonals and it is
+              ignored for fixed latitude and fixed longitude segments.
         """
         if name is None:
             self.__name = None
@@ -31,6 +34,13 @@ class Segment(object):
         self.__lat_min = lon_lat_min[1]
         self.__lon_max = lon_lat_max[0]
         self.__lat_max = lon_lat_max[1]
+        self.points = None
+        #If the segment is diagonal check that points is a number greater than 0
+        if (self.__lon_min != self.__lon_max) and (self.__lat_min != self.__lat_max):
+            if not is_number(points) or (points <= 0):
+                raise ValueError("points must be defined as a number greater than zero")
+            else:
+                self.points = points
 
     def __str__(self):
         if self.__name is None:

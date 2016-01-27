@@ -62,6 +62,13 @@ class TimeSeries(object):
         Returns: a list of tuples (datetime, path) within the time_interval for
         which there's a run.
         """
+        #Input validation
+        if not isinstance(rundays, (list, tuple)):
+            raise ValueError("rundays must be a list or a tuple")
+        else:
+            for e in rundays:
+                if not isinstance(e, int) or (e < 1) or (e > 7):
+                    raise ValueError("all the elements of rundays must be integers between 1 and 7.")
         output = list()
         t = self._time_interval.start_time
         while t <= self._time_interval.end_time:

@@ -12,14 +12,28 @@ class TimeSeries(object):
     """
     Time series handling class.
     """
-    def __init__(self, time_interval, archive_dir="/", prefix_dir="", glob_pattern="ave*gz"):
+    def __init__(self, time_interval, archive_dir="/", postfix_dir="", glob_pattern="ave*gz"):
+        """
+        TimeSeries constructor.
+
+        Args:
+            - *time_interval*: a TimeInterval object that defines the interval
+              of time you want to search in.
+            - *archive_dir* (optional): path to the directory that contains the
+              archived files (default: "/").
+            - *postfix_dir* (optional): the last part of the path before the
+              files that will be appended to the date (default: "").
+              E.G.: "POSTPROC/AVE_FREQ_1".
+            - *glob_pattern* (optional): glob-style pattern for the files
+              (default: "ave*gz").
+        """
         #Input validation
         if isinstance(time_interval, TimeInterval):
             self._time_interval = time_interval
         else:
             raise ValueError("time_interval must be an instance of TimeInterval")
 
-        self._prefix_dir = str(prefix_dir)
+        self._postfix_dir = str(postfix_dir)
         self._glob_pattern = str(glob_pattern)
 
         archive_dir = str(archive_dir)
@@ -52,7 +66,7 @@ class TimeSeries(object):
         t = self._time_interval.start_time
         while t <= self._time_interval.end_time:
             if t.isoweekday() in rundays:
-                run_path = path.join(self._archive_dir, t.strftime('%Y%m%d'), self._prefix_dir)
+                run_path = path.join(self._archive_dir, t.strftime('%Y%m%d'), self._postfix_dir)
                 if path.exists(run_path) and path.isdir(run_path):
                     output.append((t, run_path))
             t += timedelta(1)

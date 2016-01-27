@@ -78,3 +78,33 @@ class TimeSeries(object):
                     output.append((t, run_path))
             t += timedelta(1)
         return output
+
+    def get_analysis_days(self):
+        """
+        Returns: a list of tuples (datetime, filename) of assimilation/hindcast
+        computations.
+        """
+        #Build the list of paths where we have to search for the files
+        search_paths = self.get_runs(rundays=[2])
+        output = list()
+        #For each directory
+        for directory in search_paths:
+            #Get the files list
+            file_list = glob(path.join(directory[1], self._glob_pattern))
+            #Take the first seven days
+            t = directory[0] - timedelta(7)
+            #For each day
+            for _ in range(7):
+                #For each filename
+                for filename in file_list:
+                    #Get the basename
+                    bn = path.basename(filename)
+                    #If there's a filename with that date and within the time interval
+                    if (bn.find(t.strftime("%Y%m%d")) != -1) and self._time_interval.contains(t):
+                        #Build the tuple and append the tuple to the output
+                        output.append((t,filename))
+                #Get the next day
+                t += timedelta(1)
+        #Sort the output by date and return it to the caller
+        output = sorted(output, key=lambda x: x[0])
+        return output

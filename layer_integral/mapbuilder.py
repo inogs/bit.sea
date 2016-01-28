@@ -9,18 +9,11 @@ from ast import literal_eval
 
 from commons.mask import Mask
 from commons.layer import Layer
-from commons.helpers import is_number
+from commons.helpers import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
 from mapplot import mapplot
-
-#Date extractor
-def get_date_string(s):
-    m = re.search('.*([0-9]{4})([0-9]{2})([0-9]{2}).*',s)
-    longdate = "%s-%s-%s" % (m.group(1), m.group(2), m.group(3))
-    shortdate = "%s%s%s" % (m.group(1), m.group(2), m.group(3))
-    return longdate , shortdate
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)

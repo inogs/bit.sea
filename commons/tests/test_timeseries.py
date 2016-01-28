@@ -33,3 +33,20 @@ def test_timeseries_get_runs():
     o  = ts.get_runs()
     assert isinstance(o, list)
 
+@raises(ValueError)
+def test_timeseries_get_runs_rundays_not_a_list():
+    ti = TimeInterval()
+    ts = TimeSeries(ti)
+    o  = ts.get_runs(rundays=None)
+
+@raises(ValueError)
+def test_timeseries_get_runs_rundays_number():
+    ti = TimeInterval()
+    ts = TimeSeries(ti)
+    o  = ts.get_runs(rundays=2)
+
+@raises(ValueError)
+def test_timeseries_get_runs_rundays_overflow():
+    ti = TimeInterval()
+    ts = TimeSeries(ti)
+    o  = ts.get_runs(rundays=[10,20])

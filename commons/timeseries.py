@@ -108,3 +108,43 @@ class TimeSeries(object):
         #Sort the output by date and return it to the caller
         output = sorted(output, key=lambda x: x[0])
         return output
+
+    def get_forecast_days(self):
+        """
+        Returns: a list of tuples (datetime, filename) of forecast computations.
+        """
+        #Build the list of paths where we have to search for the files
+        search_paths = self.get_runs()
+        #Create the working dictionary
+        wdict = dict()
+        #For each directory
+        for directory in search_paths:
+            #Get the files list
+            file_list = glob(path.join(directory[1], self._glob_pattern))
+            #Start from the run day
+            t = directory[0]
+            #stop after 10 days
+            stop_t = t + timedelta(10)
+            #For each day
+            while t < stop_t:
+                #Build the datestring
+                datestring = t.strftime("%Y%m%d")
+                #For each file
+                for filename in file_list:
+                    #Get the base name
+                    bn = path.basename(filename)
+                    #If bn contains datestring
+                    if bn.find(datestring) != -1:
+                        #Add (t, filename) tuple to wdict
+                        wdict[datestring] = (t, filename)
+                #Increment t
+                t += timedelta(1)
+        #Sort wdict keys
+        key_list = sorted(wdict.keys())
+        #Create the output list
+        output = list()
+        #For each element of key_list
+        for key in key_list:
+            #Append wdict element to output
+            output.append(wdict[key])
+        return output

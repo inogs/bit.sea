@@ -22,6 +22,11 @@ def test_timeseries_constructor_wrong_archive():
     ti = TimeInterval()
     ts = TimeSeries(ti, archive_dir="/etc/hosts")
 
+def test_timeseries_constructor_unexistant_archive():
+    ti = TimeInterval()
+    ts = TimeSeries(ti, archive_dir="doesnotexist")
+    assert not (ts is None)
+
 def test_timeseries_get_runs():
     ti = TimeInterval()
     ts = TimeSeries(ti)

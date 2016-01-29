@@ -79,13 +79,16 @@ class TimeSeries(object):
             t += timedelta(1)
         return output
 
-    def get_analysis_days(self):
+    def get_analysis_days(self, rundays=[2]):
         """
+        Args:
+            - *rundays* (optional): see get_runs (default: [2]).
+
         Returns: a list of tuples (datetime, filename) of assimilation/hindcast
         computations.
         """
         #Build the list of paths where we have to search for the files
-        search_paths = self.get_runs(rundays=[2])
+        search_paths = self.get_runs(rundays)
         output = list()
         #For each directory
         for directory in search_paths:
@@ -109,12 +112,15 @@ class TimeSeries(object):
         output = sorted(output, key=lambda x: x[0])
         return output
 
-    def get_forecast_days(self):
+    def get_forecast_days(self, rundays=[2,5]):
         """
+        Args:
+            - *rundays* (optional): see get_runs (default: [2,5]).
+
         Returns: a list of tuples (datetime, filename) of forecast computations.
         """
         #Build the list of paths where we have to search for the files
-        search_paths = self.get_runs()
+        search_paths = self.get_runs(rundays)
         #Create the working dictionary
         wdict = dict()
         #For each directory

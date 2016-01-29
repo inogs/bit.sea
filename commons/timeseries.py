@@ -1,10 +1,13 @@
 # Copyright (c) 2016 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-from os import path
+import subprocess as SP
+
+from os import path, mkdir
 from glob import glob
 from datetime import datetime, timedelta
 from warnings import warn
+from string import Template
 
 from commons.time_interval import TimeInterval
 
@@ -153,4 +156,79 @@ class TimeSeries(object):
         for key in key_list:
             #Append wdict element to output
             output.append(wdict[key])
+        return output
+
+    def extract_analysis(self, outputdir, rundays=[2], command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+        """
+        Extracts analysis files to outputdir.
+
+        Args:
+            - *outputdir*: path to the output directory. If it does not exists
+              this method will attempt to create it. If it exists but it is not
+              a directory a ValueError will be raised.
+            - *rundays* (optional): see get_runs (default: [2]).
+            - *command* (optional): the command string template. This template
+              will be used to build the command string that will be passed to
+              the shell. It must contain two literal substrings ($INFILE and
+              $OUTFILE) that will be substituted with the input and output file
+              paths (default: "gzip -cd $INFILE > $OUTFILE").
+              E.G.:
+                    cp $INFILE $OUTFILE
+                    cat $INFILE > $OUTFILE
+                    gzip -cd $INFILE > $OUTFILE
+            - *remove_ext* (optional): boolean value. If set to True the output
+              file basename will be equal to the input file base name without
+              the extension, otherwise the base names will be the same
+              (default: True).
+              E.G. if remove_ext is True 'file01.gz' becomes 'file01'.
+
+        Returns: a list of paths pointing to the successfully extracted files.
+        """
+        file_list = self.get_analysis_days(rundays)
+        outputdir = path.abspath(str(outputdir))
+        return self._extract(file_list, outputdir, str(command), remove_ext)
+
+    def extract_forecast(self, outputdir, rundays=[2,5], command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+        """
+        Extracts forecast files to outputdir.
+
+        Args: see extract_analysis.
+
+        Returns: a list of paths pointing to the successfully extracted files.
+        """
+        file_list = self.get_forecast_days(rundays)
+        outputdir = path.abspath(str(outputdir))
+        return self._extract(file_list, outputdir, str(command), remove_ext)
+
+    #Private methods
+    def _extract(self, file_list, outputdir, command, remove_ext):
+        #If outputdir exists make sure it's a directory
+        if path.exists(outputdir):
+            if not path.isdir(outputdir):
+                raise ValueError("%s is not a directory" % outputdir)
+        else:
+            #Try to create the output directory
+            mkdir(outputdir)
+        #Build command template
+        if (command.find('$INFILE') != -1) and (command.find('$OUTFILE') != -1):
+            template = Template(command)
+        else:
+            raise ValueError("Invalid command string: " + command)
+        output = list()
+        #For each input file
+        for _,ifn in file_list:
+            #Get the path for the output file
+            ofn = path.basename(ifn)
+            if remove_ext:
+                ofn = path.splitext(ofn)[0]
+            ofn = path.join(outputdir, ofn)
+            #Build the actual command string
+            comstring = template.substitute(INFILE=ifn, OUTFILE=ofn)
+            #Lauch the command
+            retcode = SP.call(comstring, shell=True)
+            #If the subprocess ended normally
+            if retcode == 0:
+                output.append(ofn)
+            else:
+                warn("Extract command exit code: %d" % retcode)
         return output

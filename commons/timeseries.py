@@ -134,8 +134,8 @@ class TimeSeries(object):
             t = directory[0]
             #stop after 10 days
             stop_t = t + timedelta(10)
-            #For each day
-            while t < stop_t:
+            #For each day inside the time interval
+            while (t < stop_t) and (self._time_interval.contains(t)):
                 #Build the datestring
                 datestring = t.strftime("%Y%m%d")
                 #For each file

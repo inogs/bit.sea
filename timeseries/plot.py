@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import netCDF4
 
+from datetime import datetime
+
 from commons.helpers import is_number, get_date_string
 
 class CoastEnum:
@@ -55,9 +57,11 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     #For each file in file_list
     for f in file_list:
         #Get date string from file name
-        ds, _ = get_date_string(path.basename(f))
-        #Append the date string to label_list
-        label_list.append(ds)
+        _, ds = get_date_string(path.basename(f))
+        #Create datetime object from date string
+        dt = datetime.strptime(ds,'%Y%m%d')
+        #Append the date to label_list
+        label_list.append(dt)
         #Open it with netCDF4
         dset = netCDF4.Dataset(f)
         #Append the variable value to plot_list

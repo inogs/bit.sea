@@ -148,3 +148,22 @@ def test_timeseries_extract_preserve_ext():
     assert len(o) == 17
     clean_tmp_archive()
     clean_tmp_archive('/tmp/output')
+
+def test_timeseries_get_sublist():
+    L = list()
+    ti = TimeInterval(starttime="20160101", endtime="20160131")
+    t = ti.start_time
+    while t < ti.end_time:
+        L.append((t,""))
+        t += timedelta(1)
+    o = TimeSeries.get_sublist(L, [1])
+    assert isinstance(o, list)
+    assert len(o) == 4
+
+@raises(ValueError)
+def test_timeseries_get_sublist_weekdays_not_list():
+    TimeSeries.get_sublist([], 1)
+
+@raises(ValueError)
+def test_timeseries_get_sublist_weekdays_wrong_list():
+    TimeSeries.get_sublist([(datetime.now, "")], [None])

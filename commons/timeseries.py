@@ -232,3 +232,36 @@ class TimeSeries(object):
             else:
                 warn("Extract command exit code: %d" % retcode)
         return output
+
+    #Static Methods
+    @staticmethod
+    def get_sublist(L, weekdays):
+        """
+        Filters a list by week day.
+
+        Args:
+            - *L*: a list of tuples (datetime, path).
+            - *weekdays*: a list of numbers mapping the week days to take.
+               1 Monday
+               2 Tuesday
+               3 Wednesday
+               4 Thursday
+               5 Friday
+               6 Saturday
+               7 Sunday
+
+        Returns: a list of tuples (datetime, path) filtered according to
+        weekdays. E.G.: if weekdays is [1,4] the resulting list will contain
+        only Mondays and Thursdays.
+        """
+        if not isinstance(weekdays, (list, tuple)):
+            raise ValueError("weekdays must be a list or a tuple")
+        for el in weekdays:
+            if not isinstance(el, int) or (el < 1) or (el > 7):
+                raise ValueError("Invalid weekday: %s" % str(el))
+        output = list()
+        for dt,p in L:
+            if isinstance(dt, datetime):
+                if dt.isoweekday() in weekdays:
+                    output.append((dt,p))
+        return output

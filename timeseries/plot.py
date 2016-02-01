@@ -74,8 +74,37 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     ax.set_xticklabels(label_list, rotation='vertical')
     return fig,ax
 
+def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, fig=None, ax=None):
+    if (fig is None) or (ax is None):
+        fig , ax = plt.subplots()
+    plotmat = np.zeros([depths, len(file_list)])
+    label_list = list()
+    #For each file
+    for i,f in enumerate(file_list):
+        #Get date string from file name
+        _, ds = get_date_string(path.basename(f))
+        #Create datetime object from date string
+        dt = datetime.strptime(ds,'%Y%m%d')
+        #Append the date to label_list
+        label_list.append(dt)
+        #Open it with netCDF4
+        dset = netCDF4.Dataset(f)
+        #Copy the data in the plot matrix
+        plotmat[:,i] = dset[varname][subbasin, coast, :, stat]
+        #Close the file
+        dset.close()
+    #Plot the matrix
+    ax.imshow(plotmat)
+    #Set labels
+    ax.set_xticklabels(label_list, rotation='vertical')
+    #Invert Y axis
+    ax.invert_yaxis()
+    return fig,ax
+
 if __name__ == "__main__":
     from glob import glob
-    fl = glob('timeseries/*nc')
+    fl = sorted(glob('timeseries/*nc'))
     fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
+    plt.show()
+    fig,ax = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med)
     plt.show()

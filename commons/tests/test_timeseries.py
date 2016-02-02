@@ -24,6 +24,16 @@ def build_archive_files(directory):
         fd.close()
         t += timedelta(1)
 
+def build_sat_archive(directory, timeinterval):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    t = timeinterval.start_time
+    while t < timeinterval.end_time:
+        filename = os.path.join(directory, "%s%s%s" % ("sat", t.strftime('%Y%m%d'), ".nc"))
+        fd = open(filename, 'w')
+        fd.close()
+        t += timedelta(1)
+
 def build_tmp_archive():
     if not os.path.exists('/tmp/archive'):
         os.mkdir('/tmp/archive')
@@ -167,3 +177,34 @@ def test_timeseries_get_sublist_weekdays_not_list():
 @raises(ValueError)
 def test_timeseries_get_sublist_weekdays_wrong_list():
     TimeSeries.get_sublist([(datetime.now, "")], [None])
+
+def test_timeseries_get_daily_sat():
+    L = list()
+    ti = TimeInterval(starttime="20160101", endtime="20160131")
+    t = ti.start_time
+    while t < ti.end_time:
+        L.append((t,"file_%s" % t.strftime("%Y%m%d")))
+        t += timedelta(1)
+    build_sat_archive("/tmp/sat_archive", ti)
+    OL = TimeSeries.get_daily_sat(L, "/tmp/sat_archive")
+    assert isinstance(OL, list)
+    assert len(L) == len(OL)
+    assert OL[0] == (L[0][0], L[0][1], "/tmp/sat_archive/sat%s.nc" % L[0][0].strftime("%Y%m%d"))
+    clean_tmp_archive("/tmp/sat_archive")
+
+@raises(ValueError)
+def test_timeseries_get_daily_sat_L_not_list():
+    TimeSeries.get_daily_sat(None, "")
+
+@raises(ValueError)
+def test_timeseries_get_daily_sat_sat_archive_not_string():
+    TimeSeries.get_daily_sat([], None)
+
+@raises(ValueError)
+def test_timeseries_get_daily_sat_sat_archive_not_dir():
+    TimeSeries.get_daily_sat([], "/etc/hosts")
+
+def test_timeseries_get_daily_sat_empty_list():
+    OL = TimeSeries.get_daily_sat([], "/")
+    assert isinstance(OL, list)
+    assert len(OL) == 0

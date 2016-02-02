@@ -265,3 +265,35 @@ class TimeSeries(object):
                 if dt.isoweekday() in weekdays:
                     output.append((dt,p))
         return output
+
+    @staticmethod
+    def get_daily_sat(L, sat_archive, dateformat="%Y%m%d", glob_pattern="*.nc"):
+        """
+        Matches by date and file name the elements of L with the files into
+        sat_archive directory.
+
+        Args:
+            - *L*: a list of tuples (datetime, path).
+            - *sat_archive*: the path to the archive directory.
+            - *dateformat* (optional): a string defining the date format (see
+              datetime.strftime) to seek in the file name.
+
+        Returns: a list of tuples (datetime, path, sat_file_path).
+        """
+        if not isinstance(L, (list, tuple)):
+            raise ValueError("L must be a list or a tuple")
+        sat_archive = str(sat_archive)
+        if path.exists(sat_archive):
+            if not path.isdir(sat_archive):
+                raise ValueError("%s is not a directory" % sat_archive)
+        else:
+            raise ValueError("%s doesn't exist" % sat_archive)
+        sat_files = glob(path.join(sat_archive, glob_pattern))
+        output = list()
+        for dt,p in L:
+            ds = dt.strftime("%Y%m%d")
+            for f in sat_files:
+                bn = path.basename(f)
+                if bn.find(ds) != -1:
+                    output.append((dt,p,f))
+        return output

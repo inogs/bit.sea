@@ -5,7 +5,6 @@ import os
 import pylab as pl
 
 from instrument import Instrument, Profile
-from commons.time_interval import TimeInterval
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
@@ -276,11 +275,15 @@ class BioFloat(Instrument):
 def FloatSelector(var, T, region):
     '''
     Arguments:
-       var is a string indicating variable, 
-          if var is None, no selection is done about variable
-       T is as TimeInterval istance
-       region is a region istance
+       * var *    is a string indicating variable, 
+                  if var is None, no selection is done about variable
+       * T   *    is a TimeInterval instance
+       * region * is an instance of Region or its derived (Polygon, Basin, ...)
+       
+    Returns:
+        a list of BioFloatProfile objects.
     '''
+
     mydtype= np.dtype([
               ('file_name','S200'),
               ('lat',np.float32),
@@ -289,7 +292,7 @@ def FloatSelector(var, T, region):
               ('parameters','S200')] )
 
     FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
-    #FloatIndexer="Float_Index.txt"
+
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size
     selected = []
@@ -312,3 +315,23 @@ def FloatSelector(var, T, region):
                 selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
 
     return selected
+
+
+
+if __name__ == '__main__':
+    from basins.region import Rectangle
+    from commons.time_interval import TimeInterval
+    
+    var = 'NITRATE'
+    TI = TimeInterval('20150520','20150830','%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    
+    PROFILE_LIST=FloatSelector(var, TI, R)
+
+    for p in PROFILE_LIST[:1]:
+        PN,N, Qc = p.read(var,read_adjusted=True)
+        TheFloat = p._my_float
+        PN,N,Qc = TheFloat.read(var,    True)
+        PS,S,Qc = TheFloat.read('PSAL', True)
+        PT,T,Qc = TheFloat.read('TEMP', True)
+

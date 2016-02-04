@@ -74,7 +74,7 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     ax.set_xticklabels(label_list, rotation='vertical')
     return fig,ax
 
-def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, fig=None, ax=None):
+def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, xticks=4, yticks=8, fig=None, ax=None):
     """
     Plots a time series Hovmoeller diagram.
 
@@ -90,6 +90,8 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
           as the lenght of the depths array if you pass a list or Numpy array
           it will be used to set the labels and its lenght will be assumed as
           the lenght of the depths array.
+        - *xticks* (optional): number of ticks on the x axis (default: 4).
+        - *yticks* (optional): number of ticks on the y axis (default: 8).
         - *fig* (optional): an instance of matplotlib figure. A new one will be
           created if it is set to None (default: None).
         - *ax* (optional): an instance of matplotlib axes. A new one will be
@@ -132,11 +134,15 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
         dset.close()
     #Plot the matrix
     ax.imshow(plotmat)
-    #Set labels
-    ax.set_xticks(range(len(label_list)))
-    ax.set_xticklabels(label_list, rotation='vertical')
+    #Set ticks and labels
+    ticks = np.array(np.round(np.linspace(0, len(label_list)-1, num=xticks)), dtype=int)
+    ax.set_xticks(ticks)
+    labs = list()
+    for t in ticks:
+        labs.append(label_list[t])
+    ax.set_xticklabels(labs, rotation='vertical')
     if not (dlabels is None):
-        ticks = np.array(np.round(np.linspace(0, depths-1, num=8)), dtype=int)
+        ticks = np.array(np.round(np.linspace(0, depths-1, num=yticks)), dtype=int)
         #ticks = [x * n for x in range(n)]
         labs = dlabels[ticks]
         ax.set_yticks(ticks)

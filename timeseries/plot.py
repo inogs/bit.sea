@@ -137,10 +137,8 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     ax.set_xticklabels(label_list, rotation='vertical')
     if not (dlabels is None):
         ticks = np.array(np.round(np.linspace(0, depths-1, num=8)), dtype=int)
-        print ticks
         #ticks = [x * n for x in range(n)]
         labs = dlabels[ticks]
-        print "Ticks: %s\nLabels: %s" % (str(ticks), str(labs))
         ax.set_yticks(ticks)
         ax.set_yticklabels(labs)
     return fig,ax

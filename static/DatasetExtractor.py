@@ -4,7 +4,7 @@ import datetime
 from instruments.instrument import ContainerProfile
 import seawater
 from seawater.library import T90conv
-
+from commons.utils import find_index
 
 class DatasetExtractor():
     
@@ -16,17 +16,6 @@ class DatasetExtractor():
         self.CRUISES  = ncIN.variables['Cruises'].data.copy()
         ncIN.close()
 
-        
-    def find_index(self, thestring, STRINGLIST):
-        nStrings = STRINGLIST.shape[0]
-        for istring in range(nStrings):
-            strippedstring=STRINGLIST[istring,:].tostring().strip()
-            if strippedstring == thestring: break
-        else:
-            print thestring + " Not Found"
-            raise NameError
-        return istring
-    
     def unique_rows(self,data, prec=5):
         
         d_r = np.fix(data * 10 ** prec) / 10 ** prec + 0.0
@@ -73,14 +62,14 @@ class DatasetExtractor():
 
          '''
 
-        ivar  = self.find_index(var, self.VARIABLES)
+        ivar  = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]
         units = self.UNITS[ivar,:].tostring()
 
         if units =="\\mumol/kg":
-            itemp  = self.find_index('temp'    , self.VARIABLES)
-            ipsal  = self.find_index('salinity', self.VARIABLES)
-            idens  = self.find_index('density' , self.VARIABLES)
+            itemp  = find_index('temp'    , self.VARIABLES)
+            ipsal  = find_index('salinity', self.VARIABLES)
+            idens  = find_index('density' , self.VARIABLES)
             temp   = self.DATA[itemp,:]
             sali   = self.DATA[ipsal,:]
             pres   = self.DATA[5,:]
@@ -145,8 +134,8 @@ class DatasetExtractor():
          Returns a profile list
          
          '''
-        iCruise = self.find_index(Cruisename, self.CRUISES)
-        ivar    = self.find_index(var, self.VARIABLES)
+        iCruise = find_index(Cruisename, self.CRUISES)
+        ivar    = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]
         good = (values < 1e+19) & (values > 0) 
         ii = self.DATA[-1,:] == (iCruise+1)

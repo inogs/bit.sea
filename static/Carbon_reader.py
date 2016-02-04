@@ -2,7 +2,7 @@
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 from DatasetExtractor import DatasetExtractor
-
+from commons.utils import find_index
 
 class CarbonReader(DatasetExtractor):
     
@@ -15,9 +15,9 @@ class CarbonReader(DatasetExtractor):
 
         # DATA ELIMINATION in order to not duplicate values with nutrients dataset
         for cruisename in ['METEOR','METEOR51', 'METEOR95','PROSOPE']:
-            iCruise = self.DataExtractor.find_index(cruisename, self.DataExtractor.CRUISES)
+            iCruise = find_index(cruisename, self.DataExtractor.CRUISES)
             for var in ['nitrate','phosphate','silicate','oxygen']:
-                ivar    = self.DataExtractor.find_index(var, self.DataExtractor.VARIABLES)
+                ivar    = find_index(var, self.DataExtractor.VARIABLES)
                 ii = self.DataExtractor.DATA[-1,:] == (iCruise+1)
                 self.DataExtractor.DATA[ivar,ii] = -999.0
 

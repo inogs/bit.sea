@@ -49,7 +49,7 @@ class TimeSeries(object):
             warn("%s doesn't exists" % archive_dir)
             self._archive_dir = archive_dir
 
-    def get_runs(self, rundays=[2,5]):
+    def get_runs(self, rundays=[2,5], fudge=7):
         """
         Args:
             - *rundays* (optional): a list of integers mapping the weekdays in
@@ -74,7 +74,8 @@ class TimeSeries(object):
                     raise ValueError("all the elements of rundays must be integers between 1 and 7.")
         output = list()
         t = self._time_interval.start_time
-        while t <= self._time_interval.end_time:
+        stop_day = self._time_interval.end_time + timedelta(days=fudge)
+        while t <= stop_day:
             if t.isoweekday() in rundays:
                 run_path = path.join(self._archive_dir, t.strftime('%Y%m%d'), self._postfix_dir)
                 if path.exists(run_path) and path.isdir(run_path):

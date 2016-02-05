@@ -164,8 +164,10 @@ def test_timeseries_get_sublist():
     ti = TimeInterval(starttime="20160101", endtime="20160131")
     t = ti.start_time
     while t < ti.end_time:
-        L.append((t,""))
+        L.append((t,"",""))
         t += timedelta(1)
+    L.append(None)
+    L.append([t,"false","false"])
     o = TimeSeries.get_sublist(L, [1])
     assert isinstance(o, list)
     assert len(o) == 4

@@ -261,10 +261,12 @@ class TimeSeries(object):
             if not isinstance(el, int) or (el < 1) or (el > 7):
                 raise ValueError("Invalid weekday: %s" % str(el))
         output = list()
-        for dt,p in L:
-            if isinstance(dt, datetime):
-                if dt.isoweekday() in weekdays:
-                    output.append((dt,p))
+        for el in L:
+            if isinstance(el, tuple) and isinstance(el[0], datetime):
+                if el[0].isoweekday() in weekdays:
+                    output.append(el)
+            else:
+                warn("Skipping invalid element: %s" % str(el))
         return output
 
     @staticmethod

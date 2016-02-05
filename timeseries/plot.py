@@ -69,9 +69,7 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
         #Close the file
         dset.close()
     #Plot data
-    ax.plot(plot_list)
-    #Set labels
-    ax.set_xticklabels(label_list, rotation='vertical')
+    ax.plot(label_list, plot_list)
     return fig,ax
 
 def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, xticks=4, yticks=8, fig=None, ax=None):
@@ -152,8 +150,8 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
 if __name__ == "__main__":
     from glob import glob
     fl = sorted(glob('timeseries/*nc'))
-    #fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
-    #plt.show()
+    fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
+    plt.show()
     #fig,ax = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med)
     depths = [x * (5000 / 72) for x in range(72)]
     fig,ax = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med, depths=depths)

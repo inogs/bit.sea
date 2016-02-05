@@ -201,6 +201,22 @@ class TimeSeries(object):
         outputdir = path.abspath(str(outputdir))
         return self._extract(file_list, outputdir, str(command), remove_ext)
 
+    def extract_from_list(self, file_list, outputdir, command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+        """
+        Extract the files from a list into outputdir.
+
+        Args:
+            - *file_list*: a list of tuples (datetime, filename).
+            - *outputdir*: path to the output directory. If it does not exists
+              this method will attempt to create it. If it exists but it is not
+              a directory a ValueError will be raised.
+            - *command* (optional): the command string template. See extract_analysis.
+            - *remove_ext* (optional): boolean value. See extract_analysis.
+
+        Returns: a list of paths pointing to the successfully extracted files.
+        """
+        return self._extract(file_list, outputdir, str(command), remove_ext)
+
     #Private methods
     def _extract(self, file_list, outputdir, command, remove_ext):
         #If outputdir exists make sure it's a directory

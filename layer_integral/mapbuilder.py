@@ -9,7 +9,7 @@ from ast import literal_eval
 
 from commons.mask import Mask
 from commons.layer import Layer
-from commons.helpers import is_number, get_date_string
+from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError

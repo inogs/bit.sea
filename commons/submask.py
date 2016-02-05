@@ -5,7 +5,7 @@ import os
 import numpy as np
 import netCDF4
 from commons.mask import *
-from commons.helpers import is_number
+from commons.utils import is_number
 from basins.basin import Basin
 from basins.basin import SimpleBasin
 from basins.region import Rectangle

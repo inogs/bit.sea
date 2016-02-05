@@ -4,7 +4,7 @@
 import numpy as np
 
 from nose.tools import *
-from ..helpers import *
+from ..utils import *
 
 def test_initial():
     assert True

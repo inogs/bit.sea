@@ -5,7 +5,7 @@ import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
 from commons.segment import Segment
-from commons.helpers import is_number
+from commons.utils import is_number
 from commons.xml_module import *
 from commons.mask import Mask
 from commons.dataextractor import DataExtractor

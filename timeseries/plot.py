@@ -9,7 +9,7 @@ import netCDF4
 
 from datetime import datetime
 
-from commons.helpers import is_number, get_date_string
+from commons.utils import is_number, get_date_string
 
 class CoastEnum:
     coast, open_sea, everywhere = range(3)

@@ -4,6 +4,7 @@
 import os.path as path
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mpldates
 import netCDF4
 
 from datetime import datetime
@@ -72,7 +73,7 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     ax.plot(label_list, plot_list)
     return fig,ax
 
-def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, xticks=4, yticks=8, fig=None, ax=None):
+def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, fig=None, ax=None):
     """
     Plots a time series Hovmoeller diagram.
 
@@ -88,14 +89,12 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
           as the lenght of the depths array if you pass a list or Numpy array
           it will be used to set the labels and its lenght will be assumed as
           the lenght of the depths array.
-        - *xticks* (optional): number of ticks on the x axis (default: 4).
-        - *yticks* (optional): number of ticks on the y axis (default: 8).
         - *fig* (optional): an instance of matplotlib figure. A new one will be
           created if it is set to None (default: None).
         - *ax* (optional): an instance of matplotlib axes. A new one will be
           created if it is set to None (default: None).
 
-    Returns: a matplotlib figure and axes object.
+    Returns: a matplotlib Figure, Axes and QuadMesh object tuple.
     """
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
@@ -115,44 +114,42 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     else:
         raise ValueError("Invalid depths argument")
     plotmat = np.zeros([depths, len(file_list)])
-    label_list = list()
+    xlabel_list = list()
     #For each file
     for i,f in enumerate(file_list):
         #Get date string from file name
         _, ds = get_date_string(path.basename(f))
         #Create datetime object from date string
         dt = datetime.strptime(ds,'%Y%m%d')
-        #Append the date to label_list
-        label_list.append(dt)
+        #Append the date to xlabel_list
+        xlabel_list.append(dt)
         #Open it with netCDF4
         dset = netCDF4.Dataset(f)
         #Copy the data in the plot matrix
         plotmat[:,i] = dset[varname][subbasin, coast, 0:depths, stat]
         #Close the file
         dset.close()
+    #Create the meshgrid
+    xlabel_list = mpldates.date2num(xlabel_list)
+    xs,ys = np.meshgrid(xlabel_list, dlabels)
     #Plot the matrix
-    ax.imshow(plotmat)
-    #Set ticks and labels
-    ticks = np.array(np.round(np.linspace(0, len(label_list)-1, num=xticks)), dtype=int)
-    ax.set_xticks(ticks)
-    labs = list()
-    for t in ticks:
-        labs.append(label_list[t])
-    ax.set_xticklabels(labs, rotation='vertical')
-    if not (dlabels is None):
-        ticks = np.array(np.round(np.linspace(0, depths-1, num=yticks)), dtype=int)
-        #ticks = [x * n for x in range(n)]
-        labs = dlabels[ticks]
-        ax.set_yticks(ticks)
-        ax.set_yticklabels(labs)
-    return fig,ax
+    quadmesh = ax.pcolormesh(xs, ys, plotmat)
+    #Inform matplotlib that the x axis is made by dates
+    ax.xaxis_date()
+    return fig, ax, quadmesh
 
 if __name__ == "__main__":
     from glob import glob
+    from commons.mask import Mask
+    m = Mask('./layer_integral/meshmask.nc')
     fl = sorted(glob('timeseries/*nc'))
-    fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
-    plt.show()
+    #fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
+    #plt.show()
     #fig,ax = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med)
-    depths = [x * (5000 / 72) for x in range(72)]
-    fig,ax = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med, depths=depths)
+    depths = m.zlevels[0:30]
+    fig,ax,im = plot_Hovmoeller_diagram(fl, 'O2o', SubBasinEnum.med, depths=depths)
+    ax.invert_yaxis()
+    fig.suptitle('O2o')
+    fig.autofmt_xdate()
+    plt.colorbar(im)
     plt.show()

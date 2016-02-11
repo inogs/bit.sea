@@ -97,6 +97,13 @@ if __name__ == "__main__":
         coastline=np.load('Coastline.npy')
         c_lon=coastline['Lon']
         c_lat=coastline['Lat']
+        # Elimination of some parts of the coastline,
+        # in order to leave more space for text, if needed
+        ii = (c_lat > 40.0) & (c_lon < 2.0) # atlantic coast
+        jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
+        c_lon[ii | jj] = np.NaN
+        c_lat[ii | jj] = np.NaN
+   
     except:
         c_lon=None
         c_lat=None

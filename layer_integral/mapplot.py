@@ -4,8 +4,13 @@ import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0):
+def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0):
     """Map plotting procedure (draft)
+    Hardcoded features:
+        - colormap jet
+        - watermark
+        - ticks
+        - size of the figure
 
     Args:
         - *map_dict*: a dictionary as built by get_maps_data method of
@@ -13,8 +18,7 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
         - *fig*: a reference to a Figure object, if None mapplot will create a new Figure.
         - *ax*: a reference to an Axes object, if None mapplot will create a new Figure.
         - *mask* (optional): a Mask object that will be used to set the ticks.
-        - *min_ticks* (optional): Number of ticks to set in the shorter axis.
-        - *max_ticks* (optional): Number of ticks to set in the longer axis.
+        - *ncolors* (optional) : the number of colors of colormap 
         - *cbar_ticks* (optional): Number of ticks on the colorbar (default: 5).
         - *coastline_lon* (optional): Numpy array defining the coastline longitudes.
         - *coastline_lat* (optional): Numpy array defining the coastline latitudes.
@@ -22,22 +26,25 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     Returns:
         A figure and an Axes object that can be passed again to mapplot
     """
-    shape = map_dict['data'].shape
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
         fig.set_dpi(dpi)
-        fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
+        #shape = map_dict['data'].shape
+        #fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
+        fig.set_size_inches(10.0, 10.0*16/42)
     else:
         fig.clf()
         fig.add_axes(ax)
+    ax.set_position([0.07, 0.1, 0.85, 0.85])
     clim = map_dict['clim']
-    title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    
     if not(mask is None):
         lon_min = mask.xlevels.min()
         lon_max = mask.xlevels.max()
         lat_min = mask.ylevels.min()
         lat_max = mask.ylevels.max()
-        im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min])
+        cmap=pl.get_cmap('jet',ncolors) 
+        im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
     else:
         im = ax.imshow(map_dict['data'])
     #Set color bar
@@ -52,22 +59,13 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
     cbar.ax.set_yticklabels(cbar_ticks_labels)
     ax.invert_yaxis()
     if not mask is None:
-        #Decide who gets the most ticks
-        if shape[0] > shape[1]:
-            x_ticks = min_ticks
-            y_ticks = max_ticks
-        elif shape[1] > shape[0]:
-            x_ticks = max_ticks
-            y_ticks = min_ticks
-        else:
-            x_ticks = max_ticks
-            y_ticks = max_ticks
+        x_points = np.arange(-6,36,4).tolist()
+        y_points = np.arange(32,46,4).tolist()
         #Set X axis ticks
-        x_points = np.linspace(lon_min,lon_max,x_ticks).tolist()
         ax.set_xticks(x_points)
         #Set Y axis ticks
-        y_points = np.linspace(lat_min,lat_max,y_ticks).tolist()
         ax.set_yticks(y_points)
+        
         if not ((coastline_lon is None) or (coastline_lat is None)):
             # Flatten coastline arrays
             coastline_lon = np.ravel(coastline_lon)
@@ -78,6 +76,18 @@ def mapplot(map_dict, fig, ax, mask=None, min_ticks=4, max_ticks=8, cbar_ticks=5
             ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
             ax.set_xlim([lon_min, lon_max])
             ax.set_ylim([lat_min, lat_max])
-    fig.suptitle(title)
-    ax.grid()
+    #ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')            
+    #ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
+    #ax.text(-7,40,map_dict['varname'],ha='left',va='center')
+    ax.set_xlabel('longitude (deg)')
+    ax.set_ylabel('latitude (deg)')
+    
+    # watermark
+    ax.text(35, 46, 'OGS Echo Group',
+         fontsize=60, color='gray',
+         ha='right', va='top', alpha=0.3, rotation=18)
+
+    #title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    #fig.suptitle(title)
+
     return fig, ax

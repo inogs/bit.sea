@@ -83,7 +83,7 @@ class MapBuilder(object):
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
                 self.__plotlist.append(plot)
 
-    def plot_maps_data(self, min_ticks=4, max_ticks=8, coastline_lon=None, coastline_lat=None):
+    def plot_maps_data(self, coastline_lon=None, coastline_lat=None):
         fig = None
         ax = None
         for f in self.__netcdffileslist:
@@ -95,8 +95,8 @@ class MapBuilder(object):
                     msg="File: %s\n%s" % (f, e)
                     warn_user(msg)
                     continue
-                for i,l in enumerate(p.layerlist):
-                    outfilename = "%s/ave.%s.%s.%s.png" % (self.__outputdir,shortdate, p.varname, l)
+                for i,l in enumerate(p.layerlist):                    
+                    outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)
                     try:
                         clim = p.climlist[i]
@@ -107,8 +107,8 @@ class MapBuilder(object):
                             raise ValueError("No clim defined for %s %s" % (p.varname, repr(l)))
                         else:
                             clim = p.clim
-                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, min_ticks=min_ticks, max_ticks=max_ticks, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
-                    fig.savefig(outfilename)
+                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                    fig.savefig(outfile + ".jpg",dpi=72, quality=50)                    
                 fig = None
                 ax = None
 

@@ -1,13 +1,52 @@
 #!/usr/bin/env python
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-# Script to build layer maps from model files
+
 
 from __future__ import print_function
 import sys
 import os
 import numpy as np
 from glob import glob
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Script to build layer maps from model files
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required =False,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
+                                help = ''' Input directory'''
+                                                              
+                                )
+    
+    parser.add_argument(   '--outputdir', '-o',
+                                type = str,
+                                required = True,
+                                default = '/pico/scratch/usera07ogs/a07ogs02/layer_maps/',
+                                help = 'Output directory')
+
+    parser.add_argument(   '--pattern', '-g',
+                                type = str,
+                                required = False,
+                                default = 'ave*nc',
+                                help = 'glob search pattern')
+    
+    parser.add_argument(   '--plotlistfile', '-p',
+                                type = str,
+                                required = False,
+                                default = 'postproc/Plotlist.xml',
+                                help = 'Path to plot list XML file')
+
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = False,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                help = 'Path to mask file')
+    return parser.parse_args()  
 
 try:
     from layer_integral.mapbuilder import MapBuilder
@@ -15,37 +54,13 @@ except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)
 
-###Default parameters###
-#Input directory
-inputdir = "/pico/home/usera07ogs/a07ogs00/OPA/V4/wrkdir/2/POSTPROC/AVE_FREQ_1/"
+args = argument()
 
-#Output directory
-outputdir = "/pico/scratch/usera07ogs/a07ogs02/layer_maps"
 
-#File pattern for glob
-file_pattern = "ave*nc"
 
-#Path to plot list XML file
-plotlistfile = "/pico/home/usera07ogs/a07ogs02/bit.sea/postproc/Plotlist.xml"
-
-#Path to mask file
-maskfile = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc"
-
-def usage():
-    print("""
-Usage:
-    %s [inputdir] [outputdir] [plotlist] [maskfile]
-
-""" % (sys.argv[0]))
-    print("Default input directory: '%s'" % (str(inputdir),))
-    print("Default output directory: '%s'" % (str(outputdir),))
-    print("Default plot list file: '%s'" % (str(plotlistfile),))
-    print("Default mask file: '%s'" % (str(maskfile),))
 
 def die(why, exit_code=1, print_usage=True):
     print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    if print_usage:
-        usage()
     sys.exit(exit_code)
 
 def is_valid_path(path, is_dir_check=False):
@@ -60,58 +75,33 @@ def is_valid_path(path, is_dir_check=False):
     else:
         die("'%s' is not a valid path." % (path,))
 
-def validate_arguments(arg1,arg2,arg3,arg4):
-    inputdir = is_valid_path(arg1, True)
-    outputdir = is_valid_path(arg2, True)
-    plotlistfile = is_valid_path(arg3)
-    maskfile = is_valid_path(arg4)
 
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        #No arguments, let's validate the defaults
-        pass
-    elif len(sys.argv) == 2:
-        #Got one argument
-        inputdir = sys.argv[1]
-        validate_arguments(inputdir, outputdir, plotlistfile, maskfile)
-    elif len(sys.argv) == 3:
-        #Got two arguments
-        inputdir = sys.argv[1]
-        outputdir = sys.argv[2]
-    elif len(sys.argv) == 4:
-        #Got three arguments
-        inputdir = sys.argv[1]
-        outputdir = sys.argv[2]
-        plotlistfile = sys.argv[3]
-    elif len(sys.argv) == 5:
-        #Got four arguments
-        inputdir = sys.argv[1]
-        outputdir = sys.argv[2]
-        plotlistfile = sys.argv[3]
-        maskfile = sys.argv[4]
-    else:
-        usage()
-        sys.exit(1)
+maskfile     = is_valid_path(args.maskfile)
+plotlistfile = is_valid_path(args.plotlistfile)
+inputdir     = is_valid_path(args.inputdir,True)
+outputdir    = is_valid_path(args.outputdir,True)
+file_pattern = args.pattern
 
-    try:
-        coastline=np.load('Coastline.npy')
-        c_lon=coastline['Lon']
-        c_lat=coastline['Lat']
-        # Elimination of some parts of the coastline,
-        # in order to leave more space for text, if needed
-        ii = (c_lat > 40.0) & (c_lon < 2.0) # atlantic coast
-        jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
-        c_lon[ii | jj] = np.NaN
-        c_lat[ii | jj] = np.NaN
-   
-    except:
-        c_lon=None
-        c_lat=None
 
-    try:
-        validate_arguments(inputdir, outputdir, plotlistfile, maskfile)
-        file_list = glob(inputdir + "/" + file_pattern)
-        mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
-        mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
-    except Exception as e:
-        die(e, 2, False)
+
+try:
+    coastline=np.load('Coastline.npy')
+    c_lon=coastline['Lon']
+    c_lat=coastline['Lat']
+    # Elimination of some parts of the coastline,
+    # in order to leave more space for text, if needed
+    ii = (c_lat > 40.0) & (c_lon < 2.0) # atlantic coast
+    jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
+    c_lon[ii | jj] = np.NaN
+    c_lat[ii | jj] = np.NaN
+
+except:
+    c_lon=None
+    c_lat=None
+
+try:
+    file_list = glob(inputdir + "/" + file_pattern)
+    mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
+    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
+except Exception as e:
+    die(e, 2, False)

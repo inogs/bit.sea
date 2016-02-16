@@ -90,7 +90,7 @@ try:
     c_lat=coastline['Lat']
     # Elimination of some parts of the coastline,
     # in order to leave more space for text, if needed
-    ii = (c_lat > 40.0) & (c_lon < 2.0) # atlantic coast
+    ii = (c_lat > 40.0) & (c_lon < 0.0) # atlantic coast
     jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
     c_lon[ii | jj] = np.NaN
     c_lat[ii | jj] = np.NaN

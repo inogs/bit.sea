@@ -163,7 +163,7 @@ def dumpV1file(filename,CHL):
     ncOUT.createDimension('depth',1)
     ncOUT.createDimension('lon',V1.jpi)
     ncOUT.createDimension('lat',V1.jpj)
-    
+
     ncvar = ncOUT.createVariable('CHL', 'f', ('lat','lon'))
     ncvar[:] = CHL
     setattr(ncvar, 'missing_value', fillValue)
@@ -185,13 +185,13 @@ def logAverager(M):
     Performs average passing through natural logarithm
     Mean  = exp(ln(values).mean() ) 
     At the moment works only for files on native mesh (253,733)
-     
+
     '''
-    nFrames,jpj,jpi = M.shape
+    _,jpj,jpi = M.shape
     assert jpj == NativeMesh.jpj
     assert jpi == NativeMesh.jpi
     CHL_OUT = np.ones((NativeMesh.jpj,NativeMesh.jpi),np.float32) * fillValue
-    
+
     for i in range(NativeMesh.jpi):
         for j in range(NativeMesh.jpj):
             l = M[:,j,i]
@@ -200,6 +200,27 @@ def logAverager(M):
                 count = goodValues.sum()
                 LOGmean = np.log(l[goodValues]).sum() / count
                 CHL_OUT[j,i] = np.exp(LOGmean)
+    return CHL_OUT
+
+def averager(M):
+    '''
+    Inner matrix M has dimensions (nFrames, jpj, jpi )
+    Performs average on present values (avoiding fillvalues)
+    At the moment works only for files on native mesh (253,733)
+
+    '''
+    _,jpj,jpi = M.shape
+    assert jpj == NativeMesh.jpj
+    assert jpi == NativeMesh.jpi
+    CHL_OUT = np.ones((NativeMesh.jpj,NativeMesh.jpi),np.float32) * fillValue
+
+    for i in range(NativeMesh.jpi):
+        for j in range(NativeMesh.jpj):
+            l = M[:,j,i]
+            goodValues = l != fillValue
+            if np.any(goodValues):
+                count = goodValues.sum()
+                CHL_OUT[j,i] = l[goodValues].sum() / count
     return CHL_OUT
 
 def getnextIndex(array,value):

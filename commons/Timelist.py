@@ -2,6 +2,7 @@ import timerequestors as requestors
 import genUserDateList as DL
 import os,glob
 import datetime
+from datetime import timedelta
 import numpy as np
 import IOnames
 from commons.time_interval import TimeInterval
@@ -157,7 +158,7 @@ class TimeList():
             
             if self.inputFrequency == "daily":
                 for it, t in enumerate(self.Timelist):
-                    if (t>=requestor.starttime)  & (t<=requestor.endtime):
+                    if requestor.timeinterval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
             if self.inputFrequency in ['weekly','monthly']:
@@ -232,7 +233,9 @@ class TimeList():
                         weights.append(1.)                     
             return SELECTION , np.array(weights)
         
-        
+        if isinstance(requestor, requestors.Interval_req):
+            return self.__generaltimeselector(requestor)
+
         if isinstance(requestor, requestors.Season_req):
             return self.__generaltimeselector(requestor)
                 
@@ -419,9 +422,22 @@ class TimeList():
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day)) 
         return REQ_LIST
-    
+
+    def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
+        '''
+        Useful in case of 10 days average, for example
+        '''    
+        REQ_LIST=[]
+        dl=DL.getTimeList(starttime, self.timeinterval.end_time.strftime("%Y%m%d-%H:%M:%S"), deltastr)
+        for dateobj in dl:
+            req= requestors.Interval_req(dateobj.year,dateobj.month,dateobj.day, deltastr)
+            REQ_LIST.append(req)
+        return REQ_LIST
+            
+        
     def getDecadalList(self):
         LIST=[]
+        raise NotImplementedError
         return LIST
 
     def couple_with(self,datetimelist):
@@ -436,21 +452,22 @@ class TimeList():
         
                         
             
-        
+if __name__ == '__main__':
+    daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "days=1")
+    TL = TimeList(daily)
+    REQS=TL.getSpecificIntervalList(deltastr="days=10", starttime="19970928-12:00:00")
+    r=REQS[0]
+    ii,weights = TL.select(r)
 
+    
+    M= TL.getWeeklyList(2)
+    m=M[0]
+    TL.select(m)
 
-
-# sys.exit()
-# TL = TimeList('20150101-00:00:00','20150701-00:00:00',dateformat, INPUTDIR,"ave*N1p.nc")
-# M= TL.getWeekList('Tuesday')
-# m=M[0]
-# TL.select(m)
-# 
-# 
-# for iSeas in range(4):
-#     m = requestors.Clim_season('winter')
-#     TL.select(m)
-# 
-# for imonth in range(12):
-#     m = requestors.Clim_month(imonth)
-#     TL.select(m)
+    for iSeas in range(4):
+        m = requestors.Clim_season(iSeas)
+        TL.select(m)
+     
+    for imonth in range(1,13):
+        m = requestors.Clim_month(imonth)
+        TL.select(m)

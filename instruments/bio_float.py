@@ -231,9 +231,9 @@ class BioFloat(Instrument):
 
         if mean == None:
             if BioFloat.default_mean != None:
-                return pres, BioFloat.default_mean.compute(prof, pres)
+                return pres, BioFloat.default_mean.compute(prof, pres), qc
             else:
-                return pres, prof
+                return pres, prof, qc
         else:
             return pres, mean.compute(prof, pres), mean.compute(qc,pres)
 

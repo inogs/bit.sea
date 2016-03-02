@@ -1,0 +1,48 @@
+# OUTPUTS
+# images for QUID
+# CMEMS-Med-QUID-006-008-V2-V1.0.docx
+# Figure IV.2
+
+import pickle
+import pylab as pl
+import matplotlib.dates as mdates
+import sys
+import numpy as np
+
+fid = open('export_data_ScMYValidation_plan.pkl')
+LIST = pickle.load(fid)
+fid.close()
+TIMES                          = LIST[0]
+BGC_CLASS4_CHL_RMS_SURF_BASIN  = LIST[1]
+BGC_CLASS4_CHL_BIAS_SURF_BASIN = LIST[2]
+MODEL_MEAN                     = LIST[3]
+SAT___MEAN                     = LIST[4]
+BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
+BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
+
+
+from basins import OGS 
+for isub,sub in enumerate(OGS.P): 
+    print sub.name
+    fig, ax = pl.subplots()
+    ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
+    ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=' RAN')
+    ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
+    ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    pl.setp(ltext,fontsize=12)
+    pl.rc('xtick', labelsize=12)
+    pl.rc('ytick', labelsize=12)
+    pl.ylim(0.0, 0.6) 
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+    ax.grid(True)
+    xlabels = ax.get_xticklabels()
+    pl.setp(xlabels, rotation=30)
+    #ax.tick_params(direction='left', pad=2)
+    #fig.show()
+    outfilename='chl' + sub.name + ".png"
+    pl.savefig(outfilename)
+    #sys.exit()
+

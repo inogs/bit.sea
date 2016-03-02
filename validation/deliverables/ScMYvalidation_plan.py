@@ -6,7 +6,7 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 import commons.IOnames as IOnames
 import numpy as np
-import SatManager as Sat
+import Sat.SatManager as Sat
 import matchup.matchup as matchup
 from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
@@ -23,18 +23,18 @@ def weighted_mean(Conc, Weight):
     return Weighted_Mean 
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
-REF_DIR  = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY/"
+MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
+REF_DIR  = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/MONTHLY_V4/"
 
 Timestart="19990101"
-Time__end="20120731"
+Time__end="20060101"
 
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-IonamesFile = '../postproc/IOnames_sat.xml'
+IonamesFile = 'IOnames_sat_monthly.xml'
 IOname = IOnames.IOnames(IonamesFile)
 sat_TL = TimeList.fromfilenames(TI, REF_DIR,"*.nc",IonamesFile)
 
-IonamesFile = '../postproc/IOnames.xml'
+IonamesFile = '../../postproc/IOnames.xml'
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc",IonamesFile)
 
 

@@ -1,6 +1,37 @@
-# OUTPUTS
-# BGC_CLASS4_CHL_RMS_SURF_BASIN
-# of CMEMS-Med-biogeochemistry-S.0.pdf
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Calculates Chl statistics on matchups of Model and Sat.
+    Main result are
+    - BGC_CLASS4_CHL_RMS_SURF_BASIN 
+    - BGC_CLASS4_CHL_BIAS_SURF_BASIN
+    of deliverable CMEMS-Med-biogeochemistry-ScCP-1.0.pdf
+    
+    Other similar results are also calculated and dumped in
+    the a pickle file provided as argument.
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(   '--satdir', '-s',
+                                type = str,
+                                required =False,
+                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/", 
+                                help = ''' Input satellite dir'''
+                                )
+
+    parser.add_argument(   '--outfile', '-o',
+                                type = str,
+                                required = True,
+                                default = 'export_data_ScMYValidation_plan.pkl',
+                                help = 'Output pickle file')
+
+
+    return parser.parse_args()
+
+
+args = argument()
+
+
 
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
@@ -14,6 +45,7 @@ from commons.mask import Mask
 from commons.submask import SubMask
 from basins import OGS
 from commons.layer import Layer
+import pickle
 
 def weighted_mean(Conc, Weight):
     
@@ -24,10 +56,12 @@ def weighted_mean(Conc, Weight):
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
-REF_DIR  = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/MONTHLY_V4/"
+REF_DIR  = args.satdir
+outfile  = args.outfile
+
 
 Timestart="19990101"
-Time__end="20060101"
+Time__end="20100101"
 
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 IonamesFile = 'IOnames_sat_monthly.xml'
@@ -100,13 +134,16 @@ BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
 BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
 
 
-import pickle
-LIST=[model_TL.Timelist, 
-BGC_CLASS4_CHL_RMS_SURF_BASIN, 
-BGC_CLASS4_CHL_BIAS_SURF_BASIN,
-MODEL_MEAN, SAT___MEAN, 
-BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG,
-BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG]
-fid = open('export_data_ScMYValidation_plan.pkl','wb')
+LIST   =[i for i in range(7)]
+
+LIST[0]=model_TL.Timelist
+LIST[1]=BGC_CLASS4_CHL_RMS_SURF_BASIN
+LIST[2]=BGC_CLASS4_CHL_BIAS_SURF_BASIN
+LIST[3]=MODEL_MEAN
+LIST[4]=SAT___MEAN
+LIST[5]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG
+LIST[6]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
+
+fid = open(outfile,'wb')
 pickle.dump(LIST, fid)
 fid.close()

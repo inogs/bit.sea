@@ -2,14 +2,14 @@
 
 
 # SECTION 4?:
-ScMYvalidation_plan.py # writes export_data_ScMYValidation_plan.pkl
+python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/MONTHLY_V4/
 
 # figure 4.2
-  plot_timeseries.py     # reads export_data_ScMYValidation_plan.pkl, dumps
+plot_timeseries.py -i export_data_ScMYValidation_plan.pkl -o dir1/
 
 
 # figure 4.3
-  plot_timeseries_RMS.py     # reads export_data_ScMYValidation_plan.pkl
+ plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o dir2/
 
 # table 4.1
    plot_timeseries_RMS.py

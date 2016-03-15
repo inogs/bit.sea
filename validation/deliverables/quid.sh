@@ -2,18 +2,17 @@
 
 # QUID REANALYSIS
 # SECTION 4?:
+mkdir ./fig4.2/
 python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/MONTHLY_V4/
 
 # figure 4.2
+mkdir ./fig4.2/
 python plot_timeseries.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.2/
 
 
-# figure 4.3
+# figure 4.3 and table 4.1
+mkdir ./fig4.3/
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3/
-
-# table 4.1
-   plot_timeseries_RMS.py
-
 
 
 MYValidation_plan_statics.py # writes export_data_ScMYValidation_plan_statics.pkl

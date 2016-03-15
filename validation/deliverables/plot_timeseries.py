@@ -8,8 +8,34 @@ import pylab as pl
 import matplotlib.dates as mdates
 import sys
 import numpy as np
+import argparse
 
-fid = open('export_data_ScMYValidation_plan.pkl')
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    plot somethings
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(   '--outdir', '-o',
+                            type = str,
+                            required =True,
+                            default = "./",
+                            help = ''' Output image dir'''
+                            )
+
+    parser.add_argument(   '--inputfile', '-i',
+                            type = str,
+                            required = True,
+                            default = 'export_data_ScMYValidation_plan.pkl',
+                            help = 'Input pickle file')
+
+
+    return parser.parse_args()
+
+args = argument()
+
+fid = open(args.inputfile)
 LIST = pickle.load(fid)
 fid.close()
 TIMES                          = LIST[0]
@@ -21,8 +47,8 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
 
-from basins import OGS 
-for isub,sub in enumerate(OGS.P): 
+from basins import OGS
+for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
@@ -34,7 +60,7 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ltext,fontsize=12)
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
-    pl.ylim(0.0, 0.6) 
+    pl.ylim(0.0, 0.6)
     ax.xaxis.set_major_locator(mdates.YearLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
@@ -42,7 +68,6 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(xlabels, rotation=30)
     #ax.tick_params(direction='left', pad=2)
     #fig.show()
-    outfilename='chl' + sub.name + ".png"
+    outfilename=args.outdir+"/"+'chl' + sub.name + ".png"
     pl.savefig(outfilename)
     #sys.exit()
-

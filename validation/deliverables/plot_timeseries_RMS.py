@@ -9,8 +9,36 @@ import pylab as pl
 import matplotlib.dates as mdates
 import sys
 import numpy as np
+import argparse
 
-fid = open('export_data_ScMYValidation_plan.pkl')
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    plot somethings
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(   '--outdir', '-o',
+                            type = str,
+                            required =True,
+                            default = "./",
+                            help = ''' Output image dir'''
+                            )
+
+    parser.add_argument(   '--inputfile', '-i',
+                            type = str,
+                            required = True,
+                            default = 'export_data_ScMYValidation_plan.pkl',
+                            help = 'Input pickle file')
+
+
+    return parser.parse_args()
+
+args = argument()
+
+
+
+fid = open(args.inputfile)
 LIST = pickle.load(fid)
 fid.close()
 TIMES                          = LIST[0]
@@ -23,8 +51,11 @@ BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
 #surf_layer = Layer(0,10)
 
-from basins import OGS 
-for isub,sub in enumerate(OGS.P): 
+from basins import OGS
+
+nSUB = len(OGS.P.basin_list)
+
+for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
@@ -37,7 +68,7 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ltext,fontsize=12)
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
-    pl.ylim(-0.3, 0.3) 
+    pl.ylim(-0.3, 0.3)
     ax.xaxis.set_major_locator(mdates.YearLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
@@ -45,12 +76,12 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(xlabels, rotation=30)
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
-    #outfilename='chl-RMS-BIAS_' + sub.name + ".png"
-    #pl.savefig(outfilename)
+    outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
+    pl.savefig(outfilename)
     #sys.exit()
 
 start_year=1999
-end___year=2012
+end___year=2014
 nyr=end___year-start_year+1
 RMS__sum=np.zeros((nyr,11),np.float32)
 RMS__win=np.zeros((nyr,11),np.float32)
@@ -81,19 +112,27 @@ for i in range(start_year,end___year+1):
     BIASLwin[n,:]=LIST[6][w1:w2,:].mean(axis=0)
     BIASLsum[n,:]=LIST[6][s1:s2,:].mean(axis=0)
 
-#TABELLA QUID IV.1    
-print 'RMS_win : ',RMS__win[:,:].mean(axis=0)
-print 'RMS_sum : ',RMS__sum[:,:].mean(axis=0)
-print 'BIAS_win: ',BIAS_win[:,:].mean(axis=0)
-print 'BIAS_sum: ',BIAS_sum[:,:].mean(axis=0)
-print 'RMSLwin : ',RMSL_win[:,:].mean(axis=0)
-print 'RMSLsum : ',RMSL_sum[:,:].mean(axis=0)
-print 'BIASLwin: ',BIASLwin[:,:].mean(axis=0)
-print 'BIASLsum: ',BIASLsum[:,:].mean(axis=0)
+mat = np.zeros((8,nSUB))
 
+mat[0,:] = RMS__win[:,:].mean(axis=0)
+mat[1,:] = RMS__sum[:,:].mean(axis=0)
+mat[2,:] = BIAS_win[:,:].mean(axis=0)
+mat[3,:] = BIAS_sum[:,:].mean(axis=0)
+mat[4,:] = RMSL_win[:,:].mean(axis=0)
+mat[5,:] = RMSL_sum[:,:].mean(axis=0)
+mat[6,:] = BIASLwin[:,:].mean(axis=0)
+mat[7,:] = BIASLsum[:,:].mean(axis=0)
 
-
-
-
-
-
+mat = mat.T
+print '-----------------------------------------'
+#TABELLA QUID IV.1
+for isub,sub in enumerate(OGS.P):
+    print sub.name,mat[isub,:]
+# RMS__win[:,:].mean(axis=0)
+# print 'RMS_sum : ',RMS__sum[:,:].mean(axis=0)
+# print 'BIAS_win: ',BIAS_win[:,:].mean(axis=0)
+# print 'BIAS_sum: ',BIAS_sum[:,:].mean(axis=0)
+# print 'RMSLwin : ',RMSL_win[:,:].mean(axis=0)
+# print 'RMSLsum : ',RMSL_sum[:,:].mean(axis=0)
+# print 'BIASLwin: ',BIASLwin[:,:].mean(axis=0)
+# print 'BIASLsum: ',BIASLsum[:,:].mean(axis=0)

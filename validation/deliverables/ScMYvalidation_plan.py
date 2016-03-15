@@ -3,10 +3,10 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Calculates Chl statistics on matchups of Model and Sat.
     Main result are
-    - BGC_CLASS4_CHL_RMS_SURF_BASIN 
+    - BGC_CLASS4_CHL_RMS_SURF_BASIN
     - BGC_CLASS4_CHL_BIAS_SURF_BASIN
     of deliverable CMEMS-Med-biogeochemistry-ScCP-1.0.pdf
-    
+
     Other similar results are also calculated and dumped in
     the a pickle file provided as argument.
     ''',
@@ -15,7 +15,7 @@ def argument():
     parser.add_argument(   '--satdir', '-s',
                                 type = str,
                                 required =False,
-                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/", 
+                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/",
                                 help = ''' Input satellite dir'''
                                 )
 
@@ -48,11 +48,11 @@ from commons.layer import Layer
 import pickle
 
 def weighted_mean(Conc, Weight):
-    
+
     Weight_sum      = Weight.sum()
     Mass            = (Conc * Weight).sum()
     Weighted_Mean   = Mass/Weight_sum
-    return Weighted_Mean 
+    return Weighted_Mean
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
@@ -61,7 +61,7 @@ outfile  = args.outfile
 
 
 Timestart="19990101"
-Time__end="20100101"
+Time__end="20150101"
 
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 IonamesFile = 'IOnames_sat_monthly.xml'
@@ -100,23 +100,23 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     sattime = CoupledList[0][0]
     satfile = REF_DIR + sattime.strftime(IOname.Input.dateformat) + IOname.Output.suffix + ".nc"
     modfile = model_TL.filelist[itime]
-     
+
     De         = DataExtractor(TheMask,filename=modfile, varname='P_i')
     Model      = MapBuilder.get_layer_average(De, surf_layer)
     #ncIN = NC.netcdf_file(modfile,'r')
     #Model = ncIN.variables['P_i'].data[0,0,:,:].copy()#.astype(np.float64)
     #Model = ncIN.variables['lchlm'].data.copy()
     #ncIN.close()
-    
+
     Sat16 = Sat.readfromfile(satfile,var='lchlm') #.astype(np.float64)
-    
-    
+
+
     cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
-    selection = ~nodata & mask200_2D 
+    selection = ~nodata & mask200_2D
     M = matchup.matchup(Model[selection], Sat16[selection])
-    
+
     for isub, sub in enumerate(OGS.P):
         selection = SUB[sub.name] & (~nodata) & mask200_2D
         M = matchup.matchup(Model[selection], Sat16[selection])
@@ -129,7 +129,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
         Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
         BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[itime,isub]  = Mlog.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[itime,isub] = Mlog.bias()
- 
+
 BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
 BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
 

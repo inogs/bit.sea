@@ -126,8 +126,19 @@ mat[7,:] = BIASLsum[:,:].mean(axis=0)
 mat = mat.T
 print '-----------------------------------------'
 #TABELLA QUID IV.1
+lines=[]
+myformat = '%s ' + '%5.3g '*8 +"\n";
 for isub,sub in enumerate(OGS.P):
-    print sub.name,mat[isub,:]
+    line = myformat %( sub.name, mat[isub,0], mat[isub,1], mat[isub,2],
+                       mat[isub,3], mat[isub,4], mat[isub,5],
+                       mat[isub,6],mat[isub,7])
+
+    lines.append(line)
+
+outfiletable = args.outdir+"/"+"table.dat"
+file = open(outfiletable,"w")
+file.writelines(lines)
+file.close()
 # RMS__win[:,:].mean(axis=0)
 # print 'RMS_sum : ',RMS__sum[:,:].mean(axis=0)
 # print 'BIAS_win: ',BIAS_win[:,:].mean(axis=0)

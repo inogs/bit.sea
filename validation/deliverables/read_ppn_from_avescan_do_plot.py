@@ -1,4 +1,28 @@
-# read_ppn_from_avescan_do_plot.py
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Generates Figures IV.5 and others
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required =False,
+                                default = "none",
+                                help = 'Input scanned ppn NetCDF files'
+                                )
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                required = True,
+                                default = 'Fig',
+                                help = 'Output images directory')
+
+
+    return parser.parse_args()
+
+
+args = argument()
 
 import os
 import scipy.io.netcdf as NC
@@ -25,9 +49,9 @@ def movingaverage(interval, window_size):
 
 
 
-DATADIR ='/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/POSTPROC/output/AVE_FREQ_2/basic/INTEGRALS/PPN/'
-FIGDIR = "/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/FIG_PPN/"
-
+DATADIR =args.inputdir
+FIGDIR = args.outdir
+os.system('mkdir -p ' + FIGDIR)
 
 pl.close('all')
 var='ppn'

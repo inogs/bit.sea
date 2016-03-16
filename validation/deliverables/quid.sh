@@ -26,8 +26,7 @@ python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
 
 # Figure IV.5
-/pico/home/userexternal/gcossari/bit.sea/read_ppn_from_avescan_do_plot.py
-
+python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
 #Figure IV.4.
 #Figure IV.1
 #Figure IV.6.

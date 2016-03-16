@@ -15,6 +15,32 @@ from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 import pylab as pl
+import argparse
+
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    plot somethings
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(   '--outdir', '-o',
+                            type = str,
+                            required =True,
+                            default = "./",
+                            help = ''' Output dir'''
+                            )
+
+    parser.add_argument(   '--inputdir', '-i',
+                            type = str,
+                            required = True,
+                            default = './',
+                            help = 'Input dir')
+
+
+    return parser.parse_args()
+
+
 
 def NCwriter(M2d,varname,outfile,mask):
     ncOUT = NC.netcdf_file(outfile,'w')
@@ -25,43 +51,46 @@ def NCwriter(M2d,varname,outfile,mask):
     ncvar[:] = M2d
     ncOUT.close()
 
+args = argument()
 coast=np.load('Coastline.npy')
 clon=coast['Lon']
 clat=coast['Lat']
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 # ANALYSIS AND FORECAST PRE OPERATIONAL QUALIFICATION RUN
-INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/MODEL/AVE_FREQ_2/"
-OUTPUTDIR = "/pico/home/userexternal/gcossari/COPERNICUS/Carbonatic17/MAPPE_MEDIE/"
+#INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/MODEL/AVE_FREQ_2/"
+#OUTPUTDIR = "/pico/home/userexternal/gcossari/COPERNICUS/Carbonatic17/MAPPE_MEDIE/"
 
 # REANALYSIS V2 RUN
-INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/MODEL/AVE_FREQ_2/"
-OUTPUTDIR = "/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
+INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/MODEL/AVE_FREQ_2/"
+OUTPUTDIR = args.outdir#"/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
 
 
 
 #LAYERLIST=[Layer(0,50), Layer(50,100), Layer(100,150), Layer(150,200), Layer(200,500), Layer(500,1000), Layer(1000,1500), Layer(1500,4000)]
-LAYERLIST=[Layer(0,200)]
+#LAYERLIST=[Layer(0,200)]
 #LAYERLIST=[Layer(40,60)]
 #LAYERLIST=[Layer(0,50), Layer(180,220)]
-#LAYERLIST=[Layer(0,50),Layer(0,150)]
 #LIMIT_PER_MASK=[50,150]
 
 #LAYERLIST=[Layer(0,10)]
-LIMIT_PER_MASK=[5]
+LIMIT_PER_MASK=[5,5]
 
-VARLIST=['DIC','AC_','PH_','pCO']
-
-VARLIST=['ppn'] # saved as mg/m3/d --> * Heigh * 365/1000
-VARUNI=['gC/m^2/y']; CLIM=[0, 200]; VARCONV=365./1000.
+#VARLIST=['DIC','AC_','PH_','pCO']
+LAYERLIST=[Layer(0,50),Layer(0,150)]
+VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000
+VARUNI=['gC/m^2/y','mmol/m^3','mmol/m^3','','ppm','mmol/m^3'];
+CLIM=[[0, 200],[0, 0.1],[0, 4],[7.9, 8.2],[300,480],[0, 1]];
+VARCONV=[365./1000.,1,1,1,1,1]
+MEDIA_O_INTEGRALE=[1,0,0,0,0,0]
 #VARLIST=['N1p'];VARUNI=['mmol/m^3'];CLIM=[0, 0.1]; VARCONV=1.
 #VARLIST=['N3n'];VARUNI=['mmol/m^3'];CLIM=[0, 4]; VARCONV=1.
 #VARLIST=['PH_'];VARUNI=[''];CLIM=[7.9, 8.2]; VARCONV=1.
 #VARLIST=['pCO'];VARUNI=['ppm'];CLIM=[300,480]; VARCONV=1.
 #VARLIST=['P_l'];VARUNI=['mg/m^3'];CLIM=[0, 1]; VARCONV=1.
 
-MEDIA_O_INTEGRALE=1 # 1 -> INTEGRALE:  * heigth of the layer
-                    # 0 -> MEDIA    :  average of layer  
+#MEDIA_O_INTEGRALE=1 # 1 -> INTEGRALE:  * heigth of the layer
+                    # 0 -> MEDIA    :  average of layer
 #TI = TimeInterval('20140404','20150629',"%Y%m%d") # VALID FOR PRE-OPERATIONAL QUALIFICATION RUN
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
@@ -95,7 +124,7 @@ for iv, var in enumerate(VARLIST):
         De      = DataExtractor(TheMask,rawdata=M3d)
         integrated = MapBuilder.get_layer_average(De, layer)
 
-        if MEDIA_O_INTEGRALE==1:
+        if MEDIA_O_INTEGRALE[iv]==1:
 # calcolo l'altezza del layer
             top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
             bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
@@ -111,18 +140,18 @@ for iv, var in enumerate(VARLIST):
                 j += 1
         #Build height matrix (2D)
             Hlayer = (dzm * lmask).sum(axis=0)
-            integrated=integrated * Hlayer * VARCONV
+            integrated=integrated * Hlayer * VARCONV[iv]
         else:
-            integrated=integrated * VARCONV
+            integrated=integrated * VARCONV[iv]
 
 #        mask200=TheMask.mask_at_level(200)
         mask200=TheMask.mask_at_level(LIMIT_PER_MASK[il])
 #        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
-        clim=CLIM
+        clim=CLIM[iv]
         integrated200=integrated*mask200 # taglio il costiero
         integrated200[integrated200==0]=np.nan # sostituisco gli 0 con i NAN
 
-#change the colormap 
+#change the colormap
         pl.set_cmap('gray_r')
         fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
         ax.set_xlim([-5,36])
@@ -147,7 +176,6 @@ for iv, var in enumerate(VARLIST):
 
         fig.savefig(outfile)
 
-        pl.show(block=False)
-        #pl.close(fig)
+        #pl.show(block=False)
+        pl.close(fig)
         #NCwriter(integrated,var,outfile,TheMask)
-

@@ -17,11 +17,11 @@ mkdir ./fig4.3/
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3/
 
 
-python MYValidation_plan_statics.py -o export_data_ScMYValidation_plan_statics.pkl
-# table 4.3
-python reader_statics.py# phosphate
-# table 4.4
-python reader_statics.py# Nitrate
+mkdir ./table4.3/
+python MYvalidation_statics.py -o export_data_ScMYValidation_plan_statics.pkl
+# table 4.3 and 4.4
+python reader_statics.py -o ./table4.3 # phosphate nitrate o2
+
 
 
 

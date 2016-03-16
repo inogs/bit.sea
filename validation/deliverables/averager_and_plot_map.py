@@ -62,54 +62,33 @@ TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/
 #OUTPUTDIR = "/pico/home/userexternal/gcossari/COPERNICUS/Carbonatic17/MAPPE_MEDIE/"
 
 # REANALYSIS V2 RUN
-INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/MODEL/AVE_FREQ_2/"
+INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/MODEL/AVE_FREQ_2/"
 OUTPUTDIR = args.outdir#"/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
 
-
-
-#LAYERLIST=[Layer(0,50), Layer(50,100), Layer(100,150), Layer(150,200), Layer(200,500), Layer(500,1000), Layer(1000,1500), Layer(1500,4000)]
-#LAYERLIST=[Layer(0,200)]
-#LAYERLIST=[Layer(40,60)]
-#LAYERLIST=[Layer(0,50), Layer(180,220)]
-#LIMIT_PER_MASK=[50,150]
-
-#LAYERLIST=[Layer(0,10)]
-LIMIT_PER_MASK=[5,5]
+LIMIT_PER_MASK=[5,5,5]
 
 #VARLIST=['DIC','AC_','PH_','pCO']
-LAYERLIST=[Layer(0,50),Layer(0,150)]
+LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150)]
 VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000
 VARUNI=['gC/m^2/y','mmol/m^3','mmol/m^3','','ppm','mmol/m^3'];
 CLIM=[[0, 200],[0, 0.1],[0, 4],[7.9, 8.2],[300,480],[0, 1]];
 VARCONV=[365./1000.,1,1,1,1,1]
 MEDIA_O_INTEGRALE=[1,0,0,0,0,0]
-#VARLIST=['N1p'];VARUNI=['mmol/m^3'];CLIM=[0, 0.1]; VARCONV=1.
-#VARLIST=['N3n'];VARUNI=['mmol/m^3'];CLIM=[0, 4]; VARCONV=1.
-#VARLIST=['PH_'];VARUNI=[''];CLIM=[7.9, 8.2]; VARCONV=1.
-#VARLIST=['pCO'];VARUNI=['ppm'];CLIM=[300,480]; VARCONV=1.
-#VARLIST=['P_l'];VARUNI=['mg/m^3'];CLIM=[0, 1]; VARCONV=1.
-
 #MEDIA_O_INTEGRALE=1 # 1 -> INTEGRALE:  * heigth of the layer
                     # 0 -> MEDIA    :  average of layer
-#TI = TimeInterval('20140404','20150629',"%Y%m%d") # VALID FOR PRE-OPERATIONAL QUALIFICATION RUN
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
 
 # CHOICE OF THE TIME SELECTION
 import commons.timerequestors as requestors
-#MY_YEAR = TimeInterval('20140630','20150629',"%Y%m%d") # requestor generico per la media annuale da 7/14 a 6/15
-#req_label='Ave:07/14-06/15'
+
 MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
 req_label='Ave:1999-2014'
 
 req = requestors.Generic_req(MY_YEAR)
-#req = requestors.Clim_month(2); req_label='clim_Feb' # requestor for climatologia of a specific month
-#req = requestors.Clim_month(5); req_label='clim_May' # requestor for climatologia of a specific month
-#req = requestors.Clim_month(8); req_label='clim_Aug' # requestor for climatologia of a specific month
-#req = requestors.Clim_month(11); req_label='clim_Nov' # requestor for climatologia of a specific month
 indexes,weights = TL.select(req)
 
-for iv, var in enumerate(VARLIST):
+for iv, var in enumerate(VARLIST[:1]):
     print var
     varuni=VARUNI[iv]
     # setting up filelist for requested period -----------------

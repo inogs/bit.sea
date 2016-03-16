@@ -83,9 +83,9 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     ax.set_ylabel('latitude (deg)')
     
     # watermark
-    ax.text(35, 46, 'OGS Echo Group',
-         fontsize=60, color='gray',
-         ha='right', va='top', alpha=0.3, rotation=18)
+    #ax.text(35, 46, 'OGS Echo Group',
+    #     fontsize=60, color='gray',
+    #     ha='right', va='top', alpha=0.3, rotation=18)
 
     #title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     #fig.suptitle(title)

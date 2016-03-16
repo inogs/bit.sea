@@ -1,11 +1,28 @@
 # Author: Giorgio Bolzon <gbolzon@ogs.trieste.it>
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Calculates:
+    BGC_CLASS4_NIT_RMS_LAYER_BASIN
+    BGC_CLASS4_PHOS_RMS_LAYER_BASIN
+    BGC_CLASS4_O2_RMS_LAYER_BASIN
+    BGC_CLASS4_CHL_RMS_LAYER_BASIN ---> not available
+    
+    of CMEMS-Med- biogeochemistry-ScMYVP-1.0.pdf
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
 
-#OUTPUTS
-#BGC_CLASS4_NIT_RMS_LAYER_BASIN
-#BGC_CLASS4_PHOS_RMS_LAYER_BASIN
-#BGC_CLASS4_O2_RMS_LAYER_BASIN
-#BGC_CLASS4_CHL_RMS_LAYER_BASIN ---> not avilable
-#of CMEMS-Med- biogeochemistry-ScMYVP-1.0.pdf
+    parser.add_argument(   '--outfile', '-o',
+                            type = str,
+                            required = True,
+                            default = 'export_data_MYValidation_plan_static.pkl',
+                            help = 'Output pickle file')
+
+
+    return parser.parse_args()
+
+args = argument()
 
 import scipy.io.netcdf as NC
 import numpy as np
@@ -62,7 +79,7 @@ BGC_CLASS4_O2_RMS_LAYER_BASIN,
 SUBlist,
 LAYERLIST]
 
-fid = open('export_data_ScMYValidation_plan_statics.pkl','wb')
+fid = open(args.outfile,'wb')
 pickle.dump(LIST, fid)
 fid.close()
 

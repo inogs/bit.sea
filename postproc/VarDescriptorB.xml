@@ -3,9 +3,10 @@
 <vars_for_All_Statistics description="point profiles, subbasin statistic profiles, volume integrals">
 
 <native>
-
+<var name="N1p" ></var>
 <var name="N3n" ></var>
 <var name="O2o" ></var>
+<var name="N5s" ></var>
 </native>
 
 <aggregate>

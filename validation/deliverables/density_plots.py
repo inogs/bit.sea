@@ -2,6 +2,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates density plots
+    for matchups with static nutrients dataset
     profiler_RA.py defines paths
     ''',
     formatter_class=argparse.RawTextHelpFormatter
@@ -54,13 +55,14 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
          }
 
 
-for sub in OGS.P:
+for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
+#for sub in OGS.P:
     print sub.name
     Profilelist=static_Selector(modelvarname,T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
 # arg in () corrisponde al n. di bin dell'istogramma
     fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
-    maxval=np.max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
+    maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
     ax.set_xlim([0,maxval])
     ax.set_ylim([0,maxval])
     ax.set_xlabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)

@@ -35,15 +35,16 @@ MA CON DEFINIZIONI INTERNE DIVERSE
 
 
 #Figure IV.7 - density PHOSPHATE
-python density_plots.py -o density/
-#Figure IV.8. vertical profile PHOSPHATE
+python density_plots.py     -o Fig4.7/  -v N1p
+python vertical_profiles.py -o Fig4.8/  -v N1p
 
-# Figure IV.9. density NITRATE
-# Figure IV.10. Vertical profiles NITRATE
-# Figure IV.11. density OXY
-# Figure IV.12. vertical profile OXY
+python density_plots.py     -o Fig4.9/  -v N3n
+python vertical_profiles.py -o Fig4.10/ -v N3n
 
-Figure carboniche…
+python density_plots.py     -o Fig4.11/ -v O2o
+python vertical_profiles.py -o Fig4.12/ -v O2o
+
+Figure carbonatiche…
 devo verificare dove sono
 
 --------------------------------------------------

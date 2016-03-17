@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates density plots
+    Generates Vertical profiles
     profiler_RA.py defines paths
     ''',
     formatter_class=argparse.RawTextHelpFormatter
@@ -54,17 +54,29 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
          }
 
 
-for sub in OGS.P:
+for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
+#for sub in OGS.P:
     print sub.name
     Profilelist=static_Selector(modelvarname,T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
-# arg in () corrisponde al n. di bin dell'istogramma
-    fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
-    maxval=np.max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
-    ax.set_xlim([0,maxval])
-    ax.set_ylim([0,maxval])
-    ax.set_xlabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
-    ax.set_ylabel('REF data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
-    ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
-    ax.grid(True)
-    fig.savefig(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png')
+
+
+    fig=pl.figure(num=None,dpi=100,facecolor='w',edgecolor='k')
+    ax=fig.add_subplot(1,1,1)
+    pl.plot(Matchup_basin.Ref,Matchup_basin.Depth,'.r',label='REF')
+    pl.plot(Matchup_basin.Model,Matchup_basin.Depth,'.k',label='RAN')
+    pl.gca().invert_yaxis()
+    ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    ax.set_xlabel('[' + UNITS_DICT[modelvarname]+ ']').set_fontsize(14)
+
+    ax.set_ylabel('[m]').set_fontsize(14)
+    ax.set_title(sub.name.upper() + ' ' + modelvarname)
+    fig.savefig(OUTPUTDIR+'vertprof_'+modelvarname+'_'+sub.name+'.png')    
+
+    print sub.name,'correlation= ',Matchup_basin.correlation()
+
+
+
+

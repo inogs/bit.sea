@@ -19,11 +19,20 @@ def argument():
                                 default = '',
                                 help = 'Output Images directory')
 
+    parser.add_argument(   '--minvalue', '-m',
+                                type = float,
+                                required = False,
+                                help = 'Minimum value for plot axes')
+
 
     return parser.parse_args()
 
 
 args = argument()
+
+print args.minvalue, type(args.minvalue)
+import sys
+sys.exit()
 
 import pylab as pl
 import scipy.io.netcdf as NC
@@ -53,16 +62,20 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
          'O2o' :'mmol O$_2$/m$^3$' 
          }
 
-
-for sub in OGS.P:
+for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
+#for sub in OGS.P:
     print sub.name
     Profilelist=static_Selector(modelvarname,T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
-# arg in () corrisponde al n. di bin dell'istogramma
     fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
-    maxval=np.max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
-    ax.set_xlim([0,maxval])
-    ax.set_ylim([0,maxval])
+    maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
+    if args.minvalue is None:
+        minval=min(Matchup_basin.Ref.min(),Matchup_basin.Model.min())
+    else:
+        minval=args.minvalue
+    
+    ax.set_xlim([minval,maxval])
+    ax.set_ylim([minval,maxval])
     ax.set_xlabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
     ax.set_ylabel('REF data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
     ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))

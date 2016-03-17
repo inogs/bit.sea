@@ -1,3 +1,23 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Generates density plots
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                required = True,
+                                default = '',
+                                help = 'Output Images directory')
+
+
+    return parser.parse_args()
+
+
+args = argument()
+
 import pylab as pl
 import scipy.io.netcdf as NC
 import numpy as np
@@ -17,31 +37,31 @@ ncIN=NC.netcdf_file(maskfile,"r")
 nav_lev = ncIN.variables['nav_lev'].data.copy()
 ncIN.close()
 
-OUTPUTDIR='/pico/scratch/userexternal/ssalon00/MYvalidation_plan/'
+OUTPUTDIR=args.outdir
+os.system('mkdir -p ' + OUTPUTDIR)
 
 #modelvarname='N1p'
 #modelvarname='N3n'
 modelvarname='O2o'
 for isub,sub in enumerate(OGS.P):
     print sub.name
-    #Profilelist=static_Selector(modelvarname,T_INT,OGS.lev)
     Profilelist=static_Selector(modelvarname,T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
 # arg in () corrisponde al n. di bin dell'istogramma
     #fig,ax =  Matchup_basin.densityplot(10)
-    #fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units='mmol P/m$^3$',sub=sub.name.upper())
+    fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units='mmol P/m$^3$',sub=sub.name.upper())
     #fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units='mmol N/m$^3$',sub=sub.name.upper())
     #fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units='mmol O$_2$/m$^3$',sub=sub.name.upper())
-    #maxval=np.max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
-    #ax.set_xlim([0,maxval])
-    #ax.set_ylim([0,maxval])
-    #ax.set_xlabel('RAN data [mmol P/m$^3$]').set_fontsize(14)
-    #ax.set_ylabel('REF data [mmol P/m$^3$]').set_fontsize(14)
-    #ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
-    #ax.grid(True)
-    #fig.show()
-    #fig.savefig(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png')
-    #sys.exit()
+    maxval=np.max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
+    ax.set_xlim([0,maxval])
+    ax.set_ylim([0,maxval])
+    ax.set_xlabel('RAN data [mmol P/m$^3$]').set_fontsize(14)
+    ax.set_ylabel('REF data [mmol P/m$^3$]').set_fontsize(14)
+    ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
+    ax.grid(True)
+    fig.show()
+    fig.savefig(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png')
+    sys.exit()
 
     #fig=pl.figure(num=None,dpi=100,facecolor='w',edgecolor='k')
     #ax=fig.add_subplot(1,1,1)

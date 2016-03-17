@@ -33,13 +33,15 @@ python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/R
 /pico/home/userexternal/gcossari/bit.sea/averager_and_plot_map.py
 MA CON DEFINIZIONI INTERNE DIVERSE
 
-Figure IV.7
-Figure IV.8.
-Figure IV.9.
-Figure IV.10.
-Figure IV.11.
-Figure IV.12.
-fatte da stefano
+
+#Figure IV.7 - density PHOSPHATE
+python density_plots.py -o density/
+#Figure IV.8. vertical profile PHOSPHATE
+
+# Figure IV.9. density NITRATE
+# Figure IV.10. Vertical profiles NITRATE
+# Figure IV.11. density OXY
+# Figure IV.12. vertical profile OXY
 
 Figure carboniche…
 devo verificare dove sono

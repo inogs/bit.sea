@@ -2,6 +2,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates density plots
+    for matchups with static nutrients dataset
     profiler_RA.py defines paths
     ''',
     formatter_class=argparse.RawTextHelpFormatter
@@ -30,9 +31,6 @@ def argument():
 
 args = argument()
 
-print args.minvalue, type(args.minvalue)
-import sys
-sys.exit()
 
 import pylab as pl
 import scipy.io.netcdf as NC
@@ -62,6 +60,7 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
          'O2o' :'mmol O$_2$/m$^3$' 
          }
 
+
 for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
 #for sub in OGS.P:
     print sub.name
@@ -69,6 +68,7 @@ for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
     fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
     maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
+
     if args.minvalue is None:
         minval=min(Matchup_basin.Ref.min(),Matchup_basin.Model.min())
     else:

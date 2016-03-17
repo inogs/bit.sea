@@ -2,6 +2,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates Vertical profiles
+    for matchups with static nutrients dataset
     profiler_RA.py defines paths
     ''',
     formatter_class=argparse.RawTextHelpFormatter

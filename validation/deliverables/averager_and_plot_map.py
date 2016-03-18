@@ -1,17 +1,3 @@
-
-import numpy as np
-import scipy.io.netcdf as NC
-
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
-
-from layer_integral.mapbuilder import MapBuilder
-from layer_integral.mapplot import *
-from commons.dataextractor import DataExtractor
-from commons.time_averagers import TimeAverager3D
-import pylab as pl
 import argparse
 
 def argument():
@@ -47,8 +33,21 @@ def argument():
                                 help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
 
     return parser.parse_args()
+args = argument()
 
+import numpy as np
+import scipy.io.netcdf as NC
 
+from commons.time_interval import TimeInterval
+from commons.Timelist import TimeList
+from commons.mask import Mask
+from commons.layer import Layer
+
+from layer_integral.mapbuilder import MapBuilder
+from layer_integral.mapplot import *
+from commons.dataextractor import DataExtractor
+from commons.time_averagers import TimeAverager3D
+import pylab as pl
 
 def NCwriter(M2d,varname,outfile,mask):
     ncOUT = NC.netcdf_file(outfile,'w')
@@ -59,7 +58,7 @@ def NCwriter(M2d,varname,outfile,mask):
     ncvar[:] = M2d
     ncOUT.close()
 
-args = argument()
+
 coast=np.load('Coastline.npy')
 clon=coast['Lon']
 clat=coast['Lat']

@@ -37,6 +37,17 @@ def argument():
                             default = './',
                             help = 'Input dir')
 
+    parser.add_argument(   '--varname', '-v',
+                                type = str,
+                                required = True,
+                                default = '',
+                                choices = ['P_i','N1p', 'N3n', 'pCO','pH'] )
+    parser.add_argument(   '--optype', '-t',
+                                type = str,
+                                required = True,
+                                default = '',
+                                choices = ['integral','mean'],
+                                help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
 
     return parser.parse_args()
 
@@ -70,12 +81,34 @@ LIMIT_PER_MASK=[5,5,5]
 #VARLIST=['DIC','AC_','PH_','pCO']
 LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150)]
 VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000
-VARUNI=['gC/m^2/y','mmol/m^3','mmol/m^3','','ppm','mmol/m^3'];
-CLIM=[[0, 200],[0, 0.1],[0, 4],[7.9, 8.2],[300,480],[0, 1]];
-VARCONV=[365./1000.,1,1,1,1,1]
-MEDIA_O_INTEGRALE=[1,0,0,0,0,0]
-#MEDIA_O_INTEGRALE=1 # 1 -> INTEGRALE:  * heigth of the layer
-                    # 0 -> MEDIA    :  average of layer
+UNITS_DICT={
+         'ppn' : 'gC/m^2/y'
+         'N1p' : 'mmol /m^3',
+         'N3n' : 'mmol /m^3',
+         'PH'  : '',
+         'pCO2': 'ppm',
+         'P_i' :'mmol /m^3'
+         }
+
+CLIM_DICT={
+         'ppn' : [0, 200],
+         'N1p' : [0, 0.1],
+         'N3n' : [0, 4],
+         'PH'  : [7.9, 8.2],
+         'pCO2': [300,480],
+         'P_i' : [0, 1]
+         }
+
+
+CONVERSION_DICT={
+         'ppn' : 365./100,
+         'N1p' : 1, 
+         'N3n' : 1,
+         'PH'  : 1,
+         'pCO2': 1,
+         'P_i' : 1
+         }
+
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
 
@@ -103,7 +136,7 @@ for iv, var in enumerate(VARLIST[:1]):
         De      = DataExtractor(TheMask,rawdata=M3d)
         integrated = MapBuilder.get_layer_average(De, layer)
 
-        if MEDIA_O_INTEGRALE[iv]==1:
+        if args.optype=='integral':
 # calcolo l'altezza del layer
             top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
             bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
@@ -155,6 +188,6 @@ for iv, var in enumerate(VARLIST[:1]):
 
         fig.savefig(outfile)
 
-        #pl.show(block=False)
+        
         pl.close(fig)
         #NCwriter(integrated,var,outfile,TheMask)

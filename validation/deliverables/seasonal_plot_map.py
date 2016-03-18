@@ -107,10 +107,8 @@ TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
 # CHOICE OF THE TIME SELECTION
 import commons.timerequestors as requestors
 
-MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
-req_label='Ave:1999-2014'
 
-req = requestors.Generic_req(MY_YEAR)
+req = requestors.Clm_month(2)
 indexes,weights = TL.select(req)
 
 VARCONV=CONVERSION_DICT[var]
@@ -119,6 +117,7 @@ filelist=[]
 for k in indexes:
     t = TL.Timelist[k]
     filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + ".nc"
+    print filename
     filelist.append(filename)
 # ----------------------------------------------------------
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)

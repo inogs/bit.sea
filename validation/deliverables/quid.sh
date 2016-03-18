@@ -23,6 +23,15 @@ python MYvalidation_statics.py -o export_data_ScMYValidation_plan_statics.pkl
 python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
 
+#Figure 4.1
+mkdir ./Fig4.1
+
+INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.1/ -v P_i -t mean
+
+mkdir ./Fig4.6
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean
 
 
 # Figure IV.5
@@ -44,13 +53,13 @@ python vertical_profiles.py -o Fig4.10/ -v N3n
 python density_plots.py     -o Fig4.11/ -v O2o
 python vertical_profiles.py -o Fig4.12/ -v O2o
 
-Figure carbonatiche
-Fig 4.13, 4.14
-readMAP1x1_13layer_do_CFR_carbsys.m usa
-files che si chiamano MAP1x1_13lev_' + varname +'.nc, che vengono generati da
-ricostruzione_Integrals.py di opa_rea/chain/postproc
-che usa un maskload a parte e un aveScan che fa solo integrali, definiti qui
-/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_13lev_1x1
+# Figure carbonatiche
+# Fig 4.13, 4.14, per AC_ e DIC
+# readMAP1x1_13layer_do_CFR_carbsys.m usa questi
+# /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/MAPS/MAP1x1_13lev_' + varname +'.nc
+# che vengono generati da ricostruzione_Integrals.py di opa_rea/chain/postproc
+# che usa un maskload a parte e un aveScan che fa solo integrali, definiti qui
+# /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_13lev_1x1
 
 Fig 4.15, 4.16
 readQUADRATI4x4_PROFILI_do_plotPROFILI_monovariate.m

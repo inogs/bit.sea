@@ -1,6 +1,3 @@
-#
-# ATTENZIONE  this script needs: py_env and pyload
-
 
 import numpy as np
 import scipy.io.netcdf as NC
@@ -19,7 +16,7 @@ import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    plot somethings
+    plot something
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -68,21 +65,17 @@ clon=coast['Lon']
 clat=coast['Lat']
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
-# ANALYSIS AND FORECAST PRE OPERATIONAL QUALIFICATION RUN
-#INPUTDIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/MODEL/AVE_FREQ_2/"
-#OUTPUTDIR = "/pico/home/userexternal/gcossari/COPERNICUS/Carbonatic17/MAPPE_MEDIE/"
 
-# REANALYSIS V2 RUN
 INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/MODEL/AVE_FREQ_2/"
 OUTPUTDIR = args.outdir#"/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
-
+var       = args.varname
 LIMIT_PER_MASK=[5,5,5]
 
-#VARLIST=['DIC','AC_','PH_','pCO']
+
 LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150)]
-VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000
+VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
 UNITS_DICT={
-         'ppn' : 'gC/m^2/y'
+         'ppn' : 'gC/m^2/y',
          'N1p' : 'mmol /m^3',
          'N3n' : 'mmol /m^3',
          'PH'  : '',
@@ -121,73 +114,67 @@ req_label='Ave:1999-2014'
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)
 
-for iv, var in enumerate(VARLIST[:1]):
-    print var
-    varuni=VARUNI[iv]
-    # setting up filelist for requested period -----------------
-    filelist=[]
-    for k in indexes:
-        t = TL.Timelist[k]
-        filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
-        filelist.append(filename)
-    # ----------------------------------------------------------
-    M3d     = TimeAverager3D(filelist, weights, var, TheMask)
-    for il,layer in enumerate(LAYERLIST):
-        De      = DataExtractor(TheMask,rawdata=M3d)
-        integrated = MapBuilder.get_layer_average(De, layer)
+VARCONV=CONVERSION_DICT[var]
+# setting up filelist for requested period -----------------
+filelist=[]
+for k in indexes:
+    t = TL.Timelist[k]
+    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
+    filelist.append(filename)
+# ----------------------------------------------------------
+M3d     = TimeAverager3D(filelist, weights, var, TheMask)
+for il,layer in enumerate(LAYERLIST):
+    De      = DataExtractor(TheMask,rawdata=M3d)
+    integrated = MapBuilder.get_layer_average(De, layer)
 
-        if args.optype=='integral':
+    if args.optype=='integral':
 # calcolo l'altezza del layer
-            top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
-            bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
-        #Workaround for Python ranges
-            bottom_index += 1
-        #Build local mask matrix
-            lmask = np.array(De._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-        #Build dz matrix
-            dzm = np.ones_like(lmask, dtype=np.double)
-            j = 0
-            for i in range(top_index, bottom_index):
-                dzm[j,:,:] = De._mask.dz[i]
-                j += 1
-        #Build height matrix (2D)
-            Hlayer = (dzm * lmask).sum(axis=0)
-            integrated=integrated * Hlayer * VARCONV[iv]
-        else:
-            integrated=integrated * VARCONV[iv]
+        top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
+        bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
+    #Workaround for Python ranges
+        bottom_index += 1
+    #Build local mask matrix
+        lmask = np.array(De._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
+    #Build dz matrix
+        dzm = np.ones_like(lmask, dtype=np.double)
+        j = 0
+        for i in range(top_index, bottom_index):
+            dzm[j,:,:] = De._mask.dz[i]
+            j += 1
+    #Build height matrix (2D)
+        Hlayer = (dzm * lmask).sum(axis=0)
+        integrated=integrated * Hlayer * VARCONV
+    else:
+        integrated=integrated * VARCONV
 
 #        mask200=TheMask.mask_at_level(200)
-        mask200=TheMask.mask_at_level(LIMIT_PER_MASK[il])
+    mask200=TheMask.mask_at_level(LIMIT_PER_MASK[il])
 #        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
-        clim=CLIM[iv]
-        integrated200=integrated*mask200 # taglio il costiero
-        integrated200[integrated200==0]=np.nan # sostituisco gli 0 con i NAN
+    clim=CLIM_DICT[var]
+    integrated200=integrated*mask200 # taglio il costiero
+    integrated200[integrated200==0]=np.nan # sostituisco gli 0 con i NAN
 
-#change the colormap
-        pl.set_cmap('gray_r')
-        fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-        ax.set_xlim([-5,36])
-        ax.set_ylim([30,46])
-        ax.set_xlabel('Lon').set_fontsize(12)
-        ax.set_ylabel('Lat').set_fontsize(12)
-        ax.ticklabel_format(fontsize=10)
-        ax.text(-4,44.5,var + ' [' + varuni + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-        if  MEDIA_O_INTEGRALE==1:
-          ax.text(-4,32,'Int:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-          outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + ".png"
-          outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int_GRAY" + layer.longname() + ".png"
-        else:
-          ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-          outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
-          outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave_GRAY" + layer.longname() + ".png"
-        ax.xaxis.set_ticks(np.arange(-2,36,6))
-        ax.yaxis.set_ticks(np.arange(30,46,4))
-        ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 
-        outfile=outfile.replace(":","").replace("/14","_14").replace("/15","_15")
+    #pl.set_cmap('gray_r') #changes the colormap
+    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+    ax.set_xlim([-5,36])
+    ax.set_ylim([30,46])
+    ax.set_xlabel('Lon').set_fontsize(12)
+    ax.set_ylabel('Lat').set_fontsize(12)
+    ax.ticklabel_format(fontsize=10)
+    ax.text(-4,44.5,var + ' [' + UNITS_DICT[var] + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+    if  args.optype=='integral':
+        ax.text(-4,32,'Int:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + ".png"
+    else:
+        ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
+    ax.xaxis.set_ticks(np.arange(-2,36,6))
+    ax.yaxis.set_ticks(np.arange(30,46,4))
+    ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 
-        fig.savefig(outfile)
+    outfile=outfile.replace(":","").replace("/14","_14").replace("/15","_15")
 
+    fig.savefig(outfile)
+    pl.close(fig)
         
-        pl.close(fig)
-        #NCwriter(integrated,var,outfile,TheMask)

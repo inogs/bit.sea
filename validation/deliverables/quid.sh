@@ -28,19 +28,16 @@ mkdir ./Fig4.1
 
 INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
 python averager_and_plot_map.py -i $INPUTDIR -o Fig4.1/ -v P_i -t mean
+#manca la 4.1 di satellite
 
 mkdir ./Fig4.6
 python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean
 python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean
 
-
 # Figure IV.5
 python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
-#Figure IV.4.
-#Figure IV.1
-#Figure IV.6.
-/pico/home/userexternal/gcossari/bit.sea/averager_and_plot_map.py
-MA CON DEFINIZIONI INTERNE DIVERSE
+
+# da fare python averager_and_plot_map.py -i $INPUTDIR -o Fig4.4/ -v ppn -t integral
 
 
 #Figure IV.7 - density PHOSPHATE
@@ -61,12 +58,22 @@ python vertical_profiles.py -o Fig4.12/ -v O2o
 # che usa un maskload a parte e un aveScan che fa solo integrali, definiti qui
 # /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_13lev_1x1
 
-Fig 4.15, 4.16
-readQUADRATI4x4_PROFILI_do_plotPROFILI_monovariate.m
-che legge da qui
-/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA/wrkdir/POSTPROC/bin
+# Fig 4.15, 4.16
+# readQUADRATI4x4_PROFILI_do_plotPROFILI_monovariate.m
+# che legge da qui
+# /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_4x4
+# poi girerà ricostruzione_profili
 
+mkdir ./Fig4.17
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v PH -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v PH -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v PH -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v PH -t mean
 
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v pCO2 -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v pCO2 -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v pCO2 -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v pCO2 -t mean
 
 
 --------------------------------------------------

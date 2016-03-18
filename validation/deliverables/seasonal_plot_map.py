@@ -24,7 +24,13 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_i','N1p', 'N3n', 'pCO','pH'] )
+                                choices = ['P_i','N1p', 'N3n', 'pCO2','PH'] )
+    parser.add_argument(   '--month', '-m',
+                                type = int,
+                                required = True,
+                                default = '',
+                                choices = [2,5,8,11] )
+
     parser.add_argument(   '--optype', '-t',
                                 type = str,
                                 required = True,
@@ -71,8 +77,8 @@ var       = args.varname
 LIMIT_PER_MASK=[5,5,5]
 
 
-LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150)]
-VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
+LAYERLIST=[Layer(0,50)]
+#VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
 UNITS_DICT={
          'ppn' : 'gC/m^2/y',
          'N1p' : 'mmol /m^3',
@@ -108,7 +114,12 @@ TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
 import commons.timerequestors as requestors
 
 
-req = requestors.Clm_month(2)
+req = requestors.Clim_month(args.month)
+m_array=(['Clim_Jan','Clim_Feb','Clim_Mar','Clim_Apr',
+            'Clim_May','Clim_June','Clim_July','Clim_Aug',
+            'Clim_Sept','Clim_Oct','Clim_Nov','Clim_Dec'])
+req_label=m_array[args.month-1]
+
 indexes,weights = TL.select(req)
 
 VARCONV=CONVERSION_DICT[var]
@@ -154,7 +165,7 @@ for il,layer in enumerate(LAYERLIST):
 
 
     #pl.set_cmap('gray_r') #changes the colormap
-    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':''},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
     ax.set_xlim([-5,36])
     ax.set_ylim([30,46])
     ax.set_xlabel('Lon').set_fontsize(12)

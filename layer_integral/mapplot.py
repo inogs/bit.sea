@@ -35,7 +35,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     else:
         fig.clf()
         fig.add_axes(ax)
-    ax.set_position([0.07, 0.1, 0.85, 0.85])
+    ax.set_position([0.07, 0.11, 0.78, 0.85])
     clim = map_dict['clim']
     
     if not(mask is None):
@@ -87,7 +87,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     #     fontsize=60, color='gray',
     #     ha='right', va='top', alpha=0.3, rotation=18)
 
-    #title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
-    #fig.suptitle(title)
+    title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    fig.suptitle(title)
 
     return fig, ax

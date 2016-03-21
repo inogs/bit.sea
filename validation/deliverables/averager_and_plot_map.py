@@ -24,7 +24,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_i','N1p', 'N3n', 'pCO','pH'] )
+                                choices = ['P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
     parser.add_argument(   '--optype', '-t',
                                 type = str,
                                 required = True,
@@ -65,13 +65,13 @@ clat=coast['Lat']
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 
-INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/MODEL/AVE_FREQ_2/"
-OUTPUTDIR = args.outdir#"/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
+INPUTDIR  = args.inputdir
+OUTPUTDIR = args.outdir
 var       = args.varname
-LIMIT_PER_MASK=[5,5,5]
+LIMIT_PER_MASK=[5,5,5,5]
 
 
-LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150)]
+LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150),Layer(0,200)]
 VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
 UNITS_DICT={
          'ppn' : 'gC/m^2/y',
@@ -83,7 +83,7 @@ UNITS_DICT={
          }
 
 CLIM_DICT={
-         'ppn' : [0, 200],
+         'ppn' : [0, 220],
          'N1p' : [0, 0.15],
          'N3n' : [0, 4],
          'PH'  : [7.9, 8.2],
@@ -93,7 +93,7 @@ CLIM_DICT={
 
 
 CONVERSION_DICT={
-         'ppn' : 365./100,
+         'ppn' : 365./1000,
          'N1p' : 1,
          'N3n' : 1,
          'PH'  : 1,

@@ -25,6 +25,21 @@ def argument():
                                 required = True,
                                 default = '',
                                 choices = ['P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
+
+    parser.add_argument(   '--mapdepthfilter', '-m',
+                                type = float,
+                                required = False,
+                                default = 0.0,
+                                help  = 'The level chosen to filter coast data' )
+    parser.add_argument(   '--top', 
+                                type = float,
+                                required = True,
+                                help  = 'Top of the layer, for integration' )
+    parser.add_argument(   '--bottom',
+                                type = float,
+                                required = True,
+                                help  = 'Bottom of the layer, for integration' )
+
     parser.add_argument(   '--optype', '-t',
                                 type = str,
                                 required = True,
@@ -68,10 +83,10 @@ TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/
 INPUTDIR  = args.inputdir
 OUTPUTDIR = args.outdir
 var       = args.varname
-LIMIT_PER_MASK=[5,5,5,5]
+layer     = Layer(args.top, args.bottom)
 
 
-LAYERLIST=[Layer(0,10),Layer(0,50),Layer(0,150),Layer(0,200)]
+LAYERLIST=[layer]
 VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
 UNITS_DICT={
          'ppn' : 'gC/m^2/y',
@@ -107,7 +122,8 @@ TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
 # CHOICE OF THE TIME SELECTION
 import commons.timerequestors as requestors
 
-MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
+#MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
+MY_YEAR = TimeInterval('19990101','20141230',"%Y%m%d") 
 req_label='Ave:1999-2014'
 
 req = requestors.Generic_req(MY_YEAR)
@@ -147,15 +163,15 @@ for il,layer in enumerate(LAYERLIST):
         integrated=integrated * VARCONV
 
 #        mask200=TheMask.mask_at_level(200)
-    mask200=TheMask.mask_at_level(LIMIT_PER_MASK[il])
+    mask=TheMask.mask_at_level(args.mapdepthfilter)
 #        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
     clim=CLIM_DICT[var]
-    integrated200=integrated*mask200 # taglio il costiero
-    integrated200[integrated200==0]=np.nan # sostituisco gli 0 con i NAN
+    integrated_masked=integrated*mask # taglio il costiero
+    integrated_masked[integrated_masked==0]=np.nan # sostituisco gli 0 con i NAN
 
 
     #pl.set_cmap('gray_r') #changes the colormap
-    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated200, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated_masked, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
     ax.set_xlim([-5,36])
     ax.set_ylim([30,46])
     ax.set_xlabel('Lon').set_fontsize(12)

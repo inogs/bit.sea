@@ -33,24 +33,28 @@ python averager_and_plot_map.py -i $INPUTDIR              -o Fig4.1/ -v P_i -t m
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR       -o Fig4.1/
 
 mkdir ./Fig4.6
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean  --top 0 --bottom  50 --mapdepthfilter  50.0
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean  --top 0 --bottom 150 --mapdepthfilter 150.0
+
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean  --top 0 --bottom   50 --mapdepthfilter  50.0
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean  --top 0 --bottom  150 --mapdepthfilter 150.0
 
 # Figure IV.5
 python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
 
-# da fare python averager_and_plot_map.py -i $INPUTDIR -o Fig4.4/ -v ppn -t integral
+mkdir Fig4.4
+python averager_and_plot_map.py -i $INPUTDIR -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 150.0
 
-
+mkdir table4.4 table4.5
 #Figure IV.7 - density PHOSPHATE
 python density_plots.py     -o Fig4.7/  -v N1p -m 0
-python vertical_profiles.py -o Fig4.8/  -v N1p
+python vertical_profiles.py -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
 
 python density_plots.py     -o Fig4.9/  -v N3n -m 0
-python vertical_profiles.py -o Fig4.10/ -v N3n
+python vertical_profiles.py -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat
 
 python density_plots.py     -o Fig4.11/ -v O2o
-python vertical_profiles.py -o Fig4.12/ -v O2o
+python vertical_profiles.py -o Fig4.12/ -v O2o > ./table4.5/table4.5_corr.dat
 
 # Figure carbonatiche
 # Fig 4.13, 4.14, per AC_ e DIC

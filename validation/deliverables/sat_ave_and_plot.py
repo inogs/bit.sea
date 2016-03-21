@@ -31,7 +31,7 @@ from commons.Timelist import TimeList
 from commons.mask import Mask
 from commons.layer import Layer
 
-from layer_integral import mapplot
+from layer_integral.mapplot import mapplot
 import commons.timerequestors as requestors
 import Sat.SatManager as Sat
 import pylab as pl
@@ -40,7 +40,7 @@ coast=np.load('Coastline.npy')
 clon=coast['Lon']
 clat=coast['Lat']
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-_,jpj,jpi = TheMask.shape()
+_,jpj,jpi = TheMask.shape
 
 INPUTDIR  = args.inputdir
 OUTPUTDIR = args.outdir
@@ -48,7 +48,7 @@ OUTPUTDIR = args.outdir
 
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
+TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", 'IOnames_sat_monthly.xml')
 
 
 MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") 
@@ -62,11 +62,13 @@ SAT_3D=np.zeros((nFrames,jpj,jpi), np.float32)
 for iFrame, k in enumerate(indexes):
     t = TL.Timelist[k]
     inputfile = INPUTDIR + t.strftime("%Y%m") + "_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02.nc"
-    CHL = Sat.readfromfile(inputfile)
+    CHL = Sat.readfromfile(inputfile,'lchlm')
     SAT_3D[iFrame,:,:] = CHL
 
 Sat2d=Sat.averager(SAT_3D)
 
+mask200=TheMask.mask_at_level(200)
+Sat2d[~mask200] = np.NaN
 var = 'SATchl'
 layer = Layer(0,10)
 

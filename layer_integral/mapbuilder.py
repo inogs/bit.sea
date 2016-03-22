@@ -13,7 +13,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot
+from mapplot import mapplot,mapplot_onlycolor
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
@@ -83,7 +83,7 @@ class MapBuilder(object):
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
                 self.__plotlist.append(plot)
 
-    def plot_maps_data(self, coastline_lon=None, coastline_lat=None):
+    def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0):
         fig = None
         ax = None
         for f in self.__netcdffileslist:
@@ -96,7 +96,7 @@ class MapBuilder(object):
                     warn_user(msg)
                     continue
                 for i,l in enumerate(p.layerlist):                    
-                    outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
+                    outfile = "%s/ave.%s.%s.%s.%d" % (self.__outputdir,shortdate, p.varname, l,maptype)
                     mapdata = MapBuilder.get_layer_average(de, l)
                     try:
                         clim = p.climlist[i]
@@ -107,7 +107,13 @@ class MapBuilder(object):
                             raise ValueError("No clim defined for %s %s" % (p.varname, repr(l)))
                         else:
                             clim = p.clim
-                    fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                    if maptype == 0:
+                        fig, ax = mapplot({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                    if maptype == 1:
+                        fig, ax = mapplot_onlycolor({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                    if maptype == 2:
+                        fig, ax = mapplot_nocolor({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                    
                     fig.savefig(outfile + ".jpg",dpi=72, quality=50)                    
                 fig = None
                 ax = None

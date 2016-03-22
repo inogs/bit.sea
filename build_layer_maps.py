@@ -9,6 +9,8 @@ import os
 import numpy as np
 from glob import glob
 import argparse
+import time
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Script to build layer maps from model files
@@ -20,9 +22,9 @@ def argument():
                                 required =False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
                                 help = ''' Input directory'''
-                                                              
+
                                 )
-    
+
     parser.add_argument(   '--outputdir', '-o',
                                 type = str,
                                 required = True,
@@ -34,7 +36,7 @@ def argument():
                                 required = False,
                                 default = 'ave*nc',
                                 help = 'glob search pattern')
-    
+
     parser.add_argument(   '--plotlistfile', '-p',
                                 type = str,
                                 required = False,
@@ -46,7 +48,7 @@ def argument():
                                 required = False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
-    return parser.parse_args()  
+    return parser.parse_args()
 
 try:
     from layer_integral.mapbuilder import MapBuilder
@@ -103,5 +105,15 @@ try:
     file_list = glob(inputdir + "/" + file_pattern)
     mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
     mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
+except Exception as e:
+    die(e, 2, False)
+
+time.sleep(5)
+##########################################################dd
+
+try:
+    file_list = glob(inputdir + "/" + file_pattern)
+    mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
+    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=1)
 except Exception as e:
     die(e, 2, False)

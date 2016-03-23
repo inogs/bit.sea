@@ -13,7 +13,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot,mapplot_onlycolor
+from mapplot import mapplot,mapplot_onlycolor,mapplot_nocolor
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
@@ -95,7 +95,7 @@ class MapBuilder(object):
                     msg="File: %s\n%s" % (f, e)
                     warn_user(msg)
                     continue
-                for i,l in enumerate(p.layerlist):                    
+                for i,l in enumerate(p.layerlist):
                     outfile = "%s/ave.%s.%s.%s.%d" % (self.__outputdir,shortdate, p.varname, l,maptype)
                     mapdata = MapBuilder.get_layer_average(de, l)
                     try:
@@ -113,8 +113,9 @@ class MapBuilder(object):
                         fig, ax = mapplot_onlycolor({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                     if maptype == 2:
                         fig, ax = mapplot_nocolor({'filename':f, 'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
-                    
-                    fig.savefig(outfile + ".jpg",dpi=72, quality=50)                    
+                        fig.canvas.print_figure(outfile + ".svg")
+                        return
+                    fig.savefig(outfile + ".jpg",dpi=72, quality=50)
                 fig = None
                 ax = None
 

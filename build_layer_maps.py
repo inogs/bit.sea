@@ -117,3 +117,13 @@ try:
     mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=1)
 except Exception as e:
     die(e, 2, False)
+
+
+##########################################################dd
+
+try:
+    file_list = glob(inputdir + "/" + file_pattern)
+    mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
+    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
+except Exception as e:
+    die(e, 2, False)

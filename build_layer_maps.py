@@ -96,6 +96,9 @@ try:
     jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
     c_lon[ii | jj] = np.NaN
     c_lat[ii | jj] = np.NaN
+    ii = (c_lon < -6) | (c_lon > 36 )# out of box
+    c_lon[ii] = np.NaN
+    c_lat[ii] = np.NaN
 
 except:
     c_lon=None

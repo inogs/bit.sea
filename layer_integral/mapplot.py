@@ -76,8 +76,8 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
                 raise ValueError("coastline arrays must have the same length")
             #Draw coastline
             ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
-            ax.set_xlim([lon_min, lon_max])
-            ax.set_ylim([lat_min, lat_max])
+            ax.set_xlim([-6, 36])
+            ax.set_ylim([30, 46])
     #ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
     #ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
     #ax.text(-7,40,map_dict['varname'],ha='left',va='center')
@@ -140,7 +140,7 @@ def mapplot_onlycolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coa
     else:
         im = ax.imshow(map_dict['data'])
     #Set color bar
-    im.set_clim(clim[0], clim[1])
+    # im.set_clim(clim[0], clim[1])
     # cbar_ticks_list = np.linspace(clim[0], clim[1], cbar_ticks).tolist()
     # cbar_ticks_labels = list()
     # for t in cbar_ticks_list:
@@ -149,6 +149,7 @@ def mapplot_onlycolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coa
     # cax = div.append_axes("right", size="3%", pad=0.05)
     # cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
     # cbar.ax.set_yticklabels(cbar_ticks_labels)
+    #cbar.set_visible(False)
     ax.invert_yaxis()
     if not mask is None:
         x_points = np.arange(-6,36,4).tolist()
@@ -166,8 +167,8 @@ def mapplot_onlycolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coa
                 raise ValueError("coastline arrays must have the same length")
             #Draw coastline
             #ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
-            ax.set_xlim([lon_min, lon_max])
-            ax.set_ylim([lat_min, lat_max])
+            ax.set_xlim([-6, 36])
+            ax.set_ylim([30, 46])
     #ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
     #ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
     #ax.text(-7,40,map_dict['varname'],ha='left',va='center')
@@ -257,8 +258,8 @@ def mapplot_nocolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coast
                 raise ValueError("coastline arrays must have the same length")
             #Draw coastline
             ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
-            ax.set_xlim([lon_min, lon_max])
-            ax.set_ylim([lat_min, lat_max])
+            ax.set_xlim([-6, 36])
+            ax.set_ylim([30, 46])
     #ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
     #ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
     #ax.text(-7,40,map_dict['varname'],ha='left',va='center')

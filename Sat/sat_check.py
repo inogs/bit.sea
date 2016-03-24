@@ -7,7 +7,7 @@ import SatManager as Sat
 
 ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/"
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
-CLIM_FILE="/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/DA/CHECKSAT/SatClimatology.nc"
+CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/SeaWifs/SatClimatology.nc"
 
 reset = False
 

@@ -30,7 +30,7 @@ def argument():
   
     return parser.parse_args()
 
-def WriteTMPave(biofile,physfile, outfile,VarDescriptor):
+def WriteTMPave(biofile,physfile, outfile):
             
     nc=NC.netcdf_file(biofile,"r");
     DIMS=nc.dimensions;    
@@ -64,17 +64,17 @@ def WriteTMPave(biofile,physfile, outfile,VarDescriptor):
         ncvar=ncOUT.createVariable(var,'f',('time','depth','lat','lon'))
         ncvar[:]=ncIN.variables[var].data.copy()
         setattr(ncvar,"long_name",var)
-        setattr(ncvar,"missing_value",ncIN.variables[var].missing_value)        
+        setattr(ncvar,"missing_value",1.e+20)
         ncIN.close()
     for var in ['votemper','vosaline']  :
         ncIN = NC.netcdf_file(physfile,"r")      
         ncvar=ncOUT.createVariable(var,'f',('time','depth','lat','lon'))
         ncvar[:]=ncIN.variables[var].data.copy()
         setattr(ncvar,"long_name",var)
-        setattr(ncvar,"missing_value",ncIN.variables[var].missing_value)        
+        setattr(ncvar,"missing_value",1.e+20)
         ncIN.close()
     
-    AGGREGATE_DICT={'P_i',['P1i','P2i','P3i','P4i']}
+    AGGREGATE_DICT={'P_i':['P1i','P2i','P3i','P4i']}
     for var in AGGREGATE_DICT.keys():
               
         ncvar=ncOUT.createVariable(var,'f',('time','depth','lat','lon'))
@@ -87,7 +87,7 @@ def WriteTMPave(biofile,physfile, outfile,VarDescriptor):
         junk[tmask] = 1.e+20
         ncvar[:]=junk    
         setattr(ncvar,"long_name",var)
-        setattr(ncvar,"missing_value",ncIN.variables[lvar].missing_value) 
+        setattr(ncvar,"missing_value",1.e+20)
     
     ncOUT.close()    
 
@@ -122,7 +122,7 @@ archived_filelist.sort()
 for filename in archived_filelist[rank::nranks]:
     dailyAve  = os.path.basename(filename)
     print "writing ", dailyAve
-    daily_phys = PHYS_DIR + "T." + dailyAve[4:]
+    daily_phys = PHYS_DIR + "T" + dailyAve[4:]
     outfile   = TMPOUTdir + dailyAve
     
         

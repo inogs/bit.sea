@@ -11,7 +11,7 @@ archive_dir="/pico/home/usera07ogs/a07ogs00/OPA/V4/archive/"
 T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
 T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz"   )
 
-T_bio.extract_analysis(LOC + ' output_bio/')
+T_bio.extract_analysis( LOC + 'output_bio/')
 T_phys.extract_analysis(LOC + 'output_phys/'); 
 
 

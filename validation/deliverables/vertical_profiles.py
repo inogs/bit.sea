@@ -55,8 +55,8 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
          }
 
 
-for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
-#for sub in OGS.P:
+#for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
+for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
     print sub.name
     Profilelist=static_Selector(modelvarname,T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)

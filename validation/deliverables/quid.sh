@@ -68,7 +68,7 @@ python vertical_profiles.py -o Fig4.12/ -v O2o > ./table4.5/table4.5_corr.dat
 # readQUADRATI4x4_PROFILI_do_plotPROFILI_monovariate.m
 # che legge da qui
 # /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_4x4
-# poi girerà ricostruzione_profili
+# i files PROF_18aree_${VAR}.nc, generati da ricostruzione_profili.py
 
 mkdir ./Fig4.17
 python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v PH -t mean

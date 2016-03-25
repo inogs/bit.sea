@@ -7,18 +7,13 @@ TI=TimeInterval(starttime,end__time,'%Y%m%d')
 import basins.OGS as OGS
 from instruments import bio_float
 from instruments.var_conversions import FLOATVARS
-#from commons.layer import Layer
+from commons.mask import Mask
+from profiler import *
 
-modelvarname='O2o'
+TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 Profilelist=bio_float.FloatSelector(None,TI,OGS.med)
 
-WMO=set()
-for p in Profilelist:
-    F=p._my_float
-    WMO.add(F.wmo)
-
-
-#M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
-
+M = Matchup_Manager(TI,INPUTDIR,BASEDIR)
+M.getFloatMatchups(Profilelist,TheMask.zlevels,read_adjusted=False)
 

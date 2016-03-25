@@ -183,7 +183,7 @@ class Matchup_Manager():
             
         return Group_Matchup 
 
-    def getFloatMatchups(self,Profilelist,nav_lev,model_varname, read_adjusted=True):
+    def getFloatMatchups(self,Profilelist,nav_lev, read_adjusted=True):
         ''' 
         Float list is a list of Bio_Float objects 
         It depends on a user selection in space and time
@@ -213,6 +213,8 @@ class Matchup_Manager():
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
             
             for model_varname in ['P_i','O2o','N3n','votemper','vosaline']:
+                ref_varname = self.reference_var(p, model_varname)
+                if ref_varname not in VARLIST: continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
 
                 seaPoints = ~np.isnan(ModelProfile)
@@ -221,7 +223,7 @@ class Matchup_Manager():
                     break
 
 
-                ref_varname = self.reference_var(p, model_varname)
+                
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
                 
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)

@@ -78,8 +78,6 @@ class ProfilesMatchup(matchup):
         pl.gca().invert_yaxis()
         pl.show(block=False)
 
-
-
 class FloatProfilesMatchup(ProfilesMatchup):
     def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, time=None, qc=None, name=None, cycle=None):
         if Model is None:
@@ -172,6 +170,42 @@ class ProfileMatchup():
         pl.plot(self.Model,self.Depth,'b', self.Ref,self.Depth,'r')
         pl.gca().invert_yaxis()
         pl.show(block=False)
+
+
+    def plot_file(self,date,p,var,dirout):
+        '''
+        Red line is reference (biofloat, mooring or vessel)
+        Blue line is model
+        '''
+	floatname = p.name()
+	filename =dirout+"/"+date.strftime('%Y%m%d') +"_"+floatname+"_"+var+ ".png"
+        pl.figure()
+        pl.plot(self.Model,self.Depth,label="Model")
+        pl.plot(self.Ref,self.Depth,label="Float")
+	pl.legend(loc='top right')
+	pl.ylabel("depth")
+        figtitle = var+" date="+date.strftime('%Y/%m/%d')+" float="+floatname
+        pl.title(figtitle)
+        pl.gca().invert_yaxis()
+        pl.savefig(filename)
+	
+	import libxmp
+	import  libxmp.utils
+        from libxmp import XMPFiles, consts
+	xmpfile = XMPFiles( file_path=filename, open_forupdate=True )
+        xmp = xmpfile.get_xmp()
+
+        if xmp is None:
+            xmp = libxmp.XMPMeta()
+
+        xmp.set_property(consts.XMP_NS_DC, 'float', floatname )
+        xmp.set_property(consts.XMP_NS_DC, 'date', date.strftime('%Y%m%d') )
+	xmp.set_property(consts.XMP_NS_DC, 'hour', date.strftime('%H:%M:%S') )
+        xmp.set_property(consts.XMP_NS_DC, 'var', var )
+        xmp.set_property(consts.XMP_NS_DC, 'position.lat',str(p.lat)+"N")
+        xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
+        xmpfile.put_xmp(xmp)
+        xmpfile.close_file()
 
             
 

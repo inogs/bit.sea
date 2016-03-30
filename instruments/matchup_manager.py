@@ -8,8 +8,8 @@ import scipy.io.netcdf as NC
 import numpy as np
 
 import matchup.matchup
-
-
+import datetime
+import seawater as sw
 class Matchup_Manager():
     
     '''
@@ -183,7 +183,7 @@ class Matchup_Manager():
             
         return Group_Matchup 
 
-    def getFloatMatchups(self,Profilelist,nav_lev, read_adjusted=True):
+    def getFloatMatchups(self,Profilelist,nav_lev,outdir="./"):
         ''' 
         Float list is a list of Bio_Float objects 
         It depends on a user selection in space and time
@@ -205,14 +205,41 @@ class Matchup_Manager():
     
         for p in Profilelist:
             Model_time = self.modeltime(p)
+	    
             if not self.TI.contains(Model_time) :
                 print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
                 continue
             VARLIST = p._my_float.available_params.strip().rsplit(" ")
             VARLIST.remove('PRES')
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
+            read_adjusted = [True,False,False,False,False]
             
-            for model_varname in ['P_i','O2o','N3n','votemper','vosaline']:
+            #density calculator
+            model_varname = 'votemper'
+            ref_varname = self.reference_var(p, model_varname)
+            if ref_varname not in VARLIST: continue
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
+            seaPoints = ~np.isnan(ModelProfile)
+            if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask         
+                print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
+                break
+            Pres, temp, Qc = p.read(ref_varname,read_adjusted[3])
+            model_varname = 'vosaline'
+            ref_varname = self.reference_var(p, model_varname)
+            if ref_varname not in VARLIST: continue
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
+            seaPoints = ~np.isnan(ModelProfile)
+            if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask         
+                print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
+                break
+            Pres, sal, Qc = p.read(ref_varname,read_adjusted[4])      
+
+            density = sw.dens(sal,temp,Pres)
+            #end density calculator
+
+            correction = [1,1000/density,1,1,1]
+
+            for i,model_varname in enumerate(['P_i','O2o','N3n','votemper','vosaline']):
                 ref_varname = self.reference_var(p, model_varname)
                 if ref_varname not in VARLIST: continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
@@ -222,14 +249,13 @@ class Matchup_Manager():
                     print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
                     break
 
-
-                
-                Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
-                
+                Pres, Profile, Qc = p.read(ref_varname,read_adjusted[i])
+                Profile = Profile*correction[i]
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
-                        
+                print model_varname, len(Profile)        
                 Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
-
+		
+                Matchup.plot_file(Model_time,p,model_varname,outdir)
         return 
 
 

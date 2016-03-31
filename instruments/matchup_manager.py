@@ -8,9 +8,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 
 import matchup.matchup
-import datetime
 import pylab as pl
-import matplotlib.patches as mpatches
 import seawater as sw
 import libxmp
 import  libxmp.utils
@@ -282,11 +280,9 @@ class Matchup_Manager():
                 #get subplot
                 ax=axs[mapgraph[i]]
                 fig, ax = Matchup.plot_subplot(model_varname, fig, ax)
-            b_patch = mpatches.Patch(color='red', label='Model')
-            g_patch = mpatches.Patch(color='blue', label='Float')
-            pl.legend(handles=[b_patch,g_patch], loc=5, borderaxespad=0.)
-            pl.savefig(filepng)
-            pl.close()
+
+            fig.savefig(filepng)
+            pl.close(fig)
 
             f.close()
             #img.close_file

@@ -177,22 +177,22 @@ class ProfileMatchup():
         Red line is reference (biofloat, mooring or vessel)
         Blue line is model
         '''
-	floatname = p.name()
-	filename =dirout+"/"+date.strftime('%Y%m%d') +"_"+floatname+"_"+var+ ".png"
+        floatname = p.name()
+        filename =dirout+"/"+date.strftime('%Y%m%d') +"_"+floatname+"_"+var+ ".png"
         pl.figure()
         pl.plot(self.Model,self.Depth,label="Model")
         pl.plot(self.Ref,self.Depth,label="Float")
-	pl.legend(loc='top right')
-	pl.ylabel("depth")
+        pl.legend(loc='upper right')
+        pl.ylabel("depth")
         figtitle = var+" date="+date.strftime('%Y/%m/%d')+" float="+floatname
         pl.title(figtitle)
         pl.gca().invert_yaxis()
         pl.savefig(filename)
-	
-	import libxmp
-	import  libxmp.utils
+        pl.close()
+        import libxmp
+        import  libxmp.utils
         from libxmp import XMPFiles, consts
-	xmpfile = XMPFiles( file_path=filename, open_forupdate=True )
+        xmpfile = XMPFiles( file_path=filename, open_forupdate=True )
         xmp = xmpfile.get_xmp()
 
         if xmp is None:
@@ -200,14 +200,30 @@ class ProfileMatchup():
 
         xmp.set_property(consts.XMP_NS_DC, 'float', floatname )
         xmp.set_property(consts.XMP_NS_DC, 'date', date.strftime('%Y%m%d') )
-	xmp.set_property(consts.XMP_NS_DC, 'hour', date.strftime('%H:%M:%S') )
+        xmp.set_property(consts.XMP_NS_DC, 'hour', date.strftime('%H:%M:%S') )
         xmp.set_property(consts.XMP_NS_DC, 'var', var )
         xmp.set_property(consts.XMP_NS_DC, 'position.lat',str(p.lat)+"N")
         xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
         xmpfile.put_xmp(xmp)
         xmpfile.close_file()
 
-            
+    def plot_subplot(self,var,i,fig, axs):
+        '''
+        Red line is reference (biofloat, mooring or vessel)
+        Blue line is model
+        '''
+
+        line1 = axs[i].plot(self.Model,self.Depth,'r')
+        line2 = axs[i].plot(self.Ref,self.Depth,'b')
+
+
+        figtitle = var
+        axs[i].set_title(figtitle)
+        axs[i].invert_yaxis()
+
+        return fig, axs, line1, line2
+
+
 
 if __name__ == '__main__':
     Depth = np.arange(10.)/10

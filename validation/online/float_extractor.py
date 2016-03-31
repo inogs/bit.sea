@@ -63,7 +63,7 @@ TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/
 Profilelist=bio_float.FloatSelector(None,TI,OGS.med)
 M = Matchup_Manager(TI,INPUTDIR,BASEDIR)
 # # from profiler
-M.writefiles_for_profiling('./jobProfiler.sh') # preparation of data for aveScan
-M.dumpModelProfiles('./jobProfiler.sh') # sequential launch of aveScan
+#M.writefiles_for_profiling('./jobProfiler.sh') # preparation of data for aveScan
+#M.dumpModelProfiles('./jobProfiler.sh') # sequential launch of aveScan
 # end from profiler
 M.getFloatMatchups(Profilelist,TheMask.zlevels,args.outdir)

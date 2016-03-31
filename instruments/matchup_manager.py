@@ -189,6 +189,7 @@ class Matchup_Manager():
 
         return Group_Matchup
 
+
     def getFloatMatchups(self,Profilelist,nav_lev,outdir="./"):
         '''
         Float list is a list of Bio_Float objects
@@ -208,6 +209,7 @@ class Matchup_Manager():
 
         Returns nothing
         '''
+        from validation.online.profileplotter import figure_generator
         zlevels_out=np.arange(0,401,5)
 
         for p in Profilelist:
@@ -250,11 +252,7 @@ class Matchup_Manager():
             m_array = f.createVariable('lev', 'f', ('levels',))
             m_array[:] = zlevels_out[:]
 
-            fig, axs = pl.subplots(2,3, facecolor='w', edgecolor='k')
-            figtitle = " date="+Model_time.strftime('%Y/%m/%d')+" float="+p.name()
-            #axs.set_title(figtitle)
-            fig.subplots_adjust(hspace = 0.3, wspace=0.3)
-            axs = axs.ravel()
+            fig, axs = figure_generator(p)
 
             for i,model_varname in enumerate(['P_i','O2o','N3n','votemper','vosaline']):
                 ref_varname = self.reference_var(p, model_varname)
@@ -282,7 +280,8 @@ class Matchup_Manager():
                 #end write netcdf
 
                 #get subplot
-                fig, axs, line1,line2 = Matchup.plot_subplot(model_varname,mapgraph[i],fig, axs)
+                ax=axs[mapgraph[i]]
+                fig, ax = Matchup.plot_subplot(model_varname, fig, ax)
             b_patch = mpatches.Patch(color='red', label='Model')
             g_patch = mpatches.Patch(color='blue', label='Float')
             pl.legend(handles=[b_patch,g_patch], loc=5, borderaxespad=0.)
@@ -296,7 +295,7 @@ class Matchup_Manager():
             xmpfile = XMPFiles( file_path=filepng, open_forupdate=True )
             xmp = xmpfile.get_xmp()
             if xmp is None:
-              xmp = libxmp.XMPMeta()
+                xmp = libxmp.XMPMeta()
             xmp.set_property(consts.XMP_NS_DC, 'float', p.name() )
             xmp.set_property(consts.XMP_NS_DC, 'date', Model_time.strftime('%Y%m%d') )
             xmp.set_property(consts.XMP_NS_DC, 'hour', Model_time.strftime('%H:%M:%S') )

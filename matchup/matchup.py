@@ -207,21 +207,21 @@ class ProfileMatchup():
         xmpfile.put_xmp(xmp)
         xmpfile.close_file()
 
-    def plot_subplot(self,var,i,fig, axs):
+    def plot_subplot(self,var,fig, ax):
         '''
         Red line is reference (biofloat, mooring or vessel)
         Blue line is model
         '''
 
-        line1 = axs[i].plot(self.Model,self.Depth,'r')
-        line2 = axs[i].plot(self.Ref,self.Depth,'b')
+        ax.plot(self.Model,self.Depth,'r')
+        ax.plot(self.Ref,self.Depth,'b')
 
 
         figtitle = var
-        axs[i].set_title(figtitle)
-        axs[i].invert_yaxis()
+        ax.set_title(figtitle)
+        ax.invert_yaxis()
 
-        return fig, axs, line1, line2
+        return fig, ax
 
 
 

@@ -1,7 +1,21 @@
 #! /bin/bash
 
 
-LOC=/gpfs/work/Isc\rC_MYMEDBIO/COPERNICUS/online_validation_data
+if [ $# -lt 2 ] ; then
+  usage
+  exit 1
+fi
+
+for I in 1; do
+   case $1 in
+      "-d" ) LOC=$2;;
+        *  ) echo "Unrecognized option $1." ; usage;  exit 1;;
+   esac
+   shift 2
+done
+
+
+
 INPUTDIR=$LOC/output_phys
  ORIGDIR=$LOC/LINKED_ORIG/
 GEN__DIR=$LOC/FORCING_GEN
@@ -15,7 +29,7 @@ sed -e "s%@@ORIGDIR@@%${ORIGDIR}%g"  -e "s%@@OUTDIR@@%${OUT_DIR}%g" namelist.tpl
 
 cd $ORIGDIR
 for I in `ls $INPUTDIR/*nc`; do
-   filename=`basename $I` 
+   filename=`basename $I`
    new_name=${filename:21:6}_${filename:30:4}
    ln -fs $I $new_name
 done
@@ -37,4 +51,3 @@ module purge
 module load autoload intelmpi/5.0.1--binary mkl/11.2.0--binary
 ulimit -s unlimited
 ./ForcingGenerator
-

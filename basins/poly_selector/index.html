@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Draw a polygon</title>
+	<meta charset="utf-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="leaflet.css" />
+	<link rel="stylesheet" href="leaflet.draw.css" />
+    <style>
+            body { font-family: sans-serif; width: 1200px; }
+            a { color: #0078A8; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+	<div style="font-size: 32pt; font-weight: bold; float: left;">Draw a polygon</div>
+	<div style="text-align: right; font-size: 10pt;"><a href="guide/index.html" target="_blank">User Guide</a></div>
+	<div id="map" style="width: 1200px; height: 500px"></div>
+    <div style="font-size: 8pt; text-align: right; width: 1200px;">Poly selector Copyright &copy; 2016 eXact lab s.r.l.</div>
+	<div id="ui" style="width: 100%; height:25px; float: left; text-align: right;">&nbsp;</div>
+	<div id="points" style="width: 600px; float: left; overflow: auto;"></div>
+	<div id="export" style="width: 600px; float: left; overflow: auto;"></div>
+	<script type="text/javascript" src="Blob.js"></script>
+	<script type="text/javascript" src="FileSaver.min.js"></script>
+	<script type="text/javascript" src="jquery-1.12.1.min.js"></script>
+	<script type="text/javascript" src="leaflet.js"></script>
+	<script type="text/javascript" src="leaflet.draw.js"></script>
+    <script type="text/javascript" src="tile.stamen.js"></script>
+	<script type="text/javascript" src="export.js"></script>
+	<script type="text/javascript" src="init_selector.js"></script>
+</body>
+</html>

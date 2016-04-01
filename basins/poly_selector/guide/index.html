@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Poly selector User Guide</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title">Poly selector User Guide</h1>
+</div>
+<h1 id="overview">Overview</h1>
+<div class="figure">
+<img src="images/01_main_screen.png" alt="Poly selector user interface." /><p class="caption">Poly selector user interface.</p>
+</div>
+<p>In the above figure you can see how the Poly selector tool presents itself when it is just loaded in the browser.</p>
+<p>On the top left of the map there are the controls for zooming in and zooming out the view, start drawing a polygon, editing a drawn polygon (disabled because there are no polygons drawn) and deleting a polygon (also disabled).</p>
+<div class="figure">
+<img src="images/02_controls.png" alt="Zoom, draw and edit controls." /><p class="caption">Zoom, draw and edit controls.</p>
+</div>
+<p>On the top right of the map there is the layer control that allows to select the visible layers (see <a href="#map-layers">Map Layers</a> below).</p>
+<div class="figure">
+<img src="images/03_layer_control.png" alt="Layer control." /><p class="caption">Layer control.</p>
+</div>
+<h1 id="exploring-the-map">Exploring the map</h1>
+<p>The map can be dragged by clicking on the maps itself, holding the left mouse button and moving the cursor in the opposite direction (E.G. to explore the western portion of the map you have to move the cursor to the East).</p>
+<p>You can increase the level of detail (zoom in) by clicking on the plus sign and you can decrease the level of detail (zoom out) by clicking on the minus sign.</p>
+<h2 id="map-layers">Map Layers</h2>
+<p>There are two layers available:</p>
+<ul>
+<li>The Base layer (always visible) detailing the geography features (Borders, cities, roads and their names).</li>
+<li>The Bathymetry layer (hidden by default) detailing the depth of seas and oceans based on NOAA data.</li>
+</ul>
+<p>You can select the visibility of the Bathymetry layer by clicking on the Layer control and then selecting the Bathymetry option from the dropdown menu:</p>
+<div class="figure">
+<img src="images/04_layer_menu.png" alt="Layer control dropdown menu." /><p class="caption">Layer control dropdown menu.</p>
+</div>
+<h1 id="drawing-editing-and-saving">Drawing Editing and Saving</h1>
+<p>To start drawing click on the pentagon symbol and you will see the following:</p>
+<div class="figure">
+<img src="images/05_drawing_start.png" alt="Drawing mode." /><p class="caption">Drawing mode.</p>
+</div>
+<p>The mouse pointer shape will change to a cross and you will be able to add vertices by clicking on the map. You can change the zoom while you are drawing and you can also move the map by clicking and holding the left mouse button (see <a href="#exploring-the-map">Exploring the map</a> above).</p>
+<p>After you have drawn at least three vertices you can decide to close your polygon or adding more vertices. To close your polygon simply click on the first vertex as hintend by the tooltip:</p>
+<div class="figure">
+<img src="images/06_drawing_close_shape.png" alt="Drawing mode - drawing a polygon." /><p class="caption">Drawing mode - drawing a polygon.</p>
+</div>
+<p>After closing the shape the Poly selector tool will revert to the default mode and you will see the polygon superimposed to the map. You will also see the coordinates (latitude and longitude) of the vertices on the bottom left and the sample code to import the polygon inside Bit.Sea on the bottom right.</p>
+<div class="figure">
+<img src="images/07_drawing_closed_shape.png" alt="The interface right after a polygon has been drawn." /><p class="caption">The interface right after a polygon has been drawn.</p>
+</div>
+<h2 id="editing">Editing</h2>
+<p>To edit your polygon click on the pencil symbol:</p>
+<div class="figure">
+<img src="images/08_edit_control.png" alt="Edit control." /><p class="caption">Edit control.</p>
+</div>
+<p>You will be presented with the following interface:</p>
+<div class="figure">
+<img src="images/09_edit_ui.png" alt="Edit interface." /><p class="caption">Edit interface.</p>
+</div>
+<p>Clicking the left mouse on a square placed on a vertex, holding the button down and moving the cursor will move the corresponding vertex. The mouse cursor shape will change from an open hand to a pointing hand (see the figure above) to signal that you can drag the vertex. Clicking and dragging the middle point of a segment will create a new vertex that can be moved just as the other vertices.</p>
+<p>When you are satisfied with your edit you can click on the &quot;Save&quot; button next to the edit control to save your changes and update the points. Clicking on cancel will undo <strong>all</strong> your changes.</p>
+<p>The thrash can symbol allow you to delete a polygon by clicking on it. Just like the the edit control you have to press &quot;Save&quot; to confirm the deletion.</p>
+<h2 id="saving-the-polygons">Saving the polygons</h2>
+<p>Clicking the &quot;Select Text&quot; button will highlight the Python code allowing you to copy that code into the clipboard.</p>
+<p>Clicking the &quot;Save All&quot; button will save a file (named &quot;polygon.py&quot;) containing the code. Please note that Poly selector displays only the points and the code of the <strong>latest</strong> drawn polygon but allows the drawing of multiple polygons. By clicking on the &quot;Save All&quot; button you will get all the drawn polygons saved inside the &quot;polygon.py&quot; file in the same order as they have been drawn.</p>
+<p>Please note that Safari is known to be incompatible with the &quot;Save All&quot; function. Both Mozilla Firefox 38 or later and Google Chrome 48 or later are known to be compatible.</p>
+</body>
+</html>

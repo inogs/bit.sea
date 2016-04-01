@@ -1,8 +1,20 @@
 import pylab as pl
 import numpy as np
 import matplotlib.patches as mpatches
+import scipy.io.netcdf as NC
+import libxmp, libxmp.utils
+from libxmp import XMPFiles, consts
 
 def figure_generator(p):
+    ''' Generates a figure to plot the matchups related to a bioFloat cycle
+    There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
+    
+    Arguments:
+    * p * is a profile object
+    
+    Returns
+    fig, axes (array of axes handlers)
+    '''
     fig, axs = pl.subplots(2,3, facecolor='w', edgecolor='k')
     hsize=10
     vsize=12
@@ -43,13 +55,32 @@ def figure_generator(p):
     return fig,axs
 
 
-import scipy.io.netcdf as NC
-def ncwriter(filenc,zlevels_out):
+
+def ncwriter(filenc,zlevels_out,profileobj):
+    ''' Generates a NetCDF file of matchups related to a bioFloat cycle
+    There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
+    
+    Arguments:
+    * filenc      * is a output file name
+    * zlevels_out * is the array of depths
+    * profileobj  * is a profile object
+    
+    Returns
+    f, model_handlers, float_handlers
+    '''
+    
     depths = len(zlevels_out)
     f = NC.netcdf_file(filenc, 'w')
     f.createDimension('levels', depths)
+    f.createDimension('pos', 1)
+    lon=f.createVariable('longitude', 'f', ('pos',))
+    lat=f.createVariable('longitude', 'f', ('pos',))
+    lon[:] = profileobj.lon
+    lat[:] = profileobj.lat
     m_array = f.createVariable('lev', 'f', ('levels',))
     m_array[:] = zlevels_out[:]
+    setattr(f, 'time', profileobj.time.strftime("%Y%m%d-%H:%M:%S"))
+
     model_handlers=[]
     float_handlers=[]
     for model_varname in ['P_i','O2o','N3n','votemper','vosaline']:
@@ -69,8 +100,7 @@ def ncwriter(filenc,zlevels_out):
     return f, model_handlers, float_handlers
 
 
-import libxmp, libxmp.utils
-from libxmp import XMPFiles, consts
+
 
 def add_metadata(filepng,p):
     xmpfile = XMPFiles( file_path=filepng, open_forupdate=True )

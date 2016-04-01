@@ -69,8 +69,6 @@ def ncwriter(filenc,zlevels_out):
     return f, model_handlers, float_handlers
 
 
-if __name__ == "__main__" : 
-    break
 import libxmp, libxmp.utils
 from libxmp import XMPFiles, consts
 

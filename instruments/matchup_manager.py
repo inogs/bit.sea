@@ -214,7 +214,7 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter, add_metadata
         zlevels_out=np.arange(0,401,5)
-        VARLIST=['P_i','O2o','N3n','votemper','vosaline']
+        MODELVARLIST=['P_i','O2o','N3n','votemper','vosaline']
         read_adjusted = [True,False,False,False,False]
         mapgraph = [3,4,5,1,2]
         
@@ -250,11 +250,11 @@ class Matchup_Manager():
             correction = [1,1000./density,1,1,1]
 
             filename = outdir+"/"+Model_time.strftime('%Y%m%d') +"_"+p.name()
-            ncOUT, model_handlers, float_handlers =ncwriter(filename+".nc")
+            ncOUT, model_handlers, float_handlers =ncwriter(filename+".nc", zlevels_out)
 
             fig, axs = figure_generator(p)
 
-            for i,model_varname in enumerate(VARLIST):
+            for i,model_varname in enumerate(MODELVARLIST):
                 ref_varname = self.reference_var(p, model_varname)
                 if ref_varname not in VARLIST: continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
@@ -269,11 +269,11 @@ class Matchup_Manager():
                 float_on_common_grid = float_on_common_grid*correction[i]
 
                 Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
-                
+
                 model_handlers[i][:] = model_on_common_grid[:] #write on NC file
                 float_handlers[i][:] = float_on_common_grid[:]
 
-                
+
                 ax=axs[mapgraph[i]] #get subplot
                 fig, ax = Matchup.plot_subplot(model_varname, fig, ax)
 

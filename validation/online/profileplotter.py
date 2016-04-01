@@ -74,7 +74,7 @@ def ncwriter(filenc,zlevels_out,profileobj):
     f.createDimension('levels', depths)
     f.createDimension('pos', 1)
     lon=f.createVariable('longitude', 'f', ('pos',))
-    lat=f.createVariable('longitude', 'f', ('pos',))
+    lat=f.createVariable('latitude' , 'f', ('pos',))
     lon[:] = profileobj.lon
     lat[:] = profileobj.lat
     m_array = f.createVariable('lev', 'f', ('levels',))

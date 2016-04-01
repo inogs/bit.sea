@@ -42,3 +42,49 @@ def figure_generator(p):
 
     return fig,axs
 
+
+import scipy.io.netcdf as NC
+def ncwriter(filenc,zlevels_out):
+    depths = len(zlevels_out)
+    f = NC.netcdf_file(filenc, 'w')
+    f.createDimension('levels', depths)
+    m_array = f.createVariable('lev', 'f', ('levels',))
+    m_array[:] = zlevels_out[:]
+    model_handlers=[]
+    float_handlers=[]
+    for model_varname in ['P_i','O2o','N3n','votemper','vosaline']:
+        name_var = model_varname+"_model"
+        m_array = f.createVariable(name_var, 'f', ('levels',))
+        setattr(m_array, 'missing_value', 1.e+20)
+        setattr(m_array, 'fillValue', 1.e+20)
+        m_array[:] = np.ones((depths,),np.float32)*1.e+20
+        
+        name_var = model_varname+"_float"
+        f_array = f.createVariable(name_var, 'f', ('levels',))
+        setattr(f_array, 'missing_value', 1.e+20)
+        setattr(f_array, 'fillValue', 1.e+20)
+        f_array[:] = np.ones((depths,),np.float32)*1.e+20
+        model_handlers.append(m_array)
+        float_handlers.append(f_array)
+    return f, model_handlers, float_handlers
+
+
+if __name__ == "__main__" : 
+    break
+import libxmp, libxmp.utils
+from libxmp import XMPFiles, consts
+
+def add_metadata(filepng,p):
+    xmpfile = XMPFiles( file_path=filepng, open_forupdate=True )
+    xmp = xmpfile.get_xmp()
+    if xmp is None:
+        xmp = libxmp.XMPMeta()
+    xmp.set_property(consts.XMP_NS_DC, 'float', p.name() )
+    xmp.set_property(consts.XMP_NS_DC, 'date', p.time.strftime('%Y%m%d') )
+    xmp.set_property(consts.XMP_NS_DC, 'hour', p.time.strftime('%H:%M:%S') )
+    xmp.set_property(consts.XMP_NS_DC, 'position.lat',str(p.lat)+"N")
+    xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
+    xmpfile.put_xmp(xmp)
+    xmpfile.close_file()
+        
+

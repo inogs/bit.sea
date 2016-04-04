@@ -10,6 +10,7 @@ import numpy as np
 from glob import glob
 import argparse
 import time
+from layer_integral import coastline
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -87,9 +88,7 @@ file_pattern = args.pattern
 
 
 try:
-    coastline=np.load('Coastline.npy')
-    c_lon=coastline['Lon']
-    c_lat=coastline['Lat']
+    c_lon, c_lat=coastline.get()
     # Elimination of some parts of the coastline,
     # in order to leave more space for text, if needed
     ii = (c_lat > 40.0) & (c_lon < 0.0) # atlantic coast

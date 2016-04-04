@@ -54,6 +54,7 @@ from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 import pylab as pl
+from layer_integral import coastline
 
 def NCwriter(M2d,varname,outfile,mask):
     ncOUT = NC.netcdf_file(outfile,'w')
@@ -65,9 +66,7 @@ def NCwriter(M2d,varname,outfile,mask):
     ncOUT.close()
 
 
-coast=np.load('Coastline.npy')
-clon=coast['Lon']
-clat=coast['Lat']
+clon,clat = coastline.get()
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 

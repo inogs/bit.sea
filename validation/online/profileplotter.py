@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 import scipy.io.netcdf as NC
 import libxmp, libxmp.utils
 from libxmp import XMPFiles, consts
+from layer_integral import coastline
 
 def figure_generator(p):
     ''' Generates a figure to plot the matchups related to a bioFloat cycle
@@ -25,8 +26,8 @@ def figure_generator(p):
     axs = axs.ravel()
     
     ax = axs[0]
-    coastline=np.load('Coastline.npy')
-    ax.plot(coastline['Lon'],coastline['Lat'], color='#000000',linewidth=0.5)
+    c_lon, c_lat=coastline.get()
+    ax.plot(c_lon,c_lat, color='#000000',linewidth=0.5)
     ax.plot(p.lon,p.lat,'ro')
     ax.set_xticks(np.arange(-6,36))
     ax.set_yticks(np.arange(-30,46))

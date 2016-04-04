@@ -35,10 +35,9 @@ from layer_integral.mapplot import mapplot
 import commons.timerequestors as requestors
 import Sat.SatManager as Sat
 import pylab as pl
+from layer_integral import coastline
 
-coast=np.load('Coastline.npy')
-clon=coast['Lon']
-clat=coast['Lat']
+clon,clat = coastline.get()
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 _,jpj,jpi = TheMask.shape
 

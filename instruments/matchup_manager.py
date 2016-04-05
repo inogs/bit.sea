@@ -1,12 +1,11 @@
-import os
-from commons.time_interval import TimeInterval
+import os,sys
 from commons.Timelist import TimeList
 from basins.region import Rectangle
 
 import instruments
 import scipy.io.netcdf as NC
 import numpy as np
-
+from commons.utils import addsep
 import matchup.matchup
 import pylab as pl
 import seawater as sw
@@ -22,10 +21,16 @@ class Matchup_Manager():
                 Outpudir is intended as the outputdir of aveScan,
         point profiles will be produced in outputdir/PROFILES.
         '''
+        root_dir    = os.getenv(   "ROOT_DIR");
+
+        if root_dir is None:
+            print "Error: Environment variable ROOT_DIR not defined. Look at config.sh file for an example."
+            sys.exit(1)
         self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = INPUTDIR
         if os.path.exists(INPUTDIR):
-            self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",'postproc/IOnames.xml')
+            ionamesfile=addsep(root_dir)+'postproc/IOnames.xml'
+            self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",ionamesfile)
             self.TI = timeinterval
             All_Med = Rectangle(-6,36,30,46)
             self.PROFILE_LIST = instruments.Selector(None, self.TI, All_Med)
@@ -61,9 +66,7 @@ class Matchup_Manager():
 
         os.system("mkdir -p "+ PUNTI_DIR)
         JOB_LINES=[]
-
-        JOB_LINES.append("export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc \n")
-        JOB_LINES.append("export SUBMASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/POSTPROC/submask.nc \n")
+        JOB_LINES.append("cd $ROOT_DIR \n")
         JOB_LINES.append("cd postproc \n")
         for t in self.Coupled_List:
             Model_time        = t[0]

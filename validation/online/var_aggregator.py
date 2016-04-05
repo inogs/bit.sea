@@ -8,7 +8,7 @@ from commons.utils import addsep
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates ave files for aveScan profiler in chain validation
-    ''')
+    ''',formatter_class=argparse.RawTextHelpFormatter)
     
     
     parser.add_argument(   '--biodir',

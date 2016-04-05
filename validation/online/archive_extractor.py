@@ -1,6 +1,6 @@
 from commons.timeseries import TimeSeries
 from commons.time_interval import TimeInterval
-
+from commons.utils import addsep
 import argparse
 
 def argument():
@@ -37,7 +37,7 @@ args = argument()
 
 starttime=args.starttime
 end__time=args.endtime
-LOC = args.outdir
+LOC = addsep(args.outdir)
 archive_dir= args.arcdir
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')

@@ -27,7 +27,7 @@ class Matchup_Manager():
             print "Error: Environment variable ROOT_DIR not defined. Look at config.sh file for an example."
             sys.exit(1)
         self.profilingDir=Outpudir
-        self.AVE_INPUT_DIR = INPUTDIR
+        self.AVE_INPUT_DIR = addsep(INPUTDIR)
         if os.path.exists(INPUTDIR):
             ionamesfile=addsep(root_dir)+'postproc/IOnames.xml'
             self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc",ionamesfile)

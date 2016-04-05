@@ -64,7 +64,7 @@ Profilelist=bio_float.FloatSelector(None,TI,OGS.med)
 M = Matchup_Manager(TI,INPUTDIR,BASEDIR)
 
 profilerscript = BASEDIR + 'jobProfiler.sh'
-M.writefiles_for_profiling(profilerscript) # preparation of data for aveScan
+M.writefiles_for_profiling('VarDescriptor_valid_online.xml', profilerscript) # preparation of data for aveScan
 M.dumpModelProfiles(profilerscript) # sequential launch of aveScan
 
 M.getFloatMatchups(Profilelist,TheMask.zlevels,args.outdir)

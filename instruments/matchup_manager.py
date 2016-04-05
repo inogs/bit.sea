@@ -50,11 +50,13 @@ class Matchup_Manager():
         F.writelines(LINES)
         F.close()
 
-    def writefiles_for_profiling(self, filename):
+    def writefiles_for_profiling(self, vardescriptor,filename):
         '''
         Preparation of launch of aveScan.py, in order to generate profiles.
+        Arguments
+        * vardescriptor * a file in postproc/ directory        
+        * filename     *  the output file, is a wrapper of aveScan, to call it over times.
 
-        The file produced - first argument - is a wrapper of aveScan, to call it over times.
         For every launch of aveScan a different punti*.dat files will be used, depending on Biofloats present
         at that time.
 
@@ -80,7 +82,7 @@ class Matchup_Manager():
                 ' -i '  + self.AVE_INPUT_DIR  +  \
                 ' -t '  + TMPSDIR  + \
                 ' -o '  + self.profilingDir  + \
-                ' -d VarDescriptorB.xml ' + \
+                ' -d '  + vardescriptor      + \
                 ' -p ' + outpuntifile + '\n'
             JOB_LINES.append(line)
 

@@ -54,7 +54,7 @@ class Matchup_Manager():
         '''
         Preparation of launch of aveScan.py, in order to generate profiles.
         Arguments
-        * vardescriptor * a file in postproc/ directory        
+        * vardescriptor * a file in postproc/ directory
         * filename     *  the output file, is a wrapper of aveScan, to call it over times.
 
         For every launch of aveScan a different punti*.dat files will be used, depending on Biofloats present
@@ -126,6 +126,8 @@ class Matchup_Manager():
         for Model_time,INTERESTED_Indices in self.Coupled_List:
             if profile in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
                 break
+        else:
+            return None
         return Model_time
 
     def reference_var(self,p,var):
@@ -196,11 +198,11 @@ class Matchup_Manager():
         Dumps an image png file and a NetCDF file for each profile
         The filenames refers to time and float wmo.
         Both files contain matchups about chl,O2o,N3n,temperature, salinity
-        
-        
+
+
         Matchups are provided at fixed depths: every 5 meters from 0 to 400m,
         because in biofloats physical and biological variables do not have the same sampling.
-        
+
         Arguments:
         * Profilelist * is provided by FloatSelector
         * nav_lev * is the model level
@@ -220,19 +222,24 @@ class Matchup_Manager():
         from validation.online.profileplotter import figure_generator, ncwriter, add_metadata
         zlevels_out=np.arange(0,401,5)
         MODELVARLIST=['P_i','O2o','N3n','votemper','vosaline']
+        plotvarname = ['Chl[mg/m3]','Oxy[mmol/m3]','Nitr[mmol/m3]','temp[Cdeg]','sal']
         read_adjusted = [True,False,False,False,False]
         mapgraph = [3,4,5,1,2]
-        
+
         for p in Profilelist:
             Model_time = self.modeltime(p)
 
-            if not self.TI.contains(Model_time) :
-                print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+            if Model_time is None :
+                print p.time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
                 continue
+            else:
+                if not self.TI.contains(Model_time) :
+                    print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                    continue
             VARLIST = p._my_float.available_params.strip().rsplit(" ")
             VARLIST.remove('PRES')
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
-            
+
 
             #density calculator on zlevels_out
             model_varname = 'votemper'
@@ -280,7 +287,7 @@ class Matchup_Manager():
 
 
                 ax=axs[mapgraph[i]] #get subplot
-                fig, ax = Matchup.plot_subplot(model_varname, fig, ax)
+                fig, ax = Matchup.plot_subplot(plotvarname[i], fig, ax)
 
             ncOUT.close()
             pngfile = filename + ".png"

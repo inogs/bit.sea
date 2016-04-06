@@ -9,10 +9,10 @@ from layer_integral import coastline
 def figure_generator(p):
     ''' Generates a figure to plot the matchups related to a bioFloat cycle
     There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
-    
+
     Arguments:
     * p * is a profile object
-    
+
     Returns
     fig, axes (array of axes handlers)
     '''
@@ -22,34 +22,35 @@ def figure_generator(p):
     fig.set_size_inches(hsize,vsize)
     #figtitle = " date="+p.time.strftime('%Y/%m/%d')+" float="+p.name()
     #fig.set_title(figtitle)
-    fig.subplots_adjust(hspace = 0.3, wspace=0.3)
+    fig.subplots_adjust(hspace = 0.15, wspace=0.3)
     axs = axs.ravel()
-    
+
     ax = axs[0]
     c_lon, c_lat=coastline.get()
     ax.plot(c_lon,c_lat, color='#000000',linewidth=0.5)
     ax.plot(p.lon,p.lat,'ro')
     ax.set_xticks(np.arange(-6,36))
     ax.set_yticks(np.arange(-30,46))
-    extent=6 #degrees
+    ax.set_title(p.time.strftime('%Y%m%d'))
+    extent=10 #degrees
     ax.set_xlim([p.lon -extent/2, p.lon+extent/2])
     ax.set_ylim([p.lat -extent/2, p.lat+extent/2])
     bbox=ax.get_position()
-    
+
     deltax, _ =bbox.size
     new_deltay = deltax* hsize/vsize
     bottom = bbox.ymax - new_deltay
     ax.set_position([bbox.xmin, bottom, deltax, new_deltay])
-      
+    floatlabel = 'Float '+ p.name()
     b_patch = mpatches.Patch(color='red', label='Model')
-    g_patch = mpatches.Patch(color='blue', label='Float')
-    ax.legend(handles=[b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)    
-    
+    g_patch = mpatches.Patch(color='blue', label=floatlabel)
+    ax.legend(handles=[b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)
+
     for ax in axs[1:]:
         ax.set_ylim(0,400)
         ax.locator_params(axis='x',nbins=4)
         ax.yaxis.grid()
-    
+
     for ax in [axs[2], axs[4], axs[5]]:
         ax.set_yticklabels([])
 
@@ -57,21 +58,29 @@ def figure_generator(p):
 
 
 
-def ncwriter(filenc,zlevels_out,profileobj):
+def ncwriter(p,filenc,zlevels_out,profileobj):
     ''' Generates a NetCDF file of matchups related to a bioFloat cycle
     There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
-    
+
     Arguments:
     * filenc      * is a output file name
     * zlevels_out * is the array of depths
     * profileobj  * is a profile object
-    
+
     Returns
     f, model_handlers, float_handlers
     '''
-    
+
     depths = len(zlevels_out)
     f = NC.netcdf_file(filenc, 'w')
+
+    f.float = p.name()
+    f.date = p.time.strftime('%Y%m%d')
+    f.hour = p.time.strftime('%H:%M:%S')
+    f.position_lat = str(p.lat)+"N"
+    f.position_lon = str(p.lon)+"E"
+
+
     f.createDimension('levels', depths)
     f.createDimension('pos', 1)
     lon=f.createVariable('longitude', 'f', ('pos',))
@@ -90,7 +99,7 @@ def ncwriter(filenc,zlevels_out,profileobj):
         setattr(m_array, 'missing_value', 1.e+20)
         setattr(m_array, 'fillValue', 1.e+20)
         m_array[:] = np.ones((depths,),np.float32)*1.e+20
-        
+
         name_var = model_varname+"_float"
         f_array = f.createVariable(name_var, 'f', ('levels',))
         setattr(f_array, 'missing_value', 1.e+20)
@@ -115,5 +124,3 @@ def add_metadata(filepng,p):
     xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
     xmpfile.put_xmp(xmp)
     xmpfile.close_file()
-        
-

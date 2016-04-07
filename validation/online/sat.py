@@ -6,7 +6,6 @@ from commons.layer import Layer
 from commons.mask import Mask
 from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
-import matchup.matchup as matchup
 import numpy as np
 import os
 
@@ -19,7 +18,6 @@ maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 archive_dir='/pico/home/usera07ogs/a07ogs00/OPA/V4/archive'
 TheMask=Mask(maskfile)
-mask200_2D = TheMask.mask_at_level(200.0)
 
 TS = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
 forecasts=TS.get_forecast_days(rundays=[2])
@@ -38,9 +36,13 @@ for time,archived_file,satfile in DAILY_SAT_LIST:
     De      = DataExtractor(TheMask,filename=avefile, varname='P_i')
     Model   = MapBuilder.get_layer_average(De, surf_layer)
 
+    Misfit = Sat16-Model
+
     cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
-    selection = ~nodata & mask200_2D
-    M = matchup.matchup(Model[selection], Sat16[selection])
+    selection  = ~nodata # & TheMask.mask_at_level(200.0)
+    Misfit[nodata] = np.NaN
+    
+
 

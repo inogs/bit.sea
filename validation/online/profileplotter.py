@@ -29,8 +29,8 @@ def figure_generator(p):
     c_lon, c_lat=coastline.get()
     ax.plot(c_lon,c_lat, color='#000000',linewidth=0.5)
     ax.plot(p.lon,p.lat,'ro')
-    ax.set_xticks(np.arange(-6,36))
-    ax.set_yticks(np.arange(-30,46))
+    ax.set_xticks(np.arange(-6,36,2))
+    ax.set_yticks(np.arange(0,100,2))
     ax.set_title(p.time.strftime('%Y%m%d'))
     extent=10 #degrees
     ax.set_xlim([p.lon -extent/2, p.lon+extent/2])
@@ -58,7 +58,7 @@ def figure_generator(p):
 
 
 
-def ncwriter(p,filenc,zlevels_out,profileobj):
+def ncwriter(filenc,zlevels_out,profileobj):
     ''' Generates a NetCDF file of matchups related to a bioFloat cycle
     There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
 
@@ -74,11 +74,11 @@ def ncwriter(p,filenc,zlevels_out,profileobj):
     depths = len(zlevels_out)
     f = NC.netcdf_file(filenc, 'w')
 
-    f.float = p.name()
-    f.date = p.time.strftime('%Y%m%d')
-    f.hour = p.time.strftime('%H:%M:%S')
-    f.position_lat = str(p.lat)+"N"
-    f.position_lon = str(p.lon)+"E"
+    f.float = profileobj.name()
+    f.date = profileobj.time.strftime('%Y%m%d')
+    f.hour = profileobj.time.strftime('%H:%M:%S')
+    f.position_lat = str(profileobj.lat)+"N"
+    f.position_lon = str(profileobj.lon)+"E"
 
 
     f.createDimension('levels', depths)
@@ -89,7 +89,7 @@ def ncwriter(p,filenc,zlevels_out,profileobj):
     lat[:] = profileobj.lat
     m_array = f.createVariable('lev', 'f', ('levels',))
     m_array[:] = zlevels_out[:]
-    setattr(f, 'time', profileobj.time.strftime("%Y%m%d-%H:%M:%S"))
+    #setattr(f, 'time', profileobj.time.strftime("%Y%m%d-%H:%M:%S"))
 
     model_handlers=[]
     float_handlers=[]

@@ -262,7 +262,7 @@ class Matchup_Manager():
             correction = [1,1000./density,1,1,1]
 
             filename = outdir+"/"+Model_time.strftime('%Y%m%d') +"_"+p.name()
-            ncOUT, model_handlers, float_handlers =ncwriter(p,filename+".nc", zlevels_out,p)
+            ncOUT, model_handlers, float_handlers =ncwriter(filename+".nc", zlevels_out,p)
 
             fig, axs = figure_generator(p)
 

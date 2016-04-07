@@ -1,25 +1,16 @@
 import numpy as np
-import scipy.io.netcdf as NC
 
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask
 from commons.layer import Layer
-
+from commons import netcdf3
 from layer_integral.mapbuilder import MapBuilder
 from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 import pylab as pl
 
-def NCwriter(M2d,varname,outfile,mask):
-    ncOUT = NC.netcdf_file(outfile,'w')
-    _, jpj, jpi= mask.shape
-    ncOUT.createDimension("longitude", jpi)
-    ncOUT.createDimension("latitude", jpj)
-    ncvar = ncOUT.createVariable(varname, 'f', ('latitude','longitude'))
-    ncvar[:] = M2d
-    ncOUT.close()
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
@@ -58,8 +49,8 @@ for req in Seas_reqs:
             integrated = MapBuilder.get_layer_average(De, layer)
             clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
             fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated, 'date':req.string},fig=None,ax=None,mask=TheMask)
-            #outfile    = OUTPUTDIR + prefix + '.' +  var + "." + layer.longname() +  ".nc"
-            #NCwriter(integrated,var,outfile,TheMask)
+            outfile    = OUTPUTDIR + prefix + '.' +  var + "." + layer.longname() +  ".nc"
+            netcdf3.write_2d_file(integrated,var,outfile,TheMask)
             outfile    = OUTPUTDIR + var + "." + prefix  +  "." + layer.longname() +  ".png"
             fig.savefig(outfile)
             pl.close(fig)
@@ -94,5 +85,3 @@ for var in VARLIST:
         outfile    = OUTPUTDIR + var + "." + "annual."  + layer.longname() + ".png"
         fig.savefig(outfile)
         pl.close(fig)
-        #NCwriter(integrated,var,outfile,TheMask)
-

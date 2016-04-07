@@ -8,11 +8,13 @@ from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
 import numpy as np
 import os
+from commons import netcdf3
 
 
 starttime='20160301'
 end__time='20160308'
 INPUTDIR='/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_data/TMP/'  #args.inputdir
+OUTDIR  ='/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_data/TMP/'  #args.outdir
 maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc' # args.maskfile
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
@@ -30,6 +32,7 @@ DAILY_SAT_LIST=TS.get_daily_sat(forecasts_2,sat_archive)
 surf_layer=Layer(0,10)
 for time,archived_file,satfile in DAILY_SAT_LIST:
     avefile=INPUTDIR + os.path.basename(archived_file)[:-3]
+    outfile=OUTDIR + ""
     print avefile
 
     Sat16   = Sat.convertinV4format( Sat.readfromfile(satfile) )
@@ -43,6 +46,10 @@ for time,archived_file,satfile in DAILY_SAT_LIST:
     nodata     = cloudsLand | modelLand
     selection  = ~nodata # & TheMask.mask_at_level(200.0)
     Misfit[nodata] = np.NaN
+    
+    netcdf3.write_2d_file(Misfit, 'chl_misfit', outfile, TheMask)
+    
+    
     
 
 

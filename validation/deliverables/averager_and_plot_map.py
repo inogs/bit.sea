@@ -1,5 +1,4 @@
 import argparse
-from layer_integral import coastline
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -52,7 +51,6 @@ def argument():
 args = argument()
 
 import numpy as np
-import scipy.io.netcdf as NC
 
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
@@ -63,17 +61,8 @@ from layer_integral.mapbuilder import MapBuilder
 from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
-import pylab as pl
-import layer_integral.coastline
+from layer_integral import coastline
 
-def NCwriter(M2d,varname,outfile,mask):
-    ncOUT = NC.netcdf_file(outfile,'w')
-    _, jpj, jpi= mask.shape
-    ncOUT.createDimension("longitude", jpi)
-    ncOUT.createDimension("latitude", jpj)
-    ncvar = ncOUT.createVariable(varname, 'f', ('latitude','longitude'))
-    ncvar[:] = M2d
-    ncOUT.close()
 
 
 clon,clat = coastline.get()

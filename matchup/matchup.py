@@ -212,13 +212,13 @@ class ProfileMatchup():
         Red line is reference (biofloat, mooring or vessel)
         Blue line is model
         '''
-
+        import latexcodec
         ax.plot(self.Model,self.Depth,'r')
         ax.plot(self.Ref,self.Depth,'b')
 
 
         figtitle = var
-        ax.set_title(figtitle)
+        ax.set_title(figtitle.encode("latex"))
         ax.invert_yaxis()
 
         return fig, ax

@@ -30,6 +30,11 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "profile dir")
+    parser.add_argument(   '--type', 
+                                type = str,
+                                choices = ['analysis','forecast'],
+                                required = True,
+                                help = "profile dir")
 
     return parser.parse_args()
 
@@ -42,9 +47,16 @@ archive_dir= args.arcdir
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 
+if args.type=='analysis':
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
+    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz"   )
+    
+    T_bio.extract_analysis( LOC + 'output_bio/')
+    T_phys.extract_analysis(LOC + 'output_phys/');
 
-T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
-T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz"   )
-
-T_bio.extract_analysis( LOC + 'output_bio/')
-T_phys.extract_analysis(LOC + 'output_phys/');
+if args.type =='forecast':
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
+    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*gz"   )
+    
+    T_bio.extract_forecasts( LOC + 'output_bio/')
+    T_phys.extract_forecasts(LOC + 'output_phys/');

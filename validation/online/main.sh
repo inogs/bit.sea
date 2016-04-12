@@ -3,8 +3,11 @@
 #OPA_RUNDATE has to be known at this level
 
 #step 0  -- set of starttime, endtime
-STARTTIME=20160301
-END__TIME=20160308
+STARTTIME_a=20160301
+END__TIME_a=20160308
+
+STARTTIME_f=20160309
+END__TIME_f=20160312
 
 # source bit.sea/config.sh is needed 
 
@@ -19,7 +22,8 @@ IMAGES_DIR=./outdir/
 MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 
-python archive_extractor.py  -st ${STARTTIME} -et ${END__TIME} -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}
+python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}
+python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}
 
 #step 2 -- re-do Forcings generation
 ./forcings_gen.sh -d ${ONLINE_VALIDATION_DIR}

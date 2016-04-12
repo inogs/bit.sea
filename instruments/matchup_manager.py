@@ -222,7 +222,7 @@ class Matchup_Manager():
         from validation.online.profileplotter import figure_generator, ncwriter, add_metadata
         zlevels_out=np.arange(0,401,5)
         MODELVARLIST=['P_i','O2o','N3n','votemper','vosaline']
-        plotvarname = ['Chl[mg/m3]','Oxy[mmol/m3]','Nitr[mmol/m3]','temp[Cdeg]','sal']
+        plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
         read_adjusted = [True,False,False,False,False]
         mapgraph = [3,4,5,1,2]
 
@@ -265,6 +265,7 @@ class Matchup_Manager():
             ncOUT, model_handlers, float_handlers =ncwriter(filename+".nc", zlevels_out,p)
 
             fig, axs = figure_generator(p)
+            #pl.rc('text', usetex=True)
 
             for i,model_varname in enumerate(MODELVARLIST):
                 ref_varname = self.reference_var(p, model_varname)

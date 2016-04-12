@@ -31,7 +31,9 @@ def figure_generator(p):
     ax.plot(p.lon,p.lat,'ro')
     ax.set_xticks(np.arange(-6,36,2))
     ax.set_yticks(np.arange(0,100,2))
-    ax.set_title(p.time.strftime('%Y%m%d'))
+    ax.set_xlabel("lon")
+    ax.set_ylabel("lat")
+    ax.set_title(p.time.strftime('%Y/%m/%d'))
     extent=10 #degrees
     ax.set_xlim([p.lon -extent/2, p.lon+extent/2])
     ax.set_ylim([p.lat -extent/2, p.lat+extent/2])
@@ -41,7 +43,8 @@ def figure_generator(p):
     new_deltay = deltax* hsize/vsize
     bottom = bbox.ymax - new_deltay
     ax.set_position([bbox.xmin, bottom, deltax, new_deltay])
-    floatlabel = 'Float '+ p.name()
+
+    floatlabel = 'Float \n'+ p.name() +" - "+str(p._my_float.cycle)
     b_patch = mpatches.Patch(color='red', label='Model')
     g_patch = mpatches.Patch(color='blue', label=floatlabel)
     ax.legend(handles=[b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)

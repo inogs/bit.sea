@@ -123,41 +123,51 @@ class TimeSeries(object):
 
         Returns: a list of tuples (datetime, filename) of forecast computations.
         """
+        is_phys = (self._postfix_dir =="OPAOPER_A/") or (self._postfix_dir=='OPAOPER_F/')
         #Build the list of paths where we have to search for the files
-        search_paths = self.get_runs(rundays)
+        search_paths = self.get_runs(rundays, fudge=0)
         #Create the working dictionary
         wdict = dict()
         #For each directory
-        for directory in search_paths:
+        for t, directory in search_paths:
+            localdict = dict()
             #Get the files list
-            file_list = glob(path.join(directory[1], self._glob_pattern))
+            file_list = glob(path.join(directory, self._glob_pattern))
             #Start from the run day
-            t = directory[0]
-            #stop after 10 days
-            stop_t = t + timedelta(10)
-            #For each day inside the time interval
-            while (t < stop_t) and (self._time_interval.contains(t)):
-                #Build the datestring
-                datestring = t.strftime("%Y%m%d")
-                #For each file
+            for _ in range(10):
                 for filename in file_list:
                     #Get the base name
                     bn = path.basename(filename)
-                    #If bn contains datestring
-                    if bn.find(datestring) != -1:
-                        #Add (t, filename) tuple to wdict
-                        wdict[datestring] = (t, filename)
-                #Increment t
+                    datestring = t.strftime("%Y%m%d")
+                    if is_phys:
+                        if (bn.find(t.strftime("%Y%m%d_f_")) != -1) and self._time_interval.contains(t):
+                            #Build the tuple and append the tuple to the outputs
+                            if localdict.has_key(datestring):
+                                localdict[datestring].append(filename)
+                            else:
+                                localdict[datestring]=[filename]
+                    else:
+                        if (bn.find(t.strftime("%Y%m%d")) != -1) and self._time_interval.contains(t):
+                            localdict[datestring]=[filename]
                 t += timedelta(1)
-        #Sort wdict keys
-        key_list = sorted(wdict.keys())
-        #Create the output list
+            wdict[directory] = localdict
+
+        UNIQUE_dict=dict()
+        for t, directory in search_paths:
+            localdict=wdict[directory]
+            for key in localdict.keys():
+                UNIQUE_dict[key] = localdict[key] # this can overwrite
+
         output = list()
-        #For each element of key_list
-        for key in key_list:
-            #Append wdict element to output
-            output.append(wdict[key])
+        key_list = sorted(UNIQUE_dict.keys())
+        for t in key_list:
+            filelist=UNIQUE_dict[t]
+            for filename in filelist:
+                output.append((t,filename))
+
         return output
+
+
 
     def extract_analysis(self, outputdir, rundays=[2], command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
         """

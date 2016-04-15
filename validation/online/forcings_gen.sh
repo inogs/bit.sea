@@ -45,10 +45,10 @@ ls *W.nc > $GEN__DIR/nomefile_W
 ls *T.nc > $GEN__DIR/nomefile_T
 
 cd $GEN__DIR
-#cp /pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/HOST/pico/bin/ForcingGenerator .
+cp /pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/HOST/pico/bin/ForcingGenerator .
 
 module purge
-modole load profile/base
+module load profile/base
 module load autoload intelmpi/5.0.1--binary mkl/11.2.0--binary
 export NETCDF_INC=/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/HOST/pico/include
 export NETCDF_LIB=/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/HOST/pico/lib

@@ -92,6 +92,6 @@ class season:
             if(  day > end):
                 check = 0
 
-        assert (check >= 0),"ERROR : date case in not contepleted! :-( "
+        assert (check >= 0),"ERROR : date case in not manged! :-( "
 
         return check

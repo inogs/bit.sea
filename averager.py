@@ -10,6 +10,7 @@ from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 import pylab as pl
+from commons import season
 
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
@@ -24,7 +25,9 @@ VARLIST=['DIC','AC_','PH_','pCO']
 
 TI = TimeInterval('20140404','20150629',"%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
-Seas_reqs = TL.getSeasonList()
+s = season.season()
+s.setseasons(["1221","0321","0622","0921"])
+Seas_reqs = TL.getSeasonList(s)
 
 
 # AC_2014.aut.0000-0050m.nc

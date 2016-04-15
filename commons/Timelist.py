@@ -20,8 +20,8 @@ def computeTimeWindow(freqString,currentDate):
 def getSeason(datetime_obj):
     '''
     Returns an integer indicating the season
-    
-    
+
+
     Assumption for integers indicating seasons:
     Winter = 0
     Spring = 1
@@ -57,23 +57,23 @@ class TimeList():
     def fromfilenames(timeinterval, inputdir,searchstring,IOnamesfile):
         '''
         Generates a TimeList object by reading a directory
-        
-        HYPOTHESIS: 
+
+        HYPOTHESIS:
          - the Input directory has files containing a date in their names
          - every file refers to a single time frame
          - The date of in the file name can be considered as centered in their period
-        The generated datetime list has all the files concerning the period indicated in the timeinterval. 
+        The generated datetime list has all the files concerning the period indicated in the timeinterval.
         Some of these files can have the centered date out of that period.
-        
+
         Example:
-        
+
         INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
         Time_int = TimeInterval('20141201-00:00:00','20150701-00:00:00',"%Y%m%d-%H:%M:%S")
         TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*N1p.nc", 'IOnames.xml')
-        '''    
-     
+        '''
+
         IOname = IOnames.IOnames(IOnamesfile)
-        
+
         filelist_ALL = glob.glob(inputdir + searchstring)
         assert len(filelist_ALL) > 0
         filenamelist=[]
@@ -90,7 +90,7 @@ class TimeList():
             else:
                 External_filelist.append(pathfile)
                 External_timelist.append(actualtime)
-        
+
         TimeListObj = TimeList(datetimelist)
         filenamelist.sort()
         TimeListObj.timeinterval = timeinterval
@@ -129,7 +129,7 @@ class TimeList():
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
             print "Frequency cannot be calculated in " + self.inputdir + timestr
             return None
-        
+
         DIFFS = np.zeros((self.nTimes-1),np.float64)
         for iTime in range(1,self.nTimes):
             mydiff = self.Timelist[iTime]-self.Timelist[iTime-1]
@@ -138,7 +138,7 @@ class TimeList():
         UniqueDiffs, nRepetions = np.unique(DIFFS,return_counts=True)
         moda = UniqueDiffs[nRepetions.argmax()]
         days = moda/(3600.*24)
-        
+
         if days == 1:
             return "daily"
         if (days > 6 ) & (days < 8 ) :
@@ -151,11 +151,11 @@ class TimeList():
             #we want an integer number of hours
             #if (float(mydiff.seconds)/3600. == hours):
 
-    
+
     def __generaltimeselector(self,requestor):
             SELECTION=[]
             weights  =[]
-            
+
             if self.inputFrequency == "daily":
                 for it, t in enumerate(self.Timelist):
                     if requestor.timeinterval.contains(t):
@@ -166,19 +166,19 @@ class TimeList():
                     t1 = computeTimeWindow(self.inputFrequency,t);
                     t2 = TimeInterval.fromdatetimes(requestor.timeinterval.start_time, requestor.timeinterval.end_time)
                     weight = t1.overlapTime(t2)
-                    if (weight > 0. ) : 
+                    if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
-            return SELECTION , np.array(weights)           
-        
+            return SELECTION , np.array(weights)
+
     def select(self,requestor):
         '''
         indexes, weights = select(requestor)
-        Returned values: 
+        Returned values:
          - a list of indexes (integers) indicating to access selected times (or files)
          - a numpy array of weights
-        
-         
+
+
         '''
 
         if isinstance(requestor,requestors.Daily_req):
@@ -196,7 +196,7 @@ class TimeList():
         if isinstance(requestor, requestors.Monthly_req):
             SELECTION=[]
             weights = []
-                           
+
             if self.inputFrequency == 'daily':
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
@@ -206,8 +206,8 @@ class TimeList():
                 for it,t in enumerate(self.Timelist):
                     t1 = computeTimeWindow("weekly",t);
                     t2 = TimeInterval.fromdatetimes(requestor.starttime, requestor.endtime)
-                    weight = t1.overlapTime(t2); 
-                    if (weight > 0. ) : 
+                    weight = t1.overlapTime(t2);
+                    if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
             if self.inputFrequency == 'monthly':
@@ -218,35 +218,35 @@ class TimeList():
                         weights.append(1.)
             return SELECTION , np.array(weights)
 
-        
+
         if isinstance(requestor, requestors.Weekly_req):
             assert self.inputFrequency != "monthly"
             assert self.inputFrequency != "weekly"
-            
+
             SELECTION=[]
             weights  =[]
-            
+
             if self.inputFrequency == "daily":
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
-                        weights.append(1.)                     
+                        weights.append(1.)
             return SELECTION , np.array(weights)
-        
+
         if isinstance(requestor, requestors.Interval_req):
             return self.__generaltimeselector(requestor)
 
         if isinstance(requestor, requestors.Season_req):
             return self.__generaltimeselector(requestor)
-                
+
         if isinstance(requestor, requestors.Yearly_req):
             return self.__generaltimeselector(requestor)
-        
+
         if isinstance(requestor, requestors.Decadal_req):
             return self.__generaltimeselector(requestor)
         if isinstance(requestor, requestors.Generic_req):
             return self.__generaltimeselector(requestor)
-        
+
         if isinstance(requestor, requestors.Clim_day):
             assert self.inputFrequency == 'daily'
             SELECTION=[]
@@ -257,7 +257,7 @@ class TimeList():
                     weights.append(1.)
             return SELECTION , np.array(weights)
 
-        
+
         if isinstance(requestor,requestors.Clim_month):
             SELECTION = []
             weights   = []
@@ -267,9 +267,9 @@ class TimeList():
                 s,w = self.select(req)
                 SELECTION.extend(s)
                 weights.extend(w)
-            
+
             return SELECTION , np.array(weights)
-            
+
         if isinstance(requestor,requestors.Clim_season):
             SELECTION = []
             weights   = []
@@ -279,7 +279,7 @@ class TimeList():
                 s,w = self.select(req)
                 SELECTION.extend(s)
                 weights.extend(w)
-            return SELECTION , np.array(weights)           
+            return SELECTION , np.array(weights)
 
 
     def getDailyList(self):
@@ -299,11 +299,11 @@ class TimeList():
 
     def getWeeklyList(self,weekday):
         '''
-        
+
         WeekList = getWeekList(weekday)
         Weekday is the same of the datetime.isoweekay() method.
         Monday == 1 ... Sunday == 7
-        
+
         Returns an ordered list of requestors, Weekly_req objects.
         '''
 
@@ -323,14 +323,14 @@ class TimeList():
             indexes,_ = self.select(m)
             if len(indexes)>0:
                 REQ_LIST.append(m)
-        return REQ_LIST             
-            
+        return REQ_LIST
+
     def getMonthlist(self, extrap=False):
-        '''Returns an ordered list of requestors, Monthly_req objects. 
-       By setting extrap=True, this method extrapolates out of the indicated period (Starttime,EndTime)  
-       Example: if the input is weekly, centered in 20120301, and Starttime=20120301, 
-       then extrapolation will return also 201202, because of the part of the week before the centered time. 
-        ''' 
+        '''Returns an ordered list of requestors, Monthly_req objects.
+       By setting extrap=True, this method extrapolates out of the indicated period (Starttime,EndTime)
+       Example: if the input is weekly, centered in 20120301, and Starttime=20120301,
+       then extrapolation will return also 201202, because of the part of the week before the centered time.
+        '''
         t=self.Timelist[0]
         MONTH_LIST=[(t.year,t.month)]
         for t in self.Timelist:
@@ -345,23 +345,23 @@ class TimeList():
             for month in MONTH_LIST:
                 firstOfMonth = datetime.datetime(month[0],month[1],1)
                 if (firstOfMonth >= firstMonth) & (firstOfMonth <=lastMonth):
-                    MONTH_LIST_RED.append(month) 
+                    MONTH_LIST_RED.append(month)
             MONTH_LIST = MONTH_LIST_RED
-                
-                
-        
+
+
+
         REQ_LIST=[]
         for month in MONTH_LIST:
             m = requestors.Monthly_req(month[0],month[1])
             REQ_LIST.append(m)
-        
+
         return REQ_LIST
-    
-    
+
+
     def getYearlist(self):
         '''
         Returns an list of requestors, Yearly_req objects.
-        '''        
+        '''
         YEARLIST=[self.timeinterval.start_time.year]
         for t in self.Timelist:
             if t.year not in YEARLIST: YEARLIST.append(t.year)
@@ -370,15 +370,15 @@ class TimeList():
             m = requestors.Yearly_req(year)
             REQ_LIST.append(m)
         return REQ_LIST
-    
 
-    
-    def getSeasonList(self,extrap=False):
-        '''Returns an ordered list of requestors, Season_req objects. 
-       By setting extrap=True, this method extrapolates out of the indicated period (Starttime,EndTime)  
-       Example: if the input is weekly, centered in 20120301, and Starttime=20120301, 
-       then extrapolation will return also 201202, because of the part of the week before the centered time. 
-        '''         
+
+
+    def getSeasonList(self,seasonobj,extrap=False):
+        '''Returns an ordered list of requestors, Season_req objects.
+       By setting extrap=True, this method extrapolates out of the indicated period (Starttime,EndTime)
+       Example: if the input is weekly, centered in 20120301, and Starttime=20120301,
+       then extrapolation will return also 201202, because of the part of the week before the centered time.
+        '''
         t=self.Timelist[0]
         SEASON_LIST=[(t.year, getSeason(t))]
         for t in self.Timelist:
@@ -388,29 +388,29 @@ class TimeList():
             pass
         else:
             SEASON_LIST_RED=[]
-            firstSeason=requestors.Season_req(self.timeinterval.start_time.year, getSeason(self.timeinterval.start_time))
-            lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  getSeason(self.timeinterval.end_time))
+            firstSeason=requestors.Season_req(self.timeinterval.start_time.year, seasonobj.findseason(self.timeinterval.start_time))
+            lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  seasonobj.findseason(self.timeinterval.end_time))
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1])
                 if (req.timeinterval.start_time >= firstSeason.timeinterval.start_time) & (req.timeinterval.end_time <=lastSeason.timeinterval.end_time):
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
-                 
-        
+
+
         REQ_LIST=[]
         for season in SEASON_LIST:
             m = requestors.Season_req(season[0],season[1])
             REQ_LIST.append(m)
         return REQ_LIST
-            
-            
+
+
         SEASON_LIST=[]
         return SEASON_LIST
-    
+
     def getOwnList(self):
         '''
         Not useful for time aggregation, but to get requestors in order to match with observations'''
-        
+
         REQ_LIST=[]
         if self.inputFrequency == 'daily':
             for t in self.Timelist:
@@ -420,21 +420,21 @@ class TimeList():
                 REQ_LIST.append(requestors.Monthly_req(t.year, t.month))
         if self.inputFrequency == 'weekly' :
             for t in self.Timelist:
-                REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day)) 
+                REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day))
         return REQ_LIST
 
     def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
         '''
         Useful in case of 10 days average, for example
-        '''    
+        '''
         REQ_LIST=[]
         dl=DL.getTimeList(starttime, self.timeinterval.end_time.strftime("%Y%m%d-%H:%M:%S"), deltastr)
         for dateobj in dl:
             req= requestors.Interval_req(dateobj.year,dateobj.month,dateobj.day, deltastr)
             REQ_LIST.append(req)
         return REQ_LIST
-            
-        
+
+
     def getDecadalList(self):
         LIST=[]
         raise NotImplementedError
@@ -449,9 +449,9 @@ class TimeList():
                     LIST_of_IND.append(ind_date)
             if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
         return Coupled_List
-        
-                        
-            
+
+
+
 if __name__ == '__main__':
     daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "days=1")
     TL = TimeList(daily)
@@ -459,7 +459,7 @@ if __name__ == '__main__':
     r=REQS[0]
     ii,weights = TL.select(r)
 
-    
+
     M= TL.getWeeklyList(2)
     m=M[0]
     TL.select(m)
@@ -467,7 +467,7 @@ if __name__ == '__main__':
     for iSeas in range(4):
         m = requestors.Clim_season(iSeas)
         TL.select(m)
-     
+
     for imonth in range(1,13):
         m = requestors.Clim_month(imonth)
         TL.select(m)

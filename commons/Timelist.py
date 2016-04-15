@@ -380,9 +380,9 @@ class TimeList():
        then extrapolation will return also 201202, because of the part of the week before the centered time.
         '''
         t=self.Timelist[0]
-        SEASON_LIST=[(t.year, getSeason(t))]
+        SEASON_LIST=[(t.year, seasonobj.findseason(t))]
         for t in self.Timelist:
-            newSeason = (t.year, getSeason(t))
+            newSeason = (t.year, seasonobj.findseason(t))
             if newSeason not in SEASON_LIST: SEASON_LIST.append(newSeason)
         if extrap:
             pass

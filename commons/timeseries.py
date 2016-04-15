@@ -116,6 +116,44 @@ class TimeSeries(object):
         output = sorted(output, key=lambda x: x[0])
         return output
 
+    def get_simulation_days(self,rundays=[2]):
+        """
+        Args:
+            - *rundays* (optional): see get_runs (default: [2]).
+
+        Returns: a list of tuples (datetime, filename) of assimilation/hindcast
+        computations.
+        """
+        #Build the list of paths where we have to search for the files
+        search_paths = self.get_runs(rundays)
+        output = list()
+        assert self._postfix_dir !="OPAOPER_F/"
+        is_phys = self._postfix_dir=='OPAOPER_A/'
+        for directory in search_paths:
+            #Get the files list
+            file_list = glob(path.join(directory[1], self._glob_pattern))
+            #Take the first seven days
+            t = directory[0]
+            #For each day
+            
+            for filename in file_list:
+                #Get the basename
+                bn = path.basename(filename)
+                #If there's a filename with that date and within the time interval
+                if is_phys:
+                    if (bn.find(t.strftime("%Y%m%d_s_")) != -1) and self._time_interval.contains(t):
+                        #Build the tuple and append the tuple to the output
+                        output.append((t,filename))
+                else:
+                    if (bn.find(t.strftime("ave.%Y%m%d")) != -1) and self._time_interval.contains(t):
+                        #Build the tuple and append the tuple to the output
+                        output.append((t,filename))
+                    
+
+        #Sort the output by date and return it to the caller
+        output = sorted(output, key=lambda x: x[0])
+        return output
+        #For each directory        
     def get_forecast_days(self, rundays=[2,5]):
         """
         Args:
@@ -208,6 +246,18 @@ class TimeSeries(object):
         Returns: a list of paths pointing to the successfully extracted files.
         """
         file_list = self.get_forecast_days(rundays)
+        outputdir = path.abspath(str(outputdir))
+        return self._extract(file_list, outputdir, str(command), remove_ext)
+    
+    def extract_simulation(self, outputdir, rundays=[2], command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+        """
+        Extracts forecast files to outputdir.
+
+        Args: see extract_analysis.
+
+        Returns: a list of paths pointing to the successfully extracted files.
+        """
+        file_list = self.get_simulation_days(rundays)
         outputdir = path.abspath(str(outputdir))
         return self._extract(file_list, outputdir, str(command), remove_ext)
 

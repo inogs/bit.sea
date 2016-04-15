@@ -1,44 +1,38 @@
-from commons.timeseries import TimeSeries
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
 import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Creates ave files for aveScan profiler in chain validation
-    ''',formatter_class=argparse.RawTextHelpFormatter)
-
-
+    Extracts files from archive, both for bio and phys variables '''
+    ,formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(   '--starttime','-st',
                                 type = str,
                                 required = True,
-                                help = 'start date')
+                                help = 'start date in yyyymmdd format')
     parser.add_argument(   '--endtime','-et',
                                 type = str,
                                 required = True,
-                                help = 'end date')
-
-
+                                help = 'end date in yyyymmdd format')
     parser.add_argument(   '--arcdir', '-a',
                                 type = str,
-                                default = None,
                                 required = True,
-                                help = "profile dir")
-
+                                help = '''Chain archive directory, e.g. /pico/home/usera07ogs/a07ogs00/OPA/V4/archive''')
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
                                 required = True,
-                                help = "profile dir")
+                                help = "Base output directory; inside it output_bio/ and output_phys/ will be created.")
     parser.add_argument(   '--type', 
                                 type = str,
                                 choices = ['analysis','forecast'],
-                                required = True,
-                                help = "profile dir")
+                                required = True)
 
     return parser.parse_args()
 
 args = argument()
+
+from commons.timeseries import TimeSeries
+from commons.time_interval import TimeInterval
+from commons.utils import addsep
 
 starttime=args.starttime
 end__time=args.endtime
@@ -55,8 +49,12 @@ if args.type=='analysis':
     T_phys.extract_analysis(LOC + 'output_phys/');
 
 if args.type =='forecast':
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
-    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*gz"   )
     
-    T_bio.extract_forecasts( LOC + 'output_bio/')
-    T_phys.extract_forecasts(LOC + 'output_phys/');
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
+    T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz" )
+    T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*gz" )
+    
+    T_bio.extract_forecast( LOC + 'output_bio/')
+    
+    T_phys_s.extract_simulation(LOC + 'output_phys/');
+    T_phys_f.extract_forecast(  LOC + 'output_phys/');

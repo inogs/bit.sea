@@ -17,21 +17,21 @@ def computeTimeWindow(freqString,currentDate):
 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
-def getSeason(datetime_obj):
-    '''
-    Returns an integer indicating the season
 
 
-    Assumption for integers indicating seasons:
-    Winter = 0
-    Spring = 1
-    Summer = 2
-    Fall   = 3
-    '''
-    if datetime_obj.month in [1,2,3] : return 0
-    if datetime_obj.month in [4,5,6] : return 1
-    if datetime_obj.month in [7,8,9] : return 2
-    return 3
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class TimeList():
 

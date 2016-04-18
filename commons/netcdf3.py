@@ -1,4 +1,5 @@
 import scipy.io.netcdf as NC
+import os
 
 def read_2d_file(filename,varname):
     ncIN = NC.netcdf_file(filename,'r')
@@ -19,13 +20,30 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20):
     
 def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
     '''
-    mask is a Mask object
+    Dumps a 3D array in a NetCDF file.
+    
+    
+    Arguments
+    * M3d       * the 3D array to dump
+    * varname   * the variable name on NetCDF file
+    * outfile   * file that will be created. If it is an existing file, 
+                  it will be opened in 'append' mode.
+    * mask      * a mask object consistent with M3d array
+    * fillvalue * (optional) value to set missing_value attribute.
+    
+    Does not return anything.
     '''
-    ncOUT = NC.netcdf_file(outfile,'w')
-    jpk, jpj, jpi= mask.shape
-    ncOUT.createDimension("longitude", jpi)
-    ncOUT.createDimension("latitude", jpj)
-    ncOUT.createDimension("depth"   , jpk)
+    
+    if os.path.exists(outfile):
+        ncOUT=NC.netcdf_file(outfile,'a')
+        print "appending ", varname, " in ", outfile
+    else:
+        ncOUT = NC.netcdf_file(outfile,'w')
+        jpk, jpj, jpi= mask.shape
+        ncOUT.createDimension("longitude", jpi)
+        ncOUT.createDimension("latitude", jpj)
+        ncOUT.createDimension("depth"   , jpk)
+        
     ncvar = ncOUT.createVariable(varname, 'f', ('depth','latitude','longitude'))
     setattr(ncvar,'fillValue'    ,fillValue)
     setattr(ncvar,'missing_value',fillValue)

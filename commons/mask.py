@@ -138,3 +138,9 @@ class Mask(object):
         jk_m = self.getDepthIndex(z)
         level_mask = self.mask[jk_m,:,:].copy()
         return level_mask
+
+    def bathymetry_in_cells(self):
+        '''
+        Returns a 2d array of integers
+        '''
+        return self._mask.sum(axis=0)

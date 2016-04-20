@@ -43,3 +43,25 @@ def TimeAverager2D(Filelist,weights,varname,mask):
         MSUM += M*weights[t]
     averaged = MSUM/weights.sum()
     return averaged
+
+
+def TimeAverager3D_2(Filelist,weights,varname,mask):
+    '''
+    Performs a weighted average of the square of a var (needed for STD on time dimension), working on a list of files.
+    The weights are usually provided by TimeList.select() method.
+    varname is a string
+    mask is an common.mask.Mask object
+    '''
+    n=len(Filelist)
+    jpk, jpj, jpi= mask.shape
+    MSUM=np.zeros((jpk,jpj,jpi),np.float32)
+    for t in range(n):
+        filename=Filelist[t]
+        #De      = DataExtractor(TheMask,filename,varname)
+        #M = De.values
+        ncIN = NC.netcdf_file(filename,"r")
+        M = ncIN.variables[varname].data[0,:,:,:].copy()
+        ncIN.close()
+        MSUM += M*M*weights[t]
+    averaged = MSUM/weights.sum()
+    return averaged

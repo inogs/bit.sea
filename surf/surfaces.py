@@ -1,6 +1,6 @@
 import numpy as np
 from commons.mask import Mask
-
+import sys
 def mld(temperature,maskobj):
     ''' Calculation of Mixed Layer Depth based on temperature 
     mld is defined as 
@@ -28,7 +28,7 @@ def mld(temperature,maskobj):
 
 def dcm(chl,maskobj):
     '''
-    Rough calculation of Deep Clorophyll Maximum '''
+    Rough calculation of Deep Chlorophyll Maximum '''
 
     jpk,jpj,jpi=maskobj.shape
     tmask   = maskobj.mask
@@ -43,6 +43,11 @@ def dcm(chl,maskobj):
     return out
 
 def DCM(chl,maskobj):
+    '''
+    Improved calculation of Deep Chlorophyll Maximum
+    Uses 2-nd derivative to find the first maximum, starting from bottom.
+
+    '''
     jpk,jpj,jpi=maskobj.shape
     tmask=maskobj.mask_at_level(0)
     DEPTHS=maskobj.bathymetry_in_cells()
@@ -55,13 +60,17 @@ def DCM(chl,maskobj):
                 profile = profile[-1::-1]# from bottom
                 d2 = np.diff(profile,2)
                 mindiff2=np.argmin(d2)
-                end_index=mindiff2+3
-                if end_index>profile_len:
-                    end_index=profile_len
+                if d2[mindiff2] >  0: # non trovo un massimo
+                     matrix_2d = profile_len - np.argmax(profile)
+                else:
+                    end_index=mindiff2+3
+                    if end_index>profile_len:
+                        end_index=profile_len
                 
-                local_ind = np.argmax(profile[mindiff2:end_index])
-                matrix_2D[jj,ji] = profile_len - (local_ind + mindiff2)
+                    local_ind = np.argmax(profile[mindiff2:end_index])
+                    matrix_2D[jj,ji] = profile_len - (local_ind + mindiff2)
                 
     out = maskobj.zlevels[matrix_2D]
     out[~tmask] = 1.e+20
+    return out
 

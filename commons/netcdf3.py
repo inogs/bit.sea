@@ -62,8 +62,18 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude", jpj)
         ncOUT.createDimension("depth"   , jpk)
-        
-    ncvar = ncOUT.createVariable(varname, 'f', ('depth','latitude','longitude'))
+    
+    for lonname in ['lon','longitude']:
+        if ncOUT.dimensions.has_key(lonname):
+            break
+    for latname in ['lat','latitude']:
+        if ncOUT.dimensions.has_key(latname):
+            break
+    for depthname in ['depth','z']:
+        if ncOUT.dimensions.has_key(depthname):
+            break
+
+    ncvar = ncOUT.createVariable(varname, 'f', (depthname,latname,lonname))
     setattr(ncvar,'fillValue'    ,fillValue)
     setattr(ncvar,'missing_value',fillValue)
     ncvar[:] = M3d

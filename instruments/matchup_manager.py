@@ -277,6 +277,7 @@ class Matchup_Manager():
                     Pres, Profile, Qc = p.read(ref_varname,not read_adjusted[i])
 
                 print model_varname, len(Profile)
+                if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
                 float_on_common_grid = float_on_common_grid*correction[i]

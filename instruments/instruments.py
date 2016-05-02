@@ -35,7 +35,7 @@ def Selector(var,T,region):
 
     LIST=[]
     LIST.extend(bio_float.FloatSelector(floatvar  , T, region))
-    LIST.extend(mooring.MooringSelector(mooringvar, T, region))
+    #LIST.extend(mooring.MooringSelector(mooringvar, T, region))
 
     N = NutrientsReader()
     C = CarbonReader()

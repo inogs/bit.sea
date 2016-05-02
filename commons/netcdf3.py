@@ -7,6 +7,16 @@ def read_2d_file(filename,varname):
     ncIN.close()
     return M2d
 
+
+def read_3d_file(filename, varname):
+    ncIN = NC.netcdf_file(filename,'r')
+    nDim = len(ncIN.variables[varname].dimensions)
+    if nDim==4 : VAR   = ncIN.variables[varname].data[0,:,:,:].copy()
+    if nDim==3 : VAR   = ncIN.variables[varname].data.copy()
+    ncIN.close()
+    return VAR
+    
+
 def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20):
     '''
     Dumps a 2D array in a NetCDF file.

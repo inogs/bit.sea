@@ -10,23 +10,33 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     """Map plotting procedure (draft)
     Hardcoded features:
         - colormap jet
-        - watermark
         - ticks
         - size of the figure
 
     Args:
-        - *map_dict*: a dictionary as built by get_maps_data method of
-          MapBuilder.
-        - *fig*: a reference to a Figure object, if None mapplot will create a new Figure.
-        - *ax*: a reference to an Axes object, if None mapplot will create a new Figure.
-        - *mask* (optional): a Mask object that will be used to set the ticks.
-        - *ncolors* (optional) : the number of colors of colormap
-        - *cbar_ticks* (optional): Number of ticks on the colorbar (default: 5).
+        - *map_dict     *: a dictionary as built by get_maps_data method of MapBuilder.
+        - *fig          *: a reference to a Figure object, if None mapplot will create a new Figure.
+        - *ax           *: a reference to an Axes object, if None mapplot will create a new Figure.
+        - *mask         * (optional): a Mask object that will be used to set the ticks.
+        - *ncolors      * (optional) : the number of colors of colormap
+        - *cbar_ticks   * (optional): Number of ticks on the colorbar (default: 5).
         - *coastline_lon* (optional): Numpy array defining the coastline longitudes.
         - *coastline_lat* (optional): Numpy array defining the coastline latitudes.
-        - *dpi* (optional): sets the DPI (default: 72.0).
+        - *dpi          * (optional): sets the DPI (default: 72.0).
     Returns:
         A figure and an Axes object that can be passed again to mapplot
+        
+    Examples:
+        fig, ax = mapplot({'data':Map2d, 'clim':[0,1]})
+        fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax )
+                
+        from layer_integral import coastline
+        clon,clat = coastline.get()
+        fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, coastline_lon=clon, coastline_lat=clat)
+        
+        from commons.mask import Mask
+        TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+        fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
     """
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()

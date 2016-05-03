@@ -237,11 +237,34 @@ class BioFloat(Instrument):
         else:
             return pres, mean.compute(prof, pres), mean.compute(qc,pres)
 
-    def plot(self,Pres,profile):
+    def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)
         pl.gca().invert_yaxis()
         pl.show(block=False)
+
+    def plot(self,Pres,profile,fig=None,ax=None,**kwargs):
+        '''
+    Args:
+        - * Pres    * : array of pressure
+        - * profile * : array of profile values
+        - * fig     * : a reference to a Figure object, if None a new Figure will be created.
+        - * ax      * : a reference to an Axes object, if None a new axis will be created.
+
+    Returns :
+        A figure and an axis object
+
+    Examples:
+        fig, ax = f.plot(pres,profile)
+        fig, ax = f.plot(pres,profile,fig,ax)
+        fig, ax = f.plot(pres,profile,fig,ax, linestyle = 'dashed', linewidth = 2, color='green')
+
+        '''
+        if (fig is None) or (ax is None):
+            fig , ax = pl.subplots()
+        ax.plot(profile,Pres, **kwargs)
+        if not ax.y_axis_inverted(): ax.invert_yaxis()
+        return fig,ax
 
     def profiles(self, var, mean=None):
         return [BioFloatProfile(var, self.time, self.lon, self.lat, self, mean)]

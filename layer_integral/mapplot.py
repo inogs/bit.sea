@@ -1,7 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
-import code
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -37,6 +36,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
         from commons.mask import Mask
         TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
+        fig, ax = mapplot({'data':Map2d, 'clim':[0,1], 'date':longdate, 'layer':l}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
     """
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
@@ -98,8 +98,10 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     #ax.text(35, 46, 'OGS Echo Group',
     #     fontsize=60, color='gray',
     #     ha='right', va='top', alpha=0.3, rotation=18)
-
-    title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    if map_dict.has_key('layer'):
+        title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    else:
+        title = "%s %s %s" % (map_dict['date'], map_dict['varname'])
     fig.suptitle(title)
 
     return fig, ax

@@ -6,7 +6,7 @@ from datetime import timedelta
 import numpy as np
 import season
 import IOnames
-from commons.time_interval import TimeInterval
+from time_interval import TimeInterval
 
 seasonobj = season.season()
 
@@ -168,14 +168,14 @@ class TimeList():
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
+            assert self.inputFrequency in ["hourly","daily"] # it does not matter how many hours
             SELECTION=[]
             weights = []
-            if self.inputFrequency =="hourly" : # how many does not matter
-                for it,t in enumerate(self.Timelist):
-                    if requestor.time_interval.contains(t):
-                        SELECTION.append(it)
-                        weights.append(1.)
-                return SELECTION , np.array(weights)
+            for it,t in enumerate(self.Timelist):
+                if requestor.time_interval.contains(t):
+                    SELECTION.append(it)
+                    weights.append(1.)
+            return SELECTION , np.array(weights)
 
 
         if isinstance(requestor, requestors.Monthly_req):
@@ -221,7 +221,7 @@ class TimeList():
         if isinstance(requestor, requestors.Interval_req):
             return self.__generaltimeselector(requestor)
 
-        if isinstance(requestor, requestors.Season_req,seasonobj):
+        if isinstance(requestor, requestors.Season_req):
             return self.__generaltimeselector(requestor)
 
         if isinstance(requestor, requestors.Yearly_req):
@@ -358,7 +358,7 @@ class TimeList():
 
 
 
-    def getSeasonList(self,extrap=False):
+    def getSeasonList(self,seasonobj=seasonobj, extrap=False):
         '''Returns an ordered list of requestors, Season_req objects.
        By setting extrap=True, this method extrapolates out of the indicated period (Starttime,EndTime)
        Example: if the input is weekly, centered in 20120301, and Starttime=20120301,
@@ -374,10 +374,18 @@ class TimeList():
         else:
             SEASON_LIST_RED=[]
             firstSeason=requestors.Season_req(self.timeinterval.start_time.year, seasonobj.findseason(self.timeinterval.start_time),seasonobj)
+            #print "ECCO", self.timeinterval.end_time.year,  seasonobj.findseason(self.timeinterval.end_time)
             lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  seasonobj.findseason(self.timeinterval.end_time),seasonobj)
+            #print self.timeinterval.start_time, seasonobj.findseason(self.timeinterval.start_time)
+            #print "firstSeason", firstSeason
+            #print self.timeinterval.end_time,  seasonobj.findseason(self.timeinterval.end_time)
+            #print "lastSeason", lastSeason
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1],seasonobj)
+                #print season, req
+                #print "LIST", req.timeinterval, firstSeason.timeinterval, lastSeason.timeinterval
                 if (req.timeinterval.start_time >= firstSeason.timeinterval.start_time) & (req.timeinterval.end_time <=lastSeason.timeinterval.end_time):
+                    #print "appended", season
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
 
@@ -440,7 +448,7 @@ class TimeList():
 if __name__ == '__main__':
     daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "days=1")
     TL = TimeList(daily)
-    REQS=TL.getSpecificIntervalList(deltastr="days=10", starttime="19970928-12:00:00")
+    REQS=TL.getOwnList()
     r=REQS[0]
     ii,weights = TL.select(r)
 
@@ -448,9 +456,10 @@ if __name__ == '__main__':
     M= TL.getWeeklyList(2)
     m=M[0]
     TL.select(m)
+    TL.getSeasonList(seasonobj)
 
     for iSeas in range(4):
-        m = requestors.Clim_season(iSeas)
+        m = requestors.Clim_season(iSeas,seasonobj)
         TL.select(m)
 
     for imonth in range(1,13):

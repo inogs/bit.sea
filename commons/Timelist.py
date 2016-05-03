@@ -2,7 +2,6 @@ import timerequestors as requestors
 import genUserDateList as DL
 import os,glob
 import datetime
-from datetime import timedelta
 import numpy as np
 import season
 import IOnames
@@ -374,16 +373,10 @@ class TimeList():
         else:
             SEASON_LIST_RED=[]
             firstSeason=requestors.Season_req(self.timeinterval.start_time.year, seasonobj.findseason(self.timeinterval.start_time),seasonobj)
-            #print "ECCO", self.timeinterval.end_time.year,  seasonobj.findseason(self.timeinterval.end_time)
             lastSeason = requestors.Season_req(self.timeinterval.end_time.year,  seasonobj.findseason(self.timeinterval.end_time),seasonobj)
-            #print self.timeinterval.start_time, seasonobj.findseason(self.timeinterval.start_time)
-            #print "firstSeason", firstSeason
-            #print self.timeinterval.end_time,  seasonobj.findseason(self.timeinterval.end_time)
-            #print "lastSeason", lastSeason
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1],seasonobj)
-                #print season, req
-                #print "LIST", req.timeinterval, firstSeason.timeinterval, lastSeason.timeinterval
+
                 if (req.timeinterval.start_time >= firstSeason.timeinterval.start_time) & (req.timeinterval.end_time <=lastSeason.timeinterval.end_time):
                     #print "appended", season
                     SEASON_LIST_RED.append(season)

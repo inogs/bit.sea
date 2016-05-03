@@ -6,7 +6,6 @@ class Clim_season():
     '''
     Requestor object  - for a climatologit season - used in Timelist.select() method.
 
-
     '''
     def __init__(self,season,seasonobj):
         '''
@@ -139,21 +138,29 @@ class Season_req():
     '''
     Requestor object - for a specific season - used in Timelist.select() method.
 
-    Assumption for integers indicating seasons:
+    '''
+    def __init__(self,year,num_season,seasonobj):
+        '''       
+         Arguments:
+        * year      * : integer
+        * season    * : integer
+        * seasonobj * : an instance of class season, where features of season are defined
+        
+        Season object can be obtained as follows:
+        import season
+        seasonObj = season.season()
+        
+        Then seasonObj defines by default seasons like this:
         Winter = 0
         Spring = 1
         Summer = 2
         Fall   = 3
+        
+        Example:
 
-    Example:
-
-    req= Season_req(2012,2)
-    print req.longname
+        req = Season_req(2012,2,seasonObj)
+        print req.longname
         '''
-    def __init__(self,year,num_season,seasonobj):
-        #print("---------------",year, num_season)
-        #print(seasonobj.get_season_dates(num_season))
-        #print("---------------")
         self.year   = year
         self.season = num_season
         ti_ref,self.longname = seasonobj.get_season_dates(num_season)
@@ -165,31 +172,7 @@ class Season_req():
         t.end_time    = ti_ref.end_time   + relativedelta(years=delta_years)
         self.timeinterval = t
         self.string   = str(year) + " " + self.longname[:3]
-        # assert season in [0,1,2,3]
-        # t = TimeInterval()
-        # if season == 0: #win
-        #     t.start_time  = datetime.datetime(year ,  1, 1, 0, 0)
-        #     t.end_time    = datetime.datetime(year ,  4, 1, 0, 0)
-        #     self.string   = '%d win' %year
-        #     self.longname = "Winter"
-        # if season == 1 :
-        #     t.start_time  = datetime.datetime(year ,  4, 1, 0, 0)
-        #     t.end_time    = datetime.datetime(year ,  7, 1, 0, 0)
-        #     self.string   = '%d spr' %year
-        #     self.longname = 'Spring'
-        # if season == 2 :
-        #     t.start_time  = datetime.datetime(year ,  7, 1, 0, 0)
-        #     t.end_time    = datetime.datetime(year , 10, 1, 0, 0)
-        #     self.string   = '%dsum' %year
-        #     self.longname = 'Summer'
-        #
-        # if season == 3 :
-        #     t.start_time  = datetime.datetime(year , 10, 1, 0, 0)
-        #     t.end_time    = datetime.datetime(year+1, 1, 1, 0, 0)
-        #     self.string   = '%d aut' %year
-        #     self.longname = 'Autumn'
 
-        #self.timeinterval = t
 
     def __repr__(self):
         return "Season requestor object :" + self.string

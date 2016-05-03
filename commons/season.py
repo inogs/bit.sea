@@ -8,11 +8,11 @@ class season:
     Season Object
 
     This object provide a tools for season definition and management
-    The default setting is classical 4 season, the star day is set as:
-    - winter : 1221
-    - spring : 0321
-    - summer : 0621
-    - fall   : 0921
+    The default setting is the classical oceanographic 4 season, the start day is set as:
+    - winter : 0101
+    - spring : 0401
+    - summer : 0701
+    - fall   : 1001
     """
 
 
@@ -24,8 +24,9 @@ class season:
         self.SEASON_LIST = []
         self.SEASON_LIST_NAME = []
         self._reference_year=2000
-        self.setseasons(["1221","0321","0622","0921"],["winter","spring","summer","fall"])
-
+        self.setseasons(["0101","0401","0701","1001"],["winter","spring","summer","fall"])
+        #self.setseasons(["1221","0321","0622","0921"],["winter","spring","summer","fall"])
+    
 
     def setseasons(self,startseason,nameseason):
         """
@@ -80,16 +81,6 @@ class season:
             end_date= self.SEASON_LIST[season_num+1]
         TI = TimeInterval.fromdatetimes(start_date, end_date)
 
-#         season = []
-#         if (season_num >= self.numbers_season):
-#             print("Numbers of seasons is less than",season_num)
-#         season.append(self.SEASON_LIST[season_num])
-# 
-#         season_num = season_num + 1
-#         if (season_num >= self.numbers_season):
-#             season_num = 0
-# 
-#         season.append(self.SEASON_LIST[season_num])
         season_name = self.SEASON_LIST_NAME[season_num]
 
         return TI,season_name
@@ -109,47 +100,3 @@ class season:
             ti,_ = self.get_season_dates(season_num)
             if ti.contains(yearly_date):
                 return season_num
-         
-
-
-#         check = -1
-#         check_name = "Not reconized"
-#         day   = ( date.month, date.day )
-#         for i in range(0,self.numbers_season):
-#             season,name = self.get_season_dates(i)
-#             #print season[0],season[1],"\n"
-#             #print date
-#             begin = ( season[0].month, season[0].day )
-#             end   = ( season[1].month, season[1].day )
-# 
-#             if( begin <= day < end):
-#                 check = i
-#                 check_name = name
-# 
-#             #print check
-# 
-#         if(check == -1):
-#             season,name = self.get_season_dates(0)
-#             begin   = ( season[0].month, season[0].day )
-#             end   = ( season[1].month, season[1].day )
-#             if(  day == begin):
-#                 check = 0
-#                 check_name = self.SEASON_LIST_NAME[0]
-#             if(  day < end):
-#                 check = 0
-#                 check_name = self.SEASON_LIST_NAME[0]
-#             if(  day == end):
-#                 check = 1
-#                 check_name = self.SEASON_LIST_NAME[1]
-# 
-#         if(check == -1):
-#             season,name = self.get_season_dates(self.numbers_season-1)
-#             begin = ( season[0].month, season[0].day )
-#             end   = ( season[1].month, season[1].day )
-#             if(  day > end):
-#                 check = 0
-#                 check_name = name
-# 
-#         assert (check >= 0),"ERROR : date case in not manged! :-( "
-# 
-#         return check,check_name

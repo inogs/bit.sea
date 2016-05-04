@@ -50,10 +50,9 @@ from commons.mask import Mask
 from commons.layer import Layer
 
 from layer_integral.mapbuilder import MapBuilder
-from layer_integral.mapplot import *
+from layer_integral.mapplot import mapplot, pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
-import pylab as pl
 from layer_integral import coastline
 
 def NCwriter(M2d,varname,outfile,mask):
@@ -107,7 +106,7 @@ CONVERSION_DICT={
          }
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
 
 # CHOICE OF THE TIME SELECTION
 import commons.timerequestors as requestors

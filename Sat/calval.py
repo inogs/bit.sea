@@ -4,7 +4,6 @@ import commons.IOnames as IOnames
 import numpy as np
 import SatManager as Sat
 import matchup.matchup as matchup
-#from postproc.maskload import *
 import scipy.io.netcdf as NC
 
 
@@ -13,10 +12,12 @@ REF_DIR  = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MO
 
 Timestart="20150701"
 Time__end="20151001"
+TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc",prefix='',dateformat='%Y%m%d')
+
 IonamesFile = '../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
-TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc",IonamesFile)
+
 ngib=52
 
 for itime, time in enumerate(model_TL.Timelist[:1]):

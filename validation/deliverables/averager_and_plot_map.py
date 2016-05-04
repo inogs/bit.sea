@@ -58,7 +58,7 @@ from commons.mask import Mask
 from commons.layer import Layer
 
 from layer_integral.mapbuilder import MapBuilder
-from layer_integral.mapplot import *
+from layer_integral.mapplot import mapplot,pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
@@ -106,7 +106,7 @@ CONVERSION_DICT={
          }
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc", 'postproc/IOnames.xml')
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
 
 # CHOICE OF THE TIME SELECTION
 import commons.timerequestors as requestors

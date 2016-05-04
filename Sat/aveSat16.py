@@ -12,9 +12,9 @@ reset = False
 
 Timestart="19500101"
 Time__end="20500101"
-IonamesFile = '../postproc/IOnames_sat.xml'
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
-TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",IonamesFile)
+TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
+IonamesFile = '../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)

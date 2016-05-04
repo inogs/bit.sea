@@ -13,9 +13,8 @@ reset = False
 
 Timestart="19990101"
 Time__end="20150101"
-IonamesFile = '../postproc/IOnames_sat.cci.xml'
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
-TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",IonamesFile)
+TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 
 
 somecheck = False

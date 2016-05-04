@@ -24,7 +24,7 @@ VARLIST=['DIC','AC_','PH_','pCO']
 
 
 TI = TimeInterval('20140404','20150629',"%Y%m%d")
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc", 'postproc/IOnames.xml')
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*N1p.nc")
 s = season.season()
 s.setseasons(["1221","0321","0622","0921"])
 Seas_reqs = TL.getSeasonList(s)

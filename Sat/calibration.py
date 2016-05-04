@@ -26,13 +26,12 @@ Timestart="20140404"
 Time__end="20150701"
 
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
+
+sat_TL = TimeList.fromfilenames(TI, REF_DIR,"*.nc",prefix='',dateformat='%Y%m%d')
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc")
+
 IonamesFile = '../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
-sat_TL = TimeList.fromfilenames(TI, REF_DIR,"*.nc",IonamesFile)
-
-IonamesFile = '../postproc/IOnames.xml'
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc",IonamesFile)
-
 
 nFrames = model_TL.nTimes
 nSUB = len(OGS.P.basin_list)

@@ -3,7 +3,7 @@ from commons.time_interval import TimeInterval
 from commons import IOnames
 import numpy as np
 import os
-import SatManager as Sat
+import Sat.SatManager as Sat
 
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/DAILY/CHECKED/"
 MONTHLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/"
@@ -12,9 +12,9 @@ reset = False
 
 Timestart="19990102"
 Time__end="20140101"
-IonamesFile = '../postproc/IOnames_sat.xml'
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
-TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",IonamesFile)
+TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
+IonamesFile = '../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
 
 MONTHLY_reqs=TLCheck.getMonthlist()

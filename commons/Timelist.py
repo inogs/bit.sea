@@ -38,7 +38,7 @@ class TimeList():
 
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring,IOnamesfile):
+    def fromfilenames(timeinterval, inputdir,searchstring, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S"):
         '''
         Generates a TimeList object by reading a directory
 
@@ -53,10 +53,16 @@ class TimeList():
 
         INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
         Time_int = TimeInterval('20141201-00:00:00','20150701-00:00:00',"%Y%m%d-%H:%M:%S")
-        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*N1p.nc", 'IOnames.xml')
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*N1p.nc")
+
+        For Sat data
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"*nc", prefix='',dateformat='%Y%m%d')
+
+        For physical forcings
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"T*.nc",prefix='T.',dateformat='%Y%m%d')
         '''
 
-        IOname = IOnames.IOnames(IOnamesfile)
+        IOname = IOnames.filenamer(prefix,dateformat)
 
         filelist_ALL = glob.glob(inputdir + searchstring)
         assert len(filelist_ALL) > 0
@@ -66,8 +72,8 @@ class TimeList():
         External_timelist=[]
         for pathfile in filelist_ALL:
             filename   = os.path.basename(pathfile)
-            datestr     = filename[IOname.Input.date_startpos:IOname.Input.date_endpos]
-            actualtime = datetime.datetime.strptime(datestr,IOname.Input.dateformat)
+            datestr     = filename[IOname.date_startpos:IOname.date_endpos]
+            actualtime = datetime.datetime.strptime(datestr,IOname.dateformat)
             if timeinterval.contains(actualtime) :
                 filenamelist.append(pathfile)
                 datetimelist.append(actualtime)

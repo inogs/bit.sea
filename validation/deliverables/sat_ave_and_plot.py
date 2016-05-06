@@ -47,7 +47,7 @@ OUTPUTDIR = args.outdir
 
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", 'IOnames_sat_monthly.xml')
+TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m")
 
 
 MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") 

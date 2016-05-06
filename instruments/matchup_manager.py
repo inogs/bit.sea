@@ -1,7 +1,7 @@
 import os,sys
 from commons.Timelist import TimeList
 from basins.region import Rectangle
-
+from instrument import Profile
 import instruments
 import scipy.io.netcdf as NC
 import numpy as np
@@ -123,6 +123,16 @@ class Matchup_Manager():
         return Profile
 
     def modeltime(self,profile):
+        '''
+        Argument:
+           * profile * a profile object.
+                       E.g. an element of list provided by FloatSelector(), or MooringSelector()
+        Returns:
+           * datetime object * , the time of model corresponding to the selected profile
+
+        '''
+        assert isinstance(profile, Profile)
+
         for Model_time,INTERESTED_Indices in self.Coupled_List:
             if profile in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
                 break

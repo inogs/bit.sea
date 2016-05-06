@@ -340,16 +340,40 @@ def FloatSelector(var, T, region):
 
     return selected
 
+def get_wmo_list(Profilelist):
+    '''
+     Argument:
+      * Profilelist * list of Profile objects
+
+      Returns:
+         a list of wmo strings
+    '''
+    raise NotImplementedError
+
+def filter_by_wmo(Profilelist,wmo):
+    '''
+
+    Subsetter, filtering by wmo
+
+     Arguments:
+      * Profilelist * list of Profile objects
+      * wmo         * string
+
+      Returns:
+        a list of Profile Objects
+    '''
+    raise NotImplementedError
+
 
 
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
-    
+
     var = 'NITRATE'
     TI = TimeInterval('20150520','20150830','%Y%m%d')
     R = Rectangle(-6,36,30,46)
-    
+
     PROFILE_LIST=FloatSelector(var, TI, R)
 
     for p in PROFILE_LIST[:1]:
@@ -358,4 +382,8 @@ if __name__ == '__main__':
         PN,N,Qc = TheFloat.read(var,    True)
         PS,S,Qc = TheFloat.read('PSAL', True)
         PT,T,Qc = TheFloat.read('TEMP', True)
+
+    wmo_list= get_wmo_list(PROFILE_LIST)
+    for wmo in wmo_list:
+        sublist = filter_by_wmo(PROFILE_LIST, wmo)
 

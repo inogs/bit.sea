@@ -1,8 +1,9 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-import os
+import os,sys
 import numpy as np
 import re
+from __future__ import print_function
 
 """Helper functions"""
 
@@ -68,6 +69,22 @@ def find_index(thestring, STRINGLIST):
         strippedstring=STRINGLIST[istring,:].tostring().strip()
         if strippedstring == thestring: break
     else:
-        print thestring + " Not Found"
+        print(thestring + " Not Found")
         raise NameError
     return istring
+
+def die(why, exit_code=1, print_usage=True):
+    print("FATAL ERROR: " +  str(why), file=sys.stderr)
+    sys.exit(exit_code)
+
+def is_valid_path(path, is_dir_check=False):
+    if os.path.exists(path):
+        if is_dir_check:
+            if os.path.isdir(path):
+                return path
+            else:
+                die("'%s' is not a directory." % (path,))
+        else:
+            return path
+    else:
+        die("'%s' is not a valid path." % (path,))

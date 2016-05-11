@@ -3,14 +3,7 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
 
-from __future__ import print_function
-import sys
-import os
-import numpy as np
-from glob import glob
 import argparse
-import time
-from layer_integral import coastline
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -51,32 +44,25 @@ def argument():
                                 help = 'Path to mask file')
     return parser.parse_args()
 
+args = argument()
+
+from __future__ import print_function
+import sys
+from commons.utils import is_valid_path
+import numpy as np
+from glob import glob
+from layer_integral import coastline
+
 try:
     from layer_integral.mapbuilder import MapBuilder
 except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)
 
-args = argument()
-
-
-
 
 def die(why, exit_code=1, print_usage=True):
     print("FATAL ERROR: " +  str(why), file=sys.stderr)
     sys.exit(exit_code)
-
-def is_valid_path(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return path
-            else:
-                die("'%s' is not a directory." % (path,))
-        else:
-            return path
-    else:
-        die("'%s' is not a valid path." % (path,))
 
 
 maskfile     = is_valid_path(args.maskfile)
@@ -106,9 +92,9 @@ except:
 try:
     file_list = glob(inputdir + "/" + file_pattern)
     mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
-    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
+    #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
     mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=1)
-    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
+    #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
 except Exception as e:
     die(e, 2, False)
 

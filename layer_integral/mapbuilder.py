@@ -2,7 +2,6 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import os
 import warnings
-import re
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval

@@ -84,6 +84,17 @@ class MapBuilder(object):
                 self.__plotlist.append(plot)
 
     def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0):
+        '''
+        Generator of a large set of images.
+        Arguments : 
+          * coastline_lon *  1-D array 
+          * coastline_lat *  1-D array
+          * map_type      *  integer, flag used to choose a plot method in mapplot module
+                = 0, the default, to call mapplot.mapplot()
+                = 1, to call mapplot.mapplot_onlycolor()
+                = 2, to call mapplot.mapplot_nocolor()
+        
+        '''
         fig = None
         ax = None
         for f in self.__netcdffileslist:
@@ -109,13 +120,15 @@ class MapBuilder(object):
                             clim = p.clim
                     if maptype == 0:
                         fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                        fig.savefig(outfile + ".png")
                     if maptype == 1:
-                        fig, ax = mapplot_onlycolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                        fig, ax = mapplot_onlycolor({'clim':clim, 'data':mapdata}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
+                        fig.savefig(outfile + ".jpg",dpi=72, quality=50)
                     if maptype == 2:
                         fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.canvas.print_figure(outfile + ".svg")
                         return
-                    fig.savefig(outfile + ".jpg",dpi=72, quality=50)
+                    
                 fig = None
                 ax = None
 

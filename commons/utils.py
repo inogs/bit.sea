@@ -1,9 +1,9 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
+from __future__ import print_function
 import os,sys
 import numpy as np
 import re
-from __future__ import print_function
 
 """Helper functions"""
 

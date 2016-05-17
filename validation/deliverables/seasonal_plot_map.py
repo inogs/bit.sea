@@ -52,7 +52,7 @@ from layer_integral.mapplot import mapplot, pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
-
+import commons.timerequestors as requestors
 
 clon,clat = coastline.get()
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
@@ -97,15 +97,9 @@ CONVERSION_DICT={
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
 
-# CHOICE OF THE TIME SELECTION
-import commons.timerequestors as requestors
-
 
 req = requestors.Clim_month(args.month)
-m_array=(['Clim_Jan','Clim_Feb','Clim_Mar','Clim_Apr',
-            'Clim_May','Clim_June','Clim_July','Clim_Aug',
-            'Clim_Sept','Clim_Oct','Clim_Nov','Clim_Dec'])
-req_label=m_array[args.month-1]
+req_label=req.longname()
 
 indexes,weights = TL.select(req)
 

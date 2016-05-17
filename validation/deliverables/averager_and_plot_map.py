@@ -62,7 +62,7 @@ from layer_integral.mapplot import mapplot,pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
-
+import commons.timerequestors as requestors
 
 
 clon,clat = coastline.get()
@@ -108,8 +108,6 @@ CONVERSION_DICT={
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
 
-# CHOICE OF THE TIME SELECTION
-import commons.timerequestors as requestors
 
 #MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
 MY_YEAR = TimeInterval('19990101','20141230',"%Y%m%d") 

@@ -51,6 +51,10 @@ class Clim_month():
         self.string = '%02d' %month
     def __repr__(self):
         return "Climatologic Monthly requestor object : "  + self.string
+    def longname(self):
+        a = datetime.datetime(2000,self.month,1)
+        return a.strftime("Clim_%b")
+         
 
 class Clim_day():
     ''' Requestor object for - climatologic day -used in Timelist.select() method.

@@ -131,27 +131,12 @@ for k in indexes:
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)
 for il,layer in enumerate(LAYERLIST):
     De      = DataExtractor(TheMask,rawdata=M3d)
-    integrated = MapBuilder.get_layer_average(De, layer)
 
     if args.optype=='integral':
-# calcolo l'altezza del layer
-        top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
-        bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
-    #Workaround for Python ranges
-        bottom_index += 1
-    #Build local mask matrix
-        lmask = np.array(De._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-    #Build dz matrix
-        dzm = np.ones_like(lmask, dtype=np.double)
-        j = 0
-        for i in range(top_index, bottom_index):
-            dzm[j,:,:] = De._mask.dz[i]
-            j += 1
-    #Build height matrix (2D)
-        Hlayer = (dzm * lmask).sum(axis=0)
-        integrated=integrated * Hlayer * VARCONV
+        integrated = MapBuilder.get_layer_integral(De, layer)
     else:
-        integrated=integrated * VARCONV
+        integrated = MapBuilder.get_layer_average(De, layer)  
+    integrated=integrated * VARCONV
 
 #        mask200=TheMask.mask_at_level(200)
     mask=TheMask.mask_at_level(args.mapdepthfilter)

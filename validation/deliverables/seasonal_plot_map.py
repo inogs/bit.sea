@@ -42,8 +42,6 @@ def argument():
 args = argument()
 
 import numpy as np
-import scipy.io.netcdf as NC
-
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask
@@ -55,22 +53,13 @@ from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
 
-def NCwriter(M2d,varname,outfile,mask):
-    ncOUT = NC.netcdf_file(outfile,'w')
-    _, jpj, jpi= mask.shape
-    ncOUT.createDimension("longitude", jpi)
-    ncOUT.createDimension("latitude", jpj)
-    ncvar = ncOUT.createVariable(varname, 'f', ('latitude','longitude'))
-    ncvar[:] = M2d
-    ncOUT.close()
-
 
 clon,clat = coastline.get()
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 
 
-INPUTDIR  = args.inputdir#"/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/MODEL/AVE_FREQ_2/"
-OUTPUTDIR = args.outdir#"/pico/home/userexternal/gcossari/COPERNICUS/REANALYSIS_V2/MAPPE_MEDIE/"
+INPUTDIR  = args.inputdir
+OUTPUTDIR = args.outdir
 var       = args.varname
 LIMIT_PER_MASK=[5,5,5]
 
@@ -132,27 +121,11 @@ for k in indexes:
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)
 for il,layer in enumerate(LAYERLIST):
     De      = DataExtractor(TheMask,rawdata=M3d)
-    integrated = MapBuilder.get_layer_average(De, layer)
-
     if args.optype=='integral':
-# calcolo l'altezza del layer
-        top_index = np.where(De._mask.zlevels >= layer.top)[0][0]
-        bottom_index = np.where(De._mask.zlevels < layer.bottom)[0][-1]
-    #Workaround for Python ranges
-        bottom_index += 1
-    #Build local mask matrix
-        lmask = np.array(De._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-    #Build dz matrix
-        dzm = np.ones_like(lmask, dtype=np.double)
-        j = 0
-        for i in range(top_index, bottom_index):
-            dzm[j,:,:] = De._mask.dz[i]
-            j += 1
-    #Build height matrix (2D)
-        Hlayer = (dzm * lmask).sum(axis=0)
-        integrated=integrated * Hlayer * VARCONV
+        integrated = MapBuilder.get_layer_integral(De, layer)
     else:
-        integrated=integrated * VARCONV
+        integrated = MapBuilder.get_layer_average(De, layer)  
+    integrated=integrated * VARCONV
 
 #        mask200=TheMask.mask_at_level(200)
     mask200=TheMask.mask_at_level(LIMIT_PER_MASK[il])

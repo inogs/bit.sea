@@ -127,7 +127,9 @@ def mapplot_onlycolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, dpi
     Returns:
         A figure and an Axes object that can be passed again to mapplot
     """
-    watermark = pl.imread('/pico/home/userexternal/gbolzon0/griglia_senza_tacche.png')
+    #watermark = pl.imread('/pico/home/userexternal/gbolzon0/griglia_senza_tacche.png')
+    #watermark = pl.imread('/pico/home/userexternal/gbolzon0/watermark_ogs.png')
+    #watermark = pl.imread('/pico/home/userexternal/gbolzon0/ogs_wm_72dpi.png')
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
         fig.set_dpi(dpi)
@@ -162,17 +164,38 @@ def mapplot_onlycolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, dpi
     # cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
     # cbar.ax.set_yticklabels(cbar_ticks_labels)
     #cbar.set_visible(False)
-    
-    ax.imshow(watermark[-1::-1,:,:],extent=[lon_min,lon_max,lat_max, lat_min])
+
+    #ax.imshow(watermark,extent=[-4,9,31,35])
+    #ax.imshow(watermark,extent=[lon_min,lon_max,lat_min,lat_max])
+    watermarkstring='Copyright : \nOGS ECHO GROUP\nmedeaf.inogs.it'
+    ax.text(-3, 33,watermarkstring ,fontsize=8,fontweight='bold', color='k', ha='left', va='top') # alpha=0.3)
+    ax.text(30, 40,watermarkstring ,fontsize=8,fontweight='bold', color='k', ha='left', va='top')
+    ax.text(17, 35,watermarkstring ,fontsize=8,fontweight='bold', color='gray', ha='left', va='top', alpha=0.3)
     ax.invert_yaxis()
 
-    #ax.set_xlim([-6, 36])
-    #ax.set_ylim([30, 46])
+    ax.set_xlim([-6, 36])
+    ax.set_ylim([30, 46])
 
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     ax.set_axis_off()
 
+#     fig.savefig('try.jpg',dpi=72,quality=75)
+#
+#     r=pl.imread('try.jpg')
+#     fig,ax=pl.subplots()
+#     fig.set_size_inches(10.0, 10.0*16/42)
+#     ax.set_position([0, 0, 1, 1])
+#     ax.imshow(r)
+#
+#     ax.axes.get_xaxis().set_visible(False)
+#     ax.axes.get_yaxis().set_visible(False)
+#     ax.set_axis_off()
+#     ax2 = fig.add_axes((0.03, -.05, 0.35, 0.4))
+#     ax2.imshow(watermark)
+#     ax2.axes.get_xaxis().set_visible(False)
+#     ax2.axes.get_yaxis().set_visible(False)
+#     ax2.set_axis_off()
     return fig, ax
 
 
@@ -270,7 +293,7 @@ if __name__ == '__main__':
     from commons.dataextractor import DataExtractor
     maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc'
     mask = Mask(maskfile)
-    filename='/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/ave.20160426-12:00:00.nc'
+    filename='/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/ave.20000116-12:00:00.nc'
 
     DE = DataExtractor(mask,filename,'N1p')
     k=0
@@ -279,5 +302,5 @@ if __name__ == '__main__':
     map_dict ={'data':map2d, 'clim':[0,0.3]}
     fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
     #fig.show()
-    #fig.savefig('prova.jpg',dpi=72,quality=50)
+    fig.savefig('prova.jpg',dpi=72,quality=75)
 

@@ -195,7 +195,7 @@ class TimeList():
             if self.inputFrequency == 'weekly':
                 for it,t in enumerate(self.Timelist):
                     t1 = computeTimeWindow("weekly",t);
-                    t2 = TimeInterval.fromdatetimes(requestor.starttime, requestor.endtime)
+                    t2 = TimeInterval.fromdatetimes(requestor.time_interval.starttime, requestor.time_interval.endtime)
                     weight = t1.overlapTime(t2);
                     if (weight > 0. ) :
                         SELECTION.append(it)

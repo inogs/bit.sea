@@ -33,11 +33,13 @@ def argument():
                                 help  = 'The level chosen to filter coast data' )
     parser.add_argument(   '--top', 
                                 type = float,
-                                required = True,
+                                required = False,
+                                default = 0.0,
                                 help  = 'Top of the layer, for integration' )
     parser.add_argument(   '--bottom',
                                 type = float,
-                                required = True,
+                                required = False,
+                                default = 0.0,
                                 help  = 'Bottom of the layer, for integration' )
 
     parser.add_argument(   '--optype', '-t',

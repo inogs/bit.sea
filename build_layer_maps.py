@@ -2,7 +2,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-
+from __future__ import print_function
 import argparse
 
 def argument():
@@ -46,7 +46,7 @@ def argument():
 
 args = argument()
 
-from __future__ import print_function
+
 import sys
 from commons.utils import is_valid_path
 import numpy as np

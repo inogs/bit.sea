@@ -30,7 +30,7 @@ sed -e "s%@@ORIGDIR@@%${ORIGDIR}%g"  -e "s%@@OUTDIR@@%${OUT_DIR}%g" namelist.tpl
 cd $ORIGDIR
 for I in `ls $INPUTDIR/*nc`; do
    filename=`basename $I`
-   new_name=${filename:21:6}_${filename:30:4}
+   new_name=${filename:20:6}_${filename:29:4}
    ln -fs $I $new_name
 done
 

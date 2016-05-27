@@ -9,7 +9,7 @@ class TimeInterval():
         return self.start_time.__repr__() + " , " + self.end_time.__repr__() 
 
     def contains(self, specific_time):
-        if (specific_time >= self.start_time) and (specific_time < self.end_time):
+        if (specific_time >= self.start_time) and (specific_time <= self.end_time):
             return True
         else:
             return False

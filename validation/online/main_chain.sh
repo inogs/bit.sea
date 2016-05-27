@@ -1,10 +1,13 @@
-OPA_RUNDATE=20160525
+OPA_RUNDATE=20160524 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
-END__TIME_a=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
+END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
+
+STARTTIME_s=$( date -d " $OPA_RUNDATE -7 days " +%Y%m%d )
 
 STARTTIME_f=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
-END__TIME_f=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
+END__TIME_f=$( date -d " $OPA_RUNDATE  -4 days " +%Y%m%d )
+
 MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 
@@ -22,6 +25,8 @@ IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG/
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
+python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
+
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
 # ho ottenuto una serie continua dall'archivio, ma analisi e forecasts della precedente

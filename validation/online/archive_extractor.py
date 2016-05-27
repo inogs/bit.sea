@@ -42,7 +42,7 @@ archive_dir= args.arcdir
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 
 if args.type=='analysis':
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*gz")
     T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz"   )
     
     T_bio.extract_analysis( LOC + 'output_bio/')
@@ -50,7 +50,7 @@ if args.type=='analysis':
 
 if args.type =='forecast':
     
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*gz")
     T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz" )
     T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*gz" )
     

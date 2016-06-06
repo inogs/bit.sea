@@ -137,6 +137,8 @@ class TimeList():
             return "monthly"
         if (days < 1 ):
             return "hourly"
+        if (days > 364 ) & (days < 367): 
+            return "yearly"
             #hours = mydiff.seconds/3600
             #we want an integer number of hours
             #if (float(mydiff.seconds)/3600. == hours):
@@ -413,7 +415,11 @@ class TimeList():
         if self.inputFrequency == 'weekly' :
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day))
+        if self.inputFrequency == 'yearly' :
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Yearly_req(t.year))
         return REQ_LIST
+
 
     def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
         '''
@@ -445,7 +451,7 @@ class TimeList():
 
 
 if __name__ == '__main__':
-    daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "days=1")
+    daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "years=1")
     TL = TimeList(daily)
     REQS=TL.getOwnList()
     r=REQS[0]

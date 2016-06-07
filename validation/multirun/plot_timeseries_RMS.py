@@ -31,6 +31,11 @@ def argument():
                             default = 'export_data_ScMYValidation_plan.pkl',
                             help = 'Input pickle file')
 
+    parser.add_argument(   '--runname', '-r',
+                            type = str,
+                            required = False,
+                            default = 'REA',
+                            help = 'Run name for plot title')
 
     return parser.parse_args()
 
@@ -68,82 +73,16 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ltext,fontsize=12)
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
-    pl.ylim(-0.3, 0.3)
+    pl.ylim(-0.5, 0.5)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
     pl.setp(xlabels, rotation=30)
+    pl.title(args.runname)
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
     outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
     #sys.exit()
 
-start_year=1999
-end___year=2014
-nyr=end___year-start_year+1
-RMS__sum=np.zeros((nyr,11),np.float32)
-RMS__win=np.zeros((nyr,11),np.float32)
-BIAS_sum=np.zeros((nyr,11),np.float32)
-BIAS_win=np.zeros((nyr,11),np.float32)
-RMSL_sum=np.zeros((nyr,11),np.float32)
-RMSL_win=np.zeros((nyr,11),np.float32)
-BIASLsum=np.zeros((nyr,11),np.float32)
-BIASLwin=np.zeros((nyr,11),np.float32)
-#
-# winter = JFMA
-# summer = JJAS
-#
-for i in range(start_year,end___year+1):
-    print i
-    n=i-start_year
-    w1=n*12
-    w2=w1+4
-    s1=w1+5
-    s2=s1+4
-    print w1,w2,s1,s2
-    RMS__win[n,:]=LIST[1][w1:w2,:].mean(axis=0)
-    RMS__sum[n,:]=LIST[1][s1:s2,:].mean(axis=0)
-    BIAS_win[n,:]=LIST[2][w1:w2,:].mean(axis=0)
-    BIAS_sum[n,:]=LIST[2][s1:s2,:].mean(axis=0)
-    RMSL_win[n,:]=LIST[5][w1:w2,:].mean(axis=0)
-    RMSL_sum[n,:]=LIST[5][s1:s2,:].mean(axis=0)
-    BIASLwin[n,:]=LIST[6][w1:w2,:].mean(axis=0)
-    BIASLsum[n,:]=LIST[6][s1:s2,:].mean(axis=0)
-
-mat = np.zeros((8,nSUB))
-
-mat[0,:] = RMS__win[:,:].mean(axis=0)
-mat[1,:] = RMS__sum[:,:].mean(axis=0)
-mat[2,:] = BIAS_win[:,:].mean(axis=0)
-mat[3,:] = BIAS_sum[:,:].mean(axis=0)
-mat[4,:] = RMSL_win[:,:].mean(axis=0)
-mat[5,:] = RMSL_sum[:,:].mean(axis=0)
-mat[6,:] = BIASLwin[:,:].mean(axis=0)
-mat[7,:] = BIASLsum[:,:].mean(axis=0)
-
-mat = mat.T
-print '-----------------------------------------'
-#TABELLA QUID IV.1
-lines=[]
-myformat = '%s ' + '%5.3g '*8 +"\n";
-for isub,sub in enumerate(OGS.P):
-    line = myformat %( sub.name, mat[isub,0], mat[isub,1], mat[isub,2],
-                       mat[isub,3], mat[isub,4], mat[isub,5],
-                       mat[isub,6],mat[isub,7])
-
-    lines.append(line)
-
-outfiletable = args.outdir+"/"+"table.dat"
-file = open(outfiletable,"w")
-file.writelines(lines)
-file.close()
-# RMS__win[:,:].mean(axis=0)
-# print 'RMS_sum : ',RMS__sum[:,:].mean(axis=0)
-# print 'BIAS_win: ',BIAS_win[:,:].mean(axis=0)
-# print 'BIAS_sum: ',BIAS_sum[:,:].mean(axis=0)
-# print 'RMSLwin : ',RMSL_win[:,:].mean(axis=0)
-# print 'RMSLsum : ',RMSL_sum[:,:].mean(axis=0)
-# print 'BIASLwin: ',BIASLwin[:,:].mean(axis=0)
-# print 'BIASLsum: ',BIASLsum[:,:].mean(axis=0)

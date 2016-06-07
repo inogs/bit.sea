@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+<!-- typical for SAT -->
+
+<input  prefix=""     dateformat="%Y%m%d" suffix="_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02"  ></input>
+<output prefix=""     dateformat="%Y%m%d" suffix="_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02" ></output>
+
+</root>

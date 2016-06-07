@@ -30,6 +30,11 @@ def argument():
                             default = 'export_data_ScMYValidation_plan.pkl',
                             help = 'Input pickle file')
 
+    parser.add_argument(   '--runname', '-r',
+                            type = str,
+                            required = False,
+                            default = 'RAN',
+                            help = 'Name of the run for legend')
 
     return parser.parse_args()
 
@@ -52,7 +57,7 @@ for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
-    ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=' RAN')
+    ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=args.runname)
     ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()

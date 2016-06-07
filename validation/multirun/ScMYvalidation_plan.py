@@ -32,6 +32,12 @@ def argument():
                                 default = 'export_data_ScMYValidation_plan.pkl',
                                 help = 'Output pickle file')
 
+    parser.add_argument(   '--levsel', '-l',
+                                type = float,
+                                required = True,
+                                default = 0.,
+                                help = 'Level of mask for data selection')
+
 
     return parser.parse_args()
 
@@ -53,6 +59,7 @@ from commons.submask import SubMask
 from basins import OGS
 from commons.layer import Layer
 import pickle
+import os
 
 def weighted_mean(Conc, Weight):
 
@@ -61,14 +68,17 @@ def weighted_mean(Conc, Weight):
     Weighted_Mean   = Mass/Weight_sum
     return Weighted_Mean
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+maskfile = os.getenv('MASKFILE')
+TheMask = Mask(maskfile)
+
+Timestart=os.getenv("START_DATE")
+Time__end=os.getenv("END_DATE")
+
 MODEL_DIR= args.moddir
 REF_DIR  = args.satdir
 outfile  = args.outfile
 
 
-Timestart="20130101"
-Time__end="20140101"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat="%Y%m%d")
@@ -86,7 +96,7 @@ for sub in OGS.P:
     sbmask         = SubMask(sub,maskobject=TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
-mask200_2D = TheMask.mask_at_level(200.0)
+masksel_2D = TheMask.mask_at_level(args.levsel)
 
 BGC_CLASS4_CHL_RMS_SURF_BASIN      = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN     = np.zeros((nFrames,nSUB),np.float32)
@@ -118,11 +128,11 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
-    selection = ~nodata & mask200_2D
+    selection = ~nodata & masksel_2D
     M = matchup.matchup(Model[selection], Sat16[selection])
 
     for isub, sub in enumerate(OGS.P):
-        selection = SUB[sub.name] & (~nodata) & mask200_2D
+        selection = SUB[sub.name] & (~nodata) & masksel_2D
         M = matchup.matchup(Model[selection], Sat16[selection])
         BGC_CLASS4_CHL_RMS_SURF_BASIN[itime,isub]  = M.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN[itime,isub] = M.bias()

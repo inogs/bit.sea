@@ -12,7 +12,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot,mapplot_onlycolor,mapplot_nocolor
+from mapplot import mapplot,mapplot_medeaf,mapplot_nocolor
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
@@ -121,8 +121,8 @@ class MapBuilder(object):
                         fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.savefig(outfile + ".png")
                     if maptype == 1:
-                        fig, ax = mapplot_onlycolor({'clim':clim, 'data':mapdata}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
-                        fig.savefig(outfile + ".jpg",dpi=72, quality=50)
+                        fig, ax = mapplot_medeaf({'clim':clim, 'data':mapdata}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
+                        fig.savefig(outfile + ".png",dpi=86)
                     if maptype == 2:
                         fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.canvas.print_figure(outfile + ".svg")

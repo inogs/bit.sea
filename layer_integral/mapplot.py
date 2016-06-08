@@ -47,7 +47,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     else:
         fig.clf()
         fig.add_axes(ax)
-    ax.set_position([0.07, 0.11, 0.78, 0.85])
+    ax.set_position([0.08, 0.11, 0.78, 0.78])
     clim = map_dict['clim']
 
     if not(mask is None):
@@ -91,9 +91,11 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     #ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
     #ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
     #ax.text(-7,40,map_dict['varname'],ha='left',va='center')
-    ax.set_xlabel('longitude (deg)')
-    ax.set_ylabel('latitude (deg)')
-
+    ax.set_position([0.08, 0.11, 0.78, 0.78])
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+    #ax.set_xlabel('longitude (deg)')
+    #ax.set_ylabel('latitude (deg)')
     # watermark
     #ax.text(35, 46, 'OGS Echo Group',
     #     fontsize=60, color='gray',
@@ -101,9 +103,52 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     if map_dict.has_key('layer'):
         title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     else:
-        title = "%s %s %s" % (map_dict['date'], map_dict['varname'])
-    fig.suptitle(title)
+        title = "%s %s" % (map_dict['date'], map_dict['varname'])
+    #fig.suptitle(title)
+    return fig, ax
 
+
+def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
+    """
+    Designed for web site
+    """
+    if (fig is None) or (ax is None):
+        fig , ax = pl.subplots()
+        fig.set_size_inches(10.0, 10.0*16/42)
+    else:
+        fig.clf()
+        fig.add_axes(ax)
+    ax.set_position([0.08, 0.11, 0.78, 0.78])
+    clim = map_dict['clim']
+
+    lon_min = mask.xlevels.min()
+    lon_max = mask.xlevels.max()
+    lat_min = mask.ylevels.min()
+    lat_max = mask.ylevels.max()
+    cmap=pl.get_cmap('jet',ncolors)
+    im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
+
+    #Set color bar
+    im.set_clim(clim[0], clim[1])
+    cbar_ticks_list = np.linspace(clim[0], clim[1], 5).tolist()
+    cbar_ticks_labels = list()
+    for t in cbar_ticks_list:
+        cbar_ticks_labels.append("%g" % (t,))
+    div = make_axes_locatable(ax)
+    cax = div.append_axes("right", size="3%", pad=0.05)
+    cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
+    cbar.ax.set_yticklabels(cbar_ticks_labels)
+    ax.invert_yaxis()
+
+    ax.set_xlim([-6, 36])
+    ax.set_ylim([30, 46])
+
+    ax.set_position([0.08, 0.11, 0.78, 0.78])
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+
+    title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
+    fig.suptitle(title)
     return fig, ax
 
 
@@ -299,8 +344,14 @@ if __name__ == '__main__':
     k=0
     map2d=DE.values[k,:,:]
     map2d[~mask.mask[k,:,:]] = np.NaN
-    map_dict ={'data':map2d, 'clim':[0,0.3]}
-    fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
+    from commons.layer import Layer
+    map_dict ={'data':map2d, 'clim':[0,0.1],'date':'20000116','varname':'N1p', 'layer':Layer(0,10)}
+    #fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
+    #fig.savefig('prova.jpg',dpi=72,quality=75)
+    from layer_integral import coastline
+    clon,clat = coastline.get()
+    fig, ax = mapplot(map_dict, fig=None, ax=None, mask=mask, coastline_lon=clon, coastline_lat=clat)
+    #fig, ax = mapplot(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
     #fig.show()
-    fig.savefig('prova.jpg',dpi=72,quality=75)
+    fig.savefig('prova.png',dpi=86)
 

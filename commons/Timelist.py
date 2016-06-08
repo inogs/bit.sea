@@ -14,7 +14,7 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'daily'):   req = requestors.Daily_req(currentDate.year,currentDate.month,currentDate.day)
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
-
+    if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 class TimeList():
@@ -153,10 +153,10 @@ class TimeList():
                     if requestor.timeinterval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
-            if self.inputFrequency in ['weekly','monthly']:
+            if self.inputFrequency in ['weekly','monthly','yearly']:
                 for it, t in enumerate(self.Timelist):
                     t1 = computeTimeWindow(self.inputFrequency,t);
-                    t2 = TimeInterval.fromdatetimes(requestor.timeinterval.start_time, requestor.timeinterval.end_time)
+                    t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
                     weight = t1.overlapTime(t2)
                     if (weight > 0. ) :
                         SELECTION.append(it)
@@ -451,7 +451,14 @@ class TimeList():
 
 
 if __name__ == '__main__':
-    daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "years=1")
+    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
+    TL = TimeList(yearly)
+    REQS=TL.getOwnList()
+    r=REQS[0]
+    ii,weights = TL.select(r)
+
+
+    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
     TL = TimeList(daily)
     REQS=TL.getOwnList()
     r=REQS[0]

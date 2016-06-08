@@ -90,7 +90,7 @@ class Yearly_req():
         t = TimeInterval()
         t.start_time = datetime.datetime(year  ,1,1)
         t.end_time   = datetime.datetime(year+1,1,1)
-        self.timeinterval =t
+        self.time_interval =t
         self.string    = str(year)
     def __repr__(self):
         return "Yearly requestor object: " + self.string

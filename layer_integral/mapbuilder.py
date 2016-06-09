@@ -13,14 +13,16 @@ from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
 from mapplot import mapplot,mapplot_medeaf,mapplot_nocolor
+import pylab as pl
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
 
 class Plot(object):
-    def __init__(self, varname, layerlist, clim):
+    def __init__(self, varname, longvarname, layerlist, clim):
         #Input validation
         self.__varname = str(varname)
+        self.__longvarname = str(longvarname)
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
@@ -33,6 +35,8 @@ class Plot(object):
     @property
     def varname(self):
         return self.__varname
+    def longvarname(self):
+        return self.__longvarname
 
     @property
     def layerlist(self):
@@ -73,7 +77,7 @@ class MapBuilder(object):
                 clim = get_node_attr(pdef, "clim")
                 if not (clim is None):
                     clim = literal_eval(clim)
-                plot = Plot(get_node_attr(pdef, "var"), [], clim)
+                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), [], clim)
                 #For each depth element
                 for d in get_subelements(pdef, "depth"):
                     clim = get_node_attr(d, "clim")
@@ -106,7 +110,7 @@ class MapBuilder(object):
                     warn_user(msg)
                     continue
                 for i,l in enumerate(p.layerlist):
-                    outfile = "%s/ave.%s.%s.%s.%d" % (self.__outputdir,shortdate, p.varname, l,maptype)
+                    outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
                     mapdata = MapBuilder.get_layer_average(de, l)
                     try:
                         clim = p.climlist[i]
@@ -121,8 +125,9 @@ class MapBuilder(object):
                         fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.savefig(outfile + ".png")
                     if maptype == 1:
-                        fig, ax = mapplot_medeaf({'clim':clim, 'data':mapdata}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
+                        fig, ax = mapplot_medeaf({'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
                         fig.savefig(outfile + ".png",dpi=86)
+                        pl.close(fig)
                     if maptype == 2:
                         fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.canvas.print_figure(outfile + ".svg")

@@ -17,7 +17,7 @@ class DataExtractor(object):
     This class is meant to be used to read data from a model file and provide
     some facilities to access to the data
     """
-    def __init__(self, mask, filename=None, varname=None, rawdata=None, rawdatafill=np.nan, fill_value=np.nan):
+    def __init__(self, mask, filename=None, varname=None, rawdata=None, rawdatafill=np.nan, fill_value=np.nan,dimvar=3):
         """DataExtractor constructor.
 
         Args:
@@ -28,7 +28,7 @@ class DataExtractor(object):
             - *rawdatafill* (optional): the fill value used inside rawdata
               (default: np.nan)
             _ *fill_value* (optional): the value that will be used when there's
-              no data (default: np.nan)
+            _ *dimvar* (optional): dimensions of the variable to be extracted
 
         Either rawdata or filename plus varname must be defined.
         """
@@ -57,8 +57,12 @@ class DataExtractor(object):
                 else:
                     ndims = len(dset.variables[v].shape)
                     
-                    if ndims == 3 : self.__values = np.array(dset.variables[v])
-                    if ndims == 4 : self.__values = np.array(dset.variables[v])[0,:,:,:]
+                    if dimvar==3:
+                        if ndims == 3 : self.__values = np.array(dset.variables[v])
+                        if ndims == 4 : self.__values = np.array(dset.variables[v])[0,:,:,:]
+                    if dimvar==2:
+                        if ndims == 2 : self.__values = np.array(dset.variables[v])
+                        if ndims == 3 : self.__values = np.array(dset.variables[v])[0,:,:]
                     self.__shape = self.__values.shape
                     
                     

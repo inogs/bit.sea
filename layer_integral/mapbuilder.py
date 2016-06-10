@@ -13,16 +13,19 @@ from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
 from mapplot import mapplot,mapplot_medeaf,mapplot_nocolor
+import datetime
 import pylab as pl
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
 
 class Plot(object):
-    def __init__(self, varname, longvarname, layerlist, clim):
+    def __init__(self, varname, longvarname, units, layerlist, clim):
         #Input validation
         self.__varname = str(varname)
         self.__longvarname = str(longvarname)
+        print "units = ", units
+        self.__units = str(units.encode('utf-8'))
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
@@ -37,6 +40,8 @@ class Plot(object):
         return self.__varname
     def longvarname(self):
         return self.__longvarname
+    def units(self):
+        return self.__units
 
     @property
     def layerlist(self):
@@ -77,7 +82,7 @@ class MapBuilder(object):
                 clim = get_node_attr(pdef, "clim")
                 if not (clim is None):
                     clim = literal_eval(clim)
-                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), [], clim)
+                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "units"), [], clim)
                 #For each depth element
                 for d in get_subelements(pdef, "depth"):
                     clim = get_node_attr(d, "clim")
@@ -125,7 +130,9 @@ class MapBuilder(object):
                         fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                         fig.savefig(outfile + ".png")
                     if maptype == 1:
-                        fig, ax = mapplot_medeaf({'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24)
+                        dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
+                        mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
+                        fig, ax = mapplot_medeaf(mapdict, fig=fig, ax=ax, mask=self._mask, ncolors=24)
                         fig.savefig(outfile + ".png",dpi=86)
                         pl.close(fig)
                     if maptype == 2:

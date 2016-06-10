@@ -163,8 +163,29 @@ class TimeList():
                         weights.append(weight)
             return SELECTION , np.array(weights)
 
+    def select_one(self,requestor):
+        '''
+        Used to select a single time (or file) regardless to time aggregation
+
+        index = select_one(requestor)
+        Returned values:
+          - an integer index indicating to access selected times (or files)
+
+
+        '''
+        assert not isinstance(requestor, requestors.Clim_day)
+        assert not isinstance(requestor, requestors.Clim_month)
+        assert not isinstance(requestor, requestors.Clim_season)
+        for it, t in enumerate(self.Timelist):
+            if requestor.time_interval.contains(t):
+                return it
+        print "Time not found"
+        return None
+
+
     def select(self,requestor):
         '''
+        Method for time aggregation
         indexes, weights = select(requestor)
         Returned values:
          - a list of indexes (integers) indicating to access selected times (or files)
@@ -448,14 +469,27 @@ class TimeList():
             if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
         return Coupled_List
 
+    def find(self,datetimeObj):
+        '''
+        Finds the nearest
+        Argument:
+         a datetime object
+        Returns the index of the nearest element
+        '''
+        D=np.zeros(self.nTimes)
+        for i, d in enumerate(self.Timelist):
+            diff=d-datetimeObj
+            D[i]=np.abs(diff.total_seconds())
+        return D.argmin()
+
 
 
 if __name__ == '__main__':
     yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
-    TL = TimeList(yearly)
-    REQS=TL.getOwnList()
-    r=REQS[0]
-    ii,weights = TL.select(r)
+    TLY = TimeList(yearly)
+    REQSY=TLY.getOwnList()
+    r=REQSY[0]
+    ii,weights = TLY.select(r)
 
 
     daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
@@ -477,3 +511,5 @@ if __name__ == '__main__':
     for imonth in range(1,13):
         m = requestors.Clim_month(imonth)
         TL.select(m)
+    req = requestors.Monthly_req(2012,1)
+    TLY.select_one(req)

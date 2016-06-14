@@ -167,7 +167,7 @@
 </plots>
 
 <!--  saline -->
-<plots var="vosaline" units="psu"  plotunits="psu" name="Sal" longnname="Salinity">
+<plots var="vosaline" units="psu"  plotunits="psu" name="Sal" longname="Salinity">
 <depth top= "0000" bottom="0010"  clim="[35,39.5]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[35,39.5]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[35,39.5]"> </depth>

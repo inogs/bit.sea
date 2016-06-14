@@ -155,13 +155,13 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
     ax.set_ylim([30, 46])
 
     ax.set_position([0.08, 0.11, ratio, ratio])
-    ax.axes.get_xaxis().set_visible(False)
-    ax.axes.get_yaxis().set_visible(False)
+    ax.axes.get_xaxis().set_visible(True)
+    ax.axes.get_yaxis().set_visible(True)
     units = r'mmolP m$^{-3}$'
     units=u'\N{DEGREE SIGN}C'
     units = map_dict['units']
     print units
-    title_1 = "%s, %s "  % (map_dict['longname'],unicode(units))
+    title_1 = "%s, %s "  % (map_dict['longname'],units)
     title_2 = "%s" %  map_dict['layer'].__repr__()
     title_3 = "%s" % (map_dict['date']).strftime('%d - %m - %Y')
     t1=ax.text(-6,46.5, title_1, verticalalignment='bottom', horizontalalignment='left')#'fontproperties',font_prop,

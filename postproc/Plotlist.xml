@@ -4,7 +4,7 @@
 <LayersMaps>
 
 <!--  N1p -->
-<plots var="N1p" units="mmolP/m3" name="PO4" longname='Phosphate' >
+<plots var="N1p" units="mmolP/m3" plotunits="mmolP m$^{-3}$"  name="PO4" longname='Phosphate' >
 <depth top= "0000" bottom="0010"  clim="[0,0.15]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,0.15]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,0.15]"> </depth>
@@ -20,7 +20,7 @@
 </plots>
 
 <!--  N3n -->
-<plots var="N3n" units="mmolN/m3" name="NO3" longname='Nitrate'>
+<plots var="N3n" units="mmolN/m3" plotunits="mmolN m$^{-3}$" name="NO3" longname='Nitrate'>
 <depth top= "0000" bottom="0010"  clim="[0,5]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,5]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,5]"> </depth>
@@ -36,7 +36,7 @@
 </plots>
 
 <!--  O2o -->
-<plots var="O2o" units="mmolO/m3" name="O2" longname="Oxygen">
+<plots var="O2o" units="mmolO/m3" plotunits="mmolO m$^{-3}$" name="O2" longname="Oxygen">
 <depth top= "0000" bottom="0010"  clim="[180,260]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[180,260]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[180,260]"> </depth>
@@ -53,7 +53,7 @@
 
 
 <!--  Pc -->
-<plots var="P_c" units="mgC/m3" name="PhytoC" longname="Phytoplankton biomass">
+<plots var="P_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="PhytoC" longname="Phytoplankton biomass">
 <depth top= "0000" bottom="0010"  clim="[0,30]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,30]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,30]"> </depth>
@@ -70,7 +70,7 @@
 
 
 <!--  Pi -->
-<plots var="P_l" units="mgCHLa/m3" name="Chla" longname="Chlorophyll" >
+<plots var="P_l" units="mgCHLa/m3" plotunits="mgCHLa m$^{-3}$" name="Chla" longname="Chlorophyll" >
 <depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>
@@ -86,7 +86,7 @@
 </plots>
 
 <!--  PPN -->
-<plots var="ppn" units="mgC/m3/d" name="NPP" longname="Net Primary Production">
+<plots var="ppn" units="mgC/m3/d" plotunits="mgC$ m^{-3} d^{-1} $" name="NPP" longname="Net Primary Production">
 <depth top= "0000" bottom="0010"  clim="[0,50]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,50]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,50]"> </depth>
@@ -102,7 +102,7 @@
 </plots>
 
 <!--  PH @ insitu total scale -->
-<plots var="pH" units="@Tinsitu, Total Scale" name="pH" longname="Seawater acidity">
+<plots var="pH" units="@Tinsitu, Total Scale" plotunits="Total Scale" name="pH" longname="Seawater acidity">
 <depth top= "0000" bottom="0010"  clim="[7.95,8.25]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[7.95,8.25]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[7.95,8.25]"> </depth>
@@ -118,7 +118,7 @@
 </plots>
 
 <!--  pCO2 -->
-<plots var="pCO2" units="uatm" name="pCO2" longname="Seawater pCO2">
+<plots var="pCO2" units="uatm" plotunits="$\mu$ atm "  name="pCO2" longname="Seawater pCO2">
 <depth top= "0000" bottom="0010"  clim="[200,550]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[200,550]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[200,550]"> </depth>
@@ -135,7 +135,7 @@
 
 
 <!--  DIC -->
-<plots var="DIC" units="umol/kg " name="DIC" longname="Dissolved inorganic Carbon">
+<plots var="DIC" units="umol/kg " plotunits="$\mu mol kg$^{-1}$" name="DIC" longname="Dissolved inorganic Carbon">
 <depth top= "0000" bottom="0010"  clim="[2120,2340]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[2120,2340]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[2120,2340]"> </depth>
@@ -151,7 +151,7 @@
 </plots>
 
 <!--  ALK -->
-<plots var="Ac" units="umol/kg " name="Alk" longname="Alkalinity">
+<plots var="Ac" units="umol/kg " plotunits="$\mu mol kg$^{-1}$" name="Alk" longname="Alkalinity">
 <depth top= "0000" bottom="0010"  clim="[2350,2730]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[2350,2730]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[2350,2730]"> </depth>
@@ -167,7 +167,7 @@
 </plots>
 
 <!--  saline -->
-<plots var="vosaline" units=" " name="Sal" longnname="Salinity">
+<plots var="vosaline" units="psu"  plotunits="psu" name="Sal" longnname="Salinity">
 <depth top= "0000" bottom="0010"  clim="[35,39.5]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[35,39.5]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[35,39.5]"> </depth>
@@ -185,7 +185,7 @@
 
 
 <!--  Temper  -->
-<plots var="votemper" units="̛°C" name="T" longname="Temperature">
+<plots var="votemper" units="°C" plotunits="°C" name="T" longname="Temperature">
 <depth top= "0000" bottom="0010"  clim="[5,30]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[5,30]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[5,30]"> </depth>

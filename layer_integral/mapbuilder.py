@@ -25,7 +25,7 @@ class Plot(object):
         self.__varname = str(varname)
         self.__longvarname = str(longvarname)
         print "units = ", units
-        self.__units = str(units.encode('utf-8'))
+        self.__units = units#str(units.encode('utf-8'))
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
@@ -82,7 +82,7 @@ class MapBuilder(object):
                 clim = get_node_attr(pdef, "clim")
                 if not (clim is None):
                     clim = literal_eval(clim)
-                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "units"), [], clim)
+                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "plotunits"), [], clim)
                 #For each depth element
                 for d in get_subelements(pdef, "depth"):
                     clim = get_node_attr(d, "clim")

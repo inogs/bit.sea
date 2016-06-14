@@ -117,7 +117,8 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
     import matplotlib.font_manager as font_manager
     from matplotlib.font_manager import FontProperties
     font=FontProperties()
-    font_prop = font_manager.FontProperties(fname='/pico/home/userexternal/gbolzon0/.fonts/TitilliumWeb-Regular.ttf', size=14)
+    font_prop   = font_manager.FontProperties(fname='/pico/home/userexternal/gbolzon0/.fonts/TitilliumWeb-Regular.ttf', size=14)
+    font_prop13 = font_manager.FontProperties(fname='/pico/home/userexternal/gbolzon0/.fonts/TitilliumWeb-Regular.ttf', size=13)
     #font.set_name('TitilliumWeb')
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
@@ -127,7 +128,7 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
         fig.add_axes(ax)
 
     ratio=672./860
-    ax.set_position([0.08, 0.11, ratio, ratio])
+    ax.set_position([0.08, 0.13, ratio, ratio])
     clim = map_dict['clim']
 
     lon_min = mask.xlevels.min()
@@ -146,27 +147,37 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
         cbar_ticks_labels.append("%g" % (t,))
     #div = make_axes_locatable(ax)
     #cax = div.append_axes("right", size="3%", pad=0.05)
-    cax = fig.add_axes((0.88,.11, 0.03, 0.78))
+    cax = fig.add_axes((0.88,.13, 0.03, 0.78))
     cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
     cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
     ax.invert_yaxis()
 
+    ax.set_yticklabels([], 'fontproperties', font_prop)
+    ax.set_xticklabels([], 'fontproperties', font_prop)
+    ax.set_xticks(np.arange(-2,36,4).tolist())
+    ax.set_yticks(np.arange(32,46,4).tolist())
+
+    #ax.set_yticklabels([u"32N", u"36N", u"40N", u"44N"], 'fontproperties', font_prop)
     ax.set_xlim([-6, 36])
     ax.set_ylim([30, 46])
+    t=ax.set_xlabel("longitude (deg)");
+    t.set_font_properties(font_prop13)
+    t=ax.set_ylabel("latitude (deg)")
+    t.set_font_properties(font_prop13)
 
-    ax.set_position([0.08, 0.11, ratio, ratio])
+
+
+    ax.set_position([0.08, 0.13, ratio, ratio])
     ax.axes.get_xaxis().set_visible(True)
     ax.axes.get_yaxis().set_visible(True)
-    units = r'mmolP m$^{-3}$'
-    units=u'\N{DEGREE SIGN}C'
     units = map_dict['units']
-    print units
+
     title_1 = "%s, %s "  % (map_dict['longname'],units)
     title_2 = "%s" %  map_dict['layer'].__repr__()
     title_3 = "%s" % (map_dict['date']).strftime('%d - %m - %Y')
-    t1=ax.text(-6,46.5, title_1, verticalalignment='bottom', horizontalalignment='left')#'fontproperties',font_prop,
-    t2=ax.text(15,46.5, title_2, verticalalignment='bottom', horizontalalignment='center')
-    t3=ax.text(36,46.5, title_3, verticalalignment='bottom', horizontalalignment='right')
+    t1=ax.text(-6,46.3, title_1, verticalalignment='bottom', horizontalalignment='left')#'fontproperties',font_prop,
+    t2=ax.text(15,46.3, title_2, verticalalignment='bottom', horizontalalignment='center')
+    t3=ax.text(36,46.3, title_3, verticalalignment='bottom', horizontalalignment='right')
     watermarkstring='Copyright : \nOGS ECHO GROUP\nmedeaf.inogs.it'
     ax.text(17, 35,watermarkstring ,fontsize=8,fontweight='bold', color='gray', ha='left', va='top', alpha=0.3)
     #title = "%s %s %s" % (map_dict['date'], map_dict['longname'], map_dict['layer'].__repr__())
@@ -371,7 +382,7 @@ if __name__ == '__main__':
     map2d=DE.values[k,:,:]
     map2d[~mask.mask[k,:,:]] = np.NaN
     from commons.layer import Layer
-    map_dict ={'data':map2d, 'clim':[0,0.1],'date':datetime.strptime('20160116','%Y%m%d'),'varname':'N1p', 'layer':Layer(0,10),'longname':'Phosphate', }
+    map_dict ={'data':map2d, 'clim':[0,0.1],'date':datetime.strptime('20160116','%Y%m%d'),'varname':'N1p', 'layer':Layer(0,10),'longname':'Phosphate', 'units':'mmolP/m3'}
     #fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
     #fig.savefig('prova.jpg',dpi=72,quality=75)
     from layer_integral import coastline

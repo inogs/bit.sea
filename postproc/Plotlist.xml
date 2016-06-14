@@ -86,7 +86,7 @@
 </plots>
 
 <!--  PPN -->
-<plots var="ppn" units="mgC/m3/d" plotunits="mgC$ m^{-3} d^{-1} $" name="NPP" longname="Net Primary Production">
+<plots var="ppn" units="mgC/m3/d" plotunits="mgC m$ ^{-3}$ d$^{-1}$" name="NPP" longname="Net Primary Production">
 <depth top= "0000" bottom="0010"  clim="[0,50]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,50]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,50]"> </depth>
@@ -135,7 +135,7 @@
 
 
 <!--  DIC -->
-<plots var="DIC" units="umol/kg " plotunits="$\mu mol kg$^{-1}$" name="DIC" longname="Dissolved inorganic Carbon">
+<plots var="DIC" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="DIC" longname="Dissolved inorganic Carbon">
 <depth top= "0000" bottom="0010"  clim="[2120,2340]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[2120,2340]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[2120,2340]"> </depth>
@@ -151,7 +151,7 @@
 </plots>
 
 <!--  ALK -->
-<plots var="Ac" units="umol/kg " plotunits="$\mu mol kg$^{-1}$" name="Alk" longname="Alkalinity">
+<plots var="Ac" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
 <depth top= "0000" bottom="0010"  clim="[2350,2730]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[2350,2730]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[2350,2730]"> </depth>

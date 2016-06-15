@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+<LayersMaps>
+
+
+<plots var="vosaline" units="psu"  plotunits="psu" name="Sal" longname="Salinity">
+<depth top= "0000" bottom="0010"  clim="[35,39.5]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[35,39.5]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[35,39.5]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[35,39.5]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[35,39.5]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[35,39.5]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[35,39.5]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[35,39.5]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[35,39.5]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[35,39.5]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[35,39.5]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[35,39.5]"> </depth>
+</plots>
+
+
+
+<plots var="votemper" units="°C" plotunits="°C" name="T" longname="Temperature">
+<depth top= "0000" bottom="0010"  clim="[5,30]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[5,30]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[5,30]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[5,30]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[5,30]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[5,30]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[5,30]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[5,30]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[5,30]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[5,30]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[5,30]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[5,30]"> </depth>
+</plots>
+
+
+
+
+
+</LayersMaps>
+
+</root>

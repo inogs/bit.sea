@@ -3,6 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.font_manager as font_manager
+from matplotlib.font_manager import FontProperties
 
 
 def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0):
@@ -108,17 +110,16 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     return fig, ax
 
 
-def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
+def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None):
     """
     Designed for web site
     """
     
-    watermark = pl.imread('/pico/home/userexternal/gbolzon0/bit.sea/layer_integral/20160610_OGS_slider_sito.png')
-    import matplotlib.font_manager as font_manager
-    from matplotlib.font_manager import FontProperties
+    #sfondo = pl.imread('/pico/home/userexternal/gbolzon0/bit.sea/layer_integral/20160610_OGS_slider_sito.png')
+
     font=FontProperties()
-    font_prop   = font_manager.FontProperties(fname='/pico/home/userexternal/gbolzon0/.fonts/TitilliumWeb-Regular.ttf', size=14)
-    font_prop13 = font_manager.FontProperties(fname='/pico/home/userexternal/gbolzon0/.fonts/TitilliumWeb-Regular.ttf', size=13)
+    font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=14)
+    font_prop13 = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=13)
     #font.set_name('TitilliumWeb')
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
@@ -137,7 +138,8 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
     lat_max = mask.ylevels.max()
     cmap=pl.get_cmap('jet',ncolors)
     im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
-    ax.imshow(watermark, extent=[-6, 36, 30, 46])
+    if not (background_img is None) : 
+        ax.imshow(background_img, extent=[-6, 36, 30, 46])
 
     #Set color bar
     im.set_clim(clim[0], clim[1])
@@ -145,8 +147,8 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
     cbar_ticks_labels = list()
     for t in cbar_ticks_list:
         cbar_ticks_labels.append("%g" % (t,))
-    #div = make_axes_locatable(ax)
-    #cax = div.append_axes("right", size="3%", pad=0.05)
+
+
     cax = fig.add_axes((0.88,.13, 0.03, 0.78))
     cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
     cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
@@ -175,13 +177,12 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256):
     title_1 = "%s, %s "  % (map_dict['longname'],units)
     title_2 = "%s" %  map_dict['layer'].__repr__()
     title_3 = "%s" % (map_dict['date']).strftime('%d - %m - %Y')
-    t1=ax.text(-6,46.3, title_1, verticalalignment='bottom', horizontalalignment='left')#'fontproperties',font_prop,
+    t1=ax.text(-6,46.3, title_1, verticalalignment='bottom', horizontalalignment='left')
     t2=ax.text(15,46.3, title_2, verticalalignment='bottom', horizontalalignment='center')
     t3=ax.text(36,46.3, title_3, verticalalignment='bottom', horizontalalignment='right')
     watermarkstring='Copyright : \nOGS ECHO GROUP\nmedeaf.inogs.it'
     ax.text(17, 35,watermarkstring ,fontsize=8,fontweight='bold', color='gray', ha='left', va='top', alpha=0.3)
-    #title = "%s %s %s" % (map_dict['date'], map_dict['longname'], map_dict['layer'].__repr__())
-    #t= fig.suptitle(title_3)
+
     t1.set_font_properties(font_prop)
     t2.set_font_properties(font_prop)
     t3.set_font_properties(font_prop)

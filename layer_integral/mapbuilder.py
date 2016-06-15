@@ -24,8 +24,7 @@ class Plot(object):
         #Input validation
         self.__varname = str(varname)
         self.__longvarname = str(longvarname)
-        print "units = ", units
-        self.__units = units#str(units.encode('utf-8'))
+        self.__units = units
         if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
@@ -90,8 +89,12 @@ class MapBuilder(object):
                         clim = literal_eval(clim)
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
                 self.__plotlist.append(plot)
-
-    def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0):
+    
+    def read_background(self,filename):
+        sfondo = pl.imread(filename)
+        return sfondo
+        
+    def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0, background_img=None):
         '''
         Generator of a large set of images.
         Arguments : 
@@ -102,7 +105,7 @@ class MapBuilder(object):
                 = 1, to call mapplot.mapplot_onlycolor()
                 = 2, to call mapplot.mapplot_nocolor()
         
-        '''
+        ''' 
         fig = None
         ax = None
         for f in self.__netcdffileslist:
@@ -132,7 +135,7 @@ class MapBuilder(object):
                     if maptype == 1:
                         dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
                         mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
-                        fig, ax = mapplot_medeaf(mapdict, fig=fig, ax=ax, mask=self._mask, ncolors=24)
+                        fig, ax = mapplot_medeaf(mapdict, fig=fig, ax=ax, mask=self._mask, ncolors=24,background_img=background_img)
                         fig.savefig(outfile + ".png",dpi=86)
                         pl.close(fig)
                     if maptype == 2:

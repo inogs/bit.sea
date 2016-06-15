@@ -42,6 +42,11 @@ def argument():
                                 required = False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
+    parser.add_argument(   '--background', '-b',
+                                type = str,
+                                required = False,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/etc/static-data/POSTPROC/background_medeaf.png",
+                                help = 'Path to mask file')
     return parser.parse_args()
 
 args = argument()
@@ -93,5 +98,6 @@ except:
 file_list = glob(inputdir + "/" + file_pattern)
 mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
-mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=1)
+background=mb.read_background(args.background)
+mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)

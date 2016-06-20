@@ -166,72 +166,9 @@
 <depth top= "2500" bottom="3000"  clim="[2500,2700]"> </depth>
 </plots>
 
-<!--  saline -->
-<plots var="vosaline" units="psu"  plotunits="psu" name="Sal" longname="Salinity">
-<depth top= "0000" bottom="0010"  clim="[35,39.5]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[35,39.5]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[35,39.5]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[35,39.5]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[35,39.5]"> </depth>
-<depth top= "0150" bottom="0300"  clim="[35,39.5]"> </depth>
-<depth top= "0300" bottom="0600"  clim="[35,39.5]"> </depth>
-<depth top= "0600" bottom="1000"  clim="[35,39.5]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[35,39.5]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[35,39.5]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[35,39.5]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[35,39.5]"> </depth>
-</plots>
-
-
-
-<!--  Temper  -->
-<plots var="votemper" units="°C" plotunits="°C" name="T" longname="Temperature">
-<depth top= "0000" bottom="0010"  clim="[5,30]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[5,30]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[5,30]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[5,30]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[5,30]"> </depth>
-<depth top= "0150" bottom="0300"  clim="[5,30]"> </depth>
-<depth top= "0300" bottom="0600"  clim="[5,30]"> </depth>
-<depth top= "0600" bottom="1000"  clim="[5,30]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[5,30]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[5,30]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[5,30]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[5,30]"> </depth>
-</plots>
-
-
 
 
 
 </LayersMaps>
-
-<Transects>
-<vars>
-<var name="N3n" units="mmol/m3" clim="[0,10]" ></var>
-<var name="N3n" units="mmol/m3" clim="[0,10]" ></var>
-<var name="N5s" units="mmol/m3" clim="[0,10]" ></var>
-<var name="N1p" units="mmol/m3" clim="[0,0.4]" ></var>
-<var name="O2o" units="mmol/m3" clim="[180,260]" ></var>
-<var name="ppn" units="mgC/m3/d" clim="[0,50]" ></var>
-<var name="P_i" units="mgCHLa/m3" clim="[0,1.0]" ></var>
-<var name="P_c" units="mmol/m3" clim="[0,30]" ></var>
-<var name="Z_c" units="mgC/m3" clim="[0,30]" ></var>
-<var name="B1c" units="mgC/m3" clim="[0,30]" ></var>
-<var name="DIC" units="umol/kg" clim="[2150,2350]" ></var>
-<var name="AC_" units="umol/kg" clim="[2450,2720]" ></var>
-<var name="PH_" units="@Tinsitu Tscale" clim="[7.95,8.25]" ></var>
-<var name="pCO" units="uatm" clim="[200,550]" ></var>
-<var name="O3h" units="mmol/m3" clim="[2450,2800]" ></var>
-<var name="O3c" units="mmol/m3" clim="[26000,29000]" ></var>
-</vars>
- 
-<transect name="T1" lonmin="8" lonmax="8" latmin="37" latmax="43" ></transect>
-<transect name="T2" lonmin="0" lonmax="11.5" latmin="38" latmax="38" ></transect>
-<transect name="T3" lonmin="11.5" lonmax="15" latmin="38" latmax="33.2" ></transect>
-<transect name="T4" lonmin="15" lonmax="35" latmin="33.2" latmax="33.2" ></transect>
-
- 
-</Transects>
 
 </root>

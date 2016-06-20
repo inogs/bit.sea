@@ -14,7 +14,7 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'daily'):   req = requestors.Daily_req(currentDate.year,currentDate.month,currentDate.day)
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
-
+    if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 class TimeList():
@@ -137,6 +137,8 @@ class TimeList():
             return "monthly"
         if (days < 1 ):
             return "hourly"
+        if (days > 364 ) & (days < 367): 
+            return "yearly"
             #hours = mydiff.seconds/3600
             #we want an integer number of hours
             #if (float(mydiff.seconds)/3600. == hours):
@@ -151,18 +153,39 @@ class TimeList():
                     if requestor.timeinterval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
-            if self.inputFrequency in ['weekly','monthly']:
+            if self.inputFrequency in ['weekly','monthly','yearly']:
                 for it, t in enumerate(self.Timelist):
                     t1 = computeTimeWindow(self.inputFrequency,t);
-                    t2 = TimeInterval.fromdatetimes(requestor.timeinterval.start_time, requestor.timeinterval.end_time)
+                    t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
                     weight = t1.overlapTime(t2)
                     if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
             return SELECTION , np.array(weights)
 
+    def select_one(self,requestor):
+        '''
+        Used to select a single time (or file) regardless to time aggregation
+
+        index = select_one(requestor)
+        Returned values:
+          - an integer index indicating to access selected times (or files)
+
+
+        '''
+        assert not isinstance(requestor, requestors.Clim_day)
+        assert not isinstance(requestor, requestors.Clim_month)
+        assert not isinstance(requestor, requestors.Clim_season)
+        for it, t in enumerate(self.Timelist):
+            if requestor.time_interval.contains(t):
+                return it
+        print "Time not found"
+        return None
+
+
     def select(self,requestor):
         '''
+        Method for time aggregation
         indexes, weights = select(requestor)
         Returned values:
          - a list of indexes (integers) indicating to access selected times (or files)
@@ -413,7 +436,11 @@ class TimeList():
         if self.inputFrequency == 'weekly' :
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day))
+        if self.inputFrequency == 'yearly' :
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Yearly_req(t.year))
         return REQ_LIST
+
 
     def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
         '''
@@ -442,10 +469,30 @@ class TimeList():
             if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
         return Coupled_List
 
+    def find(self,datetimeObj):
+        '''
+        Finds the nearest
+        Argument:
+         a datetime object
+        Returns the index of the nearest element
+        '''
+        D=np.zeros(self.nTimes)
+        for i, d in enumerate(self.Timelist):
+            diff=d-datetimeObj
+            D[i]=np.abs(diff.total_seconds())
+        return D.argmin()
+
 
 
 if __name__ == '__main__':
-    daily=DL.getTimeList("19970901-12:00:00", "20150502-12:00:00", "days=1")
+    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
+    TLY = TimeList(yearly)
+    REQSY=TLY.getOwnList()
+    r=REQSY[0]
+    ii,weights = TLY.select(r)
+
+
+    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
     TL = TimeList(daily)
     REQS=TL.getOwnList()
     r=REQS[0]
@@ -464,3 +511,5 @@ if __name__ == '__main__':
     for imonth in range(1,13):
         m = requestors.Clim_month(imonth)
         TL.select(m)
+    req = requestors.Monthly_req(2012,1)
+    TLY.select_one(req)

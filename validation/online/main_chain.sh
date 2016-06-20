@@ -1,10 +1,13 @@
-OPA_RUNDATE=20160412
+OPA_RUNDATE=20160524 # tuesday 
 
-STARTTIME_a=$OPA_RUNDATE-10
-STARTTIME_a=$OPA_RUNDATE-7
+STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
+END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
 
-STARTTIME_f=$OPA_RUNDATE-7
-END__TIME_f=$OPA_RUNDATE-4
+STARTTIME_s=$( date -d " $OPA_RUNDATE -7 days " +%Y%m%d )
+
+STARTTIME_f=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
+END__TIME_f=$( date -d " $OPA_RUNDATE  -4 days " +%Y%m%d )
+
 MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 
@@ -19,13 +22,16 @@ TMP_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/TMP
 PROFILERDIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/PROFILATORE
 IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG/
 
-mkdir -p $ONLINE_VALIDATION_DIR
+mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 
-python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}
-python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}
+python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
+python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
+
+python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
+
 # ho ottenuto una serie continua dall'archivio, ma analisi e forecasts della precedente
 #step 2 -- re-do Forcings generation
-./forcings_gen.sh -d ${ONLINE_VALIDATION_DIR}
+./forcings_gen.sh -d ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
 # step 3 -- aggregate variables to have chl and all variables (physical and biological) on the same ave files
 
@@ -45,3 +51,4 @@ python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i $TMP_DIR__ACT
 #${STARTTIME_a} -et ${END__TIME_a} confronto Float-Analysis previous
 #${STARTTIME_f} -et ${END__TIME_f} confronto Float con {analisi attuale, IMG_DIR__ACT}, {forecast, IMG_DIR_PREV}
 python profile_plotter3.py -f $IMG_DIR_PREV -a $IMG_DIR__ACT # scorre tutti i files e genera le immagini a 3
+

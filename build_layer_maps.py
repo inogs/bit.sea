@@ -2,7 +2,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-
+from __future__ import print_function
 import argparse
 
 def argument():
@@ -42,11 +42,16 @@ def argument():
                                 required = False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
+    parser.add_argument(   '--background', '-b',
+                                type = str,
+                                required = False,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/etc/static-data/POSTPROC/background_medeaf.png",
+                                help = 'Path to mask file')
     return parser.parse_args()
 
 args = argument()
 
-from __future__ import print_function
+
 import sys
 from commons.utils import is_valid_path
 import numpy as np
@@ -89,13 +94,10 @@ except:
     c_lon=None
     c_lat=None
 
-try:
-    file_list = glob(inputdir + "/" + file_pattern)
-    mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
-    #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
-    mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=1)
-    #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
-except Exception as e:
-    die(e, 2, False)
 
-
+file_list = glob(inputdir + "/" + file_pattern)
+mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
+#mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
+background=mb.read_background(args.background)
+mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1)
+#mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)

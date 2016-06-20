@@ -275,9 +275,9 @@ class matchup(object):
 
 if __name__ == "__main__" :
     n = 5600
-    x = 4.0 + np.random.randn(n)
-    y = 3.0 + np.random.randn(n)
-    M = matchup(x,y)
+    x = 4.0 + 1.0*np.random.randn(n)
+    y = 3.0 + 0.5*np.random.randn(n)
+    M = matchup(y,x)
     fig, ax = M.densityplot2(modelname='s1',refname='s2',units='Kg/m3')
     fig.show()
     

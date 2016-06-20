@@ -43,16 +43,14 @@ def WriteTMPave(biofile,physfile, outfile):
     setattr(ncOUT,"Convenctions","COARDS")
     setattr(ncOUT,"DateStart",nc.DateStart)
     setattr(ncOUT,"Date__End",nc.Date__End)
-        
-    
-    for dimName,dimValue in DIMS.items():
-        ncOUT.createDimension(dimName,dimValue)
+    ncOUT.createDimension('time',   1)
+    ncOUT.createDimension('lon'  ,jpi)
+    ncOUT.createDimension('lat'  ,jpj)
+    ncOUT.createDimension('depth',jpk)
     
     for var in ['lon','lat','depth']:
         ncvar=ncOUT.createVariable(var,'f',(var,))
         ncvar[:]=nc.variables[var].data
-        setattr(ncvar,"actual_range",nc.variables[var].actual_range)
-        setattr(ncvar,"units"       ,nc.variables[var].units)
     nc.close()        
     
     setattr(ncOUT.variables['lon'],"long_name","Longitude")    

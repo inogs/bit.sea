@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+<section2>
+
+<!--  surf chl -->
+<plots var="chl" units="mg/m3" name="chlorophyll" longname=' surface chlorophyll' >
+<basin name= "alb" longname="Alboran"> </basin>
+<basin name= "nwm" longname="North western Med"> </basin>
+<basin name= "tyr" longname="Tyrrhenian"> </basin>
+<basin name= "swm1" longname="South western Med west"> </basin>
+<basin name= "swm2" longname="South western Med east"> </basin>
+<basin name= "ion1" longname="Western Ionian"> </basin>
+<basin name= "ion2" longname="Eastern Ionian"> </basin>
+<basin name= "ion3" longname="North Ionian"> </basin>
+<basin name= "adr1" longname="Northern Adriatic"> </basin>
+<basin name= "adr2" longname="Southern Adriatic" > </basin>
+<basin name= "lev1" longname="Western Levantine" > </basin>
+<basin name= "lev2" longname="Northern Levantine" > </basin>
+<basin name= "lev3" longname="Southern Levantine" > </basin>
+<basin name= "lev4" longname="Eastern Levantine" > </basin>
+<basin name= "aeg" longname="Aegean" > </basin>
+</plots>
+
+</Section2>
+
+
+<section3>
+<!--  bioFloat data -->
+    <plots var="biofloat"  name="Bio-Argo Float data" longname='Bio-Argo Float data' >
+    </plots>
+    
+</Section3>
+
+<section4>
+<!--  vars -->
+<plots var="chla" units="mg/m3"  name="chlorophyll" longname='chlorophyll' >
+    <basin name= "alb" longname="Alboran">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    
+    <basin name= "nwm" longname="North western Med">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "tyr" longname="Tyrrhenian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm1" longname="South western Med west">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm2" longname="South western Med east">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion1" longname="Western Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion2" longname="Eastern Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion3" longname="North Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr1" longname="Northern Adriatic">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr2" longname="Southern Adriatic" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev1" longname="Western Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev2" longname="Northern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev3" longname="Southern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev4" longname="Eastern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "aeg" longname="Aegean" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+</plots>
+<plots var="N3n" units="mmolN/m3" name="NO3" longname='Nitrate'>
+    <basin name= "alb" longname="Alboran">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    
+    <basin name= "nwm" longname="North western Med">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "tyr" longname="Tyrrhenian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm1" longname="South western Med west">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm2" longname="South western Med east">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion1" longname="Western Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion2" longname="Eastern Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion3" longname="North Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr1" longname="Northern Adriatic">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr2" longname="Southern Adriatic" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev1" longname="Western Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev2" longname="Northern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev3" longname="Southern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev4" longname="Eastern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "aeg" longname="Aegean" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+</plots>
+<plots var="O2o" units="mmolO/m3" name="O2" longname="Oxygen">
+    <basin name= "alb" longname="Alboran">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    
+    <basin name= "nwm" longname="North western Med">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "tyr" longname="Tyrrhenian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm1" longname="South western Med west">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "swm2" longname="South western Med east">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion1" longname="Western Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion2" longname="Eastern Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "ion3" longname="North Ionian">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr1" longname="Northern Adriatic">
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "adr2" longname="Southern Adriatic" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev1" longname="Western Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev2" longname="Northern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev3" longname="Southern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "lev4" longname="Eastern Levantine" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+    <basin name= "aeg" longname="Aegean" >
+        <depth top= "0010" bottom="0030" > </depth>
+        <depth top= "0030" bottom="0060" > </depth>
+        <depth top= "0060" bottom="0100" > </depth>
+        <depth top= "0100" bottom="0150" > </depth>
+        <depth top= "0150" bottom="0300" > </depth>
+        <depth top= "0300" bottom="0600" > </depth>
+        <depth top= "0600" bottom="1000" > </depth>
+    </basin>
+</plots>
+</Section4>
+
+</root>

@@ -41,16 +41,29 @@ fi
 
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/
 SAT_DAILY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/
-python SatValidation.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o ${ONLINE_VALIDATION_DIR}/Validation_on_weekly_Sat.${STARTTIME_s}.nc  #  # MISFIT   
+PREVIOUS_TUE_RUNDIR=${STARTTIME_s}
+f0_name=${ONLINE_VALIDATION_DIR}/Validation_f0_${PREVIOUS_TUE_RUNDIR}_on_weekly_Sat.${STARTTIME_s}.nc
+python SatValidation.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name  # MISFIT   
 
 for fc_day in 1 2; do
    DAY=$(date -d "$STARTTIME_s + $fc_day days"  +%Y%m%d )
-   python SatValidation.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${ONLINE_VALIDATION_DIR}/Validation_on_daily_Sat.${DAY}.nc     # ERROR  
+   f_name=${ONLINE_VALIDATION_DIR}/Validation_f${fc_day}_${PREVIOUS_TUE_RUNDIR}_on_daily_Sat.${DAY}.nc
+   echo python SatValidation.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${f_name}     # ERROR  
 done
 
 # Questi devono essere archiviati in $ARCHIVE_DIR/POSTPROC/AVE_FREQ_1/validation/Sat
 
 exit 0
+
+a0_name=${ONLINE_VALIDATION_DIR}/Validation_a0_${OPA_RUNDATE}_on_weekly_Sat.${STARTTIME_s}.nc
+echo python SatValidation.py -d ${STARTTIME_s} -f actualdir -s ${SAT_WEEKLY_DIR} -o $a0_name  # MISFIT   
+
+for ac_day in 1 2; do
+   DAY=$(date -d "$STARTTIME_s + $ac_day days"  +%Y%m%d )
+   a_name=${ONLINE_VALIDATION_DIR}/Validation_a${ac_day}_${OPA_RUNDATE}_on_daily_Sat.${DAY}.nc
+   echo python SatValidation.py  -d $DAY -f actualdir -s ${SAT_DAILY_DIR} -o ${a_name}     # ERROR  
+done
+
 python var_aggregator.py --biodir $WRKDIR/POSTPROC/AVE_FREQ_1/TMP --physdir $WRKDIR/MODEL/FORCINGS -t $TMP_DIR__ACT
 
 

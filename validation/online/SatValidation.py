@@ -74,17 +74,17 @@ dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
     print sub
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
-    SUB[sub.name]  = sbmask[0,:,:].copy()
+    SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
 
 mask200_2D = TheMask.mask_at_level(200.0)
-nCOAST=3
+
 
 COASTNESS_LIST=['coast','open_sea','everywhere']
+nCOAST = len(COASTNESS_LIST)
 dtype = [(coast, np.bool) for coast in COASTNESS_LIST]
-COASTNESS = np.ones((jpk,jpj,jpi),dtype=struct)
-COASTNESS['coast']     = ~mask200_3D;
-COASTNESS['open_sea']  =  mask200_3D;
+COASTNESS = np.ones((jpj,jpi),dtype=dtype)
+COASTNESS['coast']     = ~mask200_2D;
+COASTNESS['open_sea']  =  mask200_2D;
 #COASTNESS['everywhere'] = True;
 
 satfile = glob.glob(REF_DIR+date+"*")[0]
@@ -113,10 +113,10 @@ SAT___MEAN                         = np.zeros((nSUB,nCOAST),np.float32)
 BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nSUB,nCOAST),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nSUB,nCOAST),np.float32)
 
-for icoast, coast in enumerate(COASTNESS):
+for icoast, coast in enumerate(COASTNESS_LIST):
 
     for isub, sub in enumerate(OGS.P):
-        selection = SUB[sub.name] & (~nodata) & mask200_2D
+        selection = SUB[sub.name] & (~nodata) & COASTNESS[coast]
         M = matchup.matchup(Model[selection], Sat16[selection])
         VALID_POINTS[isub] = M.number()
         if M.number() > 0 :
@@ -147,11 +147,11 @@ s='';
 for sub in OGS.P: s =s+sub.name + ","
 setattr(ncOUT,'sublist',s)
 s='';
-for coast in COASTNESS: s =s+coast + ","
+for coast in COASTNESS_LIST: s =s+coast + ","
 setattr(ncOUT,'coastlist',s)
 
 
-ncvar= ncOUT.createVariable('number', 'i', ('nsub',))
+ncvar= ncOUT.createVariable('number', 'i', ('nsub','ncoast'))
 ncvar[:]= VALID_POINTS
 
 ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_RMS_SURF_BASIN', 'f', ('nsub','ncoast'))

@@ -4,7 +4,7 @@ class TimeInterval():
     def __init__(self, starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
         self.start_time = datetime.datetime.strptime(starttime, dateformat)
         self.end_time = datetime.datetime.strptime(endtime   ,dateformat)
-        assert self.start_time < self.end_time
+        assert self.start_time <= self.end_time
     
     def __repr__(self):
         return self.start_time.__repr__() + " , " + self.end_time.__repr__() 

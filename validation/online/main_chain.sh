@@ -53,6 +53,10 @@ done
 
 # Questi devono essere archiviati in $ARCHIVE_DIR/POSTPROC/AVE_FREQ_1/validation/Sat
 
+Validation_f0_20160517_on_weekly_Sat.20160517.nc
+Validation_f1_20160517_on_daily_Sat.20160518.nc  Validation_f2_20160517_on_daily_Sat.20160519.nc
+Validation_a1_20160524_on_daily_Sat.20160518.nc
+
 exit 0
 
 a0_name=${ONLINE_VALIDATION_DIR}/Validation_a0_${OPA_RUNDATE}_on_weekly_Sat.${STARTTIME_s}.nc

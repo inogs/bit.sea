@@ -74,11 +74,18 @@ dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
     print sub
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
-    SUB[sub.name]  = sbmask[0,:,:].copy()
+    SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
 
 mask200_2D = TheMask.mask_at_level(200.0)
 
+
+COASTNESS_LIST=['coast','open_sea','everywhere']
+nCOAST = len(COASTNESS_LIST)
+dtype = [(coast, np.bool) for coast in COASTNESS_LIST]
+COASTNESS = np.ones((jpj,jpi),dtype=dtype)
+COASTNESS['coast']     = ~mask200_2D;
+COASTNESS['open_sea']  =  mask200_2D;
+#COASTNESS['everywhere'] = True;
 
 satfile = glob.glob(REF_DIR+date+"*")[0]
 modfile = MODELDIR + "ave." + date + "-12:00:00.nc" 
@@ -98,68 +105,71 @@ nodata     = cloudsLand | modelLand
 
 
 
+BGC_CLASS4_CHL_RMS_SURF_BASIN      = np.zeros((nSUB,nCOAST),np.float32)
+BGC_CLASS4_CHL_BIAS_SURF_BASIN     = np.zeros((nSUB,nCOAST),np.float32)
+VALID_POINTS                       = np.zeros((nSUB,nCOAST),np.float32)
+MODEL_MEAN                         = np.zeros((nSUB,nCOAST),np.float32)
+SAT___MEAN                         = np.zeros((nSUB,nCOAST),np.float32)
+BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nSUB,nCOAST),np.float32)
+BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nSUB,nCOAST),np.float32)
 
-BGC_CLASS4_CHL_RMS_SURF_BASIN      = np.zeros((nSUB,),np.float32)
-BGC_CLASS4_CHL_BIAS_SURF_BASIN     = np.zeros((nSUB,),np.float32)
-VALID_POINTS                       = np.zeros((nSUB,),np.float32)
-MODEL_MEAN                         = np.zeros((nSUB,),np.float32)
-SAT___MEAN                         = np.zeros((nSUB,),np.float32)
-BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nSUB,),np.float32)
-BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nSUB,),np.float32)
+for icoast, coast in enumerate(COASTNESS_LIST):
 
-
-
-for isub, sub in enumerate(OGS.P):
-    print sub
-    selection = SUB[sub.name] & (~nodata) & mask200_2D
-    M = matchup.matchup(Model[selection], Sat16[selection])
-    VALID_POINTS[isub] = M.number()
-    if M.number() > 0 :
-        BGC_CLASS4_CHL_RMS_SURF_BASIN[isub]  = M.RMSE()
-        BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub] = M.bias()
-             
-        weight = TheMask.area[selection]
-        MODEL_MEAN[isub] = weighted_mean( M.Model,weight)
-        SAT___MEAN[isub] = weighted_mean( M.Ref,  weight)
-    
-        Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
-        BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[isub]  = Mlog.RMSE()
-        BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[isub] = Mlog.bias()
-    else:
-        BGC_CLASS4_CHL_RMS_SURF_BASIN = np.nan
-        BGC_CLASS4_CHL_BIAS_SURF_BASIN= np.nan
-        MODEL_MEAN = np.nan
-        SAT___MEAN = np.nan
-        BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = np.nan
-        BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= np.nan
+    for isub, sub in enumerate(OGS.P):
+        selection = SUB[sub.name] & (~nodata) & COASTNESS[coast]
+        M = matchup.matchup(Model[selection], Sat16[selection])
+        VALID_POINTS[isub] = M.number()
+        if M.number() > 0 :
+            BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast]  = M.RMSE()
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub,icoast] = M.bias()
+                 
+            weight = TheMask.area[selection]
+            MODEL_MEAN[isub,icoast] = weighted_mean( M.Model,weight)
+            SAT___MEAN[isub,icoast] = weighted_mean( M.Ref,  weight)
+        
+            Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
+            BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[isub,icoast]  = Mlog.RMSE()
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[isub,icoast] = Mlog.bias()
+        else:
+            BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast] = np.nan
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub,icoast]= np.nan
+            MODEL_MEAN[isub,icoast] = np.nan
+            SAT___MEAN[isub,icoast] = np.nan
+            BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[isub,icoast] = np.nan
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[isub,icoast]= np.nan
 
 
 
 ncOUT = NC.netcdf_file(outfile,'w')
 ncOUT.createDimension('nsub', nSUB)
+ncOUT.createDimension('ncoast', nCOAST)
 s='';
 for sub in OGS.P: s =s+sub.name + ","
 setattr(ncOUT,'sublist',s)
+s='';
+for coast in COASTNESS_LIST: s =s+coast + ","
+setattr(ncOUT,'coastlist',s)
 
-ncvar= ncOUT.createVariable('number', 'i', ('nsub',))
+
+ncvar= ncOUT.createVariable('number', 'i', ('nsub','ncoast'))
 ncvar[:]= VALID_POINTS
 
-ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_RMS_SURF_BASIN', 'f', ('nsub',))
+ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_RMS_SURF_BASIN', 'f', ('nsub','ncoast'))
 ncvar[:] = BGC_CLASS4_CHL_RMS_SURF_BASIN
 
-ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_BIAS_SURF_BASIN', 'f', ('nsub',))
+ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_BIAS_SURF_BASIN', 'f', ('nsub','ncoast'))
 ncvar[:] = BGC_CLASS4_CHL_BIAS_SURF_BASIN
 
-ncvar = ncOUT.createVariable('MODEL_MEAN', 'f', ('nsub',))
+ncvar = ncOUT.createVariable('MODEL_MEAN', 'f', ('nsub','ncoast'))
 ncvar[:] = MODEL_MEAN
 
-ncvar=ncOUT.createVariable('SAT___MEAN', 'f', ('nsub',))
+ncvar=ncOUT.createVariable('SAT___MEAN', 'f', ('nsub','ncoast'))
 ncvar[:] = SAT___MEAN
 
-ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG', 'f', ('nsub',))
+ncvar = ncOUT.createVariable('BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG', 'f', ('nsub','ncoast'))
 ncvar[:] = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG
 
-ncvar= ncOUT.createVariable('BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG', 'f', ('nsub',))
+ncvar= ncOUT.createVariable('BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG', 'f', ('nsub','ncoast'))
 ncvar[:] =BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
 
 ncOUT.close()

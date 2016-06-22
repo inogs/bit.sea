@@ -15,7 +15,7 @@ swm2 = SimplePolygonalBasin('swm2', swm2)
 
 nwm = Polygon([-1.0,9.25, 9.25,-1],
         [39.5,39.5, 46,46])
-nwm = SimplePolygonalBasin('nww', nww)
+nwm = SimplePolygonalBasin('nwm', nwm)
 
 tyr1 = Polygon([09.25,15.00,10,09.25],
                [41.25,41.25,46,46.00])

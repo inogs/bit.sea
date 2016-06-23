@@ -1,0 +1,64 @@
+from commons.timeseries import TimeSeries
+import glob
+import numpy as np
+import scipy.io.netcdf as NC
+import datetime
+
+
+class timelistcontainer():
+    def __init__(self,Ti,ARCHIVE_DIR,search_type):
+        self.timelist=[]
+        self.filelist=[]        
+        self.bias = None
+        self.number=None
+        self.rmse  =None
+        TS=TimeSeries(Ti,archive_dir=ARCHIVE_DIR, postfix_dir="", glob_pattern="Validation_f0")
+        search_paths = TS.get_runs([2])
+        for _, directory in search_paths:
+            dirlist=glob.glob(directory + "Validation_" + search_type + "*")
+            if len(dirlist)> 0: 
+                self.filelist.append(dirlist[0])
+        self.nFrames = len(self.filelist)
+        self.read_basic_info(self.filelist[0])
+        self.readfiles()
+    
+    def read_basic_info(self,filename):
+        ncIN = NC.netcdf_file(filename,'r')
+        self.nSUB = ncIN.dimensions['nsub']
+        self.nCOAST = ncIN.dimensions['ncoast']
+        self.SUBLIST = ncIN.sublist[:-1].split(",")
+        self.COASTLIST=ncIN.coastlist[:-1].split(",")
+        ncIN.close()
+
+    def read_validation_file(self,filename):
+        ncIN = NC.netcdf_file(filename,'r')
+        NUMBER = ncIN.variables['number'].data.copy()
+        BIAS   = ncIN.variables['BGC_CLASS4_CHL_BIAS_SURF_BASIN'].data.copy()
+        RMSE   = ncIN.variables['BGC_CLASS4_CHL_RMS_SURF_BASIN'].data.copy()
+        ncIN.close()
+        return NUMBER,BIAS,RMSE
+    
+    def readfiles(self):
+        
+        BIAS  =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        RMSE  =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        NUMBER=np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        
+        for iFrame, filename in enumerate(self.filelist):
+            time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
+            self.timelist.append(time)
+            number, bias, rmse= self.read_validation_file(filename)
+            NUMBER[iFrame,:,:] = number
+            BIAS[iFrame,:,:]   = bias
+            RMSE[iFrame,:,:]   = rmse
+        self.bias = BIAS
+        self.number=NUMBER
+        self.rmse = RMSE
+    
+    def plotdata(self,VAR, sub,coast):
+        '''
+        VAR must be a 3D field of this class, such as bias, number, ...
+        '''
+        isub = self.SUBLIST.index(sub)
+        icoast= self.COASTLIST.index(coast)
+        return self.timelist, VAR[:,isub,icoast]

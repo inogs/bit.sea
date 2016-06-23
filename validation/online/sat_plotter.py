@@ -19,7 +19,7 @@ times, v2= A.plotdata(B.number, 'alb','open_sea')
 fig, ax = pl.subplots()
 ax.plot(times,v2)
 ax.xaxis.set_major_locator(mdates.YearLocator())
-#ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
 
 for sub in OGS.P:
     print sub.name

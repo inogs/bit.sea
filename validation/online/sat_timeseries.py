@@ -12,6 +12,10 @@ class timelistcontainer():
         self.bias = None
         self.number=None
         self.rmse  =None
+        self.model =None
+        self.sat  = None
+        self.rmselog = None
+        self.biaslog = None
         TS=TimeSeries(Ti,archive_dir=ARCHIVE_DIR, postfix_dir="", glob_pattern="Validation_f0")
         search_paths = TS.get_runs([2])
         for _, directory in search_paths:
@@ -35,25 +39,43 @@ class timelistcontainer():
         NUMBER = ncIN.variables['number'].data.copy()
         BIAS   = ncIN.variables['BGC_CLASS4_CHL_BIAS_SURF_BASIN'].data.copy()
         RMSE   = ncIN.variables['BGC_CLASS4_CHL_RMS_SURF_BASIN'].data.copy()
+        MODEL  = ncIN.variables['MODEL_MEAN'].data.copy()
+        SAT    = ncIN.variables['SAT___MEAN'].data.copy()
+        BIASLOG= ncIN.variables['BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG'].data.copy()
+        RMSELOG= ncIN.variables['BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG'].data.copy()     
         ncIN.close()
-        return NUMBER,BIAS,RMSE
+        return NUMBER,BIAS,RMSE, MODEL, SAT, BIASLOG, RMSELOG
     
     def readfiles(self):
         
-        BIAS  =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
-        RMSE  =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
-        NUMBER=np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        BIAS    =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        RMSE    =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        NUMBER  =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        MODEL   =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        SAT     =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        BIASLOG =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
+        RMSELOG =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
         
         for iFrame, filename in enumerate(self.filelist):
             time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
             self.timelist.append(time)
-            number, bias, rmse= self.read_validation_file(filename)
+            number, bias, rmse, model, sat, logbias, logrmse= self.read_validation_file(filename)
             NUMBER[iFrame,:,:] = number
             BIAS[iFrame,:,:]   = bias
             RMSE[iFrame,:,:]   = rmse
+            MODEL[iFrame,:,:]  = model
+            SAT[iFrame,:,:]    = sat
+            BIASLOG[iFrame,:,:] = logbias
+            RMSELOG[iFrame,:,:] = logrmse
         self.bias = BIAS
         self.number=NUMBER
         self.rmse = RMSE
+        self.model = MODEL
+        self.sat   = SAT
+        self.biaslog = BIASLOG
+        self.rmselog = RMSELOG
+        
+        
     
     def plotdata(self,VAR, sub,coast):
         '''

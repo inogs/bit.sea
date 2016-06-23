@@ -10,6 +10,7 @@ from basins.basin import Basin
 from basins.basin import SimpleBasin
 from basins.region import Rectangle
 
+
 class SubMask(Mask):
     """ Defines a submask starting from a Basin object and a NetCDF file or a Mask object
     """
@@ -44,18 +45,39 @@ class SubMask(Mask):
             raise ValueError("basin must be an instance of Basin")
         # Build the prism mask
         prism = np.zeros_like(self._mask)
-        jpk = self.shape[0]
+        jpk,jpj,jpi = self.shape
         if isinstance(basin.region, Rectangle): #faster algorithm for rectangle
             rect = basin.region
             ii=(self._xlevels>=rect.lonmin) & (self._xlevels <=rect.lonmax) & (self._ylevels>=rect.latmin) & (self._ylevels <=rect.latmax)
             for jk in range(jpk):
                 prism[jk,:,:] = ii
         else: # algorithm for generic basin
-            for x in range(prism.shape[2]):
-                for y in range(prism.shape[1]):
-                    lon,lat = self.convert_x_y_to_lon_lat(x,y)
-                    prism[:,y,x] = basin.is_inside(lon,lat)
+            if hasattr(basin.region,'border_longitudes'): #optimized
+                sbmask = np.zeros((jpj,jpi),np.bool)
+                lonmin=min(basin.region.border_longitudes) -0.1
+                lonmax=max(basin.region.border_longitudes) +0.1
+                latmin=min(basin.region.border_latitudes)  -0.1
+                latmax=max(basin.region.border_latitudes)  +0.1
+
+                lonmin_ind = np.abs(self._xlevels[0,:]-lonmin).argmin()
+                lonmax_ind = np.abs(self._xlevels[0,:]-lonmax).argmin()
+                latmin_ind = np.abs(self._ylevels[:,0]-latmin).argmin()
+                latmax_ind = np.abs(self._ylevels[:,0]-latmax).argmin()
+
+                print lonmin_ind, lonmax_ind, latmin_ind, latmax_ind
+                for x in range(lonmin_ind,lonmax_ind):
+                    for y in range(latmin_ind,latmax_ind):
+                        lon,lat = self.convert_x_y_to_lon_lat(x,y)
+                        sbmask[y,x] = basin.is_inside(lon,lat)
+                for jk in range(jpk):
+                    prism[jk,:,:] = sbmask
+            else:# original
+                for x in range(prism.shape[2]):
+                    for y in range(prism.shape[1]):
+                        lon,lat = self.convert_x_y_to_lon_lat(x,y)
+                        prism[:,y,x] = basin.is_inside(lon,lat)
         # submask = original mask * prism mask
+
         self._mask = self._mask * prism
 
     def save_as_netcdf(self, filename, descr=None, maskvarname='mask'):

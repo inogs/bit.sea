@@ -144,3 +144,17 @@ class Mask(object):
         Returns a 2d array of integers
         '''
         return self._mask.sum(axis=0)
+
+    def cut_at_level(self,index):
+        '''
+        The idea is to generate a new mask object by providing only the depth index
+        At the moment it is not fully developed
+        '''
+
+        _,jpj,jpi = self.shape
+        red_mask = np.zeros((1,jpj,jpi),dtype=np.bool)
+        red_mask[0,:,:] = self._mask[index,:,:]
+        self._mask = red_mask.copy()
+        self._shape = self._mask.shape
+        self._zlevels = self._zlevels[index]
+        raise NotImplementedError

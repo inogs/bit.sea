@@ -46,7 +46,7 @@ import matchup.matchup as matchup
 from commons import netcdf3
 from commons.mask import Mask
 from commons.submask import SubMask
-from basins import OGS
+from basins import V2 as OGS
 import glob
 import scipy.io.netcdf as NC
 
@@ -70,13 +70,15 @@ TheMask=Mask(args.maskfile)
 nSUB = len(OGS.P.basin_list)
 
 jpk,jpj,jpi =TheMask.shape
+mask200_2D = TheMask.mask_at_level(200.0)
 dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
-for sub in OGS.P:
+
+for sub in OGS.Pred:
     print sub
     SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
+    SUB['med'] = SUB['med'] | SUB[sub.name]
 
-mask200_2D = TheMask.mask_at_level(200.0)
 
 
 COASTNESS_LIST=['coast','open_sea','everywhere']
@@ -89,7 +91,6 @@ COASTNESS['open_sea']  =  mask200_2D;
 
 satfile = glob.glob(REF_DIR+date+"*")[0]
 modfile = MODELDIR + "ave." + date + "-12:00:00.nc" 
-
 
 Model = netcdf3.read_3d_file(modfile, 'P_l')[0,:,:]
 try:
@@ -118,7 +119,7 @@ for icoast, coast in enumerate(COASTNESS_LIST):
     for isub, sub in enumerate(OGS.P):
         selection = SUB[sub.name] & (~nodata) & COASTNESS[coast]
         M = matchup.matchup(Model[selection], Sat16[selection])
-        VALID_POINTS[isub] = M.number()
+        VALID_POINTS[isub,icoast] = M.number()
         if M.number() > 0 :
             BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast]  = M.RMSE()
             BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub,icoast] = M.bias()

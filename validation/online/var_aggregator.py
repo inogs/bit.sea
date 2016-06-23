@@ -72,7 +72,7 @@ def WriteTMPave(biofile,physfile, outfile):
         setattr(ncvar,"missing_value",1.e+20)
         ncIN.close()
     
-    AGGREGATE_DICT={'P_i':['P1i','P2i','P3i','P4i']}
+    AGGREGATE_DICT={'P_l':['P1l','P2l','P3l','P4l']}
     for var in AGGREGATE_DICT.keys():
               
         ncvar=ncOUT.createVariable(var,'f',('time','depth','lat','lon'))

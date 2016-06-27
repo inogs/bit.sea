@@ -6,7 +6,18 @@ import datetime
 
 
 class timelistcontainer():
-    def __init__(self,Ti,ARCHIVE_DIR,search_type):
+    def __init__(self,Ti,ARCHIVE_DIR,search_type,postfix_dir=""):
+        '''
+        timelistcontainer is a reader class for files
+        produced by SatValidation, in operational chain or similar sequential runs
+        Arguments:
+        * Ti * a TimeInterval 
+        * ARCHIVE_DIR * string indicating path of the chain archive directory e.g. /pico/home/usera07ogs/a07ogs00/OPA/V2C/archive/
+        * search_type * string, having one of these values: f0, f1, f2, a0, a1, a2
+        * postfix_dir * string to pass to TimeSeries objects
+        '''
+
+
         self.timelist=[]
         self.filelist=[]        
         self.bias = None

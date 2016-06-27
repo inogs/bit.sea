@@ -64,7 +64,6 @@ class SubMask(Mask):
                 latmin_ind = np.abs(self._ylevels[:,0]-latmin).argmin()
                 latmax_ind = np.abs(self._ylevels[:,0]-latmax).argmin()
 
-                print lonmin_ind, lonmax_ind, latmin_ind, latmax_ind
                 for x in range(lonmin_ind,lonmax_ind):
                     for y in range(latmin_ind,latmax_ind):
                         lon,lat = self.convert_x_y_to_lon_lat(x,y)

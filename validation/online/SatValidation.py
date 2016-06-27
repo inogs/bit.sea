@@ -75,7 +75,6 @@ dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 
 for sub in OGS.Pred:
-    print sub
     SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
     SUB['med'] = SUB['med'] | SUB[sub.name]
 

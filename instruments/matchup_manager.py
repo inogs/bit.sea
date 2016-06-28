@@ -230,7 +230,7 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter, add_metadata
         zlevels_out=np.arange(0,401,5)
-        MODELVARLIST=['P_i','O2o','N3n','votemper','vosaline']
+        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline']
         plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
         read_adjusted = [True,False,False,False,False]
         mapgraph = [3,4,5,1,2]

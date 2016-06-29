@@ -40,6 +40,7 @@ from sat_timeseries import timelistcontainer
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
 import pylab as pl
+import matplotlib
 import matplotlib.dates as mdates
 from basins import V2 as OGS
 
@@ -61,6 +62,8 @@ F2v2 = timelistcontainer(TI_V2,ARCHIVE_DIR, 'f2', postfix_dir="POSTPROC/AVE_FREQ
 F0v2.append_dir(VALID_WRKDIR)
 F1v2.append_dir(VALID_WRKDIR)
 F1v2.append_dir(VALID_WRKDIR)
+matplotlib.use('Agg')
+
 coast='open_sea'
 #for sub in [OGS.alb]:
 for sub in OGS.P:

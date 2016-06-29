@@ -27,7 +27,8 @@ class timelistcontainer():
         self.sat  = None
         self.rmselog = None
         self.biaslog = None
-        TS=TimeSeries(Ti,archive_dir=ARCHIVE_DIR, postfix_dir="", glob_pattern="Validation_f0")
+        self.search_type=search_type
+        TS=TimeSeries(Ti,archive_dir=ARCHIVE_DIR, postfix_dir=postfix_dir, glob_pattern="Validation_f0")
         search_paths = TS.get_runs([2])
         for _, directory in search_paths:
             dirlist=glob.glob(directory + "Validation_" + search_type + "*")
@@ -85,8 +86,28 @@ class timelistcontainer():
         self.sat   = SAT
         self.biaslog = BIASLOG
         self.rmselog = RMSELOG
+
+    def append_dir(self,dirname):
+        dirlist=glob.glob(dirname + "Validation_" + self.search_type + "*")
+        if len(dirlist)> 0:
+            self.append_file(dirlist[0])
+        
+
+    def append_file(self,filename):
+        number, bias, rmse, model, sat, logbias, logrmse= self.read_validation_file(filename)
+        time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
         
         
+        self.number = np.concatenate((self.number , number.reshape((1,self.nSUB, self.nCOAST))), axis=0)
+        self.bias   = np.concatenate((self.bias   ,   bias.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.rmse   = np.concatenate((self.rmse   ,   rmse.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.model  = np.concatenate((self.model  ,  model.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.sat    = np.concatenate((self.sat    ,    sat.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.biaslog= np.concatenate((self.biaslog,logbias.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.rmselog= np.concatenate((self.rmselog,logrmse.reshape((1,self.nSUB, self.nCOAST)) ), axis=0)
+        self.timelist.append(time)
+        self.nFrames = self.nFrames + 1
+    
     
     def plotdata(self,VAR, sub,coast):
         '''

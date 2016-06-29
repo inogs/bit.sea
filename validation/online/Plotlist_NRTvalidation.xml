@@ -5,32 +5,33 @@
 
 <!--  surf chl -->
 <plots var="chl" units="mg/m3" name="chlorophyll" longname=' surface chlorophyll' >
-<basin name= "alb" longname="Alboran"> </basin>
+<basin name= "alb" longname="Alboran Sea"> </basin>
 <basin name= "nwm" longname="North western Med"> </basin>
-<basin name= "tyr" longname="Tyrrhenian"> </basin>
+<basin name= "tyr1" longname="Northern Tyrrhenian"> </basin>
+<basin name= "tyr2" longname="Sourthern Tyrrhenian"> </basin>
 <basin name= "swm1" longname="South western Med west"> </basin>
 <basin name= "swm2" longname="South western Med east"> </basin>
 <basin name= "ion1" longname="Western Ionian"> </basin>
 <basin name= "ion2" longname="Eastern Ionian"> </basin>
-<basin name= "ion3" longname="North Ionian"> </basin>
+<basin name= "ion3" longname="Northern Ionian"> </basin>
 <basin name= "adr1" longname="Northern Adriatic"> </basin>
 <basin name= "adr2" longname="Southern Adriatic" > </basin>
 <basin name= "lev1" longname="Western Levantine" > </basin>
 <basin name= "lev2" longname="Northern Levantine" > </basin>
 <basin name= "lev3" longname="Southern Levantine" > </basin>
 <basin name= "lev4" longname="Eastern Levantine" > </basin>
-<basin name= "aeg" longname="Aegean" > </basin>
+<basin name= "aeg" longname="Aegean Sea" > </basin>
+<basin name= "med" longname="Mediterranean Sea" > </basin>
 </plots>
 
-</Section2>
-
+</section2>
 
 <section3>
 <!--  bioFloat data -->
     <plots var="biofloat"  name="Bio-Argo Float data" longname='Bio-Argo Float data' >
     </plots>
     
-</Section3>
+</section3>
 
 <section4>
 <!--  vars -->
@@ -448,6 +449,6 @@
         <depth top= "0600" bottom="1000" > </depth>
     </basin>
 </plots>
-</Section4>
+</section4>
 
 </root>

@@ -64,7 +64,7 @@ class TimeInterval():
         Returns a TimeInterval Object
         '''
         TI = TimeInterval()
-        assert timestart < time_end
+        assert timestart <= time_end
         TI.start_time = timestart
         TI.end_time   = time_end
         return TI

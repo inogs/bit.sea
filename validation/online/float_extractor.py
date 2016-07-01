@@ -48,6 +48,7 @@ import basins.OGS as OGS
 from instruments import bio_float
 from commons.mask import Mask
 from commons.utils import addsep
+from datetime import timedelta
 
 starttime=args.starttime
 end__time=args.endtime
@@ -56,7 +57,7 @@ BASEDIR=addsep(args.basedir)
 
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
-
+TI.end_time = TI.end_time + timedelta(1)
 
 TheMask=Mask(args.maskfile)
 

@@ -80,5 +80,14 @@ mnm = ComposedBasin('mnm', [alb ,swm1,swm2,nwm,tyr1,tyr2,ion1,ion2,ion3,lev1,lev
 Pred = ComposedBasin('Pr',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4])
 P    = ComposedBasin('P',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,med])
 
+#for NRT3
+
+lev = ComposedBasin('lev',[lev1, lev2, lev3, lev4],'Levantine Sea')
+ion = ComposedBasin('ion',[ion1, ion2, ion3],'Ionian Sea')
+adr = ComposedBasin('adr',[adr1, adr2],'Adriatic Sea')
+tyr = ComposedBasin('tyr',[tyr1, tyr2],'Tyrrenian Sea')
+swm = ComposedBasin('swm',[swm1, swm2], 'South Western Mediterraneaan Sea')
+
+NRT3 = ComposedBasin('NRT3',[alb, swm, nwm, tyr, adr, ion, lev],'Gruped Subbasin for Near Real Time medeaf page')
 
 

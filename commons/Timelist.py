@@ -150,7 +150,7 @@ class TimeList():
 
             if self.inputFrequency == "daily":
                 for it, t in enumerate(self.Timelist):
-                    if requestor.timeinterval.contains(t):
+                    if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
             if self.inputFrequency in ['weekly','monthly','yearly']:
@@ -224,7 +224,7 @@ class TimeList():
                         SELECTION.append(it)
                         weights.append(weight)
             if self.inputFrequency == 'monthly':
-                print "Not time aggregation"
+                #print "Not time aggregation"
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -406,7 +406,7 @@ class TimeList():
             for season in SEASON_LIST:
                 req = requestors.Season_req(season[0],season[1],seasonobj)
 
-                if (req.timeinterval.start_time >= firstSeason.timeinterval.start_time) & (req.timeinterval.end_time <=lastSeason.timeinterval.end_time):
+                if (req.time_interval.start_time >= firstSeason.time_interval.start_time) & (req.time_interval.end_time <=lastSeason.time_interval.end_time):
                     #print "appended", season
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
@@ -491,6 +491,15 @@ if __name__ == '__main__':
     r=REQSY[0]
     ii,weights = TLY.select(r)
 
+    monthly=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "months=1")
+    TLM = TimeList(monthly)
+    for iSeas in range(4):
+        m = requestors.Clim_season(iSeas,seasonobj)
+        TLM.select(m)
+
+    for imonth in range(1,13):
+        m = requestors.Clim_month(imonth)
+        TLM.select(m)
 
     daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
     TL = TimeList(daily)

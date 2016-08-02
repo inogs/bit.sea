@@ -174,7 +174,7 @@ class Season_req():
         t = TimeInterval()
         t.start_time  = ti_ref.start_time + relativedelta(years=delta_years)
         t.end_time    = ti_ref.end_time   + relativedelta(years=delta_years)
-        self.timeinterval = t
+        self.time_interval = t
         self.string   = str(year) + " " + self.longname[:3]
 
 
@@ -203,7 +203,7 @@ class Decadal_req():
         self.end__year = self.startyear+9
         t.start_time = datetime.datetime(self.startyear  ,1,1,0,0,0)
         t.end_time   = datetime.datetime(self.end__year+1,1,1,0,0,0)
-        self.timeinterval = t
+        self.time_interval = t
     def __repr__(self):
         return "Decadal requestor object : %d ... %d"  %(self.startyear, self.end__year)
 
@@ -219,7 +219,7 @@ class Interval_req():
         centertime     = datetime.datetime(self.year,self.month,self.day,12)
         delta = relativedelta(10)
         exec 'delta= relativedelta(' + deltastr + ')'
-        self.timeinterval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
+        self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
         self.string  = centertime.strftime("%Y%m%d")
         self.deltastr = deltastr
     def __repr__(self):
@@ -236,6 +236,6 @@ class Generic_req():
 
     def __init__(self,ti):
 
-        self.timeinterval = ti
+        self.time_interval = ti
     def __repr__(self):
-        return "Generic requestor object definded by: %s  "  %self.timeinterval.__repr__()
+        return "Generic requestor object definded by: %s  "  %self.time_interval.__repr__()

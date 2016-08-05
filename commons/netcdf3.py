@@ -96,11 +96,37 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20):
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude" , jpj)
         ncOUT.createDimension("depth"    , jpk)
+
+        ncvar = ncOUT.createVariable('longitude','f', ('longitude',))
+        setattr(ncvar, 'units'        ,'degrees_east')
+        setattr(ncvar,'long_name'    ,'longitude')
+        setattr(ncvar, 'standard_name','longitude')
+        setattr(ncvar, 'axis'         ,'X')
+        setattr(ncvar, 'valid_min'    , -5.5625)
+        setattr(ncvar, 'valid_max'    , 36.25)
+        setattr(ncvar, '_CoordinateAxisType',"Lon" )
+        ncvar[:] = mask.xlevels[0,:]
+
+        ncvar = ncOUT.createVariable( 'latitude','f', ('latitude',))
+        setattr(ncvar, 'units'        ,'degrees_north')
+        setattr(ncvar,'long_name'    ,'latitude')
+        setattr(ncvar,'standard_name','latitude')
+        setattr(ncvar, 'axis'         ,'Y')
+        setattr(ncvar,'valid_min'    , 30.1875)
+        setattr(ncvar, 'valid_max'    , 45.9375)
+        setattr(ncvar, '_CoordinateAxisType',"Lat" )
+        ncvar[:] = mask.ylevels[:,0]
+        
         
     ncvar = ncOUT.createVariable(varname, 'f', (lat_dimension_name(ncOUT),lon_dimension_name(ncOUT)))
     setattr(ncvar,'fillValue'    ,fillValue)
     setattr(ncvar,'missing_value',fillValue)
+    setattr(ncvar,'coordinates'  ,'latitude longitude')
     ncvar[:] = M2d
+    setattr(ncOUT,'latitude_min', 30.0)
+    setattr(ncOUT,'latitude_max', 46.0)
+    setattr(ncOUT,'longitude_min',-6.0)
+    setattr(ncOUT,'longitude_max',37.0)
     ncOUT.close()
     
 def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
@@ -138,3 +164,4 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
     setattr(ncvar,'missing_value',fillValue)
     ncvar[:] = M3d
     ncOUT.close()
+

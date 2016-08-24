@@ -28,9 +28,9 @@ class timelistcontainer():
         self.nVAR = ncIN.dimensions['var']
         self.nSUB = ncIN.dimensions['sub']
         self.nDEPTH  = ncIN.dimensions['depth']
-        self.SUBLIST = ncIN.sublist[:-1].split(",")
-        self.LAYERLIST=ncIN.layerlist[:-1].split(",")
-        self.VARLIST = ncIN.varlist[:-1].split(",")
+        self.SUBLIST = ncIN.sublist.split(",")
+        self.LAYERLIST=ncIN.layerlist.split(",")
+        self.VARLIST = ncIN.varlist.split(",")
         
         ncIN.close()        
 
@@ -69,11 +69,11 @@ class timelistcontainer():
         idepth= self.LAYERLIST.index(depth)
         return self.timelist, VAR[:,ivar, isub,idepth]
 
-filename="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/20150714/BioFloat_Weekly_validation_20150714.nc"
 
 
-from commons.time_interval import TimeInterval
-TI = TimeInterval("20150608","20160101","%Y%m%d")
-ARCHIVEDIR="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/"
-A = timelistcontainer(TI,ARCHIVEDIR)
-A.plotdata(A.bias, 'P_i','tyr', '10-30m')
+if __name__ == '__main__':
+    from commons.time_interval import TimeInterval
+    TI = TimeInterval("20150608","20160101","%Y%m%d")
+    ARCHIVEDIR="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/"
+    A = timelistcontainer(TI,ARCHIVEDIR)
+    A.plotdata(A.bias, 'P_i','tyr', '10-30m')

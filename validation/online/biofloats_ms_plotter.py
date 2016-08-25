@@ -37,7 +37,7 @@ def argument():
 args = argument()
 
 
-from nrt3_timeseries import timelistcontainer
+from biofloats_ms_timeseries import timelistcontainer
 from commons.time_interval import TimeInterval
 import matplotlib
 matplotlib.use('Agg')

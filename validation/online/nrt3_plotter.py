@@ -55,8 +55,8 @@ OUTFIG_DIR       = addsep(args.outdir)
 TI_V1 = TimeInterval("20150608","20160101","%Y%m%d")
 TI_V2 = TimeInterval('20160412', args.date,'%Y%m%d')
 
-V4_data  = timelistcontainer(TI_V1,ARCHIVE_PREV)
-V2C_data = timelistcontainer(TI_V2,ARCHIVEDIR)
+V4_data  = timelistcontainer(TI_V1,ARCHIVE_PREV,postfix_dir="")
+V2C_data = timelistcontainer(TI_V2,ARCHIVEDIR  ,postfix_dir="POSTPROC/AVE_FREQ_1/validation/biofloats_ms/")
 V2C_data.append_dir(VALID_WRKDIR)
 
 

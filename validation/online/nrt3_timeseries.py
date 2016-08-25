@@ -60,6 +60,23 @@ class timelistcontainer():
         self.number=NUMBER
         self.rmse = RMSE
 
+    def append_dir(self,dirname):
+        dirlist=glob.glob(dirname + "BioFloat_Weekly_validation*")
+        if len(dirlist)> 0:
+            self.append_file(dirlist[0])
+
+
+    def append_file(self,filename):
+        number, bias, rmse= self.read_validation_file(filename)
+        time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
+
+
+        self.number = np.concatenate((self.number , number.reshape((1,self.nVAR, self.nSUB, self.nDEPTH))), axis=0)
+        self.bias   = np.concatenate((self.bias   ,   bias.reshape((1,self.nVAR, self.nSUB, self.nDEPTH)) ), axis=0)
+        self.rmse   = np.concatenate((self.rmse   ,   rmse.reshape((1,self.nVAR, self.nSUB, self.nDEPTH)) ), axis=0)
+        self.timelist.append(time)
+        self.nFrames = self.nFrames + 1
+
     def plotdata(self,VAR, var,sub,depth):
         '''
         VAR must be a 3D field of this class, such as bias, number, ...

@@ -165,7 +165,7 @@ class MapBuilder(object):
         bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
         if top_index == bottom_index:
             #Just one layer so we return the sliced data
-            output = data_extractor.get_filled_values[top_index,:,:]
+            output = data_extractor.filled_values[top_index,:,:]
             return output
         #Workaround for Python ranges
         bottom_index += 1
@@ -232,4 +232,5 @@ class MapBuilder(object):
         output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
         output[indexmask] = integral[indexmask]
         return output
-        
+
+ 

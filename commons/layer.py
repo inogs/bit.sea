@@ -22,7 +22,7 @@ class Layer(object):
 
     def string(self):
         if self.top ==self.bottom:
-            return "%g m" %self.__top
+            return "%gm" %self.__top
         return "%g-%gm" %(self.__top, self.__bottom)
 
     def longname(self):

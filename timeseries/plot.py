@@ -73,6 +73,56 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     ax.plot(label_list, plot_list)
     return fig,ax
 
+
+
+def Hovmoeller_matrix(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72):
+    dlabels=None
+    if isinstance(depths, (int, long)):
+        pass
+    elif isinstance(depths, (list, tuple)):
+        dlabels = np.array(depths)
+        depths = len(dlabels)
+    elif isinstance(depths, np.ndarray):
+        #If 1D array
+        if len(depths.shape) == 1:
+            dlabels = np.copy(depths)
+            depths = dlabels.shape[0]
+        else:
+            raise ValueError("Invalid depths argument")
+    else:
+        raise ValueError("Invalid depths argument")
+    plotmat = np.zeros([depths, len(file_list)])
+    xlabel_list = list()
+    #For each file
+    for i,f in enumerate(file_list):
+        #Get date string from file name
+        _, ds = get_date_string(path.basename(f))
+        #Create datetime object from date string
+        dt = datetime.strptime(ds,'%Y%m%d')
+        #Append the date to xlabel_list
+        xlabel_list.append(dt)
+        #Open it with netCDF4
+        dset = netCDF4.Dataset(f)
+        #Copy the data in the plot matrix
+        plotmat[:,i] = dset[varname][subbasin, coast, 0:depths, stat]
+        #Close the file
+        dset.close()
+    xlabel_list = mpldates.date2num(xlabel_list)
+    xs,ys = np.meshgrid(xlabel_list, dlabels)
+    return plotmat, xs, ys
+
+def Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
+    if (fig is None) or (ax is None):
+        fig , ax = plt.subplots()
+    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat')# default is 'flat'
+    #Inform matplotlib that the x axis is made by dates
+    ax.xaxis_date()
+    ax.invert_yaxis()
+    return fig, ax, quadmesh
+    
+    
+
+
 def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72, fig=None, ax=None):
     """
     Plots a time series Hovmoeller diagram.
@@ -133,7 +183,7 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     xlabel_list = mpldates.date2num(xlabel_list)
     xs,ys = np.meshgrid(xlabel_list, dlabels)
     #Plot the matrix
-    quadmesh = ax.pcolormesh(xs, ys, plotmat)
+    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat')# default is 'flat'
     #Inform matplotlib that the x axis is made by dates
     ax.xaxis_date()
     return fig, ax, quadmesh

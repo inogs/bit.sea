@@ -31,6 +31,8 @@ args = argument()
 import numpy as np
 import scipy.io.netcdf as NC
 import glob,os
+import pickle
+import datetime
 
 from commons.mask import Mask
 from commons.submask import SubMask
@@ -61,20 +63,18 @@ def stats_open_coast(filelist,var):
     meancoast = np.zeros((numsub,numd))
     stdopen = np.zeros((numsub,numd))
     stdcoast = np.zeros((numsub,numd))
-    DATES = []
-    for ii in range(numd):
-        infile = filelist[ii]
-        datef = os.path.basename(infile)[5:12]
-        DATES.append(datef)
+    for ii,infile in enumerate(filelist):
+        datef = os.path.basename(infile)[0:8]
+        print(datef)
         CH = NC.netcdf_file(infile,'r')
         chl = CH.variables[var].data.copy()
-        for isub in range(len(SUB_LIST)):
-            sub = SUB_LIST[isub]
-            masksub = (SUB[sub][0,:]) & (chl<1.e+19) & (mask200) #open sea
+        for isub,sub in enumerate(SUB_LIST):
+            print(sub)
+            masksub = (SUB[sub]) & (chl>0.) & (mask200) #open sea
             chsub = chl[masksub]
             meanopen[isub,ii] = np.mean(chsub)
             stdopen[isub,ii] = np.std(chsub)
-            masksub = (SUB[sub][0,:]) & (chl<1.e+19) & (~mask200) #coast
+            masksub = (SUB[sub]) & (chl>0.) & (~mask200) #coast
             chsub = chl[masksub]
             meancoast[isub,ii] = np.mean(chsub)
             stdcoast[isub,ii] = np.std(chsub)
@@ -82,28 +82,45 @@ def stats_open_coast(filelist,var):
     stats_out[1,:] = meancoast
     stats_out[2,:] = stdopen
     stats_out[3,:] = stdcoast
-    return stats_out
 
+    return stats_out;
 
 fileslists = glob.glob(args.indir + args.year + '*')
 fileslists.sort()
 DATES = []
 if fileslists:
+   print('saving sat data')
    for ii in range(len(fileslists)):
        infile = fileslists[ii]
        datef = os.path.basename(infile)[0:8]
-       DATES.append(datef)
+       T=datetime.datetime.strptime(datef,'%Y%m%d')
+       DATES.append(T)
 
    stats_sat = stats_open_coast(fileslists,'lchlm')
-   filedat = args.outdir + 'datesat.npy'
-   np.save(filedat,DATES)
 
-npyfile = args.outdir + 'meansatopen' + args.year + '.npy'
-np.save(npyfile,stats_sat[0,:])
-npyfile = args.outdir + 'meansatcoast' + args.year + '.npy'
-np.save(npyfile,stats_sat[1,:])
-npyfile = args.outdir + 'stdsatopen' + args.year + '.npy'
-np.save(npyfile,stats_sat[2,:])
-npyfile = args.outdir + 'stdsatcoast' + args.year + '.npy'
-np.save(npyfile,stats_sat[3,:])
+   LISTsave = [i for i in range(3)]
 
+   LISTsave[0] = DATES
+   LISTsave[1] = stats_sat[0,:] # meansatopen
+   LISTsave[2] = stats_sat[2,:] # stdsatopen
+
+   outfile = args.outdir + 'satstats.open' + args.year + '.pkl'
+   print(outfile)
+   fid = open(outfile,'wb')
+   pickle.dump(LISTsave,fid)
+   fid.close()
+
+   LISTsave = [i for i in range(3)]
+
+   LISTsave[0] = DATES
+   LISTsave[1] = stats_sat[1,:] # meansatcoast
+   LISTsave[2] = stats_sat[3,:] # stdsatcoast
+
+   outfile = args.outdir + 'satstats.coast' + args.year + '.pkl'
+   print(outfile)
+   fid = open(outfile,'wb')
+   pickle.dump(LISTsave,fid)
+   fid.close()
+
+
+else: print('filelist sat empty!')

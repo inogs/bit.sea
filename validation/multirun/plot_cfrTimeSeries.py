@@ -34,8 +34,8 @@ def argument():
     parser.add_argument(   '--cfrtype', '-c',
                                 type = str,
                                 required =True,
-                                choices = ['nocoastda','daeffect','errmod','nutupt','vhany'],
-                                help = ''' Type of comparison: nocoastda - runs without DAcoast (CR, 01, 06), daeffect - control run, run DAopensea and run DAcoast (CR, 01, 02), errmod - run DAopensea, run DAcoast and run DAcoast with modified model error (01, 02, 03), vhany - runs with and without vh anysotropic'''
+                                choices = ['nocoastda','daeffect','errmod','nutupt','vhany','theta','alpha','errsat','short','corrl'],
+                                help = ''' Type of comparison: nocoastda - runs without DAcoast (CR, 01, 06), daeffect - control run, run DAopensea and run DAcoast (CR, 01, 02), errmod - run DAopensea, run DAcoast and run DAcoast with modified model error (01, 02, 03), vhany - runs with and without vh anysotropic, theta - different chl:c imposed in DA (01, 07, 08), alpha - effect of alpha +5% -10% (07, 09, 10), errsat - augmented errsat (CR, 01, 11, 12), short - short tests on errsat, corrl - correlation radius 10km (08, 13)'''
                                 )
 
     return parser.parse_args()
@@ -49,6 +49,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mpldates
 import netCDF4
+import pickle
+import datetime
 
 from glob import glob
 from datetime import datetime
@@ -59,25 +61,27 @@ from commons.utils import is_number, get_date_string
 
 #VAR_LIST = ['P_n','P_p']
 #VAR_LIST = ['ppn']
-#VAR_LIST = ['N1p','N3n']
-#VAR_LIST = ['P_i','P_c']
-VAR_LIST = ['N1p']
+#VAR_LIST = ['N1p']
+#VAR_LIST = ['N3n']
+VAR_LIST = ['P_i']
 
 
 DEPTH_LIST = [0, 50, 150]
 # Non so come passarli
 
 if args.cfrtype=='nocoastda':
-   RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_06']
+   RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_06','DA_COAST_07']
    LCOLOR_DICT={
                'CR_COAST': 'b',
                'DA_COAST_01': 'g',
-               'DA_COAST_06': 'purple'
+               'DA_COAST_06': 'purple',
+               'DA_COAST_07': 'y'
                }
    LEG_DICT={
             'CR_COAST': 'CR',
             'DA_COAST_01': '01',
-            'DA_COAST_06': '06'
+            'DA_COAST_06': '06',
+            'DA_COAST_07': '07'
              }
 if args.cfrtype=='daeffect':
    RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_02']
@@ -123,6 +127,73 @@ if args.cfrtype=='vhany':
             'DA_COAST_03': '03',
             'DA_COAST_04': '04'
             }
+if args.cfrtype=='theta':
+   RUN_LIST = ['DA_COAST_01','DA_COAST_07','DA_COAST_08']
+   LCOLOR_DICT={
+               'DA_COAST_01': 'g',
+               'DA_COAST_07': 'y',
+               'DA_COAST_08': 'grey'
+               }
+   LEG_DICT={
+            'DA_COAST_01': '01',
+            'DA_COAST_07': '07',
+            'DA_COAST_08': '08'
+            }
+
+if args.cfrtype=='alpha':
+   RUN_LIST = ['DA_COAST_07','DA_COAST_09','DA_COAST_10']
+   LCOLOR_DICT={
+               'DA_COAST_07': 'y',
+               'DA_COAST_09': 'g',
+               'DA_COAST_10': 'b'
+               }
+   LEG_DICT={
+            'DA_COAST_07': '07',
+            'DA_COAST_09': '09',
+            'DA_COAST_10': '10'
+            }
+
+if args.cfrtype=='errsat':
+   RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_11','DA_COAST_12']
+   LCOLOR_DICT={
+               'CR_COAST': 'b',
+               'DA_COAST_01': 'g',
+               'DA_COAST_11': 'r',
+               'DA_COAST_12': 'c'
+               }
+   LEG_DICT={
+            'CR_COAST': 'CR',
+            'DA_COAST_01': '01',
+            'DA_COAST_11': '11',
+            'DA_COAST_12': '12'
+            }
+
+if args.cfrtype=='short':
+   RUN_LIST = ['DA_COAST_08','DA_COAST_11','VARSAT50','VARSAT100']
+   LCOLOR_DICT={
+               'DA_COAST_08': 'grey',
+               'DA_COAST_11': 'r',
+               'VARSAT50': 'k',
+               'VARSAT100': 'g'
+               }
+   LEG_DICT={
+            'DA_COAST_08': '08',
+            'DA_COAST_11': '11',
+            'VARSAT50': '+50%',
+            'VARSAT100': '+100%'
+            }
+
+if args.cfrtype=='corrl':
+   RUN_LIST = ['DA_COAST_11','DA_COAST_13']
+   LCOLOR_DICT={
+               'DA_COAST_13': 'grey',
+               'DA_COAST_11': 'r'
+               }
+   LEG_DICT={
+            'DA_COAST_13': '13',
+            'DA_COAST_11': '11'
+            }
+
 
 
 
@@ -172,7 +243,7 @@ COAST_LIST = ['coast', 'open_sea', 'everywhere']
 maskfile = os.getenv('MASKFILE')
 TheMask = Mask(maskfile)
 
-def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, fig=None, ax=None, satdir=None):
+def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, fig=None, ax=None, satdate=None, satchl=None):
     """
     Plots a time series based on a list of file paths.
 
@@ -187,7 +258,8 @@ def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=S
           created if it is set to None (default: None).
         - *ax* (optional): an instance of matplotlib axes. A new one will be
           created if it is set to None (default: None).
-        - *satdir* (optional): path of satellite directory for chl comparison
+        - *satdate* (optional): dates of satellite observations
+        - *satchl* (optional): values of satellite observations
 
     Returns: a matplotlib figure and axes object.
     """
@@ -196,6 +268,7 @@ def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=S
     for dep in DEPTH_LIST:
         for run in RUN_LIST:
             run_path = args.indir + run + args.pathtxt
+            print(run_path)
             file_list = sorted(glob(run_path + '/*nc'))
             plot_list = list()
             label_list = list()
@@ -214,35 +287,65 @@ def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=S
                 #Close the file
                 dset.close()
             #Plot data
-            ax.plot(label_list, plot_list, \
+            if (dep==0):
+                    ax.plot(label_list, plot_list, \
                     color=LCOLOR_DICT[run], linestyle=LSTYLE_DICT[dep], \
                     label=LEG_DICT[run]+ ' ' +str(dep)+'m')
-        ax.set_ylabel(varname + ' [' + UNITS_DICT[varname] + ']')
-        ax.legend(loc="best", \
-                  fontsize='small', \
-                  labelspacing=0, handletextpad=0,borderpad=0.1)
-        ax.set_title(SUB_LIST[subbasin] + ' ' + \
-                 COAST_LIST[coast]) 
+    if satdate:
+       ax.plot(satdate,satchl[subbasin,:],'xk', label='SAT')
+
+    ax.set_ylabel(varname + ' [' + UNITS_DICT[varname] + ']')
+    ax.legend(loc="best", \
+              fontsize='small', \
+              labelspacing=0, handletextpad=0,borderpad=0.1)
+    ax.set_title(SUB_LIST[subbasin] + ' ' + COAST_LIST[coast]) 
     fig.autofmt_xdate()
+
     return fig,ax
 
 
-inpsat=None
+MY_YEAR ='2013'
+print('Year for sat hard coded (only for P_i): ' + MY_YEAR + '!')
+
+datatypes = ['open','coast']
+DICsat_file = {
+         'coast': args.satdir + 'satstats.coast' + MY_YEAR + '.pkl',
+         'open' : args.satdir + 'satstats.open' + MY_YEAR + '.pkl'
+              }
+
+LISTsat = [i for i in range(3)]
+for it,typed in enumerate(datatypes):
+    fid = open(DICsat_file[typed])
+    LIST = pickle.load(fid)
+    fid.close()
+    LISTsat[0] = LIST[0]
+    LISTsat[it+1] = LIST[1]
+
+
 for isub in range(len(SUB_LIST)):
     print(SUB_LIST[isub])
     for var in VAR_LIST:
-        if var=='P_i': inpsat=args.satdir 
         print(var)
+        if (var is 'P_i'):
+           datesat=LISTsat[0]
+           chlsat=LISTsat[1]
+        else: 
+           datesat = None
+           chlsat = None
         fig1 = plt.figure(num=None,facecolor='w', \
                         edgecolor='k',figsize=[6.5,8.5]) 
         ax1  = fig1.add_subplot(2,1,1)
         plot_from_runs(RUN_LIST, var, isub, \
                    coast = CoastEnum.open_sea, \
-                   fig=fig1,ax=ax1,satdir=inpsat)
+                   fig=fig1,ax=ax1,satdate=datesat,satchl=chlsat)
+        if (var is 'P_i'):
+           chlsat=LISTsat[1]
+        else: 
+           chlsat = None
         ax2  = fig1.add_subplot(2,1,2)
         plot_from_runs(RUN_LIST, var, isub, \
                    coast = CoastEnum.coast, \
-                   fig=fig1,ax=ax2,satdir=inpsat)
+                   fig=fig1,ax=ax2,satdate=datesat,satchl=chlsat)
 
         outfile = args.outdir + var + '_' + \
                   args.cfrtype + '_' + \

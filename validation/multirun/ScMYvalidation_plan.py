@@ -38,6 +38,12 @@ def argument():
                                 default = 0.,
                                 help = 'Level of mask for data selection')
 
+    parser.add_argument(   '--dep', '-d',
+                                type = float,
+                                required = False,
+                                default = 10.,
+                                help = 'Level of bottom layer for average')
+
 
     return parser.parse_args()
 
@@ -106,7 +112,7 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
 
 # This is the surface layer choosen to match satellite chl data
-surf_layer = Layer(0,10)
+surf_layer = Layer(0,args.dep)
 
 for itime, modeltime in enumerate(model_TL.Timelist):
     print modeltime

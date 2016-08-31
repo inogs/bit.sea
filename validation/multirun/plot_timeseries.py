@@ -36,6 +36,13 @@ def argument():
                             default = 'RAN',
                             help = 'Name of the run for legend')
 
+    parser.add_argument(   '--dep', '-d',
+                            type = str,
+                            required =False,
+                            default = "",
+                            help = ''' Depth of layer for chl average'''
+                            )
+
     return parser.parse_args()
 
 args = argument()
@@ -58,7 +65,7 @@ for isub,sub in enumerate(OGS.P):
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
     ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=args.runname)
-    ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
+    ax.set_ylabel(sub.name.upper() + ' DepAve ' + args.dep + 'm' +  ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()
     ltext  = leg.get_texts()
@@ -73,6 +80,6 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(xlabels, rotation=30)
     #ax.tick_params(direction='left', pad=2)
     #fig.show()
-    outfilename=args.outdir+"/"+'chl' + sub.name + ".png"
+    outfilename=args.outdir+"/"+'chl' + sub.name + args.dep + ".png"
     pl.savefig(outfilename)
     #sys.exit()

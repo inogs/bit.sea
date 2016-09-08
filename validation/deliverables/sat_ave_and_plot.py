@@ -38,7 +38,7 @@ import pylab as pl
 from layer_integral import coastline
 
 clon,clat = coastline.get()
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 _,jpj,jpi = TheMask.shape
 
 INPUTDIR  = args.inputdir

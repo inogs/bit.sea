@@ -4,7 +4,7 @@
 #VAR_LIST = [P_i, ppn]
 # Non so come passarli
 
-export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
+export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 python extract_satTimeSeries.py
 

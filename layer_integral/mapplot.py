@@ -36,7 +36,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, coastline_lon=clon, coastline_lat=clat)
         
         from commons.mask import Mask
-        TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+        TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1], 'date':longdate, 'layer':l}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
     """
@@ -374,7 +374,7 @@ if __name__ == '__main__':
     from commons.mask import Mask
     from commons.dataextractor import DataExtractor
     from datetime import datetime
-    maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc'
+    maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc'
     mask = Mask(maskfile)
     filename='/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/ave.20000116-12:00:00.nc'
 

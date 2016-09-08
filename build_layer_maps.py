@@ -14,7 +14,7 @@ def argument():
     parser.add_argument(   '--inputdir', '-i',
                                 type = str,
                                 required =False,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
                                 help = ''' Input directory'''
 
                                 )
@@ -40,7 +40,7 @@ def argument():
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 required = False,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
     parser.add_argument(   '--background', '-b',
                                 type = str,

@@ -8,7 +8,7 @@ STARTTIME_s=$( date -d " $OPA_RUNDATE -7 days " +%Y%m%d )
 STARTTIME_f=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
 END__TIME_f=$( date -d " $OPA_RUNDATE  -4 days " +%Y%m%d )
 
-MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
+MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 #WRKDIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/5
 ARCHIVE_DIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/archive

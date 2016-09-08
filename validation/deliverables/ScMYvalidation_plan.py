@@ -54,7 +54,7 @@ def weighted_mean(Conc, Weight):
     Weighted_Mean   = Mass/Weight_sum
     return Weighted_Mean
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
 REF_DIR  = args.satdir
 outfile  = args.outfile

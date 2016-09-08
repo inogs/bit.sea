@@ -15,7 +15,7 @@ starttime='20160301'
 end__time='20160308'
 INPUTDIR='/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_data/TMP/'  #args.inputdir
 OUTDIR  ='/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_data/TMP/'  #args.outdir
-maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc' # args.maskfile
+maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc' # args.maskfile
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 archive_dir='/pico/home/usera07ogs/a07ogs00/OPA/V4/archive'

@@ -18,7 +18,7 @@ ONLINE_VALIDATION_DIR=/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_dat
 TMP_DIR=${ONLINE_VALIDATION_DIR}/TMP
 PROFILERDIR=${ONLINE_VALIDATION_DIR}/PROFILATORE
 IMAGES_DIR=./outdir/
-MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
+MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
 mkdir -p $ONLINE_VALIDATION_DIR
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}

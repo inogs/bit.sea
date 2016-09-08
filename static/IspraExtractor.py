@@ -134,6 +134,9 @@ class IspraExtractor():
          Returns a profile list
          
          '''
+        print('-------------------------------------------')
+        print('NON ancora testato, potrebbe NON funzionare')
+        print('-------------------------------------------')
         iStation= find_index(stationname, self.STATIONS)
         ivar    = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]

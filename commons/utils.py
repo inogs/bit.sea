@@ -70,7 +70,7 @@ def find_index(thestring, STRINGLIST):
         if strippedstring == thestring: break
     else:
         print(thestring + " Not Found")
-        raise NameError
+        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tostring().strip() for istring in range(nStrings)]))
     return istring
 
 def die(why, exit_code=1, print_usage=True):

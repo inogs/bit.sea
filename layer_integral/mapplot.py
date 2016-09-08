@@ -90,9 +90,10 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
             ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
             ax.set_xlim([-6, 36])
             ax.set_ylim([30, 46])
-    ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
-    ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
-    ax.text(-7,40,map_dict['varname'],ha='left',va='center')
+
+    if map_dict.has_key('layer'):  ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
+    if map_dict.has_key('date'):   ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
+    if map_dict.has_key('varname'):ax.text(-7,40,map_dict['varname'],ha='left',va='center')
     ax.set_position([0.08, 0.11, 0.78, 0.78])
     ax.axes.get_xaxis().set_visible(True)
     ax.axes.get_yaxis().set_visible(True)
@@ -105,8 +106,9 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     if map_dict.has_key('layer'):
         title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     else:
-        title = "%s %s" % (map_dict['date'], map_dict['varname'])
-    #fig.suptitle(title)
+        if map_dict.has_key('date'):
+            title = "%s %s" % (map_dict['date'], map_dict['varname'])
+            fig.suptitle(title)
     return fig, ax
 
 

@@ -10,7 +10,7 @@ END__TIME_f=$( date -d " $OPA_RUNDATE  -4 days " +%Y%m%d )
 
 MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc
 
-#WRKDIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/5
+WRKDIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/5
 ARCHIVE_DIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/archive
 
 ONLINE_VALIDATION_DIR=/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/online_validation_data_V2
@@ -25,7 +25,7 @@ IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG/
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL
 
-if [ 1 == 1 ] ; then 
+if [ 1 == 0 ] ; then
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
@@ -40,7 +40,7 @@ python archive_extractor.py --type analysis -st ${STARTTIME_f} -et ${END__TIME_f
 python var_aggregator.py --biodir ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_bio --physdir ${ONLINE_VALIDATION_DIR}/PREVIOUS/FORCINGS -t $TMP_DIR_PREV
 
 python var_aggregator.py --biodir ${ONLINE_VALIDATION_DIR}/ACTUAL/output_bio --physdir ${ONLINE_VALIDATION_DIR}/ACTUAL/FORCINGS -t $TMP_DIR__ACT
-fi
+
 
 
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/
@@ -68,11 +68,15 @@ for ac_day in 1 2; do
 done
 
 
+fi
+
+#wrkdir=/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/wrkdir/5
+
+# python adding_vars.py -v vosaline -i $WRKDIR/MODEL/FORCINGS -ip T* --input_prefix T -o $wrkdir/POSTPROC/AVE_FREQ_1/TMP -op ave*nc --output_prefix ave. -st 20160617 -et 20160619 -m $MASKFILE
+# python adding_vars.py -v votemper -i $WRKDIR/MODEL/FORCINGS -ip T* --input_prefix T -o $wrkdir/POSTPROC/AVE_FREQ_1/TMP -op ave*nc --output_prefix ave. -st 20160617 -et 20160619 -m $MASKFILE
+#python var_aggregator.py --biodir $WRKDIR/POSTPROC/AVE_FREQ_1/TMP --physdir $WRKDIR/MODEL/FORCINGS -t $TMP_DIR__ACT
+
 exit 0
-
-python var_aggregator.py --biodir $WRKDIR/POSTPROC/AVE_FREQ_1/TMP --physdir $WRKDIR/MODEL/FORCINGS -t $TMP_DIR__ACT
-
-
 
 
 # Matchup analysis
@@ -87,3 +91,16 @@ python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i $TMP_DIR__ACT
 #${STARTTIME_f} -et ${END__TIME_f} confronto Float con {analisi attuale, IMG_DIR__ACT}, {forecast, IMG_DIR_PREV}
 python profile_plotter3.py -f $IMG_DIR_PREV -a $IMG_DIR__ACT # scorre tutti i files e genera le immagini a 3
 
+
+Bisogna fare tutti i link !!!!!
+python nrt3.py -o $OUTFILE -b $BASEDIR -m $MASKFILE -i $INPUTDIR/TMP -d $DATE
+
+ARCHIVEDIR=/pico/home/usera07ogs/a07ogs00/OPA/V2C/archive
+ARCHIVE_PREV=/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/
+
+
+VALID_WRKDIR=/pico/scratch/userexternal/gbolzon0/NRT/V2C/NRT3_outputs/
+OUTDIR=IMG
+mkdir -p $OUTDIR
+
+python nrt3_plotter.py -a $ARCHIVEDIR -p $ARCHIVE_PREV -v $VALID_WRKDIR -o IMG/ -d $STARTTIME_s

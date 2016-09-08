@@ -36,7 +36,7 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, coastline_lon=clon, coastline_lat=clat)
         
         from commons.mask import Mask
-        TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+        TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1], 'date':longdate, 'layer':l}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
     """
@@ -90,9 +90,10 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
             ax.plot(coastline_lon,coastline_lat, color='#000000',linewidth=0.5)
             ax.set_xlim([-6, 36])
             ax.set_ylim([30, 46])
-    ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
-    ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
-    ax.text(-7,40,map_dict['varname'],ha='left',va='center')
+
+    if map_dict.has_key('layer'):  ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
+    if map_dict.has_key('date'):   ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
+    if map_dict.has_key('varname'):ax.text(-7,40,map_dict['varname'],ha='left',va='center')
     ax.set_position([0.08, 0.11, 0.78, 0.78])
     ax.axes.get_xaxis().set_visible(True)
     ax.axes.get_yaxis().set_visible(True)
@@ -105,8 +106,9 @@ def mapplot(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coastline_lon
     if map_dict.has_key('layer'):
         title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     else:
-        title = "%s %s" % (map_dict['date'], map_dict['varname'])
-    #fig.suptitle(title)
+        if map_dict.has_key('date'):
+            title = "%s %s" % (map_dict['date'], map_dict['varname'])
+            fig.suptitle(title)
     return fig, ax
 
 
@@ -374,7 +376,7 @@ if __name__ == '__main__':
     from commons.mask import Mask
     from commons.dataextractor import DataExtractor
     from datetime import datetime
-    maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc'
+    maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc'
     mask = Mask(maskfile)
     filename='/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/ave.20000116-12:00:00.nc'
 

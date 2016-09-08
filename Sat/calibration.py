@@ -18,7 +18,7 @@ from commons.submask import SubMask
 from basins import OGS
 from commons.layer import Layer
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V4/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
 REF_DIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-01/SAT16/"
 

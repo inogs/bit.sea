@@ -2,7 +2,7 @@
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask
-from plot import *
+from timeseries.plot import *
 from basins import V2 as OGS
 import scipy.io.netcdf as NC
 
@@ -37,4 +37,8 @@ coast = COASTLIST.index('open_sea')
 M,xs, ys = Hovmoeller_matrix(TL.filelist, varname, subbasin, coast, stat, TheMask.zlevels[:30])
 fig, ax, im = Hovmoeller_diagram(M, xs, ys)
 fig.colorbar(im)
+fig.suptitle('Chlorophyll')
+ax.set_ylabel('depth (m)')
+#fig.autofmt_xdate()
+
 fig.show()

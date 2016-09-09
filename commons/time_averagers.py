@@ -38,9 +38,8 @@ def TimeAverager2D(Filelist,weights,varname,mask):
         filename=Filelist[t]
         #De      = DataExtractor(TheMask,filename,varname)
         #M = De.values
-        ncIN = NC.netcdf_file(filename,"r")
-        M = ncIN.variables[varname].data[:,:].copy()
-        ncIN.close()
+
+        M = netcdf3.read_2d_file(filename, varname)
         MSUM += M*weights[t]
     averaged = MSUM/weights.sum()
     return averaged

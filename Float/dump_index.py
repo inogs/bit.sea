@@ -47,3 +47,22 @@ for DIR in DIRLIST:
 F = file(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
+
+
+LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/"
+FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
+DIRLIST=os.listdir(LOC)
+
+
+LINES=[]
+for DIR in DIRLIST:
+    dirpath=LOC + DIR
+    filenames = glob.glob(dirpath + "/*nc")
+    for filename in filenames:
+        if filename[-4:]!='D.nc':
+            line=file_header_content(filename)
+            if line is not None: LINES.append(line+"\n")
+
+F = file(FloatIndexer,'w')
+F.writelines(LINES)
+F.close()

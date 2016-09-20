@@ -224,7 +224,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
                 log.info('No updates found for float ' + str(f))
 
 
-
+        print ("DIED FLOATS")
         for l in lines_dead__floats:
             f = A[l]['wmo']
             to_be_updated = False
@@ -255,6 +255,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
                 try:
                     floatname = A[l]['nome_fs']
                     urlfilelist = http_url + floatname +  "/liste_all"
+                    print(urlfilelist)
                     response = urllib2.urlopen(urlfilelist)
                 except:
                     log.info('No directory associated with file ' + str(f) +

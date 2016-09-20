@@ -78,9 +78,10 @@ class DataExtractor(object):
             raise ValueError("mask must be a Mask object")
         else:
             #test dimensions
-            if self.__shape != mask.shape:
-                if self.__shape[1:] != mask.shape:
-                    raise ValueError("mask must have the same shape of the data")
+            if dimvar==3:
+                if self.__shape != mask.shape: raise ValueError("mask must have the same shape of the data")
+            if dimvar==2:
+                if self.__shape != mask.shape[1:] : raise ValueError("mask must have the same shape of the data")
         #Preserve mask reference
         self._mask = mask
 

@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import sys
-import os
+import os,code
 import urllib2
 from os.path import join, exists, realpath, dirname
 from os import remove, rename
@@ -60,6 +60,7 @@ def download_file(url, f, path, log, perms=None,
     Raises:
         *DownloadError* if something went wrong during the download
     """
+
     outfile = join(path, f)
     if skip_if_exists:
         # Check if the file already exists
@@ -132,14 +133,15 @@ class LovBioFloatsHarvester(HarvesterInterface):
         """
         # In the following list I will store the name of the
         # files that will be downloaded or updated
+        print("HARVEST")
         downloaded = []
 
         # Read the wmo file line by line (exclude the first one because
         # it does not contain data)
-        FLOAT_dtype=[('id',np.int),('wmo',np.int),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
+        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
         A=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=1,delimiter="\t")
-        lines_active_floats=np.where(A['status']=='A')
-        lines_dead__floats =np.where(A['status']=='D')
+        lines_active_floats=np.where(A['status']=='A')[0]
+        lines_dead__floats =np.where(A['status']=='D')[0]
         
 
         # Now we need the xml file that keeps what we did on the
@@ -174,6 +176,9 @@ class LovBioFloatsHarvester(HarvesterInterface):
         for l in lines_active_floats:
             # Update the xml with the current status of the float
             f = A[l]['wmo']
+            if A[l]['wmo'] == A[l]['nome_fs']: continue
+            if A[l]['nome_fs']=='NULL': continue
+            #code.interact(local=locals())
             f_in_xml = root.findall('wmo_' + str(f))
             if len(f_in_xml) == 0:
                 f_node = xml_tree.SubElement(root, 'wmo_' + str(f))
@@ -193,7 +198,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
             
             
             remotepathlist = response.read().rsplit("\n")[:-1]
-            filelist=[os.path.basename(f) for f in remotepathlist]
+            filelist=[os.path.basename(fn) for fn in remotepathlist]
             # Now I look for the profiles dir. This is the folder
             # where all the data are stored
 
@@ -342,7 +347,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
         for l in range(len(A)):
             f = A[l]['wmo']
             if A[l]['wmo'] == A[l]['nome_fs']: continue
-            if A[l]['nome_fs']=='NULL ': continue
+            if A[l]['nome_fs']=='NULL': continue
             # Update the xml with the current status of the float
             f_in_xml = root.findall('wmo_' + str(f))
             if len(f_in_xml) == 0:
@@ -370,9 +375,6 @@ class LovBioFloatsHarvester(HarvesterInterface):
                 download_for_f = []
                 # Copy all file in a local dir with the same name
                 # skipping the one that we already have
-                print("BBBBB")
-                print(path)
-                print(f)                
                 float_local_dir = join(path, f)
 
                 print(float_local_dir)

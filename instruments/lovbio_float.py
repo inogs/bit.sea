@@ -55,9 +55,11 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        wmo, cycle = os.path.basename(filename).rsplit("_")
-        self.wmo = wmo[2:]
-        self.cycle = int(cycle[:3])
+        istart=filename.index("/",filename.index('FLOAT_LOVBIO'))
+        iend  =filename.index("/",istart+1)
+        self.wmo = filename[istart+1:iend]
+        cycle = os.path.basename(filename).rsplit("_")[2]
+        self.cycle = int(cycle)
 
     def __eq__(self,other):
         if isinstance(other, BioFloat):
@@ -127,7 +129,8 @@ class BioFloat(Instrument):
         Reads data from file
         Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
         '''
-        iProf = self.__searchVariable_on_parameters(var); #print iProf
+        
+        iProf = 0#self.__searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
 
         if iProf== -1 :
@@ -281,7 +284,7 @@ class BioFloat(Instrument):
                   ('time','S17'),
                   ('parameters','S200')] )
 
-        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
         INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
@@ -315,7 +318,7 @@ def FloatSelector(var, T, region):
               ('time','S17'),
               ('parameters','S200')] )
 
-    FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+    FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size

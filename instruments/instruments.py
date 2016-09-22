@@ -70,3 +70,8 @@ def static_Selector(var,T,region):
     LIST.extend(N.Selector(nutr_var, T, region))
     LIST.extend(C.Selector(carb_var, T, region))
     return LIST
+
+def getAllProfiles(TI):
+    from basins.region import Rectangle
+    All_Med = Rectangle(-6,36,30,46)
+    return Selector(None, TI, All_Med)

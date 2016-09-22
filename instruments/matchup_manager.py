@@ -1,14 +1,13 @@
 import os,sys
 from commons.Timelist import TimeList
-from basins.region import Rectangle
 from instrument import Profile
-import instruments
 import scipy.io.netcdf as NC
 import numpy as np
 from commons.utils import addsep
 import matchup.matchup
 import pylab as pl
 import seawater as sw
+import instruments
 
 
 class Matchup_Manager():
@@ -16,7 +15,7 @@ class Matchup_Manager():
     '''
     Main class for Float Matchup generation.
     '''
-    def __init__(self,timeinterval,INPUTDIR,Outpudir):
+    def __init__(self,timeinterval,INPUTDIR,Outpudir,PROFILE_LIST):
         '''
                 Outpudir is intended as the outputdir of aveScan,
         point profiles will be produced in outputdir/PROFILES.
@@ -31,8 +30,7 @@ class Matchup_Manager():
         if os.path.exists(INPUTDIR):
             self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc")
             self.TI = timeinterval
-            All_Med = Rectangle(-6,36,30,46)
-            self.PROFILE_LIST = instruments.Selector(None, self.TI, All_Med)
+            self.PROFILE_LIST = PROFILE_LIST
             datetimelist = [f.time for f in self.PROFILE_LIST]
             self.Coupled_List = self.TL.couple_with(datetimelist)
         else:
@@ -175,6 +173,7 @@ class Matchup_Manager():
 
 
         for p in Profilelist:
+            assert p in self.PROFILE_LIST
             Model_time = self.modeltime(p)
             if not self.TI.contains(Model_time) :
                 print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")

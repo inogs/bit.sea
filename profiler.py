@@ -5,6 +5,7 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
+from instruments import instruments
 
 from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
@@ -22,15 +23,20 @@ DATE__END = '20150917-00:00:00'
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
 
 
+ALL_PROFILES = instruments.getAllProfiles(T_INT)
 #This previous part will be imported in matchups setup.
 
 # The following part, the profiler, is executed once and for all.
 # It might take some time, depending on length of simulation or size of files.
 if __name__ == '__main__':
     # Here instruments time and positions are read as well as model times
-    M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
+    M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR, ALL_PROFILES)
 
-    M.writefiles_for_profiling('./jobProfiler.sh') # preparation of data for aveScan
-    M.dumpModelProfiles('./jobProfiler.sh') # sequential launch of aveScan
+
+    profilerscript = BASEDIR + 'jobProfiler.sh'
+    vardescriptorfile="VarDescriptor_valid_online.xml"
+    M.writefiles_for_profiling(vardescriptorfile, profilerscript) # preparation of data for aveScan
+
+    M.dumpModelProfiles(profilerscript) # sequential launch of aveScan
 
 

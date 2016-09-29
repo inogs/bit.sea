@@ -6,6 +6,7 @@ import numpy as np
 import season
 import IOnames
 from time_interval import TimeInterval
+from commons.utils import addsep
 
 seasonobj = season.season()
 
@@ -63,7 +64,10 @@ class TimeList():
         '''
 
         IOname = IOnames.filenamer(prefix,dateformat)
+        if not os.path.exists(inputdir):
+            raise NameError("Not existing directory " + inputdir)
 
+        inputdir = addsep(inputdir)
         filelist_ALL = glob.glob(inputdir + searchstring)
         assert len(filelist_ALL) > 0
         filenamelist=[]

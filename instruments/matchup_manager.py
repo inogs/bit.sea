@@ -1,9 +1,7 @@
 import os,sys
-from commons.Timelist import TimeList
 from instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
-from commons.utils import addsep
 import matchup.matchup
 import pylab as pl
 import seawater as sw
@@ -16,21 +14,21 @@ class Matchup_Manager():
     '''
     Main class for Float Matchup generation.
     '''
-    def __init__(self,timeinterval,INPUTDIR,Outpudir,PROFILE_LIST):
+    def __init__(self,PROFILE_LIST,Model_Timelist,Outpudir):
         '''
+            Model_Timelist is a Timelist object
                 Outpudir is intended as the outputdir of aveScan,
         point profiles will be produced in outputdir/PROFILES.
         '''
         self.profilingDir=Outpudir
-        self.AVE_INPUT_DIR = addsep(INPUTDIR)
-        if os.path.exists(INPUTDIR):
-            self.TL = TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc")
-            self.TI = timeinterval
-            self.PROFILE_LIST = PROFILE_LIST
-            datetimelist = [f.time for f in self.PROFILE_LIST]
-            self.Coupled_List = self.TL.couple_with(datetimelist)
-        else:
-            print INPUTDIR + " not existing"
+        self.AVE_INPUT_DIR = Model_Timelist.inputdir
+
+        self.TL = Model_Timelist#TimeList.fromfilenames(timeinterval, self.AVE_INPUT_DIR,"ave*.nc")
+        self.TI = Model_Timelist.timeinterval
+        self.PROFILE_LIST = PROFILE_LIST
+        datetimelist = [f.time for f in self.PROFILE_LIST]
+        self.Coupled_List = self.TL.couple_with(datetimelist)
+
 
     def _dump_punti_for_aveScan(self,Profilelist,filename):
         LINES=[]
@@ -61,7 +59,7 @@ class Matchup_Manager():
 
         os.system("mkdir -p "+ PUNTI_DIR)
         JOB_LINES=[]
-        JOB_LINES.append(s="cd " + postproc.__path__[0] + " \n")
+        JOB_LINES.append("cd " + postproc.__path__[0] + " \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
             INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]

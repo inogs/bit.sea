@@ -1,66 +1,92 @@
-import scipy.io.netcdf as NC
 import numpy as np
 import os, sys
-
-def getDepthIndex(nav_lev, lev_mask):
-    jk_m = 0
-    for jk in range(nav_lev.__len__()):
-        if nav_lev[jk] < lev_mask:
-            jk_m = jk
-    return jk_m
+from commons.mask import Mask
+from commons.submask import SubMask
+from basins import V2 as OGS
 
 
-submaskfile = os.getenv("SUBMASKFILE");
-maskfile    = os.getenv(   "MASKFILE"); 
+annaCoast = False
 
-if submaskfile is None or maskfile is None: 
-    print "Error: Environment variables MASKFILE and SUBMASKFILE must be defined "
+maskfile    = os.getenv("MASKFILE");
+if maskfile is None :
+    print "Error: Environment variable MASKFILE must be defined "
     sys.exit(1)
 
-M=NC.netcdf_file(maskfile,"r")
-jpi=M.dimensions['x']
-jpj=M.dimensions['y']
-jpk=M.dimensions['z']
+if annaCoast:
+    kcoastfile  = os.getenv( "KCOASTFILE");
+    if kcoastfile is None:
+        print "Error: Environment variable KCOASTFILE must be defined "
+        sys.exit(1)
 
-tmask   = (M.variables['tmask'].data[0,:,:,:]).copy().astype(np.bool)
-nav_lev =  M.variables['nav_lev'].data.copy()
-Lon     =  M.variables['glamt'].data[0,0,:,:].copy()
-Lat     =  M.variables['gphit'].data[0,0,:,:].copy()
+TheMask=Mask(maskfile,ylevelsmatvar="gphit", xlevelsmatvar="glamt")
+jpk,jpj,jpi = TheMask.shape
 
-area    = (M.variables['e1t'].data[0,0,:,:].copy())*(M.variables['e2t'].data[0,0,:,:].copy())
-e3t     =  M.variables['e3t'].data[0,:,0,0].copy()
 
-tk_m     = getDepthIndex(nav_lev,200.0)
+tmask   =  TheMask.mask
+nav_lev =  TheMask.zlevels
+Lon     =  TheMask.xlevels
+Lat     =  TheMask.ylevels
+area    =  TheMask.area
+e3t     =  TheMask.dz
+
+
 MEDmask      = tmask.copy()
 MEDmask[:, Lon < -5.3] = False# Atlantic buffer 
 
-mask200_2D   = tmask[tk_m,:,:].copy()
+mask200_2D   = TheMask.mask_at_level(200.0)
 #mask200_2D[Lon < -5.3] = False # Atlantic buffer
 mask200_3D = np.zeros((jpk,jpj,jpi),dtype=np.bool)
 for i in range(jpk):
     mask200_3D[i,:,:]=mask200_2D
 
-COASTNESS_LIST=['coast','open_sea','everywhere']
-struct=[]
-for coast in COASTNESS_LIST:
-    struct.append((coast,np.bool))
-    
-COASTNESS = np.ones((jpk,jpj,jpi),dtype=struct)
-COASTNESS['coast']     = ~mask200_3D;
-COASTNESS['open_sea']  =  mask200_3D;
-#COASTNESS['everywhere'] = True;
-DEPTHlist      =['shallow','deep']
-struct=[]
-for depth in DEPTHlist:
-    struct.append((depth,np.bool))
+if annaCoast:
+    # Read k means class for coastal areas
+    kcoastmask = np.load(kcoastfile)
+    kmask1_2D =  np.zeros((jpj,jpi),dtype=np.bool)
+    kmask1_2D[kcoastmask==1] = True
+    kmask2_2D =  np.zeros((jpj,jpi),dtype=np.bool)
+    kmask2_2D[kcoastmask==2] = True
+    kmask1 =  np.zeros((jpk,jpj,jpi),dtype=np.bool)
+    kmask2 =  np.zeros((jpk,jpj,jpi),dtype=np.bool)
+    for i in range(jpk):
+        kmask1[i,:,:] = kmask1_2D
+        kmask2[i,:,:] = kmask2_2D
 
-DEPTH  = np.zeros((jpk,jpj,jpi),dtype=struct)
-tk_1     = getDepthIndex(nav_lev,200.0)+1
-#tk_2     = getDepthIndex(nav_lev,600.0)+1
-#DEPTH['surf'   ][0        ,:,:] = True
-DEPTH['shallow'][0:tk_1   ,:,:] = True
-#DEPTH['mid'    ][tk_1:tk_2,:,:] = True
-DEPTH['deep'   ][tk_1:    ,:,:] = True
+# Coastness must be defined one by one
+COASTNESS_LIST=['coast', 'open_sea','everywhere']
+if annaCoast: COASTNESS_LIST=['coast','open_sea','everywhere','coast1','coast2']
+    
+COASTNESS = np.ones((jpk,jpj,jpi) ,dtype=[(coast,np.bool) for coast in COASTNESS_LIST])
+COASTNESS['open_sea']  =  mask200_3D;
+COASTNESS['coast']     = ~mask200_3D;
+
+if annaCoast:
+    COASTNESS['coast1']  =  kmask1;
+    COASTNESS['coast2']  =  kmask2;
+
+# Depth are defined by their names and bottom levels
+DEPTHlist   =['shallow','mid','deep']
+Bottom_list =[200, 600, 6000]
+
+if annaCoast:
+    DEPTHlist   =['shallow','deep']
+    Bottom_list =[200, 6000]
+
+
+DEPTH  = np.zeros((jpk,jpj,jpi),dtype=[(depth,np.bool) for depth in DEPTHlist])
+tk_top = 0
+for idepth, depth in enumerate(DEPTHlist):
+    tk_bottom = TheMask.getDepthIndex(Bottom_list[idepth])+1
+    DEPTH[depth][tk_top:tk_bottom ,:,:] = True
+    tk_top = tk_bottom
+
+
+# tk_1     = TheMask.getDepthIndex(200.0)+1
+# tk_2     = TheMask.getDepthIndex(600.0)+1
+#
+# DEPTH['shallow'][0:tk_1   ,:,:] = True
+# DEPTH['mid'    ][tk_1:tk_2,:,:] = True
+# DEPTH['deep'   ][tk_2:    ,:,:] = True
 
 
 
@@ -71,32 +97,27 @@ for i in range(jpk):
     Volume[i,:,:] = area*e3t[i]
     dZ[i,:,:]     = e3t[i]
 
-M.close()
 
 
-sbIN=NC.netcdf_file(submaskfile,"r")
-Poly=__import__(sbIN.SubBasindef)
-SUBlist=Poly.P #SUBlist=['alb','swm','nwm', 'tyr', 'adn','ads','aeg','ion','lev']
-struct=[]
-for sub in SUBlist:
-    struct.append((sub,np.bool))
-struct.append(('med',np.bool))
+SUBlist=[ sub.name for sub in OGS.P.basin_list ]
+def SUB(sub):
+    ''' sub is a string'''
+    index= SUBlist.index(sub)
+    basin = OGS.P.basin_list[index]
+    s=SubMask(basin,maskobject = TheMask)
+    return s.mask
 
-SUB=np.array(np.zeros((jpk,jpj,jpi)),dtype=struct)
 
-for sub in SUBlist:
-    SUB[sub] = sbIN.variables[sub].data.copy()
-sbIN.close()
-SUB['med']=MEDmask
 
-SUBlist.append('med')
+# SUB[med] is not applied by aveScan.
+#If we want it we hav to apply to each subbasin
 
 
 def read_Positions_for_Pointprofiles(filename):
 
-    dtIN  = np.dtype([('Name','S40'), ('Lon',np.float32), ('Lat',np.float32)])
-    dtOUT = np.dtype([('Name','S40'), ('Lon',np.float32), ('Lat',np.float32), ('i',np.int), ('j',np.int)])  
-    MeasPoints=np.loadtxt(filename, dtype=dtIN, skiprows=1,ndmin=1,delimiter='\t')
+    dtIN  = np.dtype([('Name','S20'), ('Lon',np.float32), ('Lat',np.float32)])
+    dtOUT = np.dtype([('Name','S20'), ('Lon',np.float32), ('Lat',np.float32), ('i',np.int), ('j',np.int)])
+    MeasPoints=np.loadtxt(filename, dtype=dtIN, skiprows=1,ndmin=1)
     
     nMeas=MeasPoints.size
     MeasPoints_OUT=np.zeros((nMeas),dtype=dtOUT)

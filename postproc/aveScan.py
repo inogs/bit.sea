@@ -1,12 +1,4 @@
-import scipy.io.netcdf as NC
-import glob
-import os
-import numpy as np
-import read_descriptor
-import commons.IOnames as IOname
 import argparse
-
-
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -65,14 +57,24 @@ def argument():
 
     return parser.parse_args()
 
+
+
+
+args = argument()
+
+import scipy.io.netcdf as NC
+import glob
+import os
+import numpy as np
+import read_descriptor
+import IOnames as IOname
+from maskload import *
+
 def addsep(string):    
     if string[-1] != os.sep:
         return string + os.sep
     else:
         return  string
-
-args = argument()
-from maskload import *
 
 INPUT_AVEDIR = addsep(args.inputdir)
 TMPDIR       = addsep(args.tmpdir)
@@ -272,7 +274,7 @@ def getColumnIntegrals(var, objfileI):
     iStat  = 0
     for isub in range(len(SUBlist)):
         sub   = SUBlist[isub]
-        m = SUB[sub] & SUB['med']
+        m = SUB(sub)
         for icoast in range(len(COASTNESS_LIST)):
             
             coast = COASTNESS_LIST[icoast]
@@ -292,7 +294,7 @@ def getSomeStatistics(var,objfileP,objfileI):
     
     for isub in range(len(SUBlist)):
         sub   = SUBlist[isub]
-        m = SUB[sub] & SUB['med']
+        m = SUB(sub)
         
         for icoast in range(len(COASTNESS_LIST)):
             
@@ -322,7 +324,7 @@ def getAllStatistics(var,objfileP,objfileI):
     
     for isub in range(len(SUBlist)):
         sub   = SUBlist[isub]
-        m = SUB[sub] & SUB['med']
+        m = SUB(sub)
         
         for icoast in range(len(COASTNESS_LIST)):
             
@@ -364,7 +366,7 @@ def getAllStatistics2D(var,objfileP):
     
     for isub in range(len(SUBlist)):
         sub   = SUBlist[isub]
-        m = SUB[sub] & SUB['med']
+        m = SUB(sub)
         
         for icoast in range(len(COASTNESS_LIST)):
             
@@ -411,41 +413,60 @@ def create_tmp_headers(datestr,var):
     
     return ncOUT__profiles, ncOUT_integrals      
 
-def create_ave_headers(datestr):    
+def create_ave_headers(datestr):
+    '''
+    Generates output files, in INTEGRALS and STAT_PROFILES directories
+    Files refer to a time frame and will contain all the variables
+    Works in append mode, if the file name exists.
+    '''
+    
     ave__profiles = OUTPUT_DIR_MPR + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".stat_profiles.nc"
-    ave_integrals = OUTPUT_DIR_INT + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".vol_integrals.nc"    
-    
-    ncOUT__profiles = NC.netcdf_file(ave__profiles,"w")
-    ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")
-    
-    ncOUT__profiles.createDimension("sub"       ,len(SUBlist))
-    ncOUT__profiles.createDimension("coast"     ,ncoast)
-    ncOUT__profiles.createDimension("z"         ,jpk )
-    ncOUT__profiles.createDimension("stat"      ,nstat )
-    
-    ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
-    ncOUT_integrals.createDimension("coast"     ,ncoast)
-    ncOUT_integrals.createDimension("depth"     ,ndepth)
-    ncOUT_integrals.createDimension("stat"      ,nstat )
+    ave_integrals = OUTPUT_DIR_INT + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".vol_integrals.nc"
 
-    
-    setattr(ncOUT__profiles,"sub___list"  ,  SubDescr[:-2])
-    setattr(ncOUT__profiles,"coast_list"  ,CoastDescr[:-2])
-    setattr(ncOUT__profiles,"stat__list"  , StatDescr[:-2])
-    
-    setattr(ncOUT_integrals,"sub___list"  ,  SubDescr[:-2])    
-    setattr(ncOUT_integrals,"coast_list"  ,CoastDescr[:-2])
-    setattr(ncOUT_integrals,"depth_list"  ,DepthDescr[:-2])
-    setattr(ncOUT_integrals,"stat__list"  , StatDescr[:-2])
+    if os.path.exists(ave__profiles):
+        ncOUT__profiles=NC.netcdf_file(ave__profiles,'a')
+        print "appending in ", ave__profiles
+    else:
+        ncOUT__profiles = NC.netcdf_file(ave__profiles,"w")
+        ncOUT__profiles.createDimension("sub"       ,len(SUBlist))
+        ncOUT__profiles.createDimension("coast"     ,ncoast)
+        ncOUT__profiles.createDimension("z"         ,jpk )
+        ncOUT__profiles.createDimension("stat"      ,nstat )
+        setattr(ncOUT__profiles,"sub___list"  ,  SubDescr[:-2])
+        setattr(ncOUT__profiles,"coast_list"  ,CoastDescr[:-2])
+        setattr(ncOUT__profiles,"stat__list"  , StatDescr[:-2])
+
+    if os.path.exists(ave_integrals):
+        ncOUT_integrals=NC.netcdf_file(ave_integrals,'a')
+        print "appending in ", ave_integrals
+    else:
+        ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")
+        ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
+        ncOUT_integrals.createDimension("coast"     ,ncoast)
+        ncOUT_integrals.createDimension("depth"     ,ndepth)
+        ncOUT_integrals.createDimension("stat"      ,nstat )
+
+        setattr(ncOUT_integrals,"sub___list"  ,  SubDescr[:-2])
+        setattr(ncOUT_integrals,"coast_list"  ,CoastDescr[:-2])
+        setattr(ncOUT_integrals,"depth_list"  ,DepthDescr[:-2])
+        setattr(ncOUT_integrals,"stat__list"  , StatDescr[:-2])
     
     return ncOUT__profiles,  ncOUT_integrals
 
 def create_ave_pp_header(datestr):
+    '''
+    Generates output files, in PROFILES directory
+    Files refer to a time frame and will contain all the variables
+    Works in append mode, if the file name exists.'''
+
     ave_Pprofiles = OUTPUT_DIR_PRO + IOnames.Output.prefix + datestr + ".profiles.nc"
-    ncOUT_Pprofiles = NC.netcdf_file(ave_Pprofiles,"w")
-    ncOUT_Pprofiles.createDimension("Ncruise"   ,nCruise)
-    ncOUT_Pprofiles.createDimension("z"         ,jpk)
-    setattr(ncOUT_Pprofiles,"CruiseIndex",CruiseDescr[:-2])
+    if os.path.exists(ave_Pprofiles):
+        ncOUT_Pprofiles =  NC.netcdf_file(ave_Pprofiles,"a")
+    else:
+        ncOUT_Pprofiles = NC.netcdf_file(ave_Pprofiles,"w")
+        ncOUT_Pprofiles.createDimension("Ncruise"   ,nCruise)
+        ncOUT_Pprofiles.createDimension("z"         ,jpk)
+        setattr(ncOUT_Pprofiles,"CruiseIndex",CruiseDescr[:-2])
     return ncOUT_Pprofiles
 
 doPointProfiles = False; 
@@ -530,7 +551,7 @@ for ip in PROCESSES[rank::nranks]:
     ncIN = NC.netcdf_file(avefile,"r")
     nDim = len(ncIN.variables[var].dimensions)
     if var_dim [ivar] == '3D':
-        
+
         if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
         if nDim==3 : VAR   = ncIN.variables[var].data.copy()
 
@@ -605,8 +626,11 @@ for avefile in aveLIST[rank::nranks]:
     print avefile
     datestr = os.path.basename(avefile)[4:21]
     ncIN = NC.netcdf_file(avefile,"r")
-    
-    VAR   = ncIN.variables[var].data[0,:,:,:].copy()
+    nDim = len(ncIN.variables[var].dimensions)
+    if var_dim [ivar] == '3D':
+
+        if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
+        if nDim==3 : VAR   = ncIN.variables[var].data.copy()
     
     ave_integrals = OUTPUT_DIR_PPN + "ave." + datestr + ".col_integrals.nc"
     ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")

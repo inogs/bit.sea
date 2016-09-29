@@ -8,6 +8,7 @@ import matchup.matchup
 import pylab as pl
 import seawater as sw
 import instruments
+import postproc
 
 
 class Matchup_Manager():
@@ -20,11 +21,6 @@ class Matchup_Manager():
                 Outpudir is intended as the outputdir of aveScan,
         point profiles will be produced in outputdir/PROFILES.
         '''
-        root_dir    = os.getenv(   "ROOT_DIR");
-
-        if root_dir is None:
-            print "Error: Environment variable ROOT_DIR not defined. Look at config.sh file for an example."
-            sys.exit(1)
         self.profilingDir=Outpudir
         self.AVE_INPUT_DIR = addsep(INPUTDIR)
         if os.path.exists(INPUTDIR):
@@ -65,8 +61,7 @@ class Matchup_Manager():
 
         os.system("mkdir -p "+ PUNTI_DIR)
         JOB_LINES=[]
-        JOB_LINES.append("cd $ROOT_DIR \n")
-        JOB_LINES.append("cd postproc \n")
+        JOB_LINES.append(s="cd " + postproc.__path__[0] + " \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
             INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]

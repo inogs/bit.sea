@@ -90,6 +90,7 @@ class TimeList():
         TimeListObj.timeinterval = timeinterval
         TimeListObj.inputdir     = inputdir
         TimeListObj.searchstring = searchstring
+        TimeListObj.prefix       = prefix
         TimeListObj.filelist = filenamelist
 
 

@@ -41,7 +41,7 @@ class Matchup_Manager():
         F.writelines(LINES)
         F.close()
 
-    def writefiles_for_profiling(self, vardescriptor,filename):
+    def writefiles_for_profiling(self, vardescriptor,filename,ionamesfile="IOnames.xml"):
         '''
         Preparation of launch of aveScan.py, in order to generate profiles.
         Arguments
@@ -68,11 +68,12 @@ class Matchup_Manager():
             outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
             self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \
-                ' -l '  + Model_time.strftime("ave.%Y%m%d*")  + \
+                ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d*")  + \
                 ' -i '  + self.AVE_INPUT_DIR  +  \
                 ' -t '  + TMPSDIR  + \
                 ' -o '  + self.profilingDir  + \
                 ' -d '  + vardescriptor      + \
+                ' --ionames ' + ionamesfile  + \
                 ' -p ' + outpuntifile + '\n'
             JOB_LINES.append(line)
 

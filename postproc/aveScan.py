@@ -45,15 +45,18 @@ def argument():
     parser.add_argument(   '--descriptor',"-d",
                                 type = str,
                                 default = "VarDescriptor_1.xml",
-                                help = 'VarDescriptor_1.xml, or the complete path') 
+                                help = 'VarDescriptor_1.xml, or the complete path')
     
     parser.add_argument(   '-s',action='store_true',
                                 help = '''Activates statistics calculation
-                                ''') 
+                                ''')
     parser.add_argument(   '--pointlist',"-p",
                                 type = str,
-                                help = '''Path of the text file listing the the points where extract point profiles''')             
-    
+                                help = '''Path of the text file listing the the points where extract point profiles''')
+    parser.add_argument(   '--ionames',
+                                type = str,
+                                default="IOnames.xml",
+                                help = '''Path of IOnames file''')
 
     return parser.parse_args()
 
@@ -79,7 +82,8 @@ def addsep(string):
 INPUT_AVEDIR = addsep(args.inputdir)
 TMPDIR       = addsep(args.tmpdir)
 BASEDIR      = addsep(args.outdir)
-IOnames      = IOname.IOnames()
+ionamesfile  = args.ionames
+IOnames      = IOname.IOnames(ionamesfile)
 
 
 try:

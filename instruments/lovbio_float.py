@@ -94,7 +94,10 @@ class BioFloat(Instrument):
 
     def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
-        fillvalue = varObj._FillValue
+        try:
+            fillvalue = varObj._FillValue
+        except:
+            fillvalue = 99999
         M = varObj.data.copy()
         M[M==fillvalue] = np.NaN;
         return M
@@ -351,7 +354,10 @@ def get_wmo_list(Profilelist):
       Returns:
          a list of wmo strings
     '''
-    raise NotImplementedError
+    wmo_set=set()
+    for p in Profilelist:
+        wmo_set.add(p._my_float.wmo)
+    return list(wmo_set)
 
 def filter_by_wmo(Profilelist,wmo):
     '''
@@ -365,15 +371,15 @@ def filter_by_wmo(Profilelist,wmo):
       Returns:
         a list of Profile Objects
     '''
-    raise NotImplementedError
 
+    return [p for p in Profilelist if p._my_float.wmo == wmo]
 
 
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'NITRATE'
+    var = 'NO3'
     TI = TimeInterval('20150520','20150830','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 

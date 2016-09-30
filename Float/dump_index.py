@@ -10,7 +10,7 @@ import os,glob
 VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP']
 
 
-def file_header_content(filename):
+def file_header_content(filename,VARLIST):
     ncIN = NC.netcdf_file(filename,'r')
     lon=ncIN.variables['LONGITUDE'].data[0]
     lat=ncIN.variables['LATITUDE'].data[0]
@@ -48,7 +48,7 @@ F = file(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
 
-
+VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
 LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/"
 FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
 DIRLIST=os.listdir(LOC)

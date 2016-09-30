@@ -8,7 +8,12 @@ FLOATVARS={'O2o':'DOXY', \
 #CHLA:units = "mg/m3" ;
 #NITRATE:units = "micromole/kg" ;
 
-
+LOVFLOATVARS={'O2o':'DOXY', \
+              'N3n':'NO3',  \
+              'P_l':'CHLA', \
+              'P_i':'CHLA', \
+              'vosaline':'PSAL', \
+              'votemper':'TEMP' } 
 
 
 

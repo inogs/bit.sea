@@ -41,7 +41,7 @@ for DIR in DIRLIST:
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
         if filename[-4:]!='D.nc':
-            line=file_header_content(filename)
+            line=file_header_content(filename,VARLIST)
             if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')
@@ -60,7 +60,7 @@ for DIR in DIRLIST:
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
         if filename[-4:]!='D.nc':
-            line=file_header_content(filename)
+            line=file_header_content(filename,VARLIST)
             if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')

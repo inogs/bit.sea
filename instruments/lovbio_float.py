@@ -135,29 +135,23 @@ class BioFloat(Instrument):
         
         iProf = 0#self.__searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
+        PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
-        if iProf== -1 :
-            M = self.__merge_var_with_adjusted(ncIN, var)
-            N_PROF= ncIN.dimensions['N_PROF']
-            N_MEAS = np.zeros((N_PROF),np.int32)
-            for iprof in range(N_PROF):
-                N_MEAS[iprof] = (~np.isnan(M[iprof,:])).sum()
-            #per il momento cerco il massimo
-            iProf = N_MEAS.argmax()
-            print "iprof new value", iProf
-
-
-        M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+        if ncIN.variables.has_key(var + "_ADJUSTED"):
+            M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+            QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
+        else:
+            M_ADJ   = np.zeros_like(PRES)*np.nan
+            QC      = np.zeros_like(PRES)*np.nan
         M       = self.__fillnan(ncIN, var )
         #M      = self.__merge_var_with_adjusted(ncIN, var) # to have not only adjusted
-        PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
-        QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
+
         Profile     =     M[iProf,:]
         Profile_adj = M_ADJ[iProf,:]
         Pres        =  PRES[iProf,:]
         Qc          =    QC[iProf,:]
         ncIN.close()
-        
+
         return Pres, Profile,Profile_adj, Qc
 
     def read_raw(self,var,read_adjusted=True):
@@ -379,12 +373,22 @@ if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'NO3'
+    var = 'DOXY'
     TI = TimeInterval('20150520','20150830','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
 
+    for ip, p in enumerate(PROFILE_LIST):
+        F = p._my_float
+        Pres,V,V_adj, Qc = F.read_very_raw(var)
+        ii =~np.isnan(V)
+        V = V[ii]
+        print V.max(), V.min()
+
+
+    import sys
+    sys.exit()
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)
         TheFloat = p._my_float

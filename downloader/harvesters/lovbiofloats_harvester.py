@@ -115,6 +115,16 @@ class LovBioFloatsHarvester(HarvesterInterface):
     Moreover, the harvester will save the information of the previous file
     in a xml file whose path is set in the global variable "xml_path".
     """
+    def is_a_lov_float(self,wmo,lovname):
+        if wmo == lovname : return False
+        if lovname == '' : return False
+        return True
+
+    def wmo_file_reader(self):
+        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
+        TABLE=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=2,delimiter=" | ")
+        return TABLE
+
     def harvest(self, db_path, log):
         """
         For every float in the file wmo, check the status in the wmo_file and
@@ -136,13 +146,12 @@ class LovBioFloatsHarvester(HarvesterInterface):
         print("HARVEST")
         downloaded = []
 
-        # Read the wmo file line by line (exclude the first one because
-        # it does not contain data)
-        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
-        A=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=1,delimiter="\t")
+        # Read the wmo file
+
+        A = self.wmo_file_reader()
         lines_active_floats=np.where(A['status']=='A')[0]
         lines_dead__floats =np.where(A['status']=='D')[0]
-        
+
 
         # Now we need the xml file that keeps what we did on the
         # last updates
@@ -176,18 +185,18 @@ class LovBioFloatsHarvester(HarvesterInterface):
         for l in lines_active_floats:
             # Update the xml with the current status of the float
             f = A[l]['wmo']
-            if A[l]['wmo'] == A[l]['nome_fs']: continue
-            if A[l]['nome_fs']=='NULL': continue
-            #code.interact(local=locals())
-            f_in_xml = root.findall('wmo_' + str(f))
+            floatname = A[l]['nome_fs'].replace(' ','')
+            if not self.is_a_lov_float(f, floatname): continue
+
+            wmo_in_xml = 'wmo_' + str(f)
+            f_in_xml = root.findall(wmo_in_xml)
             if len(f_in_xml) == 0:
-                f_node = xml_tree.SubElement(root, 'wmo_' + str(f))
+                f_node = xml_tree.SubElement(root, wmo_in_xml)
             else:
-                f_node = [fn for fn in f_in_xml if fn.tag=='wmo_'+str(f)][0]
+                f_node = [fn for fn in f_in_xml if fn.tag==wmo_in_xml][0]
             f_node.set('status', 'A')
 
             try:
-                floatname = A[l]['nome_fs']
                 urlfilelist = http_url + floatname +  "/liste_all"
                 print(urlfilelist)
                 response = urllib2.urlopen(urlfilelist)
@@ -195,8 +204,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
                 log.info('No directory associated with file ' + str(f) +
                          '. This file will be skipped!')
                 continue
-            
-            
+
             remotepathlist = response.read().rsplit("\n")[:-1]
             filelist=[os.path.basename(fn) for fn in remotepathlist]
             # Now I look for the profiles dir. This is the folder
@@ -227,6 +235,9 @@ class LovBioFloatsHarvester(HarvesterInterface):
         print ("DIED FLOATS")
         for l in lines_dead__floats:
             f = A[l]['wmo']
+            floatname = A[l]['nome_fs'].replace(' ','')
+            if not self.is_a_lov_float(f, floatname): continue
+
             to_be_updated = False
             # Update the xml with the current status of the float
             # Check if it must be updated
@@ -253,7 +264,6 @@ class LovBioFloatsHarvester(HarvesterInterface):
 
             if to_be_updated:
                 try:
-                    floatname = A[l]['nome_fs']
                     urlfilelist = http_url + floatname +  "/liste_all"
                     print(urlfilelist)
                     response = urllib2.urlopen(urlfilelist)
@@ -263,7 +273,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
                     continue
 
                 remotepathlist = response.read().rsplit("\n")[:-1]
-                filelist=[os.path.basename(f) for f in remotepathlist]
+                filelist=[os.path.basename(fn) for fn in remotepathlist]
                 # Now I look for the profiles dir. This is the folder
                 # where all the data are stored
                 if len(filelist) > 0:
@@ -283,9 +293,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
                     if len(download_for_f) == 0:
                         log.info('No updates found for float ' + str(f))                    
                 else:
-                    log.info('Float ' + f + ' does not contain a profile '
-                             'dir inside its directory. No data will be '
-                             'downloaded for this float')
+                    log.info('No updates found for float ' + str(f))
 
         # Save the XML file
         root.set('Updated', now_as_string())
@@ -324,8 +332,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
 
         # Read the wmo file line by line (exclude the first one because
         # it does not contain data)
-        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
-        A=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=1,delimiter="\t")
+        A=self.wmo_file_reader()
 
 
         # Delete, if present, the XML files with all the floats
@@ -347,8 +354,10 @@ class LovBioFloatsHarvester(HarvesterInterface):
         # Download data for every active float
         for l in range(len(A)):
             f = A[l]['wmo']
-            if A[l]['wmo'] == A[l]['nome_fs']: continue
-            if A[l]['nome_fs']=='NULL': continue
+            floatname = A[l]['nome_fs'].replace(' ','')
+            if not self.is_a_lov_float(f, floatname): continue
+
+
             # Update the xml with the current status of the float
             f_in_xml = root.findall('wmo_' + str(f))
             if len(f_in_xml) == 0:
@@ -359,7 +368,6 @@ class LovBioFloatsHarvester(HarvesterInterface):
             f_node.set('status', A[l]['status'])
 
             try:
-                floatname = A[l]['nome_fs']
                 urlfilelist = http_url + floatname +  "/liste_all"
                 print(urlfilelist)
                 response = urllib2.urlopen(urlfilelist)

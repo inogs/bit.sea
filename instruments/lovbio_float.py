@@ -93,13 +93,20 @@ class BioFloat(Instrument):
                         return iprof
 
     def __fillnan(self, ncObj,var):
+        '''
+        If the variable is a char array, with fillvalue=''
+        this function results in an array of '0'
+        '''
         varObj = ncObj.variables[var]
         try:
             fillvalue = varObj._FillValue
         except:
             fillvalue = 99999
         M = varObj.data.copy()
-        M[M==fillvalue] = np.NaN;
+        if M.dtype == np.dtype('S1'):
+            M[M==fillvalue] = '0'
+        else:
+            M[M==fillvalue] = np.NaN;
         return M
 
     def __merge_profile_with_adjusted(self,profile, profile_adj):
@@ -169,17 +176,16 @@ class BioFloat(Instrument):
         
         if read_adjusted:
             rawProfile = rawProfile_adj
-        else:
-            for i in range(len(rawQc)): rawQc[i]='2' # to force goodQc = True
+
 
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
-        goodQc     = (rawQc == '2' ) | (rawQc == '1' )
+        #goodQc     = (rawQc == '2' ) | (rawQc == '1' )
         badProfile = np.isnan(rawProfile)
-        bad = badPres | badProfile | (~goodQc )
+        bad = badPres | badProfile #| (~goodQc )
 
 
         Pres    =    rawPres[~bad]
@@ -378,7 +384,8 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-
+    import sys
+    sys.exit()
     for ip, p in enumerate(PROFILE_LIST):
         F = p._my_float
         Pres,V,V_adj, Qc = F.read_very_raw(var)
@@ -387,8 +394,7 @@ if __name__ == '__main__':
         print V.max(), V.min()
 
 
-    import sys
-    sys.exit()
+
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)
         TheFloat = p._my_float

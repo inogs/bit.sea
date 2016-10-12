@@ -163,4 +163,4 @@ class Mask(object):
         self._mask = red_mask.copy()
         self._shape = self._mask.shape
         self._zlevels = self._zlevels[index]
-        raise NotImplementedError
+        #raise NotImplementedError

@@ -116,7 +116,7 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None
     """
     Designed for web site
     """
-    
+
     #sfondo = pl.imread('/pico/home/userexternal/gbolzon0/bit.sea/layer_integral/20160610_OGS_slider_sito.png')
 
     font=FontProperties()
@@ -140,7 +140,7 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None
     lat_max = mask.ylevels.max()
     cmap=pl.get_cmap('jet',ncolors)
     im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
-    if not (background_img is None) : 
+    if not (background_img is None) :
         ax.imshow(background_img, extent=[-6, 36, 30, 46])
 
     #Set color bar
@@ -188,6 +188,70 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None
     t1.set_font_properties(font_prop)
     t2.set_font_properties(font_prop)
     t3.set_font_properties(font_prop)
+    return fig, ax
+
+
+def generic_mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None):
+    """
+    Designed for web site
+    Useful for subbasins or other infos
+    """
+
+    font=FontProperties()
+    font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=14)
+    font_prop13 = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=13)
+    #font.set_name('TitilliumWeb')
+    if (fig is None) or (ax is None):
+        fig , ax = pl.subplots()
+        fig.set_size_inches(10.0, 10.0*16/42)
+    else:
+        fig.clf()
+        fig.add_axes(ax)
+
+    ratio=672./860
+    ax.set_position([0.08, 0.13, ratio, ratio])
+    clim = map_dict['clim']
+
+    lon_min = mask.xlevels.min()
+    lon_max = mask.xlevels.max()
+    lat_min = mask.ylevels.min()
+    lat_max = mask.ylevels.max()
+    cmap=pl.get_cmap('jet',ncolors)
+    im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
+    if not (background_img is None) :
+        ax.imshow(background_img, extent=[-6, 36, 30, 46])
+
+    #Set color bar
+    im.set_clim(clim[0], clim[1])
+    cbar_ticks_list = np.linspace(clim[0], clim[1], 5).tolist()
+    cbar_ticks_labels = list()
+    for t in cbar_ticks_list:
+        cbar_ticks_labels.append("%g" % (t,))
+
+
+    #cax = fig.add_axes((0.88,.13, 0.03, 0.78))
+    #cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
+    #cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
+    ax.invert_yaxis()
+
+    ax.set_yticklabels([], 'fontproperties', font_prop)
+    ax.set_xticklabels([], 'fontproperties', font_prop)
+    ax.set_xticks(np.arange(-2,36,4).tolist())
+    ax.set_yticks(np.arange(32,46,4).tolist())
+
+    #ax.set_yticklabels([u"32N", u"36N", u"40N", u"44N"], 'fontproperties', font_prop)
+    ax.set_xlim([-6, 36])
+    ax.set_ylim([30, 46])
+    t=ax.set_xlabel("longitude (deg)");
+    t.set_font_properties(font_prop13)
+    t=ax.set_ylabel("latitude (deg)")
+    t.set_font_properties(font_prop13)
+
+
+
+    ax.set_position([0.08, 0.13, ratio, ratio])
+    ax.axes.get_xaxis().set_visible(True)
+    ax.axes.get_yaxis().set_visible(True)
     return fig, ax
 
 

@@ -75,7 +75,7 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
 
 
 
-def Hovmoeller_matrix(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72):
+def Hovmoeller_matrix(datetime_list, file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72):
     dlabels=None
     if isinstance(depths, (int, long)):
         pass
@@ -92,22 +92,15 @@ def Hovmoeller_matrix(file_list, varname, subbasin, coast=CoastEnum.open_sea, st
     else:
         raise ValueError("Invalid depths argument")
     plotmat = np.zeros([depths, len(file_list)])
-    xlabel_list = list()
     #For each file
     for i,f in enumerate(file_list):
-        #Get date string from file name
-        _, ds = get_date_string(path.basename(f))
-        #Create datetime object from date string
-        dt = datetime.strptime(ds,'%Y%m%d')
-        #Append the date to xlabel_list
-        xlabel_list.append(dt)
         #Open it with netCDF4
         dset = netCDF4.Dataset(f)
         #Copy the data in the plot matrix
         plotmat[:,i] = dset[varname][subbasin, coast, 0:depths, stat]
         #Close the file
         dset.close()
-    xlabel_list = mpldates.date2num(xlabel_list)
+    xlabel_list = mpldates.date2num(datetime_list)
     xs,ys = np.meshgrid(xlabel_list, dlabels)
     return plotmat, xs, ys
 

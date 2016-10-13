@@ -1,6 +1,7 @@
 import scipy.io.netcdf as NC
 import datetime
 import os,glob
+import numpy as np
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
 #e.g. lines as 
@@ -10,7 +11,10 @@ import os,glob
 VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP']
 
 
-def file_header_content(filename,VARLIST):
+def file_header_content(filename,VARLIST, avail_params=None):
+    '''
+    it takes variable list
+    '''
     ncIN = NC.netcdf_file(filename,'r')
     lon=ncIN.variables['LONGITUDE'].data[0]
     lat=ncIN.variables['LATITUDE'].data[0]
@@ -24,10 +28,13 @@ def file_header_content(filename,VARLIST):
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
     s="%s,%f,%f,%s," %(filename, lat, lon, Time.strftime('%Y%m%d-%H:%M:%S'))
-    for var in VARLIST: 
-        if var in ncIN.variables.keys():
-            s=s+" " + var
-    ncIN.close()
+    if avail_params is None:
+        for var in VARLIST: 
+            if var in ncIN.variables.keys():
+                s=s+" " + var
+        ncIN.close()
+    else:
+        s=s+" " + avail_params
     return s
 
 LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
@@ -41,27 +48,42 @@ for DIR in DIRLIST:
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
         if filename[-4:]!='D.nc':
-            line=file_header_content(filename,VARLIST)
+            line=file_header_content(filename,VARLIST,avail_params=None)
             if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
 
+CORIOLIS_LINES=LINES[:]
 VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
 LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/"
 FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
 DIRLIST=os.listdir(LOC)
 
 
+def get_sensor_list(wmo,LINES):
+    mydtype= np.dtype([
+              ('file_name','S200'),
+              ('lat',np.float32),
+              ('lon',np.float32),
+              ('time','S17'),
+              ('parameters','S200')] )
+    for line in LINES:
+        if wmo in line:
+            A=np.loadtxt(line,dtype=mydtype)
+            return A['parameters']
+            
+
 LINES=[]
 for DIR in DIRLIST:
+    wmo = DIR
     dirpath=LOC + DIR
+    sensors = get_sensor_list(wmo,CORIOLIS_LINES)
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
-        if filename[-4:]!='D.nc':
-            line=file_header_content(filename,VARLIST)
-            if line is not None: LINES.append(line+"\n")
+        line=file_header_content(filename,VARLIST,avail_params=sensors.replace('NITRATE','NO3'))
+        if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')
 F.writelines(LINES)

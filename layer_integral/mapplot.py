@@ -46,11 +46,9 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         #shape = map_dict['data'].shape
         #fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
         fig.set_size_inches(10.0, 10.0*16/42)
-    else:
-        fig.clf()
-        fig.add_axes(ax)
-    ax.set_position([0.08, 0.11, 0.78, 0.78])
+        ax.set_position([0.08, 0.11, 0.78, 0.78])
     clim = map_dict['clim']
+    actualpos = ax.get_position()
 
     if not(mask is None):
         lon_min = mask.xlevels.min()
@@ -94,7 +92,7 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
     if map_dict.has_key('layer'):  ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
     if map_dict.has_key('date'):   ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
     if map_dict.has_key('varname'):ax.text(-7,40,map_dict['varname'],ha='left',va='center')
-    ax.set_position([0.08, 0.11, 0.78, 0.78])
+    ax.set_position(actualpos)
     ax.axes.get_xaxis().set_visible(True)
     ax.axes.get_yaxis().set_visible(True)
     #ax.set_xlabel('longitude (deg)')

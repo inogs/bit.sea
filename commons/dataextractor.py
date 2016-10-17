@@ -65,9 +65,9 @@ class DataExtractor(object):
                         if ndims == 3 : self.__values = np.array(dset.variables[v])[0,:,:]
                     self.__shape = self.__values.shape
                     
-                    
-                    fv = dset.variables[v].missing_value
-                    self.__dset_fillvalue = fv
+                    if 'missing_value' in dset.variables[v].ncattrs():
+                        fv = dset.variables[v].missing_value
+                        self.__dset_fillvalue = fv
                 dset.close()
                 self.__filename = fn
                 self.__varname = v

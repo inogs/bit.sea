@@ -8,7 +8,7 @@ export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_c
 
 python extract_satTimeSeries.py
 
-SATDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/WEEKLY_V4/
+SATDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/WEEKLY_V4/
 OUTSAT=/pico/scratch/userexternal/ateruzzi/BITDOTSEA/bit.sea/validation/multirun/
 OUTDIR=$CINECA_SCRATCH/ELAB_DA_COAST/OUTPUTvalidation/CFRTIMESER/
 INDIR=$CINECA_SCRATCH/

@@ -3,7 +3,7 @@
 # QUID REANALYSIS
 # SECTION 4?:
 export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
-SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/NEW_20161702/MONTHLY_V4/
+SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
 
 mkdir ./fig4.2/
 python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR

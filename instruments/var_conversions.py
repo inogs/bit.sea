@@ -13,7 +13,7 @@ LOVFLOATVARS={'O2o':'DOXY', \
               'P_l':'CHLA', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
-              'votemper':'TEMP' } 
+              'votemper':'TEMP' }
 
 
 

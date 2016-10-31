@@ -1,10 +1,10 @@
 
-import bio_float
+import lovbio_float
 import mooring
 from static.Carbon_reader import CarbonReader
 from static.Nutrients_reader import NutrientsReader
 
-from var_conversions import FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS
+from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS
 
 def Selector(var,T,region):
     '''

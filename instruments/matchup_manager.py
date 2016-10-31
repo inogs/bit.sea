@@ -139,6 +139,8 @@ class Matchup_Manager():
         '''
         if isinstance(p, instruments.bio_float.BioFloatProfile):
             return instruments.FLOATVARS[var]
+        if isinstance(p, instruments.lovbio_float.BioFloatProfile):
+            return instruments.LOVFLOATVARS[var]
         if isinstance(p, instruments.mooring.MooringProfile):
             return instruments.MOORINGVARS[var]
 

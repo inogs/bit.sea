@@ -1,24 +1,29 @@
 import scipy.io.netcdf as NC
 import numpy as np
 import os
-from commons.time_interval import TimeInterval
+
 from commons.layer import Layer
 
 from profiler import *
 import basins.OGS as OGS
-import instruments
-
-M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
+from instruments import lovbio_float
+from instruments import var_conversions
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 maskfile    = os.getenv("MASKFILE"); 
 ncIN=NC.netcdf_file(maskfile,"r")
 nav_lev = ncIN.variables['nav_lev'].data.copy()
 ncIN.close()
 
-Profilelist=instruments.Selector('O2o',T_INT,OGS.tyr)
-M.getMatchups(Profilelist, nav_lev, 'O2o')
+var='O2o'
+varname=var_conversions.LOVFLOATVARS[var]
+Profilelist=lovbio_float.FloatSelector(varname,T_INT,OGS.tyr)
+L = M.getMatchups(Profilelist, nav_lev, var)
 
 
+
+import sys
+sys.exit()
 
 VARLIST=[ 'O2o','P_i']
 

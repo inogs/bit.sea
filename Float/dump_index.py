@@ -57,7 +57,7 @@ F.writelines(LINES)
 F.close()
 
 CORIOLIS_LINES=LINES[:]
-VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
+#VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
 LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/"
 FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
 DIRLIST=os.listdir(LOC)
@@ -78,8 +78,8 @@ def get_sensor_list(wmo,LINES):
     else:
         print wmo + " not in CORIOLIS" 
         return 'DOXY NITRATE CHLA PRES PSAL TEMP'
-      
-            
+
+
 
 LINES=[]
 for DIR in DIRLIST:
@@ -88,7 +88,7 @@ for DIR in DIRLIST:
     sensors = get_sensor_list(wmo,CORIOLIS_LINES)
     filenames = glob.glob(dirpath + "/*nc")
     for filename in filenames:
-        line=file_header_content(filename,VARLIST,avail_params=sensors.replace('NITRATE','NO3'))
+        line=file_header_content(filename,VARLIST,avail_params=sensors.replace('NITRATE','SR_NO3'))
         if line is not None: LINES.append(line+"\n")
 
 F = file(FloatIndexer,'w')

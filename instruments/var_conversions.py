@@ -9,7 +9,7 @@ FLOATVARS={'O2o':'DOXY', \
 #NITRATE:units = "micromole/kg" ;
 
 LOVFLOATVARS={'O2o':'DOXY', \
-              'N3n':'NO3',  \
+              'N3n':'SR_NO3',  \
               'P_l':'CHLA', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \

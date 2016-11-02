@@ -2,6 +2,7 @@ import scipy.io.netcdf as NC
 import datetime
 import os,glob
 import numpy as np
+from StringIO import StringIO
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
 #e.g. lines as 
@@ -71,8 +72,13 @@ def get_sensor_list(wmo,LINES):
               ('parameters','S200')] )
     for line in LINES:
         if wmo in line:
-            A=np.loadtxt(line,dtype=mydtype)
-            return A['parameters']
+            d=StringIO(line)
+            A=np.loadtxt(d,dtype=mydtype,delimiter=',')
+            return str(A['parameters'])
+    else:
+        print wmo + " not in CORIOLIS" 
+        return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+      
             
 
 LINES=[]

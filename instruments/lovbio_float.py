@@ -101,7 +101,10 @@ class BioFloat(Instrument):
         try:
             fillvalue = varObj._FillValue
         except:
-            fillvalue = 99999
+            try:
+                fillvalue = varObj.missing_value
+            except:
+                fillvalue = 99999
         M = varObj.data.copy()
         if M.dtype == np.dtype('S1'):
             M[M==fillvalue] = '0'
@@ -384,15 +387,17 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    import sys
-    sys.exit()
+
     for ip, p in enumerate(PROFILE_LIST):
         F = p._my_float
         Pres,V,V_adj, Qc = F.read_very_raw(var)
         ii =~np.isnan(V)
         V = V[ii]
         print V.max(), V.min()
-
+        if V.min() < -976:
+            break
+    import sys
+    sys.exit()
 
 
     for p in PROFILE_LIST[:1]:

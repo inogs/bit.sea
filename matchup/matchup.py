@@ -59,24 +59,28 @@ class ProfilesMatchup(matchup):
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
 
 
-    def plot(self):
+    def plot(self,fig=None,ax=None):
         '''
         Red lines are reference (biofloat)
         Blue lines are model
         '''
-
-        pl.figure()
+        if (fig is None) or (ax is None):
+            fig , ax = pl.subplots()
         StartInd=0
-        for length in self.Lengths:
+        for il, length in enumerate(self.Lengths):
             End_Ind = StartInd + length
             model = self.Model[StartInd:End_Ind]
             ref   = self.Ref[StartInd:End_Ind]
             pres  = self.Depth[StartInd:End_Ind]
-
-            pl.plot(model,pres,'b', ref,pres,'r')
+            if il==0:
+                ax.plot(model,pres,'b', label='model')
+                ax.plot(ref,pres,'r', label='float')
+            else:
+                ax.plot(model,pres,'b',ref,pres,'r')
             StartInd = End_Ind
-        pl.gca().invert_yaxis()
-        pl.show(block=False)
+        if not ax.yaxis_inverted(): ax.invert_yaxis()
+        ax.legend()
+        return fig,ax
 
 class FloatProfilesMatchup(ProfilesMatchup):
     def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, time=None, qc=None, name=None, cycle=None):

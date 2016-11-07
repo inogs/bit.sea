@@ -41,7 +41,8 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-
+import matplotlib
+matplotlib.use('Agg')
 from commons.time_interval import TimeInterval
 from instruments.matchup_manager import Matchup_Manager
 import basins.OGS as OGS

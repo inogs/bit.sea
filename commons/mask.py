@@ -115,8 +115,9 @@ class Mask(object):
         lat_indices = np.where(d_lat == min_d_lat)
         return lon_indices[1][0], lat_indices[0][0]
 
-    def convert_x_y_to_lon_lat(self, x, y):
-        """Converts x and y coordinates to longitude and latitude.
+    def convert_i_j_to_lon_lat(self, i, j):
+        """Converts i and j indexes to longitude and latitude of center of cells
+        i is indeded as longitudinal index, as well as j is latitudinal index
         """
         return (self._xlevels[y,x], self._ylevels[y,x])
 

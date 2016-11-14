@@ -163,5 +163,5 @@ class Mask(object):
         red_mask[0,:,:] = self._mask[index,:,:]
         self._mask = red_mask.copy()
         self._shape = self._mask.shape
-        self._zlevels = self._zlevels[index]
+        self._zlevels = [self._zlevels[index]]
         #raise NotImplementedError

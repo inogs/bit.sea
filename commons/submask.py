@@ -73,7 +73,7 @@ class SubMask(Mask):
             else:# original
                 for x in range(prism.shape[2]):
                     for y in range(prism.shape[1]):
-                        lon,lat = self.convert_x_y_to_lon_lat(x,y)
+                        lon,lat = maskobject.convert_x_y_to_lon_lat(x,y)
                         prism[:,y,x] = basin.is_inside(lon,lat)
         # submask = original mask * prism mask
 

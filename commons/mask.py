@@ -119,7 +119,7 @@ class Mask(object):
         """Converts i and j indexes to longitude and latitude of center of cells
         i is indeded as longitudinal index, as well as j is latitudinal index
         """
-        return (self._xlevels[y,x], self._ylevels[y,x])
+        return (self._xlevels[j,i], self._ylevels[j,i])
 
     def getDepthIndex(self, z):
         '''Converts a depth expressed in meters in the corresponding index level

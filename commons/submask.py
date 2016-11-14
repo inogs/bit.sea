@@ -66,14 +66,14 @@ class SubMask(Mask):
 
                 for x in range(lonmin_ind,lonmax_ind):
                     for y in range(latmin_ind,latmax_ind):
-                        lon,lat = self.convert_x_y_to_lon_lat(x,y)
+                        lon,lat = maskobject.convert_i_j_to_lon_lat(x,y)
                         sbmask[y,x] = basin.is_inside(lon,lat)
                 for jk in range(jpk):
                     prism[jk,:,:] = sbmask
             else:# original
                 for x in range(prism.shape[2]):
                     for y in range(prism.shape[1]):
-                        lon,lat = maskobject.convert_x_y_to_lon_lat(x,y)
+                        lon,lat = maskobject.convert_i_j_to_lon_lat(x,y)
                         prism[:,y,x] = basin.is_inside(lon,lat)
         # submask = original mask * prism mask
 

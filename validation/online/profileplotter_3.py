@@ -38,7 +38,7 @@ import scipy.io.netcdf as NC
 from layer_integral import coastline
 import glob,os
 import datetime
-from instruments import bio_float
+from instruments import lovbio_float as bio_float
 from basins.region import Rectangle
 from commons.time_interval import TimeInterval
 from commons.utils import addsep

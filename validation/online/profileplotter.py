@@ -2,8 +2,8 @@ import pylab as pl
 import numpy as np
 import matplotlib.patches as mpatches
 import scipy.io.netcdf as NC
-import libxmp, libxmp.utils
-from libxmp import XMPFiles, consts
+#import libxmp, libxmp.utils
+#from libxmp import XMPFiles, consts
 from layer_integral import coastline
 
 def figure_generator(p):
@@ -22,19 +22,16 @@ def figure_generator(p):
     fig.set_size_inches(hsize,vsize)
     #figtitle = " date="+p.time.strftime('%Y/%m/%d')+" float="+p.name()
     #fig.set_title(figtitle)
-    fig.subplots_adjust(hspace = 0.15, wspace=0.3)
+    fig.subplots_adjust(hspace = 0.3, wspace=0.3)
     axs = axs.ravel()
 
     ax = axs[0]
     c_lon, c_lat=coastline.get()
     ax.plot(c_lon,c_lat, color='#000000',linewidth=0.5)
     ax.plot(p.lon,p.lat,'ro')
-    ax.set_xticks(np.arange(-6,36,2))
-    ax.set_yticks(np.arange(0,100,2))
-    ax.set_xlabel("lon")
-    ax.set_ylabel("lat")
-    ax.set_title(p.time.strftime('%Y/%m/%d'))
-    extent=10 #degrees
+    ax.set_xticks(np.arange(-6,36))
+    ax.set_yticks(np.arange(-30,46))
+    extent=6 #degrees
     ax.set_xlim([p.lon -extent/2, p.lon+extent/2])
     ax.set_ylim([p.lat -extent/2, p.lat+extent/2])
     bbox=ax.get_position()
@@ -44,9 +41,8 @@ def figure_generator(p):
     bottom = bbox.ymax - new_deltay
     ax.set_position([bbox.xmin, bottom, deltax, new_deltay])
 
-    floatlabel = 'Float \n'+ p.name() +" - "+str(p._my_float.cycle)
     b_patch = mpatches.Patch(color='red', label='Model')
-    g_patch = mpatches.Patch(color='blue', label=floatlabel)
+    g_patch = mpatches.Patch(color='blue', label='Float')
     ax.legend(handles=[b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)
 
     for ax in axs[1:]:
@@ -76,14 +72,6 @@ def ncwriter(filenc,zlevels_out,profileobj):
 
     depths = len(zlevels_out)
     f = NC.netcdf_file(filenc, 'w')
-
-    f.float = profileobj.name()
-    f.date = profileobj.time.strftime('%Y%m%d')
-    f.hour = profileobj.time.strftime('%H:%M:%S')
-    f.position_lat = str(profileobj.lat)+"N"
-    f.position_lon = str(profileobj.lon)+"E"
-
-
     f.createDimension('levels', depths)
     f.createDimension('pos', 1)
     lon=f.createVariable('longitude', 'f', ('pos',))
@@ -92,7 +80,7 @@ def ncwriter(filenc,zlevels_out,profileobj):
     lat[:] = profileobj.lat
     m_array = f.createVariable('lev', 'f', ('levels',))
     m_array[:] = zlevels_out[:]
-    #setattr(f, 'time', profileobj.time.strftime("%Y%m%d-%H:%M:%S"))
+    setattr(f, 'time', profileobj.time.strftime("%Y%m%d-%H:%M:%S"))
 
     model_handlers=[]
     float_handlers=[]
@@ -115,15 +103,15 @@ def ncwriter(filenc,zlevels_out,profileobj):
 
 
 
-def add_metadata(filepng,p):
-    xmpfile = XMPFiles( file_path=filepng, open_forupdate=True )
-    xmp = xmpfile.get_xmp()
-    if xmp is None:
-        xmp = libxmp.XMPMeta()
-    xmp.set_property(consts.XMP_NS_DC, 'float', p.name() )
-    xmp.set_property(consts.XMP_NS_DC, 'date', p.time.strftime('%Y%m%d') )
-    xmp.set_property(consts.XMP_NS_DC, 'hour', p.time.strftime('%H:%M:%S') )
-    xmp.set_property(consts.XMP_NS_DC, 'position.lat',str(p.lat)+"N")
-    xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
-    xmpfile.put_xmp(xmp)
-    xmpfile.close_file()
+#def add_metadata(filepng,p):
+#    xmpfile = XMPFiles( file_path=filepng, open_forupdate=True )
+#    xmp = xmpfile.get_xmp()
+#    if xmp is None:
+#        xmp = libxmp.XMPMeta()
+#    xmp.set_property(consts.XMP_NS_DC, 'float', p.name() )
+#    xmp.set_property(consts.XMP_NS_DC, 'date', p.time.strftime('%Y%m%d') )
+#    xmp.set_property(consts.XMP_NS_DC, 'hour', p.time.strftime('%H:%M:%S') )
+#    xmp.set_property(consts.XMP_NS_DC, 'position.lat',str(p.lat)+"N")
+#    xmp.set_property(consts.XMP_NS_DC, 'position.lon',str(p.lon)+"E")
+#    xmpfile.put_xmp(xmp)
+#    xmpfile.close_file()

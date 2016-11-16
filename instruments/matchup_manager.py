@@ -223,11 +223,11 @@ class Matchup_Manager():
 
         Returns nothing
         '''
-        from validation.online.profileplotter import figure_generator, ncwriter, add_metadata
+        from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,401,5)
         MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline']
         plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
-        read_adjusted = [True,False,False,False,False]
+        read_adjusted = [True,False,True,False,False]
         mapgraph = [3,4,5,1,2]
 
         for p in Profilelist:
@@ -284,7 +284,7 @@ class Matchup_Manager():
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
-                float_on_common_grid = float_on_common_grid*correction[i]
+                #float_on_common_grid = float_on_common_grid*correction[i]
 
                 Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
 
@@ -299,6 +299,6 @@ class Matchup_Manager():
             pngfile = filename + ".png"
             fig.savefig(pngfile)
             pl.close(fig)
-            add_metadata(pngfile, p)
+            #add_metadata(pngfile, p)
 
         return

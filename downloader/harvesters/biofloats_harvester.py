@@ -15,7 +15,7 @@ from harvester_interface import HarvesterInterface
 from utilities.ftp_utilities import list_files, download_file
 from utilities.files_and_dirs import ensure_dir
 from utilities.date_and_time import now_as_string
-
+import numpy as np
 ftp_url = 'ftp.ifremer.fr'
 
 relative_path = "FLOAT_BIO"
@@ -32,6 +32,11 @@ class BioFloatsHarvester(HarvesterInterface):
     Moreover, the harvester will save the information of the previous file
     in a xml file whose path is set in the global variable "xml_path".
     """
+    def wmo_file_reader(self):
+        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
+        TABLE=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=2,delimiter=" | ")
+        return TABLE
+
     def harvest(self, db_path, log):
         """
         For every float in the file wmo, check the status in the wmo_file and
@@ -51,17 +56,19 @@ class BioFloatsHarvester(HarvesterInterface):
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
+        A = self.wmo_file_reader()
+        lines_active_floats=np.where(A['status']=='A')[0]
+        lines_dead__floats =np.where(A['status']=='D')[0]
 
         # Read the wmo file line by line (exclude the first one because
         # it does not contain data)
-        with open(wmo_file, 'r') as wmo_info:
-            wmo_list = [l.split() for l in wmo_info.readlines()[1:]]
+        wmo_list = A['wmo']
+        nFloats=A.size
+
         # Put its content in a dictionary
         wmo_status = dict()
-        for l in wmo_list:
-            name = l[1]
-            status = l[-1]
-            wmo_status[name] = status
+        for l in range(nFloats):
+            wmo_status[A[l]['wmo']] = A[l]['status']
 
         active_floats = [f for f in wmo_status if wmo_status[f]=='A']
         dead_floats = [f for f in wmo_status if wmo_status[f]=='D']

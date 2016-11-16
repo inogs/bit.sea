@@ -42,7 +42,7 @@ from commons.time_interval import TimeInterval
 from profiler_RA import *
 
 import basins.OGS as OGS
-from instruments.instruments import static_Selector
+from instruments.all_instruments import static_Selector
 from commons.layer import Layer
 M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 

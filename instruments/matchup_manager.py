@@ -5,7 +5,7 @@ import numpy as np
 import matchup.matchup
 import pylab as pl
 import seawater as sw
-import instruments
+import all_instruments
 import postproc
 
 
@@ -137,12 +137,12 @@ class Matchup_Manager():
         a model varname
         For BioFloats reference_var(p,'O2o') returns 'DOXY'
         '''
-        if isinstance(p, instruments.bio_float.BioFloatProfile):
-            return instruments.FLOATVARS[var]
-        if isinstance(p, instruments.lovbio_float.BioFloatProfile):
-            return instruments.LOVFLOATVARS[var]
-        if isinstance(p, instruments.mooring.MooringProfile):
-            return instruments.MOORINGVARS[var]
+        if isinstance(p, all_instruments.bio_float.BioFloatProfile):
+            return all_instruments.FLOATVARS[var]
+        if isinstance(p, all_instruments.lovbio_float.BioFloatProfile):
+            return all_instruments.LOVFLOATVARS[var]
+        if isinstance(p, all_instruments.mooring.MooringProfile):
+            return all_instruments.MOORINGVARS[var]
 
 
     def getMatchups(self,Profilelist,nav_lev,model_varname, read_adjusted=True):

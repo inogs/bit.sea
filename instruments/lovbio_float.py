@@ -230,6 +230,7 @@ class BioFloat(Instrument):
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
         pres, prof, qc = self.read_raw(var,read_adjusted)
+        if var=='CHLA': prof = prof*0.5
         if pres.size ==0:
             return pres, prof, qc
 

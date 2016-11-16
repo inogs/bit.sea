@@ -207,3 +207,20 @@ class SubMask(Mask):
             BL_point[0] = start_lon
             TR_point[0] = start_lon + degrees
         return output
+
+if __name__ == "__main__":
+    # submask.nc generator using no-repetition technique
+    # each cell can belong to an only subbasin
+    from commons.mask import Mask
+    TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+    from basins import V2
+    from commons.submask import SubMask
+    import numpy as np
+
+    already_assigned=np.zeros(TheMask.shape,dtype=np.bool)
+
+    for sub in V2.Pred.basin_list:
+        S=SubMask(sub,maskobject=TheMask)
+        S.mask[already_assigned] = False
+        S.save_as_netcdf('submask.nc',maskvarname=sub.name)
+        already_assigned[S.mask] = True

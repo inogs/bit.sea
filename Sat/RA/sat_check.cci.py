@@ -3,7 +3,7 @@ from commons.time_interval import TimeInterval
 import numpy as np
 import os
 
-import SatManager as Sat
+from Sat import SatManager as Sat
 
 ORIGDIR  ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/DAILY/ORIG/"
 CHECKDIR ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/DAILY/CHECKED/"
@@ -12,7 +12,7 @@ CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI02/SatCli
 reset = False
 
 Timestart="19990101"
-Time__end="20150101"
+Time__end="20160101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 

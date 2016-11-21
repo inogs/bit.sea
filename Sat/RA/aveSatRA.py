@@ -11,12 +11,12 @@ WEEKLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI
 reset = False
 
 Timestart="19990102"
-Time__end="20150101"
+Time__end="20160101"
 
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
 
-IonamesFile = '../postproc/IOnames_sat.cci.xml'
+IonamesFile = '../../postproc/IOnames_sat.cci.xml'
 IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)

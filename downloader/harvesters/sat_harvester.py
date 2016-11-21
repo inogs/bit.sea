@@ -11,7 +11,7 @@ from utilities.ftp_utilities import list_files, download_file
 from utilities.files_and_dirs import ensure_dir
 
 
-ftp_url = 'myocean.artov.isac.cnr.it'
+ftp_url = 'cmems.isac.cnr.it'
 
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
@@ -59,7 +59,7 @@ class SatHarvester(HarvesterInterface):
         connection.cwd('OCEANCOLOUR_MED_CHL_L4_NRT_OBSERVATIONS_009_060')
 
         # Enter in "dataset-oc-med-chl-modis_a-l4-chl_7km_daily-rt-v02"
-        connection.cwd('dataset-oc-med-chl-modis_a-l4-chl_7km_daily-rt-v02')
+        connection.cwd('dataset-oc-med-chl-modis_a-l4-chl_7km_daily-rt-v01')
         
         # List all the local files
         loc_files = [f for f in listdir(path) if f !='incomplete_download.tmp']

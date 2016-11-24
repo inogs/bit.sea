@@ -1,6 +1,7 @@
 from postproc import masks
 import scipy.io.netcdf as NC
 import numpy as np
+import netCDF4
 
 
 
@@ -23,9 +24,9 @@ def readfromfile(filename,var='CHL'):
     return CHL_IN
 
 def readClimatology(filename):
-    ncIN = NC.netcdf_file(filename,'r') 
-    MEAN = ncIN.variables['Mean'].data.copy() #(366, 253, 733)
-    STD  = ncIN.variables['Std'].data.copy() 
+    ncIN = netCDF4.Dataset(filename,'r')
+    MEAN = np.array( ncIN.variables['Mean'])
+    STD  = np.array( ncIN.variables['Std'])#(366, 253, 733)
     ncIN.close()
     return MEAN,STD
 
@@ -122,12 +123,38 @@ def dumpfile(filename, CHL):
     ncvar[:] = NativeMesh.lat
     ncvar = ncOUT.createVariable('lon','f',('lon',))
     ncvar[:] = NativeMesh.lon
-    ncOUT.close()   
+    ncOUT.close()
+
+def dump_KD490_nativefile(filename, M):
+    '''
+    Used in sat check
+    '''
+    mesh = masks.KD490mesh
+    ncOUT  = NC.netcdf_file(filename,'w')
+    ncOUT.createDimension('time', 1)
+    ncOUT.createDimension('depth',1)
+    ncOUT.createDimension('lon',mesh.jpi)
+    ncOUT.createDimension('lat',mesh.jpj)
     
+    ncvar = ncOUT.createVariable('KD490', 'f', ('time','lat','lon'))
+    chl = np.zeros((1,mesh.jpj,mesh.jpi),np.float32)
+    chl[0,:,:] = M
+    ncvar[:] = chl
+    setattr(ncvar, 'missing_value', fillValue)
+    setattr(ncvar, '_FillValue', fillValue)
+    ncvar = ncOUT.createVariable('depth','f',('depth',))
+    ncvar[:] = 1.47210180759
+    ncvar = ncOUT.createVariable('time','f',('time',))
+    ncvar[:] = 1.0
+    ncvar = ncOUT.createVariable('lat','f',('lat',))
+    ncvar[:] = mesh.lat
+    ncvar = ncOUT.createVariable('lon','f',('lon',))
+    ncvar[:] = mesh.lon
+    ncOUT.close()
 
 
 
-def dumpV4file(filename,CHL):
+def dumpV4file(filename,CHL,varname='lchlm'):
     '''
     Second argument CHL is a matrix in the native format
     '''
@@ -137,7 +164,7 @@ def dumpV4file(filename,CHL):
     ncOUT.createDimension('lon',V4.jpi)
     ncOUT.createDimension('lat',V4.jpj)
     
-    ncvar = ncOUT.createVariable('lchlm', 'f', ('lat','lon'))
+    ncvar = ncOUT.createVariable(varname, 'f', ('lat','lon'))
     CHLv4 = convertinV4format(CHL)
     CHLv4[np.isnan(CHLv4)] = fillValue
     ncvar[:] = CHLv4
@@ -152,7 +179,31 @@ def dumpV4file(filename,CHL):
     ncvar = ncOUT.createVariable('lon','f',('lon',))
     ncvar[:] = V4.lon
     ncOUT.close()
+
+
+def dump_simple_V4file(filename,CHL,varname='lchlm'):
+    '''
+    Second argument CHL is a matrix in the native format
+    '''
+    ncOUT  = NC.netcdf_file(filename,'w')
+    ncOUT.createDimension('time', 1)
+    ncOUT.createDimension('depth',1)
+    ncOUT.createDimension('lon',V4.jpi)
+    ncOUT.createDimension('lat',V4.jpj)
     
+    ncvar = ncOUT.createVariable(varname, 'f', ('lat','lon'))
+    ncvar[:] = CHL
+    setattr(ncvar, 'missing_value', fillValue)
+    setattr(ncvar, '_FillValue', fillValue)
+    ncvar = ncOUT.createVariable('depth','f',('depth',))
+    ncvar[:] = 1.47210180759
+    ncvar = ncOUT.createVariable('time','f',('time',))
+    ncvar[:] = 1.0
+    ncvar = ncOUT.createVariable('lat','f',('lat',))
+    ncvar[:] = V4.lat
+    ncvar = ncOUT.createVariable('lon','f',('lon',))
+    ncvar[:] = V4.lon
+    ncOUT.close()
 
        
 def dumpV1file(filename,CHL):

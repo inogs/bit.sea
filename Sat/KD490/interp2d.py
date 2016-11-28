@@ -1,6 +1,4 @@
-from commons.mask import Mask
 import numpy as np
-from Sat import SatManager as Sat
 
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
@@ -36,49 +34,53 @@ def array_of_indices_for_slicing(xcoarse, xfine):
     return I_START, I_END
 
 
-def interp_2d_by_cells_slices(Mfine, I_START, I_END, J_START, J_END):
+def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fillValue=-999.0):
     '''
     
     '''
-    jpi = len(I_START)
-    jpj = len(J_START)
-    OUT = np.ones((jpj,jpi),np.float32)*Sat.fillValue
+    jpk, jpj, jpi = Maskout.shape
+    OUT = np.ones((jpj,jpi),np.float32)*fillValue
     
-    for ji in range(45,jpi):
-        istart=I_START[ji]
-        i_end =I_END[ji]
+    for ji in range(jpi):
+        istart = I_START[ji]
+        i_end  =   I_END[ji]
+        # istart == iend if Coarse grid is out of Fine grid
+        if istart == i_end : continue
         for jj in range(jpj):
-            jstart=J_START[jj]
-            j_end = J_END[jj]
+            jstart = J_START[jj]
+            j_end  =   J_END[jj]
             if tmask[jj,ji]:
-                localcell = Kext[jstart:j_end, istart:i_end]
+                localcell = Mfine[jstart:j_end, istart:i_end]
                 goods = localcell>0
                 if np.any(goods):
-                    KEXT_16[jj,ji] = localcell[goods].mean()
+                    OUT[jj,ji] = localcell[goods].mean()
     return OUT
 
 
+if __name__== "__main__":
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-tmask = TheMask.mask_at_level(0)
+    from commons.mask import Mask
+    from Sat import SatManager as Sat
+    TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+    tmask = TheMask.mask_at_level(0)
 
-jpk,jpj,jpi = TheMask.shape
-x = TheMask.xlevels[0,:]
-y = TheMask.ylevels[:,0]
+    jpk,jpj,jpi = TheMask.shape
+    x = TheMask.xlevels[0,:]
+    y = TheMask.ylevels[:,0]
 
-x1km = Sat.masks.KD490mesh.lon
-y1km = Sat.masks.KD490mesh.lat
+    x1km = Sat.masks.KD490mesh.lon
+    y1km = Sat.masks.KD490mesh.lat
 
-I_START, I_END = array_of_indices_for_slicing(x, x1km)
-J_START, J_END = array_of_indices_for_slicing(y, y1km)
+    I_START, I_END = array_of_indices_for_slicing(x, x1km)
+    J_START, J_END = array_of_indices_for_slicing(y, y1km)
 
 
-inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY/ORIGMESH/20010522_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v01.nc"
-Kext = Sat.readfromfile(inputfile,'KD490')
+    inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY/ORIGMESH/20010522_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v01.nc"
+    Kext = Sat.readfromfile(inputfile,'KD490')
 
-KEXT_16=interp_2d_by_cells_slices(Kext, I_START, I_END, J_START, J_END)
+    KEXT_16=interp_2d_by_cells_slices(Kext, I_START, I_END, J_START, J_END)
 
-Sat.dump_simple_V4file('test.nc',KEXT_16,'KD490')
+    Sat.dump_simple_V4file('test.nc',KEXT_16,'KD490')
         
 
             

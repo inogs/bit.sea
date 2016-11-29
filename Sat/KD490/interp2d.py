@@ -39,6 +39,7 @@ def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fi
     
     '''
     jpk, jpj, jpi = Maskout.shape
+    tmask = Maskout.mask_at_level(0)
     OUT = np.ones((jpj,jpi),np.float32)*fillValue
     
     for ji in range(jpi):
@@ -78,7 +79,7 @@ if __name__== "__main__":
     inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY/ORIGMESH/20010522_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v01.nc"
     Kext = Sat.readfromfile(inputfile,'KD490')
 
-    KEXT_16=interp_2d_by_cells_slices(Kext, I_START, I_END, J_START, J_END)
+    KEXT_16=interp_2d_by_cells_slices(Kext, TheMask, I_START, I_END, J_START, J_END)
 
     Sat.dump_simple_V4file('test.nc',KEXT_16,'KD490')
         

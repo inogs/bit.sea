@@ -5,8 +5,10 @@
 export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
 SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
 
+INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+
 mkdir ./fig4.2/
-python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR
+python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR -i $INPUTDIR -m $MASKFILE
 
 # figure 4.2
 mkdir ./fig4.2/
@@ -27,7 +29,7 @@ python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 #Figure 4.1
 mkdir ./Fig4.1
 
-INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+INPUTDIR=$INPUT_AGGR_DIR
 
 python averager_and_plot_map.py -i $INPUTDIR              -o Fig4.1/ -v P_i -t mean
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR       -o Fig4.1/

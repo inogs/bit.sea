@@ -18,12 +18,20 @@ def argument():
                                 default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/",
                                 help = ''' Input satellite dir'''
                                 )
-
+    parser.add_argument(   '--inputmodeldir', '-i',
+                                type = str,
+                                required =True,
+                                help = ''' Input model dir, where P_l files are, usually ../wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/'''
+                                )
     parser.add_argument(   '--outfile', '-o',
                                 type = str,
                                 required = True,
                                 default = 'export_data_ScMYValidation_plan.pkl',
                                 help = 'Output pickle file')
+    parser.add_argument(   '--maskfile', '-o',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
 
 
     return parser.parse_args()
@@ -45,6 +53,7 @@ from commons.mask import Mask
 from commons.submask import SubMask
 from basins import OGS
 from commons.layer import Layer
+from commons.utils import addsep
 import pickle
 
 def weighted_mean(Conc, Weight):
@@ -54,9 +63,9 @@ def weighted_mean(Conc, Weight):
     Weighted_Mean   = Mass/Weight_sum
     return Weighted_Mean
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-MODEL_DIR="/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
-REF_DIR  = args.satdir
+TheMask=Mask(args.maskfile)
+MODEL_DIR= addsep(args.inputmodeldir)
+REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
 
@@ -65,7 +74,7 @@ Time__end="20150101"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat="%Y%m")
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc")
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
 
 IOname = IOnames.IOnames('IOnames_sat_monthly.xml')
 
@@ -98,7 +107,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     satfile = REF_DIR + sattime.strftime(IOname.Input.dateformat) + IOname.Output.suffix + ".nc"
     modfile = model_TL.filelist[itime]
 
-    De         = DataExtractor(TheMask,filename=modfile, varname='P_i')
+    De         = DataExtractor(TheMask,filename=modfile, varname='P_l')
     Model      = MapBuilder.get_layer_average(De, surf_layer)
     #ncIN = NC.netcdf_file(modfile,'r')
     #Model = ncIN.variables['P_i'].data[0,0,:,:].copy()#.astype(np.float64)

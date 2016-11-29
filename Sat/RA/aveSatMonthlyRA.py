@@ -11,10 +11,10 @@ MONTHLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CC
 reset = False
 
 Timestart="19990102"
-Time__end="20140101"
+Time__end="20160101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
-IonamesFile = '../postproc/IOnames_sat.xml'
+IonamesFile = '../../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
 
 MONTHLY_reqs=TLCheck.getMonthlist()

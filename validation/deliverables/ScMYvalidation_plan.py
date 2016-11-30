@@ -28,7 +28,7 @@ def argument():
                                 required = True,
                                 default = 'export_data_ScMYValidation_plan.pkl',
                                 help = 'Output pickle file')
-    parser.add_argument(   '--maskfile', '-o',
+    parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 required = True,
                                 help = 'Path of the mask file')
@@ -70,7 +70,7 @@ outfile  = args.outfile
 
 
 Timestart="19990101"
-Time__end="20150101"
+Time__end="20160101"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat="%Y%m")

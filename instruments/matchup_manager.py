@@ -41,12 +41,13 @@ class Matchup_Manager():
         F.writelines(LINES)
         F.close()
 
-    def writefiles_for_profiling(self, vardescriptor,filename,ionamesfile="IOnames.xml"):
+    def writefiles_for_profiling(self, vardescriptor,filename, aggregatedir="./", ionamesfile="IOnames.xml"):
         '''
         Preparation of launch of aveScan.py, in order to generate profiles.
         Arguments
         * vardescriptor * a file in postproc/ directory
         * filename     *  the output file, is a wrapper of aveScan, to call it over times.
+        * aggregatedir * is the path of the 2nd directory where aveScan will search files
 
         For every launch of aveScan a different punti*.dat files will be used, depending on Biofloats present
         at that time.
@@ -59,7 +60,7 @@ class Matchup_Manager():
 
         os.system("mkdir -p "+ PUNTI_DIR)
         JOB_LINES=[]
-        JOB_LINES.append("cd " + postproc.__path__[0] + " \n")
+        JOB_LINES.append("cd " + os.path.abspath(postproc.__path__[0]) + " \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
             INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]
@@ -70,6 +71,8 @@ class Matchup_Manager():
             line = 'python aveScan.py '   + \
                 ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d*")  + \
                 ' -i '  + self.AVE_INPUT_DIR  +  \
+                ' -a '  + aggregatedir       +  \
+                ' -f '  + self.TL.filtervar  +  \
                 ' -t '  + TMPSDIR  + \
                 ' -o '  + self.profilingDir  + \
                 ' -d '  + vardescriptor      + \

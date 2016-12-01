@@ -32,8 +32,16 @@ def argument():
                                 type = str,
                                 required =True,
                                 help = '''
-                                Path of the input directory. Usually it is the TMP directory produced by postproc.py.
-                                Variables must be already aggregated.
+                                Path of the 1st input directory. Usually it is the MODEL/AVE_FREQ_1/ directory produced by ogstm.xx.
+                                Here variable are considered as native.
+                                ''')
+    
+    parser.add_argument(   '--aggregatedir', '-a',
+                                type = str,
+                                required =True,
+                                help = '''
+                                Path of the 2nd input directory. Usually it is the TMP directory produced by postproc.py.
+                                Here variables are considered as already aggregated.
                                 ''')
 
     
@@ -41,18 +49,25 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'ave*nc')
+    parser.add_argument(   '--var',"-f",
+                                type = str,
+                                required = False,
+                                help = ''' 
+                                var name, like P_l useful to filter the file list. 
+                                No filtering is done if it is not provided.
+                                 ''')
     
     parser.add_argument(   '--descriptor',"-d",
                                 type = str,
                                 default = "VarDescriptor_1.xml",
-                                help = 'VarDescriptor_1.xml, or the complete path')
+                                help = 'VarDescriptor_1.xml, or the complete path') 
     
     parser.add_argument(   '-s',action='store_true',
                                 help = '''Activates statistics calculation
-                                ''')
+                                ''') 
     parser.add_argument(   '--pointlist',"-p",
                                 type = str,
-                                help = '''Path of the text file listing the the points where extract point profiles''')
+                                help = '''Path of the text file listing the the points where extract point profiles''')             
     parser.add_argument(   '--ionames',
                                 type = str,
                                 default="IOnames.xml",
@@ -72,19 +87,17 @@ import numpy as np
 import read_descriptor
 import IOnames as IOname
 from maskload import *
+import GB_lib
+from commons.utils import addsep
 
-def addsep(string):    
-    if string[-1] != os.sep:
-        return string + os.sep
-    else:
-        return  string
 
 INPUT_AVEDIR = addsep(args.inputdir)
+AGGREGATE_AVEDIR = addsep(args.aggregatedir)
 TMPDIR       = addsep(args.tmpdir)
 BASEDIR      = addsep(args.outdir)
 ionamesfile  = args.ionames
 IOnames      = IOname.IOnames(ionamesfile)
-
+filtervar    = args.var
 
 try:
     from mpi4py import MPI
@@ -97,7 +110,7 @@ except:
     nranks = 1
     isParallel = False
     
-if rank==0 : print "list      " ,args.avelist
+if rank==0 : print "list      " ,args.avelist, "filtered by", filtervar
 def wp(data, wt, percentiles):
     """Compute weighted percentiles. 
     If the weights are equal, this is the same as normal percentiles. 
@@ -150,9 +163,10 @@ def wp(data, wt, percentiles):
             o.append(sd[s-1]*f1 + sd[s]*f2) 
     return o 
 
-
+#nstat = 5 ; StatDescr   = "Mean, Std, p25, p50, p75"
+nstat = 9  ; StatDescr   = "Mean, Std, min, p05, p25, p50, p75, p95, max"
 def CoreStatistics(Conc, Weight):
-    Statistics      = np.zeros((5),np.float32)
+    Statistics      = np.zeros((nstat),np.float32)
     
     nans = Conc == 1.e+20
     Conc = Conc[~nans]
@@ -166,15 +180,19 @@ def CoreStatistics(Conc, Weight):
     Weighted_Std    = ((Conc - Weighted_Mean)**2*Weight).sum()/Weight_sum
     
     Statistics[0]   = Weighted_Mean
-    Statistics[1]   = np.sqrt(Weighted_Std)     
-    Statistics[2:5] = wp(Conc,Weight,[.25, .50,.75])
+    Statistics[1]   = np.sqrt(Weighted_Std)
+    #Statistics[2:5] = wp(Conc,Weight,[.25, .50,.75]) #for nstat=5
+
+    Statistics[2]   = Conc.min()
+    Statistics[3:8] = wp(Conc,Weight,[.05, .25, .50,.75, .95])
+    Statistics[8]   = Conc.max()
     
     return Statistics
 
 
 
 def CoreStatistics_noSort(Conc,Weight):    
-    Statistics      = np.zeros((5),np.float32)
+    Statistics      = np.zeros((nstat),np.float32)
     if Conc.nbytes ==0 :
             return Statistics   
     
@@ -223,7 +241,7 @@ def PointProfiles(varname):
 
 def ProfilesStats(Mask, flagSort):
 # VAR and area are read from main        
-    Statistics   = np.zeros((jpk,5),np.float32)    
+    Statistics   = np.zeros((jpk,nstat),np.float32)    
     
     if flagSort:    
         for k in range(jpk):
@@ -245,7 +263,7 @@ def ProfilesStats(Mask, flagSort):
 
 def Vol_Integrals(Mask):
     
-    Statistics   = np.zeros((ndepth,5),np.float32)    
+    Statistics   = np.zeros((ndepth,nstat),np.float32)    
      
     
     for idepth in range(len(DEPTHlist)):
@@ -346,7 +364,7 @@ def getAllStatistics(var,objfileP,objfileI):
 
 def ProfilesStats2D(Mask, flagSort):
 # VAR and area are read from main        
-    Statistics   = np.zeros((jpk,5),np.float32)    
+    Statistics   = np.zeros((jpk,nstat),np.float32)    
     
     if flagSort:    
         for k in range(1):
@@ -425,7 +443,7 @@ def create_ave_headers(datestr):
     '''
     
     ave__profiles = OUTPUT_DIR_MPR + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".stat_profiles.nc"
-    ave_integrals = OUTPUT_DIR_INT + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".vol_integrals.nc"
+    ave_integrals = OUTPUT_DIR_INT + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".vol_integrals.nc" 
 
     if os.path.exists(ave__profiles):
         ncOUT__profiles=NC.netcdf_file(ave__profiles,'a')
@@ -435,25 +453,25 @@ def create_ave_headers(datestr):
         ncOUT__profiles.createDimension("sub"       ,len(SUBlist))
         ncOUT__profiles.createDimension("coast"     ,ncoast)
         ncOUT__profiles.createDimension("z"         ,jpk )
-        ncOUT__profiles.createDimension("stat"      ,nstat )
+        ncOUT__profiles.createDimension("stat"      ,nstat )        
         setattr(ncOUT__profiles,"sub___list"  ,  SubDescr[:-2])
         setattr(ncOUT__profiles,"coast_list"  ,CoastDescr[:-2])
-        setattr(ncOUT__profiles,"stat__list"  , StatDescr[:-2])
+        setattr(ncOUT__profiles,"stat__list"  , StatDescr)
 
     if os.path.exists(ave_integrals):
         ncOUT_integrals=NC.netcdf_file(ave_integrals,'a')
         print "appending in ", ave_integrals
-    else:
-        ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")
+    else:      
+        ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")    
         ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
         ncOUT_integrals.createDimension("coast"     ,ncoast)
         ncOUT_integrals.createDimension("depth"     ,ndepth)
         ncOUT_integrals.createDimension("stat"      ,nstat )
-
-        setattr(ncOUT_integrals,"sub___list"  ,  SubDescr[:-2])
+    
+        setattr(ncOUT_integrals,"sub___list"  ,  SubDescr[:-2])    
         setattr(ncOUT_integrals,"coast_list"  ,CoastDescr[:-2])
         setattr(ncOUT_integrals,"depth_list"  ,DepthDescr[:-2])
-        setattr(ncOUT_integrals,"stat__list"  , StatDescr[:-2])
+        setattr(ncOUT_integrals,"stat__list"  , StatDescr)
     
     return ncOUT__profiles,  ncOUT_integrals
 
@@ -462,7 +480,7 @@ def create_ave_pp_header(datestr):
     Generates output files, in PROFILES directory
     Files refer to a time frame and will contain all the variables
     Works in append mode, if the file name exists.'''
-
+    
     ave_Pprofiles = OUTPUT_DIR_PRO + IOnames.Output.prefix + datestr + ".profiles.nc"
     if os.path.exists(ave_Pprofiles):
         ncOUT_Pprofiles =  NC.netcdf_file(ave_Pprofiles,"a")
@@ -482,7 +500,7 @@ if args.pointlist:
     for i in MeasPoints['Name']: CruiseDescr+=str(i) + ", "
     
 doStatistics    = args.s
-nstat           =  5
+#nstat           =  5
 ncoast          = len(COASTNESS_LIST)
 ndepth          = len(DEPTHlist)
 nTrans          = 51
@@ -493,7 +511,7 @@ nsub            = len(SUBlist)
 SubDescr    ="" 
 CoastDescr  =""
 DepthDescr  =""
-StatDescr   = "Mean, Std, p25, p50, p75  "
+
 
 
 for i in SUBlist           : SubDescr   +=str(i) + ", "
@@ -517,10 +535,13 @@ if rank==0 :
  
     for DIR in [OUTPUT_DIR_INT, OUTPUT_DIR_MPR, OUTPUT_DIR_PPN, TMPDIR]:
         if doStatistics:    os.system("mkdir -p " + DIR)
-    if doPointProfiles: os.system("mkdir -p " + OUTPUT_DIR_PRO)
+    for DIR in [OUTPUT_DIR_PRO, TMPDIR]:
+        if doPointProfiles: os.system("mkdir -p " + DIR)
     print INPUT_AVEDIR + args.avelist
     
-aveLIST = glob.glob(INPUT_AVEDIR + args.avelist) 
+aveLIST = glob.glob(INPUT_AVEDIR + args.avelist)
+if not filtervar is None:
+    aveLIST=[f for f in aveLIST if filtervar in f ]
 aveLIST.sort()
 
 VARLIST=[]
@@ -549,13 +570,16 @@ for ip in PROCESSES[rank::nranks]:
     dim     = var_dim[ivar]
     print "rank %03d scans %s on %s" %(rank,var,os.path.basename(avefile))
     
+    
     datestr=os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]
-    ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
-        
-    ncIN = NC.netcdf_file(avefile,"r")
+    if doStatistics:
+        ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
+    F = GB_lib.filename_manager(avefile)
+    filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
+    ncIN = NC.netcdf_file(filename,"r")
     nDim = len(ncIN.variables[var].dimensions)
     if var_dim [ivar] == '3D':
-
+        
         if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
         if nDim==3 : VAR   = ncIN.variables[var].data.copy()
 
@@ -574,9 +598,10 @@ for ip in PROCESSES[rank::nranks]:
             getAllStatistics2D(var, ncOUT__profiles)
     if doPointProfiles : dumpPointProfiles(var)
     ncIN.close()
-    
-    ncOUT__profiles.close()
-    ncOUT_integrals.close()
+
+    if doStatistics:
+        ncOUT__profiles.close()
+        ncOUT_integrals.close()
         
     
 if isParallel : comm.Barrier()    
@@ -632,7 +657,7 @@ for avefile in aveLIST[rank::nranks]:
     ncIN = NC.netcdf_file(avefile,"r")
     nDim = len(ncIN.variables[var].dimensions)
     if var_dim [ivar] == '3D':
-
+        
         if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
         if nDim==3 : VAR   = ncIN.variables[var].data.copy()
     
@@ -648,7 +673,7 @@ for avefile in aveLIST[rank::nranks]:
     setattr(ncOUT_integrals,"sub___list"  ,  SubDescr[:-2])    
     setattr(ncOUT_integrals,"coast_list"  ,CoastDescr[:-2])
     setattr(ncOUT_integrals,"depth_list"  ,DepthDescr[:-2])
-    setattr(ncOUT_integrals,"stat__list"  , StatDescr[:-2])
+    setattr(ncOUT_integrals,"stat__list"  , StatDescr    )
     ncOUT_integrals.close()
     
     ncIN.close()

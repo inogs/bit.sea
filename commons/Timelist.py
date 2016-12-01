@@ -35,11 +35,12 @@ class TimeList():
         self.inputdir     = None
         self.searchstring = None
         self.filelist     = None
+        self.filtervar    = None
         self.inputFrequency= self.__searchFrequency()
 
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S"):
+    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S"):
         '''
         Generates a TimeList object by reading a directory
 
@@ -55,12 +56,13 @@ class TimeList():
         INPUTDIR="/pico/scratch/userexternal/gbolzon0/Carbonatic/wrkdir/MODEL/AVE_FREQ_1/"
         Time_int = TimeInterval('20141201-00:00:00','20150701-00:00:00',"%Y%m%d-%H:%M:%S")
         TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*N1p.nc")
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*nc",filtervar="N1p")
 
         For Sat data
         TL = TimeList.fromfilenames(Time_int, INPUTDIR,"*nc", prefix='',dateformat='%Y%m%d')
 
         For physical forcings
-        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"T*.nc",prefix='T.',dateformat='%Y%m%d')
+        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"T*.nc",prefix='T',dateformat='%Y%m%d')
         '''
 
         IOname = IOnames.filenamer(prefix,dateformat)
@@ -69,6 +71,8 @@ class TimeList():
 
         inputdir = addsep(inputdir)
         filelist_ALL = glob.glob(inputdir + searchstring)
+        if not filtervar is None:
+            filelist_ALL=[f for f in filelist_ALL if filtervar in f ]
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]
@@ -91,6 +95,7 @@ class TimeList():
         TimeListObj.inputdir     = inputdir
         TimeListObj.searchstring = searchstring
         TimeListObj.prefix       = prefix
+        TimeListObj.filtervar    = filtervar
         TimeListObj.filelist = filenamelist
 
 

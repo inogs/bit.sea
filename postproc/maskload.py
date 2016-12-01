@@ -115,9 +115,9 @@ def SUB(sub):
 
 def read_Positions_for_Pointprofiles(filename):
 
-    dtIN  = np.dtype([('Name','S20'), ('Lon',np.float32), ('Lat',np.float32)])
-    dtOUT = np.dtype([('Name','S20'), ('Lon',np.float32), ('Lat',np.float32), ('i',np.int), ('j',np.int)])
-    MeasPoints=np.loadtxt(filename, dtype=dtIN, skiprows=1,ndmin=1)
+    dtIN  = np.dtype([('Name','S100'), ('Lon',np.float32), ('Lat',np.float32)])
+    dtOUT = np.dtype([('Name','S100'), ('Lon',np.float32), ('Lat',np.float32), ('i',np.int), ('j',np.int)])
+    MeasPoints=np.loadtxt(filename, dtype=dtIN, skiprows=1,ndmin=1,delimiter="\t")
     
     nMeas=MeasPoints.size
     MeasPoints_OUT=np.zeros((nMeas),dtype=dtOUT)

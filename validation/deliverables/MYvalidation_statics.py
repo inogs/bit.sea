@@ -28,12 +28,12 @@ import scipy.io.netcdf as NC
 import numpy as np
 import os
 from commons.time_interval import TimeInterval
-
+from instruments.matchup_manager import Matchup_Manager
 from profiler_RA import *
 import basins.OGS as OGS
-from instruments.instruments import static_Selector
+from instruments.all_instruments import static_Selector
 from commons.layer import Layer
-M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
 maskfile    = os.getenv("MASKFILE"); 

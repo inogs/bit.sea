@@ -488,7 +488,7 @@ def create_ave_pp_header(datestr):
         ncOUT_Pprofiles = NC.netcdf_file(ave_Pprofiles,"w")
         ncOUT_Pprofiles.createDimension("Ncruise"   ,nCruise)
         ncOUT_Pprofiles.createDimension("z"         ,jpk)
-        setattr(ncOUT_Pprofiles,"CruiseIndex",CruiseDescr[:-2])
+        setattr(ncOUT_Pprofiles,"CruiseIndex",CruiseDescr)
     return ncOUT_Pprofiles
 
 doPointProfiles = False; 
@@ -498,7 +498,7 @@ if args.pointlist:
     nCruise         = len(MeasPoints)
     CruiseDescr =""
     for i in MeasPoints['Name']: CruiseDescr+=str(i) + ", "
-    
+
 doStatistics    = args.s
 #nstat           =  5
 ncoast          = len(COASTNESS_LIST)

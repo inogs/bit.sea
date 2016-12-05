@@ -27,7 +27,7 @@ class Layer(object):
 
     def longname(self):
         if self.top ==self.bottom:
-            return "%04g m" %self.__top
+            return "%04gm" %self.__top
         return "%04g-%04gm" %(self.__top, self.__bottom)
 
     @property

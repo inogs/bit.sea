@@ -19,7 +19,10 @@ def argument():
                                 required = True,
                                 default = '',
                                 help = 'Output Images directory')
-
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
 
     return parser.parse_args()
 
@@ -27,24 +30,16 @@ def argument():
 args = argument()
 
 import pylab as pl
-import scipy.io.netcdf as NC
-import numpy as np
+from commons.mask import Mask
 import os
-import sys
-from commons.time_interval import TimeInterval
-
 from profiler_RA import *
-
 import basins.OGS as OGS
 from instruments.all_instruments import static_Selector
-from commons.layer import Layer
-M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 
-maskfile    = os.getenv("MASKFILE");
-ncIN=NC.netcdf_file(maskfile,"r")
-nav_lev = ncIN.variables['nav_lev'].data.copy()
-ncIN.close()
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
+TheMask = Mask(args.maskfile)
+nav_lev = TheMask.zlevels
 OUTPUTDIR=args.outdir
 modelvarname = args.varname
 os.system('mkdir -p ' + OUTPUTDIR)

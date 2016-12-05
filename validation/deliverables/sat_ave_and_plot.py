@@ -19,6 +19,10 @@ def argument():
                             required = True,
                             default = './',
                             help = 'Input dir')
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
 
 
     return parser.parse_args()
@@ -38,7 +42,7 @@ import pylab as pl
 from layer_integral import coastline
 
 clon,clat = coastline.get()
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask(args.maskfile)
 _,jpj,jpi = TheMask.shape
 
 INPUTDIR  = args.inputdir

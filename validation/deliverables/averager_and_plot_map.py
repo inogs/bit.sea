@@ -151,10 +151,11 @@ for il,layer in enumerate(LAYERLIST):
 
 
     #pl.set_cmap('gray_r') #changes the colormap
-    fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated_masked, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+    #fig,ax     = mapplot({'varname':var, 'clim':clim, 'layer':layer, 'data':integrated_masked, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+    fig,ax     = mapplot({'clim':clim, 'data':integrated_masked, },fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
     ax.set_xlim([-5,36])
     ax.set_ylim([30,46])
-    ax.set_xlabel('Lon').set_fontsize(12)
+    ax.set_xlabel('Lon').set_fontsize(11)
     ax.set_ylabel('Lat').set_fontsize(12)
     ax.ticklabel_format(fontsize=10)
     ax.text(-4,44.5,var + ' [' + UNITS_DICT[var] + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
@@ -168,5 +169,7 @@ for il,layer in enumerate(LAYERLIST):
     ax.yaxis.set_ticks(np.arange(30,46,4))
     ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
+    title = "%s %s %s" % ('annual', var, layer.__repr__())
+    fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)

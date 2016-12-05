@@ -6,6 +6,8 @@ export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_c
 SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
 
 INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
+INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
 
 mkdir ./fig4.2/
 python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR -i $INPUTDIR -m $MASKFILE
@@ -32,7 +34,7 @@ mkdir ./Fig4.1
 INPUTDIR=$INPUT_AGGR_DIR
 
 python averager_and_plot_map.py -i $INPUTDIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean
-python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR       -o Fig4.1/
+python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
 mkdir ./Fig4.6
 INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
@@ -46,18 +48,20 @@ python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t m
 python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
 
 mkdir Fig4.4
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 150.0
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 150.0
 
 mkdir table4.4 table4.5
+mkdir Fig4.7/  Fig4.8
 #Figure IV.7 - density PHOSPHATE
-python density_plots.py     -m $MASKFILE -o Fig4.7/  -v N1p -m 0
+python density_plots.py     -M $MASKFILE -o Fig4.7/  -v N1p -m 0
 python vertical_profiles.py -m $MASKFILE -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
 
-python density_plots.py     -o Fig4.9/  -v N3n -m 0
-python vertical_profiles.py -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat
+mkdir Fig4.9/ Fig4.10/ Fig4.11/ Fig4.12/
+python density_plots.py     -M $MASKFILE -o Fig4.9/  -v N3n -m 0
+python vertical_profiles.py -m $MASKFILE -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat
 
-python density_plots.py     -o Fig4.11/ -v O2o
-python vertical_profiles.py -o Fig4.12/ -v O2o > ./table4.5/table4.5_corr.dat
+python density_plots.py     -M $MASKFILE -o Fig4.11/ -v O2o
+python vertical_profiles.py -m $MASKFILE -o Fig4.12/ -v O2o > ./table4.5/table4.5_corr.dat
 
 # Figure carbonatiche
 # Fig 4.13, 4.14, per AC_ e DIC

@@ -24,9 +24,9 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
 
-    parser.add_argument(   '--mapdepthfilter', '-m',
+    parser.add_argument(   '--mapdepthfilter',
                                 type = float,
                                 required = False,
                                 default = 0.0,
@@ -41,7 +41,10 @@ def argument():
                                 required = False,
                                 default = 0.0,
                                 help  = 'Bottom of the layer, for integration' )
-
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
     parser.add_argument(   '--optype', '-t',
                                 type = str,
                                 required = True,
@@ -68,7 +71,7 @@ import commons.timerequestors as requestors
 
 
 clon,clat = coastline.get()
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask(args.maskfile)
 
 
 INPUTDIR  = args.inputdir
@@ -78,13 +81,14 @@ layer     = Layer(args.top, args.bottom)
 
 
 LAYERLIST=[layer]
-VARLIST=['ppn','N1p','N3n','PH_','pCO','P_l'] # saved as mg/m3/d --> * Heigh * 365/1000 #VARLIST=['DIC','AC_','PH_','pCO']
+
 UNITS_DICT={
          'ppn' : 'gC/m^2/y',
          'N1p' : 'mmol /m^3',
          'N3n' : 'mmol /m^3',
          'PH'  : '',
          'pCO2': 'ppm',
+         'P_l' :'mmol /m^3',
          'P_i' :'mmol /m^3'
          }
 
@@ -94,6 +98,7 @@ CLIM_DICT={
          'N3n' : [0, 4],
          'PH'  : [7.9, 8.2],
          'pCO2': [300,480],
+         'P_l' : [0, 0.4],
          'P_i' : [0, 0.4]
          }
 
@@ -104,11 +109,12 @@ CONVERSION_DICT={
          'N3n' : 1,
          'PH'  : 1,
          'pCO2': 1,
+         'P_l' : 1,
          'P_i' : 1
          }
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 
 
 #MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
@@ -123,7 +129,7 @@ VARCONV=CONVERSION_DICT[var]
 filelist=[]
 for k in indexes:
     t = TL.Timelist[k]
-    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + ".nc"
+    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
     filelist.append(filename)
 # ----------------------------------------------------------
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)

@@ -21,7 +21,7 @@ python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3
 
 
 mkdir ./table4.3/
-python MYvalidation_statics.py -o export_data_ScMYValidation_plan_statics.pkl
+python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_statics.pkl
 # table 4.3 and 4.4
 python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
@@ -31,15 +31,16 @@ mkdir ./Fig4.1
 
 INPUTDIR=$INPUT_AGGR_DIR
 
-python averager_and_plot_map.py -i $INPUTDIR              -o Fig4.1/ -v P_i -t mean
+python averager_and_plot_map.py -i $INPUTDIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR       -o Fig4.1/
 
 mkdir ./Fig4.6
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean  --top 0 --bottom  50 --mapdepthfilter  50.0
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N1p -t mean  --top 0 --bottom 150 --mapdepthfilter 150.0
+INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom  50 --mapdepthfilter  50.0
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom 150 --mapdepthfilter 150.0
 
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean  --top 0 --bottom   50 --mapdepthfilter  50.0
-python averager_and_plot_map.py -i $INPUTDIR -o Fig4.6/ -v N3n -t mean  --top 0 --bottom  150 --mapdepthfilter 150.0
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  --top 0 --bottom   50 --mapdepthfilter  50.0
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  --top 0 --bottom  150 --mapdepthfilter 150.0
 
 # Figure IV.5
 python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
@@ -49,8 +50,8 @@ python averager_and_plot_map.py -i $INPUTDIR -o Fig4.4/ -v ppn -t integral --top
 
 mkdir table4.4 table4.5
 #Figure IV.7 - density PHOSPHATE
-python density_plots.py     -o Fig4.7/  -v N1p -m 0
-python vertical_profiles.py -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
+python density_plots.py     -m $MASKFILE -o Fig4.7/  -v N1p -m 0
+python vertical_profiles.py -m $MASKFILE -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
 
 python density_plots.py     -o Fig4.9/  -v N3n -m 0
 python vertical_profiles.py -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat

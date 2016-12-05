@@ -68,14 +68,14 @@ from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
 import commons.timerequestors as requestors
-
+from commons.utils import addsep
 
 clon,clat = coastline.get()
 TheMask=Mask(args.maskfile)
 
 
-INPUTDIR  = args.inputdir
-OUTPUTDIR = args.outdir
+INPUTDIR  = addsep(args.inputdir)
+OUTPUTDIR = addsep(args.outdir)
 var       = args.varname
 layer     = Layer(args.top, args.bottom)
 

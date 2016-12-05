@@ -46,7 +46,7 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         #shape = map_dict['data'].shape
         #fig.set_size_inches(shape[1] / float(dpi), shape[0] / float(dpi))
         fig.set_size_inches(10.0, 10.0*16/42)
-        ax.set_position([0.08, 0.11, 0.78, 0.78])
+        ax.set_position([0.08, 0.13, 0.78, 0.78])
     clim = map_dict['clim']
     actualpos = ax.get_position()
 

@@ -162,7 +162,10 @@ class MapBuilder(object):
             raise ValueError("dataextractor must be a DataExtractor object")
         #Find Z indices
         top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
-        bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
+        if layer.bottom < data_extractor._mask.zlevels[0]:
+            bottom_index=0
+        else:
+            bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
         if top_index == bottom_index:
             #Just one layer so we return the sliced data
             output = data_extractor.filled_values[top_index,:,:]
@@ -206,7 +209,10 @@ class MapBuilder(object):
             raise ValueError("dataextractor must be a DataExtractor object")
         #Find Z indices
         top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
-        bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
+        if layer.bottom < data_extractor._mask.zlevels[0]:
+            bottom_index=0
+        else:
+            bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
         if top_index == bottom_index:
             #Just one layer so we return the sliced data
             output = data_extractor.get_filled_values[top_index,:,:]

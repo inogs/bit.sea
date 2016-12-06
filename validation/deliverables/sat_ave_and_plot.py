@@ -70,12 +70,13 @@ for iFrame, k in enumerate(indexes):
 
 Sat2d=Sat.averager(SAT_3D)
 
-mask200=TheMask.mask_at_level(200)
-Sat2d[~mask200] = np.NaN
+mask=TheMask.mask_at_level(0)
+Sat2d[~mask] = np.NaN
 var = 'SATchl'
 layer = Layer(0,10)
 
 fig,ax     = mapplot({'varname':var, 'clim':[0,0.4], 'layer':layer, 'data':Sat2d, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
@@ -88,5 +89,7 @@ ax.xaxis.set_ticks(np.arange(-2,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
+title = "%s %s %s" % ('annual', var, layer.__repr__())
+fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)

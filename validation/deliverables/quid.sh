@@ -5,39 +5,29 @@
 export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
 SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
 
-INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+#INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
 INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
-INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
 
-mkdir ./fig4.2/
-python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR -i $INPUTDIR -m $MASKFILE
-
-# figure 4.2
-mkdir ./fig4.2/
+mkdir fig4.2  fig4.3  table4.3  Fig4.1  Fig4.6 Fig4.5 Fig4.4 Fig4.7 Fig4.8 Fig4.9 Fig4.10 Fig4.11 Fig4.12
+mkdir table 4.3 table4.4 table4.5
+python ScMYvalidation_plan.py -o export_data_ScMYValidation_plan.pkl -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE
 python plot_timeseries.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.2/
 
-
 # figure 4.3 and table 4.1
-mkdir ./fig4.3/
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3/
 
-
-mkdir ./table4.3/
 python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_statics.pkl
 # table 4.3 and 4.4
 python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
 
-#Figure 4.1
-mkdir ./Fig4.1
 
-INPUTDIR=$INPUT_AGGR_DIR
-
-python averager_and_plot_map.py -i $INPUTDIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean --top 0 --bottom  10
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean --top 0 --bottom  0 # just to choice
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
-mkdir ./Fig4.6
-INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
+
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom  50 --mapdepthfilter  50.0
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom 150 --mapdepthfilter 150.0
 
@@ -45,18 +35,17 @@ python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t m
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  --top 0 --bottom  150 --mapdepthfilter 150.0
 
 # Figure IV.5
-python read_ppn_from_avescan_do_plot.py -i /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/only_ppn/INTEGRALS/PPN/ -o Fig4.5/
+INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/11_sub/INTEGRALS/PPN/
+INTEGRALS_PPN/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
+python read_ppn_from_avescan_do_plot.py -i $INTEGRALS_PPN -o Fig4.5/
 
-mkdir Fig4.4
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 150.0
 
-mkdir table4.4 table4.5
-mkdir Fig4.7/  Fig4.8
+
 #Figure IV.7 - density PHOSPHATE
 python density_plots.py     -M $MASKFILE -o Fig4.7/  -v N1p -m 0
 python vertical_profiles.py -m $MASKFILE -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
 
-mkdir Fig4.9/ Fig4.10/ Fig4.11/ Fig4.12/
 python density_plots.py     -M $MASKFILE -o Fig4.9/  -v N3n -m 0
 python vertical_profiles.py -m $MASKFILE -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat
 

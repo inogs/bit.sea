@@ -125,7 +125,6 @@ class Mask(object):
         Returns: a tuple of numbers, the first one is the longitude index and
         the other one is the latitude index.
         """
-        print(maxradius)
         #Indexes of the input lon, lat
         lon = float(lon)
         lat = float(lat)
@@ -145,12 +144,12 @@ class Mask(object):
         jpnarr = JJmask[indd]
         #Assign the first of the nearest wet points 
         if len(ipnarr)>0:
-           newip = ipnarr[0]
-           newjp = jpnarr[0]
-           return newip,newjp
+            newip = ipnarr[0]
+            newjp = jpnarr[0]
+            return newip,newjp
         #If there aren't wet points with distance < maxradius, assign the non-wet point
         else:
-           return ip,jp
+            return ip,jp
 
 
     def convert_i_j_to_lon_lat(self, i, j):
@@ -206,6 +205,7 @@ class Mask(object):
 
 
 if __name__ == '__main__':
+    #Test of convert_lon_lat_wetpoint_indices
     TheMask = Mask('/pico/scratch/userexternal/ateruzzi/DA_COAST_15/wrkdir/MODEL/meshmask.nc')
     lon = 13.4
     lat = 43.6

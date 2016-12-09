@@ -67,7 +67,7 @@ class NutrientsReader():
             for myvar in ['nitrate','phosphate','silicate','oxygen']:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
-                    if not p in ProfileLIST: Profilelist.append(p) 
+                    if not p in Profilelist: Profilelist.append(p)
             return Profilelist
         else:
             return self.DataExtractor.selector(var, T_int, region)

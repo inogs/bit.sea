@@ -115,6 +115,44 @@ class Mask(object):
         lat_indices = np.where(d_lat == min_d_lat)
         return lon_indices[1][0], lat_indices[0][0]
 
+    def convert_lon_lat_wetpoint_indices(self, lon, lat, maxradius=2):
+        """Converts longitude and latitude to the nearest water point indices on the mask with maximum distance limit
+
+        Args:
+            - *lon*: Longitude in degrees.
+            - *lat*: Latitude in degrees.
+            - *maxradius* : Maximum distance where the water point is searched (in grid units, integer, default: 2)
+        Returns: a tuple of numbers, the first one is the longitude index and
+        the other one is the latitude index.
+        """
+        print(maxradius)
+        #Indexes of the input lon, lat
+        lon = float(lon)
+        lat = float(lat)
+        ip,jp = self.convert_lon_lat_to_indices(lon,lat)
+        #Matrixes of indexes of the Mask
+        Ilist = np.arange(self.shape[2])
+        II = np.tile(Ilist,(self.shape[1],1))
+        Jlist = np.arange(self.shape[1]).T
+        JJ = np.tile(Jlist,(self.shape[2],1)).T
+        IImask = II[self.mask[0,:,:]]
+        JJmask = JJ[self.mask[0,:,:]]
+        #Find distances from wet points
+        distind = (ip-IImask)**2+(jp-JJmask)**2
+        #Limit to distance < maxradius
+        indd = distind<=maxradius
+        ipnarr = IImask[indd]
+        jpnarr = JJmask[indd]
+        #Assign the first of the nearest wet points 
+        if len(ipnarr)>0:
+           newip = ipnarr[0]
+           newjp = jpnarr[0]
+           return newip,newjp
+        #If there aren't wet points with distance < maxradius, assign the non-wet point
+        else:
+           return ip,jp
+
+
     def convert_i_j_to_lon_lat(self, i, j):
         """Converts i and j indexes to longitude and latitude of center of cells
         i is indeded as longitudinal index, as well as j is latitudinal index
@@ -165,3 +203,20 @@ class Mask(object):
         self._shape = self._mask.shape
         self._zlevels = [self._zlevels[index]]
         #raise NotImplementedError
+
+
+if __name__ == '__main__':
+    TheMask = Mask('/pico/scratch/userexternal/ateruzzi/DA_COAST_15/wrkdir/MODEL/meshmask.nc')
+    lon = 13.4
+    lat = 43.6
+    i, j = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2)
+    id, jd = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
+    ip, jp = TheMask.convert_lon_lat_to_indices(lon,lat)
+    lon = 9.44
+    lat = 40.25
+    il, jl = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,15)
+    it, jt = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
+    ipt, jpt = TheMask.convert_lon_lat_to_indices(lon,lat)
+
+
+

@@ -73,7 +73,7 @@ class NutrientsReader():
             return self.DataExtractor.selector(var, T_int, region)
         
     def getAllprofiles(self, T_INT):
-        Reg = Rectangle(0,20,30,46)
+        Reg = Rectangle(-6,36,30,46)
         return self.Selector(None,T_INT, Reg)
     
 

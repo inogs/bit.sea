@@ -94,10 +94,11 @@ class Mask(object):
         #Input validation
         lon = float(lon)
         lat = float(lat)
-        min_lon = self._xlevels.min()
-        max_lon = self._xlevels.max()
-        min_lat = self._ylevels.min()
-        max_lat = self._ylevels.max()
+        r=1.0
+        min_lon = self._xlevels.min()-r
+        max_lon = self._xlevels.max()+r
+        min_lat = self._ylevels.min()-r
+        max_lat = self._ylevels.max()+r
         if lon > max_lon or lon < min_lon:
             raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min_lon, max_lon))
         if lat > max_lat or lat < min_lat:

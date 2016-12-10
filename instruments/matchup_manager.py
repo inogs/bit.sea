@@ -79,7 +79,7 @@ class Matchup_Manager():
                 ' --ionames ' + ionamesfile  + \
                 ' -p ' + outpuntifile + '\n'
             JOB_LINES.append(line)
-            JOB_LINES.append("if [ $? -ne 0 ] ; then echo ERROR in aveScan: exit 1  ; fi \n")
+            JOB_LINES.append("if [ $? -ne 0 ] ; then echo ERROR in aveScan; exit 1  ; fi \n")
 
         F=file(filename,'w')
         F.writelines(JOB_LINES)

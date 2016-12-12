@@ -258,7 +258,7 @@ class Matchup_Manager():
             #density calculator on zlevels_out
             model_varname = 'votemper'
             ref_varname = self.reference_var(p, model_varname)
-            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
                 print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
@@ -284,7 +284,7 @@ class Matchup_Manager():
             for i,model_varname in enumerate(MODELVARLIST):
                 ref_varname = self.reference_var(p, model_varname)
                 if ref_varname not in VARLIST: continue
-                ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
+                ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
                 seaPoints = ~np.isnan(ModelProfile)
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted[i])
                 if len(Pres) == 0:

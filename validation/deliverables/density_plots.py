@@ -39,9 +39,11 @@ import os
 from profiler_RA import *
 from commons.mask import Mask
 import basins.OGS as OGS
-from instruments.all_instruments import static_Selector
+from instruments.var_conversions import NUTRVARS
+from static import NutrientsReader
 from instruments.matchup_manager import Matchup_Manager
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
+N=NutrientsReader()
 
 TheMask = Mask(args.maskfile)
 nav_lev = TheMask.zlevels
@@ -59,7 +61,7 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
 #for sub in OGS.P:
     print sub.name
-    Profilelist=static_Selector(modelvarname,T_INT,sub)
+    Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
     fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
     maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())

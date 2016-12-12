@@ -34,7 +34,7 @@ class Matchup_Manager():
         LINES=[]
         LINES.append('NOME    Longitutine E    Latitudine N \n')
         for p in Profilelist:
-            line = "%s\t%g\t%g \n" %(p.name(), p.lon, p.lat)
+            line = "%s\t%g\t%g \n" %(p.ID(), p.lon, p.lat)
             LINES.append(line)
 
         F = open(filename, "w")
@@ -63,7 +63,13 @@ class Matchup_Manager():
         JOB_LINES.append("cd " + os.path.abspath(postproc.__path__[0]) + " \n")
         for t in self.Coupled_List:
             Model_time        = t[0]
-            INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]
+            Coupled_indexes   = t[1]
+            INTERESTED_PROFILES = []
+            for k in Coupled_indexes:
+                p=self.PROFILE_LIST[k]
+                if not p in INTERESTED_PROFILES:
+                    INTERESTED_PROFILES.append(p)
+            #INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]
 
 
             outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
@@ -180,7 +186,7 @@ class Matchup_Manager():
                 continue
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
-            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.name())
+            ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask

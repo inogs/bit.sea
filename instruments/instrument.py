@@ -4,6 +4,8 @@ class Profile(object):
         raise NotImplementedError
     def name(self):
         raise NotImplementedError
+    def ID(self):
+        raise NotImplementedError
 
 class Instrument(object):
     pass
@@ -35,4 +37,6 @@ class ContainerProfile(Profile):
 
     def name(self):
         return self._name
+    def ID(self):
+        return  self._name + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
 

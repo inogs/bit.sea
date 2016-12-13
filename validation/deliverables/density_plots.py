@@ -40,7 +40,7 @@ from profiler_RA import *
 from commons.mask import Mask
 import basins.OGS as OGS
 from instruments.var_conversions import NUTRVARS
-from static import NutrientsReader
+from static.Nutrients_reader import NutrientsReader
 from instruments.matchup_manager import Matchup_Manager
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N=NutrientsReader()

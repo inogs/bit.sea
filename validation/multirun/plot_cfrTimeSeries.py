@@ -25,17 +25,11 @@ def argument():
                                 help = ''' Sat dir'''
                                 )
 
-    parser.add_argument(   '--pathtxt', '-t',
-                                type = str,
-                                required =True,
-                                help = ''' Text of path of input files'''
-                                )
-
     parser.add_argument(   '--cfrtype', '-c',
                                 type = str,
                                 required =True,
-                                choices = ['nocoastda','daeffect','errmod','nutupt','vhany','theta','alpha','errsat','short','corrl'],
-                                help = ''' Type of comparison: nocoastda - runs without DAcoast (CR, 01, 06), daeffect - control run, run DAopensea and run DAcoast (CR, 01, 02), errmod - run DAopensea, run DAcoast and run DAcoast with modified model error (01, 02, 03), vhany - runs with and without vh anysotropic, theta - different chl:c imposed in DA (01, 07, 08), alpha - effect of alpha +5% -10% (07, 09, 10), errsat - augmented errsat (CR, 01, 11, 12), short - short tests on errsat, corrl - correlation radius 10km (08, 13)'''
+                                choices = ['nocoastda','daeffect','errmod','nutupt','vhany','theta','alpha','errsat','short','corrl','dacoast'],
+                                help = ''' Type of comparison: nocoastda - runs without DAcoast (CR, 01, 06), daeffect - control run, run DAopensea and run DAcoast (CR, 01, 02), errmod - run DAopensea, run DAcoast and run DAcoast with modified model error (01, 02, 03), nutupt - CR, run without and with modified formulation of nutrient uptake (CR, 01, 06), vhany - runs with and without vh anysotropic, theta - different chl:c imposed in DA (01, 07, 08), alpha - effect of alpha +5% -10% (07, 09, 10), errsat - augmented errsat (CR, 08, 11, 12), short - short tests on errsat, corrl - correlation radius 10km (12, 13), dacoast - effect of coastal DA (CR, 13, 14)'''
                                 )
 
     return parser.parse_args()
@@ -48,22 +42,18 @@ import os.path as path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mpldates
-import netCDF4
 import pickle
-import datetime
 
 from glob import glob
-from datetime import datetime
 
-from commons.mask import Mask
-from commons.utils import is_number, get_date_string
 
 
 #VAR_LIST = ['P_n','P_p']
 #VAR_LIST = ['ppn']
 #VAR_LIST = ['N1p']
 #VAR_LIST = ['N3n']
-VAR_LIST = ['P_i']
+VAR_LIST = ['P_i','P_c','P_n','P_p']
+VAR_LIST = ['ppn','N1p','N3n']
 
 
 DEPTH_LIST = [0, 50, 150]
@@ -108,14 +98,16 @@ if args.cfrtype=='errmod':
             'DA_COAST_03': '03'
             }
 if args.cfrtype=='nutupt':
-   RUN_LIST = ['DA_COAST_05','DA_COAST_03']
+   RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_06']
    LCOLOR_DICT={
-               'DA_COAST_05': 'y',
-               'DA_COAST_03': 'c'
+               'CR_COAST'   : 'b',
+               'DA_COAST_01': 'g',
+               'DA_COAST_06': 'purple'
                }
    LEG_DICT={
-            'DA_COAST_05': '05',
-            'DA_COAST_03': '03'
+            'CR_COAST'   : 'CR',
+            'DA_COAST_01': '01',
+            'DA_COAST_06': '06'
             }
 if args.cfrtype=='vhany':
    RUN_LIST = ['DA_COAST_03','DA_COAST_04']
@@ -128,14 +120,16 @@ if args.cfrtype=='vhany':
             'DA_COAST_04': '04'
             }
 if args.cfrtype=='theta':
-   RUN_LIST = ['DA_COAST_01','DA_COAST_07','DA_COAST_08']
+   RUN_LIST = ['CR_COAST','DA_COAST_06','DA_COAST_07','DA_COAST_08']
    LCOLOR_DICT={
-               'DA_COAST_01': 'g',
+               'CR_COAST': 'b',
+               'DA_COAST_06': 'purple',
                'DA_COAST_07': 'y',
                'DA_COAST_08': 'grey'
                }
    LEG_DICT={
-            'DA_COAST_01': '01',
+            'CR_COAST': 'CR',
+            'DA_COAST_06': '06',
             'DA_COAST_07': '07',
             'DA_COAST_08': '08'
             }
@@ -154,16 +148,16 @@ if args.cfrtype=='alpha':
             }
 
 if args.cfrtype=='errsat':
-   RUN_LIST = ['CR_COAST','DA_COAST_01','DA_COAST_11','DA_COAST_12']
+   RUN_LIST = ['CR_COAST','DA_COAST_08','DA_COAST_11','DA_COAST_12']
    LCOLOR_DICT={
                'CR_COAST': 'b',
-               'DA_COAST_01': 'g',
+               'DA_COAST_08': 'grey',
                'DA_COAST_11': 'r',
                'DA_COAST_12': 'c'
                }
    LEG_DICT={
             'CR_COAST': 'CR',
-            'DA_COAST_01': '01',
+            'DA_COAST_08': '08',
             'DA_COAST_11': '11',
             'DA_COAST_12': '12'
             }
@@ -184,17 +178,31 @@ if args.cfrtype=='short':
             }
 
 if args.cfrtype=='corrl':
-   RUN_LIST = ['DA_COAST_11','DA_COAST_13']
+   RUN_LIST = ['DA_COAST_12','DA_COAST_13']
    LCOLOR_DICT={
+               'DA_COAST_12': 'r',
                'DA_COAST_13': 'grey',
-               'DA_COAST_11': 'r'
+               'DA_COAST_14': 'g'
                }
    LEG_DICT={
+            'DA_COAST_12': '12',
             'DA_COAST_13': '13',
-            'DA_COAST_11': '11'
+            'DA_COAST_14': '14'
             }
 
 
+if args.cfrtype=='dacoast':
+   RUN_LIST = ['CR_COAST','DA_COAST_13','DA_COAST_14']
+   LCOLOR_DICT={
+               'CR_COAST'   : 'b',
+               'DA_COAST_13': 'grey',
+               'DA_COAST_14': 'g'
+               }
+   LEG_DICT={
+            'CR_COAST'   : 'CR',
+            'DA_COAST_13': '13',
+            'DA_COAST_14': '14'
+            }
 
 
 UNITS_DICT={
@@ -209,51 +217,24 @@ UNITS_DICT={
 
 LSTYLE_DICT={
             0: '-',
-           50: ':',
-          150: '--' 
+           50: '--',
+          150: ':' 
           }
 
 
 
-class CoastEnum:
-    coast, open_sea, everywhere = range(3)
-
-    @staticmethod
-    def valid(val):
-        return val in range(3)
-
-class SubBasinEnum:
-    alb, sww, swe, nwm, tyr, adn, ads, aeg, ion, lev, med = range(11)
-
-    @staticmethod
-    def valid(val):
-        return val in range(11)
-
-class StatEnum:
-    mean, std, p25, p50, p75 = range(5)
-
-    @staticmethod
-    def valid(val):
-        return val in range(5)
-
-
 SUB_LIST = ['alb', 'sww', 'swe', 'nwm', 'tyr', 'adn', 'ads', 'aeg', 'ion', 'lev', 'med']
-COAST_LIST = ['coast', 'open_sea', 'everywhere']
 
-maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
 
-def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, fig=None, ax=None, satdate=None, satchl=None):
+def plot_from_runs(run_list, varname, subbasin, coast='open', fig=None, ax=None, satdate=None, satchl=None):
     """
     Plots a time series based on a list of file paths.
 
     Args:
         - *run_list*: a list runs to be compared
-        - *varname*: name of the variable to plot.
-        - *subbasin*: an element from SubBasinEnum.
-        - *coast* (optional): an element from CoastEnum (default:
-          CoastEnum.open_sea).
-        - *stat* (optional): an element from StatEnum (default: StatEnum.mean).
+        - *varname*: name of the variable to plot
+        - *subbasin*: a subbasin nam
+        - *coast* (optional): 'open' or 'coast'  (default:'open').
         - *fig* (optional): an instance of matplotlib figure. A new one will be
           created if it is set to None (default: None).
         - *ax* (optional): an instance of matplotlib axes. A new one will be
@@ -265,40 +246,34 @@ def plot_from_runs(run_list, varname, subbasin, coast=CoastEnum.open_sea, stat=S
     """
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
-    for dep in DEPTH_LIST:
-        for run in RUN_LIST:
-            run_path = args.indir + run + args.pathtxt
-            print(run_path)
-            file_list = sorted(glob(run_path + '/*nc'))
-            plot_list = list()
-            label_list = list()
-            depth_index = TheMask.getDepthIndex(dep)
-            for f in file_list:
-                #Get date string from file name
-                _, ds = get_date_string(path.basename(f))
-                #Create datetime object from date string
-                dt = datetime.strptime(ds,'%Y%m%d')
-                #Append the date to label_list
-                label_list.append(dt)
-                    #Open it with netCDF4
-                dset = netCDF4.Dataset(f)
-                #Append the variable value to plot_list
-                plot_list.append(dset[varname][subbasin, coast, depth_index, stat])
-                #Close the file
-                dset.close()
-            #Plot data
+    for run in RUN_LIST:
+        txtfile = varname + '_' + \
+                  run + '_' + \
+                  subbasin + \
+                  coast + '.pkl'
+        print(txtfile)
+        file_pkl = args.indir + txtfile
+        fid = open(file_pkl)
+        LIST = pickle.load(fid)
+        fid.close()
+        label_list = LIST[0]
+        for idep,dep in enumerate(DEPTH_LIST):
+            plot_list = LIST[1+idep]
             if (dep==0):
                     ax.plot(label_list, plot_list, \
                     color=LCOLOR_DICT[run], linestyle=LSTYLE_DICT[dep], \
                     label=LEG_DICT[run]+ ' ' +str(dep)+'m')
+            else:
+                    ax.plot(label_list, plot_list, \
+                    color=LCOLOR_DICT[run], linestyle=LSTYLE_DICT[dep])
     if satdate:
-       ax.plot(satdate,satchl[subbasin,:],'xk', label='SAT')
+       ax.plot(satdate,satchl,'xk', label='SAT')
 
     ax.set_ylabel(varname + ' [' + UNITS_DICT[varname] + ']')
     ax.legend(loc="best", \
               fontsize='small', \
               labelspacing=0, handletextpad=0,borderpad=0.1)
-    ax.set_title(SUB_LIST[subbasin] + ' ' + COAST_LIST[coast]) 
+    ax.set_title(subbasin + ' ' + coast) 
     fig.autofmt_xdate()
 
     return fig,ax
@@ -322,34 +297,35 @@ for it,typed in enumerate(datatypes):
     LISTsat[it+1] = LIST[1]
 
 
-for isub in range(len(SUB_LIST)):
-    print(SUB_LIST[isub])
+for isub,sub in enumerate(SUB_LIST):
+    print(sub)
     for var in VAR_LIST:
         print(var)
         if (var is 'P_i'):
            datesat=LISTsat[0]
            chlsat=LISTsat[1]
+           chlsatsub =chlsat[isub,:]
         else: 
            datesat = None
-           chlsat = None
+           chlsatsub = None
         fig1 = plt.figure(num=None,facecolor='w', \
                         edgecolor='k',figsize=[6.5,8.5]) 
         ax1  = fig1.add_subplot(2,1,1)
-        plot_from_runs(RUN_LIST, var, isub, \
-                   coast = CoastEnum.open_sea, \
-                   fig=fig1,ax=ax1,satdate=datesat,satchl=chlsat)
+        plot_from_runs(RUN_LIST, var, sub, \
+                   coast = 'open', \
+                   fig=fig1,ax=ax1,satdate=datesat,satchl=chlsatsub)
         if (var is 'P_i'):
            chlsat=LISTsat[1]
         else: 
            chlsat = None
         ax2  = fig1.add_subplot(2,1,2)
-        plot_from_runs(RUN_LIST, var, isub, \
-                   coast = CoastEnum.coast, \
-                   fig=fig1,ax=ax2,satdate=datesat,satchl=chlsat)
+        plot_from_runs(RUN_LIST, var, sub, \
+                   coast = 'coast', \
+                   fig=fig1,ax=ax2,satdate=datesat,satchl=chlsatsub)
 
         outfile = args.outdir + var + '_' + \
                   args.cfrtype + '_' + \
-                  SUB_LIST[isub] + '.png'
+                  sub + '.png'
         plt.savefig(outfile)
       #  plt.show()
         plt.close(fig1)

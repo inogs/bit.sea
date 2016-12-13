@@ -125,7 +125,7 @@ def read_Positions_for_Pointprofiles(filename):
     MeasPoints_OUT['Lon' ]= MeasPoints['Lon' ]
     MeasPoints_OUT['Lat' ]= MeasPoints['Lat' ]
     for k in xrange(nMeas):
-        i, j = TheMask.convert_lon_lat_to_indices(MeasPoints['Lon'][k],MeasPoints['Lat'][k])
+        i, j = TheMask.convert_lon_lat_wetpoint_indices(MeasPoints['Lon'][k],MeasPoints['Lat'][k])
 #        DIST = (Lon - MeasPoints['Lon'][k])**2 + (Lat - MeasPoints['Lat'][k])**2 
 #        ind=np.nonzero(DIST==DIST.min())# tuple  
 #        j = ind[0]

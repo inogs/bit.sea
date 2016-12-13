@@ -103,8 +103,10 @@ class Matchup_Manager():
 
         MODEL_PROFILES_DIR =self.profilingDir + "PROFILES/"
         TMPSDIR =           self.profilingDir + "TMP/"
-        os.system("mkdir -p " + MODEL_PROFILES_DIR)
-        os.system("mkdir -p " + TMPSDIR)
+        os.system("rm -rf " + MODEL_PROFILES_DIR)
+        os.system("rm -rf " + TMPSDIR)
+        os.system("mkdir " + MODEL_PROFILES_DIR)
+        os.system("mkdir " + TMPSDIR)
         os.chmod(profilername, 0755)
         os.system(profilername)
 

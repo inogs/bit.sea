@@ -42,3 +42,8 @@ NUTRVARS={'O2o':'oxygen', \
              'N3n':'nitrate',  \
              'N1p':'phosphate', \
              'N5s':'silicate'}
+
+ISPRAVARS = {'N1p': 'orthophosphates', \
+             'N3n': 'nitrate', \
+             'P_l': 'chlorophyll a'}
+

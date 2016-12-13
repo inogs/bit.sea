@@ -32,6 +32,12 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'Path of the mask file')
+    parser.add_argument(   '--coastness', '-m',
+                                type = str,
+                                required = True,
+                                choices = ['coast','open_sea','everywhere'],
+                                help = 'definition of mask to apply to the statistics')
+
 
 
     return parser.parse_args()
@@ -89,6 +95,11 @@ for sub in OGS.P:
     SUB[sub.name]  = sbmask[0,:,:]
 
 mask200_2D = TheMask.mask_at_level(200.0)
+mask0_2D = TheMask.mask_at_level(0.0)
+if args.coastness == 'coast':
+    coastmask=mask0_2D & (~mask200_2D)
+if args.coastness == "open_sea"  : coastmask = mask200_2D
+if args.coastness == "everywhere": coastmask = mask0_2D
 
 BGC_CLASS4_CHL_RMS_SURF_BASIN      = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN     = np.zeros((nFrames,nSUB),np.float32)
@@ -120,11 +131,11 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
-    selection = ~nodata & mask200_2D
+    selection = ~nodata & coastmask
     M = matchup.matchup(Model[selection], Sat16[selection])
 
     for isub, sub in enumerate(OGS.P):
-        selection = SUB[sub.name] & (~nodata) & mask200_2D
+        selection = SUB[sub.name] & (~nodata) & coastmask
         M = matchup.matchup(Model[selection], Sat16[selection])
         BGC_CLASS4_CHL_RMS_SURF_BASIN[itime,isub]  = M.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN[itime,isub] = M.bias()

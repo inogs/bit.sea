@@ -88,8 +88,8 @@ UNITS_DICT={
          'N3n' : 'mmol /m^3',
          'PH'  : '',
          'pCO2': 'ppm',
-         'P_l' :'mmol /m^3',
-         'P_i' :'mmol /m^3'
+         'P_l' :'mg Chl/ m^3',
+         'P_i' :'mg Chl/ m^3'
          }
 
 CLIM_DICT={
@@ -114,14 +114,12 @@ CONVERSION_DICT={
          }
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
+req_label='Ave:1999-2014' #official
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 
 
-#MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") # requestor generico per la media del reanalysis 1999-2012
-MY_YEAR = TimeInterval('19990101','20141230',"%Y%m%d") 
-req_label='Ave:1999-2014'
 
-req = requestors.Generic_req(MY_YEAR)
+req = requestors.Generic_req(TI)
 indexes,weights = TL.select(req)
 
 VARCONV=CONVERSION_DICT[var]

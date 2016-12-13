@@ -67,7 +67,7 @@ def argument():
                                 ''') 
     parser.add_argument(   '--pointlist',"-p",
                                 type = str,
-                                help = '''Path of the text file listing the the points where extract point profiles''')             
+                                help = '''Path of the text file listing the points where extract point profiles''')             
     parser.add_argument(   '--ionames',
                                 type = str,
                                 default="IOnames.xml",

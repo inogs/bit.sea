@@ -44,19 +44,23 @@ class IspraReader():
          '''
         if var is None:
             Profilelist=list()
-            myvar = 'chlrophyll a'
-            Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
-            return Profilelist
+            for myvar in ['ammonium','chlorophyll a','dissolved oxygen', 'nitrate','orthophosphates','silicate']:
+                Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
+            sublist = list()
+            for p in Profilelist:
+                if not p in sublist: sublist.append(p)
+            return sublist
         else:
             return self.DataExtractor.selector(var, T_int, region)
 
 if __name__ == '__main__':
     
-    var= 'nitrate';
-    TI = TimeInterval('20130101','20130108','%Y%m%d')
-    Reg= Rectangle(0,20,30,45)
+#    var= 'nitrate';
+   
+    TI = TimeInterval('20130101','20140101','%Y%m%d')
+    Reg= Rectangle(-6,36,30,47)
     N = IspraReader()
-    ProfileLIST = N.Selector(var, TI, Reg)
+    ProfileLIST = N.Selector(None, TI, Reg)
     
     
 #    stationname='IT19CW0815301'

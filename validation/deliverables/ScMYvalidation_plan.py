@@ -32,7 +32,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'Path of the mask file')
-    parser.add_argument(   '--coastness', '-m',
+    parser.add_argument(   '--coastness', '-c',
                                 type = str,
                                 required = True,
                                 choices = ['coast','open_sea','everywhere'],

@@ -190,7 +190,7 @@ class Matchup_Manager():
             seaPoints = ~np.isnan(ModelProfile)
 
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
-                print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
+                print "No model data for ", p.ID()
                 continue
 
 

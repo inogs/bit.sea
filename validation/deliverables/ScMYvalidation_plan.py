@@ -57,7 +57,7 @@ from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
 from commons.mask import Mask
 from commons.submask import SubMask
-from basins import OGS
+from basins import V2 as OGS
 from commons.layer import Layer
 from commons.utils import addsep
 import pickle
@@ -76,7 +76,7 @@ outfile  = args.outfile
 
 
 Timestart="19990101"
-Time__end="20160101"
+Time__end="20150901"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat="%Y%m")

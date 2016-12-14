@@ -17,34 +17,47 @@ def argument():
     formatter_class=argparse.RawTextHelpFormatter
     )
 
-    parser.add_argument(   '--outdir', '-o',
+    parser.add_argument(   '--outdir', '-O',
                             type = str,
                             required =True,
                             default = "./",
                             help = ''' Output image dir'''
                             )
 
-    parser.add_argument(   '--inputfile', '-i',
+    parser.add_argument(   '--everywhere_file', '-e',
                             type = str,
                             required = True,
                             default = 'export_data_ScMYValidation_plan.pkl',
-                            help = 'Input pickle file')
+                            help = 'Input pickle file for every sea point')
+    parser.add_argument(   '--open_sea_file', '-o',
+                            type = str,
+                            required = True,
+                            help = 'Input pickle file for open sea')
+    parser.add_argument(   '--coast_file', '-c',
+                            type = str,
+                            required = True,
+                            help = 'Input pickle file for coast')
+
+    
 
 
     return parser.parse_args()
 
 args = argument()
 
-fid = open(args.inputfile)
+fid = open(args.everywhere_file)
 LIST = pickle.load(fid)
 fid.close()
-TIMES                          = LIST[0]
-BGC_CLASS4_CHL_RMS_SURF_BASIN  = LIST[1]
-BGC_CLASS4_CHL_BIAS_SURF_BASIN = LIST[2]
-MODEL_MEAN                     = LIST[3]
-SAT___MEAN                     = LIST[4]
-BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
-BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
+TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
+
+fid = open(args.open_sea_file)
+LIST = pickle.load(fid)
+fid.close()
+model_open_sea = LIST[3]
+fid = open(args.coast_file)
+LIST = pickle.load(fid)
+fid.close()
+model_coast = LIST[3]
 
 
 from basins import OGS
@@ -53,6 +66,8 @@ for isub,sub in enumerate(OGS.P):
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
     ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=' RAN')
+    ax.plot(TIMES,MODEL_MEAN[:,isub],'--k',label=' RAN_coast')
+    ax.plot(TIMES,MODEL_MEAN[:,isub],':k',label=' RAN_opensea')
     ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()
@@ -70,4 +85,3 @@ for isub,sub in enumerate(OGS.P):
     #fig.show()
     outfilename=args.outdir+"/"+'chl' + sub.name + ".png"
     pl.savefig(outfilename)
-    #sys.exit()

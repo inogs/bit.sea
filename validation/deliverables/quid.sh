@@ -9,8 +9,8 @@ SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SA
 INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
 INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
 
-mkdir -p fig4.2  fig4.3  table4.3  Fig4.1  Fig4.6 Fig4.5 Fig4.4 Fig4.7 Fig4.8 Fig4.9 Fig4.10 Fig4.11 Fig4.12
-mkdir -p table 4.3 table4.4 table4.5
+mkdir -p fig4.2  table4.3  Fig4.1  Fig4.6 Fig4.5 Fig4.4 Fig4.7 Fig4.8 Fig4.9 Fig4.10 Fig4.11 Fig4.12
+mkdir -p table4.3 table4.4 table4.5
 python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea.pkl
 python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
 python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c everywhere -o export_data_ScMYValidation_plan_everywhere.pkl
@@ -18,7 +18,9 @@ python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFIL
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
 # figure 4.3 and table 4.1
-python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3/
+mkdir fig4.3_offshore fig4.3_coast
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3_offshore
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3_coast
 
 python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_statics.pkl
 # table 4.3 and 4.4

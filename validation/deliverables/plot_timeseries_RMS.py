@@ -1,7 +1,7 @@
 # OUTPUTS
 # images for QUID
 # CMEMS-Med-QUID-006-008-V2-V1.0.docx
-# Figure IV.3
+# Figure IV.3 and table IV.1
 
 
 import pickle
@@ -135,7 +135,7 @@ for isub,sub in enumerate(OGS.P):
 
     lines.append(line)
 
-outfiletable = args.outdir+"/"+"table.dat"
+outfiletable = args.outdir+"/"+"table4.1.dat"
 file = open(outfiletable,"w")
 file.writelines(lines)
 file.close()

@@ -51,7 +51,7 @@ fid.close()
 model_coast = LIST[3]
 
 
-from basins import OGS
+from basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()

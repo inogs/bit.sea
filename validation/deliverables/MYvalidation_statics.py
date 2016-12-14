@@ -33,9 +33,11 @@ from commons.mask import Mask
 from instruments.matchup_manager import Matchup_Manager
 from profiler_RA import *
 import basins.OGS as OGS
-from instruments.all_instruments import static_Selector
+from instruments.var_conversions import NUTRVARS
+from static.Nutrients_reader import NutrientsReader
 from commons.layer import Layer
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
+N=NutrientsReader()
 
 TheMask = Mask(args.maskfile)
 nav_lev = TheMask.zlevels
@@ -61,7 +63,7 @@ for modelvarname in VARLIST:
 
     OUTPUT = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
     for isub, sub in enumerate(SUBlist):
-        Profilelist=static_Selector(modelvarname,T_INT,sub)
+        Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
         nP = len(Profilelist)
         Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
         for ilayer, layer in enumerate(LAYERLIST):

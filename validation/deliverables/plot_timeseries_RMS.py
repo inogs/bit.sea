@@ -41,17 +41,15 @@ args = argument()
 fid = open(args.inputfile)
 LIST = pickle.load(fid)
 fid.close()
+
 TIMES                          = LIST[0]
 BGC_CLASS4_CHL_RMS_SURF_BASIN  = LIST[1]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN = LIST[2]
-MODEL_MEAN                     = LIST[3]
-SAT___MEAN                     = LIST[4]
 BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
-#surf_layer = Layer(0,10)
 
-from basins import OGS
+from basins import V2 as OGS
 
 nSUB = len(OGS.P.basin_list)
 
@@ -78,19 +76,18 @@ for isub,sub in enumerate(OGS.P):
     #fig.show()
     outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
-    #sys.exit()
 
 start_year=1999
 end___year=2014
 nyr=end___year-start_year+1
-RMS__sum=np.zeros((nyr,11),np.float32)
-RMS__win=np.zeros((nyr,11),np.float32)
-BIAS_sum=np.zeros((nyr,11),np.float32)
-BIAS_win=np.zeros((nyr,11),np.float32)
-RMSL_sum=np.zeros((nyr,11),np.float32)
-RMSL_win=np.zeros((nyr,11),np.float32)
-BIASLsum=np.zeros((nyr,11),np.float32)
-BIASLwin=np.zeros((nyr,11),np.float32)
+RMS__sum=np.zeros((nyr,nSUB),np.float32)
+RMS__win=np.zeros((nyr,nSUB),np.float32)
+BIAS_sum=np.zeros((nyr,nSUB),np.float32)
+BIAS_win=np.zeros((nyr,nSUB),np.float32)
+RMSL_sum=np.zeros((nyr,nSUB),np.float32)
+RMSL_win=np.zeros((nyr,nSUB),np.float32)
+BIASLsum=np.zeros((nyr,nSUB),np.float32)
+BIASLwin=np.zeros((nyr,nSUB),np.float32)
 #
 # winter = JFMA
 # summer = JJAS
@@ -103,14 +100,14 @@ for i in range(start_year,end___year+1):
     s1=w1+5
     s2=s1+4
     print w1,w2,s1,s2
-    RMS__win[n,:]=LIST[1][w1:w2,:].mean(axis=0)
-    RMS__sum[n,:]=LIST[1][s1:s2,:].mean(axis=0)
-    BIAS_win[n,:]=LIST[2][w1:w2,:].mean(axis=0)
-    BIAS_sum[n,:]=LIST[2][s1:s2,:].mean(axis=0)
-    RMSL_win[n,:]=LIST[5][w1:w2,:].mean(axis=0)
-    RMSL_sum[n,:]=LIST[5][s1:s2,:].mean(axis=0)
-    BIASLwin[n,:]=LIST[6][w1:w2,:].mean(axis=0)
-    BIASLsum[n,:]=LIST[6][s1:s2,:].mean(axis=0)
+    RMS__win[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN[ w1:w2,:].mean(axis=0)
+    RMS__sum[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN[ s1:s2,:].mean(axis=0)
+    BIAS_win[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN[w1:w2,:].mean(axis=0)
+    BIAS_sum[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN[s1:s2,:].mean(axis=0)
+    RMSL_win[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ w1:w2,:].mean(axis=0)
+    RMSL_sum[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ s1:s2,:].mean(axis=0)
+    BIASLwin[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[w1:w2,:].mean(axis=0)
+    BIASLsum[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[s1:s2,:].mean(axis=0)
 
 mat = np.zeros((8,nSUB))
 

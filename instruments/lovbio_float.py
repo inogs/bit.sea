@@ -44,7 +44,7 @@ class BioFloatProfile(Profile):
         return self._my_float.wmo
 
     def ID(self):
-        return  self._name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
+        return  self.name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
 
 
 class BioFloat(Instrument):

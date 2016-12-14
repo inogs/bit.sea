@@ -15,7 +15,7 @@ python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFIL
 python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
 python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c everywhere -o export_data_ScMYValidation_plan_everywhere.pkl
 
-python plot_timeseries.py -e export_data_ScMYValidation_plan_everywhere.pkl -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
+python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
 # figure 4.3 and table 4.1
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan.pkl -o ./fig4.3/

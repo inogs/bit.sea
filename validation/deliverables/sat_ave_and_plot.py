@@ -33,7 +33,7 @@ import numpy as np
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask
-from commons.layer import Layer
+#from commons.layer import Layer
 
 from layer_integral.mapplot import mapplot
 import commons.timerequestors as requestors
@@ -50,12 +50,12 @@ OUTPUTDIR = args.outdir
 
 
 
-TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
+TI = TimeInterval('20010101','20141230',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m")
 
 
-MY_YEAR = TimeInterval('20000101','20121230',"%Y%m%d") 
-req_label='Ave:1999-2014'
+MY_YEAR = TimeInterval('20010101','20141230',"%Y%m%d") 
+req_label='Ave:2001-2014'
 
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)
@@ -73,9 +73,9 @@ Sat2d=Sat.averager(SAT_3D)
 mask=TheMask.mask_at_level(0)
 Sat2d[~mask] = np.NaN
 var = 'SATchl'
-layer = Layer(0,10)
+#layer = Layer(0,10)
 
-fig,ax     = mapplot({'varname':var, 'clim':[0,0.4], 'layer':layer, 'data':Sat2d, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+#fig,ax     = mapplot({'varname':var, 'clim':[0,0.4], 'layer':layer, 'data':Sat2d, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
@@ -83,13 +83,13 @@ ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
 ax.ticklabel_format(fontsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
+#ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label +  ".png"
 ax.xaxis.set_ticks(np.arange(-2,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
-title = "%s %s %s" % ('annual', var, layer.__repr__())
+title = "%s %s" % ('annual', var)
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)

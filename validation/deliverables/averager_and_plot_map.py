@@ -113,8 +113,8 @@ CONVERSION_DICT={
          'P_i' : 1
          }
 
-TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-req_label='Ave:1999-2014' #official
+TI = TimeInterval('20010101','20141230',"%Y%m%d") # VALID FOR REANALYSIS RUN
+req_label='Ave:2001-2014' #official
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 
 

@@ -23,12 +23,6 @@ def argument():
                             default = "./",
                             help = ''' Output image dir'''
                             )
-
-    parser.add_argument(   '--everywhere_file', '-e',
-                            type = str,
-                            required = True,
-                            default = 'export_data_ScMYValidation_plan.pkl',
-                            help = 'Input pickle file for every sea point')
     parser.add_argument(   '--open_sea_file', '-o',
                             type = str,
                             required = True,
@@ -45,15 +39,12 @@ def argument():
 
 args = argument()
 
-fid = open(args.everywhere_file)
+fid = open(args.open_sea_file)
 LIST = pickle.load(fid)
 fid.close()
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
 
-fid = open(args.open_sea_file)
-LIST = pickle.load(fid)
-fid.close()
-model_open_sea = LIST[3]
+
 fid = open(args.coast_file)
 LIST = pickle.load(fid)
 fid.close()
@@ -66,8 +57,7 @@ for isub,sub in enumerate(OGS.P):
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
     ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=' RAN')
-    ax.plot(TIMES,MODEL_MEAN[:,isub],'--k',label=' RAN_coast')
-    ax.plot(TIMES,MODEL_MEAN[:,isub],':k',label=' RAN_opensea')
+    ax.plot(TIMES,model_coast[:,isub],':k',label=' RAN_coast')
     ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()

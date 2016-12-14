@@ -45,7 +45,7 @@ INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/o
 
 mkdir -p Fig4.5/coast Fig4.5/offshore Fig4.5/everywhere
 python read_ppn_from_avescan_do_plot.py -c coast      -i $INTEGRALS_PPN -o Fig4.5/coast
-python read_ppn_from_avescan_do_plot.py -c offshore   -i $INTEGRALS_PPN -o Fig4.5/offshore
+python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.5/offshore
 python read_ppn_from_avescan_do_plot.py -c everywhere -i $INTEGRALS_PPN -o Fig4.5/everywhere
 
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 0.0

@@ -41,10 +41,14 @@ python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t m
 
 # Figure IV.5
 INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/11_sub/INTEGRALS/PPN/
-INTEGRALS_PPN/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
-python read_ppn_from_avescan_do_plot.py -i $INTEGRALS_PPN -o Fig4.5/
+INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
 
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 150.0
+mkdir -p Fig4.5/coast Fig4.5/offshore Fig4.5/everywhere
+python read_ppn_from_avescan_do_plot.py -c coast      -i $INTEGRALS_PPN -o Fig4.5/coast
+python read_ppn_from_avescan_do_plot.py -c offshore   -i $INTEGRALS_PPN -o Fig4.5/offshore
+python read_ppn_from_avescan_do_plot.py -c everywhere -i $INTEGRALS_PPN -o Fig4.5/everywhere
+
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 0.0
 
 
 #Figure IV.7 - density PHOSPHATE

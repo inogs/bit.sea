@@ -17,6 +17,11 @@ def argument():
                                 required = True,
                                 default = 'Fig',
                                 help = 'Output images directory')
+    parser.add_argument(   '--coastness', '-c',
+                                type = str,
+                                required = True,
+                                choices = ['coast','open_sea','everywhere'],
+                                help = 'definition of mask to apply to the statistics')
 
 
     return parser.parse_args()
@@ -35,13 +40,8 @@ import glob
 from dateutil.relativedelta import relativedelta
 import datetime
 from matplotlib.dates import date2num, num2date, YearLocator, MonthLocator, DateFormatter
+from commons.utils import addsep
 
-
-# ATTENZIONE VA LANCIATO IL . ./config_MASKFILE.sh
-#maskfile    = os.getenv("MASKFILE");
-#ncIN=NC.netcdf_file(maskfile,"r")
-#nav_lev = ncIN.variables['nav_lev'].data.copy()
-#ncIN.close()
 
 def movingaverage(interval, window_size):
     window = np.ones(int(window_size))/float(window_size)
@@ -49,8 +49,8 @@ def movingaverage(interval, window_size):
 
 
 
-DATADIR =args.inputdir
-FIGDIR = args.outdir
+DATADIR = addsep(args.inputdir)
+FIGDIR = addsep(args.outdir)
 os.system('mkdir -p ' + FIGDIR)
 
 pl.close('all')
@@ -89,8 +89,12 @@ for date in DATE:
   T=datetime.datetime.strptime(date,'%Y%m%d')
   Tlist.append(T)
 
+if args.coastness == 'coast'     : nc = 0
+if args.coastness == "open_sea"  : nc = 1
+if args.coastness == "everywhere": nc = 2
 # nc =  0 coast, 1 open_sea, 2 everywhere 
-nc=2
+
+
 # nd = 0 shallow (0-200), 1 deep (200-bottom)
 nd=0
 

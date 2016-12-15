@@ -25,22 +25,11 @@ def argument():
                                 required = True,
                                 default = '',
                                 choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
-
-    parser.add_argument(   '--mapdepthfilter',
-                                type = float,
-                                required = False,
-                                default = 0.0,
-                                help  = 'The level chosen to filter coast data' )
-    parser.add_argument(   '--top', 
-                                type = float,
-                                required = False,
-                                default = 0.0,
-                                help  = 'Top of the layer, for integration' )
-    parser.add_argument(   '--bottom',
-                                type = float,
-                                required = False,
-                                default = 0.0,
-                                help  = 'Bottom of the layer, for integration' )
+    parser.add_argument(   '--layerfile', '-l',
+                                type = str,
+                                required = True,
+                                help = '''Text file with 3 columns: top, bottom, mapdepthfilter
+                                ''')
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 required = True,
@@ -77,10 +66,12 @@ TheMask=Mask(args.maskfile)
 INPUTDIR  = addsep(args.inputdir)
 OUTPUTDIR = addsep(args.outdir)
 var       = args.varname
-layer     = Layer(args.top, args.bottom)
 
 
-LAYERLIST=[layer]
+ldtype=[('top',np.float32),('bottom',np.float32),('mapdephfilter',np.float32)]
+LF = np.loadtxt(args.layerfile,ldtype)
+
+LAYERLIST=[ Layer(l['top'], l['bottom']) for l in LF ]
 
 UNITS_DICT={
          'ppn' : 'gC/m^2/y',
@@ -140,8 +131,7 @@ for il,layer in enumerate(LAYERLIST):
         integrated = MapBuilder.get_layer_average(De, layer)  
     integrated=integrated * VARCONV
 
-#        mask200=TheMask.mask_at_level(200)
-    mask=TheMask.mask_at_level(args.mapdepthfilter)
+    mask=TheMask.mask_at_level(LF[il]['mapdepthfilter'])
 #        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
     clim=CLIM_DICT[var]
     integrated_masked=integrated*mask # taglio il costiero

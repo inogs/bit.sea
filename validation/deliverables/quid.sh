@@ -27,17 +27,12 @@ python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_s
 python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
 
-
-python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean --top 0 --bottom  10
-python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean --top 0 --bottom  0 # just to choice
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean -l chl_layerlist
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  -l nut_layerlist
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  -l nut_layerlist
 
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom  50 --mapdepthfilter  50.0
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  --top 0 --bottom 150 --mapdepthfilter 150.0
-
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  --top 0 --bottom   50 --mapdepthfilter  50.0
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  --top 0 --bottom  150 --mapdepthfilter 150.0
 
 # Figure IV.5
 INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/11_sub/INTEGRALS/PPN/
@@ -48,7 +43,7 @@ python read_ppn_from_avescan_do_plot.py -c coast      -i $INTEGRALS_PPN -o Fig4.
 python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.5/offshore
 python read_ppn_from_avescan_do_plot.py -c everywhere -i $INTEGRALS_PPN -o Fig4.5/everywhere
 
-python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral --top 0 --bottom 200 --mapdepthfilter 0.0
+python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t integral -l ppn_layerlist
 
 
 #Figure IV.7 - density PHOSPHATE

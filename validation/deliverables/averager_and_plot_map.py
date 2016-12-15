@@ -68,7 +68,7 @@ OUTPUTDIR = addsep(args.outdir)
 var       = args.varname
 
 
-ldtype=[('top',np.float32),('bottom',np.float32),('mapdephfilter',np.float32)]
+ldtype=[('top',np.float32),('bottom',np.float32),('mapdepthfilter',np.float32)]
 LF = np.loadtxt(args.layerfile,ldtype)
 
 LAYERLIST=[ Layer(l['top'], l['bottom']) for l in LF ]

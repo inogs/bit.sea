@@ -69,7 +69,7 @@ var       = args.varname
 
 
 ldtype=[('top',np.float32),('bottom',np.float32),('mapdepthfilter',np.float32)]
-LF = np.loadtxt(args.layerfile,ldtype)
+LF = np.loadtxt(args.layerfile,ldtype,ndmin=1)
 
 LAYERLIST=[ Layer(l['top'], l['bottom']) for l in LF ]
 

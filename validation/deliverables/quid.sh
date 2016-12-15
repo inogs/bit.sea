@@ -48,13 +48,13 @@ python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE  -o Fig4.4/ -v ppn -t 
 
 #Figure IV.7 - density PHOSPHATE
 python density_plots.py     -M $MASKFILE -o Fig4.7/  -v N1p -m 0
-python vertical_profiles.py -m $MASKFILE -o Fig4.8/  -v N1p > ./table4.3/table.4.3_corr.dat
+python vertical_profiles.py -m $MASKFILE -o Fig4.8/  -v N1p | grep corr > ./table4.3/table.4.3_corr.dat
 
 python density_plots.py     -M $MASKFILE -o Fig4.9/  -v N3n -m 0
-python vertical_profiles.py -m $MASKFILE -o Fig4.10/ -v N3n > ./table4.4/table4.4_corr.dat
+python vertical_profiles.py -m $MASKFILE -o Fig4.10/ -v N3n | grep corr > ./table4.4/table4.4_corr.dat
 
 python density_plots.py     -M $MASKFILE -o Fig4.11/ -v O2o
-python vertical_profiles.py -m $MASKFILE -o Fig4.12/ -v O2o > ./table4.5/table4.5_corr.dat
+python vertical_profiles.py -m $MASKFILE -o Fig4.12/ -v O2o | grep corr > ./table4.5/table4.5_corr.dat
 
 # Figure carbonatiche
 # Fig 4.13, 4.14, per AC_ e DIC

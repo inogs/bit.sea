@@ -105,7 +105,7 @@ CONVERSION_DICT={
          }
 
 TI = TimeInterval('20010101','20141230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-req_label='Ave:2001-2014' #official
+req_label='Ave.2001-2014' #official
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 
 
@@ -148,10 +148,10 @@ for il,layer in enumerate(LAYERLIST):
     ax.ticklabel_format(fontsize=10)
     ax.text(-4,44.5,var + ' [' + UNITS_DICT[var] + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
     if  args.optype=='integral':
-        ax.text(-4,32,'Int:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+        #ax.text(-4,32,'Int:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
         outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + ".png"
     else:
-        ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+        #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
         outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
     ax.xaxis.set_ticks(np.arange(-2,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))

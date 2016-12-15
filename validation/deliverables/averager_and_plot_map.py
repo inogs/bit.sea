@@ -155,7 +155,7 @@ for il,layer in enumerate(LAYERLIST):
         outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
     ax.xaxis.set_ticks(np.arange(-2,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))
-    ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+    #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
     title = "%s %s %s" % ('annual', var, layer.__repr__())
     fig.suptitle(title)

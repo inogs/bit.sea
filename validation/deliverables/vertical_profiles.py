@@ -54,9 +54,10 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 
 for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
     Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
-    if len(Profilelist) == 0 :
+    nProfiles=len(Profilelist)
+    if nProfiles == 0 :
         # no figure generation
-        print sub.name,'correlation= ',"nan"
+        print sub.name,'correlation= ',"nan with 0 profiles and 0 matchups"
         continue
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
 
@@ -75,7 +76,7 @@ for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
     ax.set_title(sub.name.upper() + ' ' + modelvarname)
     fig.savefig(OUTPUTDIR+'vertprof_'+modelvarname+'_'+sub.name+'.png')    
 
-    print sub.name,'correlation= ',Matchup_basin.correlation()
+    print sub.name,'correlation= %f with %d profiles and %d matchups' %(Matchup_basin.correlation(), nProfiles, Matchup_basin.number() )
 
 
 

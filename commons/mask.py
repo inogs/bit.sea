@@ -192,17 +192,24 @@ class Mask(object):
 
     def cut_at_level(self,index):
         '''
-        The idea is to generate a new mask object by providing only the depth index
-        At the moment it is not fully developed
+        Arguments:
+        * index * integer, depth index
+
+        Returns copy of the mask object, reduced on a single horizontal slice,
+        the one of the provided depth index.
         '''
+        import copy
+        New_mask = copy.copy(self)
 
         _,jpj,jpi = self.shape
         red_mask = np.zeros((1,jpj,jpi),dtype=np.bool)
         red_mask[0,:,:] = self._mask[index,:,:]
-        self._mask = red_mask.copy()
-        self._shape = self._mask.shape
-        self._zlevels = [self._zlevels[index]]
-        #raise NotImplementedError
+        New_mask._mask = red_mask
+
+        New_mask._shape = red_mask.shape
+        New_mask._zlevels = [self._zlevels[index]]
+        New_mask._dz      = [self._dz[index]]
+        return New_mask
 
 
 if __name__ == '__main__':

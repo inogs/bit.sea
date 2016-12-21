@@ -8,10 +8,10 @@ import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties
 
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask_all=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask = TheMask_all.cut_at_level(0)
 mask = TheMask.mask_at_level(0)
 jpk,jpj,jpi = TheMask.shape
-TheMask.cut_at_level(0)
 
 
 SUB_matrix=np.zeros((jpj,jpi),np.float32)

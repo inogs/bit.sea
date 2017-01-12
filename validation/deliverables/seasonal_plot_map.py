@@ -37,6 +37,10 @@ def argument():
                                 default = '',
                                 choices = ['integral','mean'],
                                 help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
+    parser.add_argument(   '--maskfile', '-M',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
 
     return parser.parse_args()
 args = argument()
@@ -55,7 +59,7 @@ from layer_integral import coastline
 import commons.timerequestors as requestors
 
 clon,clat = coastline.get()
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask=Mask(args.maskfile)
 
 
 INPUTDIR  = args.inputdir
@@ -95,7 +99,8 @@ CONVERSION_DICT={
          }
 
 TI = TimeInterval('20000101','20121230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*PH.nc")
+
 
 
 req = requestors.Clim_month(args.month)
@@ -108,7 +113,7 @@ VARCONV=CONVERSION_DICT[var]
 filelist=[]
 for k in indexes:
     t = TL.Timelist[k]
-    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + ".nc"
+    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S.") + var + ".nc"
     print filename
     filelist.append(filename)
 # ----------------------------------------------------------

@@ -73,8 +73,8 @@ for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
     
     ax.set_xlim([minval,maxval])
     ax.set_ylim([minval,maxval])
-    ax.set_xlabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
-    ax.set_ylabel('REF data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
+    ax.set_ylabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
+    ax.set_xlabel('REF data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
     ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
     ax.grid(True)
     fig.savefig(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png')

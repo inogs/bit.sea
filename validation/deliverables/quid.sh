@@ -60,26 +60,41 @@ python vertical_profiles.py -m $MASKFILE -o Fig4.12/ -v O2o | grep corr > ./tabl
 # Fig 4.13, 4.14, per AC_ e DIC
 # readMAP1x1_13layer_do_CFR_carbsys.m usa questi
 # /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/MAPS/MAP1x1_13lev_' + varname +'.nc
-# che vengono generati da ricostruzione_Integrals.py di opa_rea/chain/postproc
-# che usa un maskload a parte e un aveScan che fa solo integrali, definiti qui
-# /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_13lev_1x1
+# Generazione (in una bin_13lev_1x1)
+# aveScan.py con maskload preso da carbonatics/maskload_1x1.py
+#  in getAllStatistics:
+#   - solo integrali
+#   - dopo m = SUB(sub) uscire così [if m.sum() ==0 : continue ] perché ci sono troppi sottobacini di terra
+#  in Vol_Integrals
+#   - chiamare CoreStatistics_noSort:
+python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
+
+
 
 # Fig 4.15, 4.16
 # readQUADRATI4x4_PROFILI_do_plotPROFILI_monovariate.m
-# che legge da qui
-# /pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/bin_4x4
-# i files PROF_18aree_${VAR}.nc, generati da ricostruzione_profili.py
+# che usa PROF_18aree_${VAR}.nc
+
+# Generazione (in una bin_4x4)
+# aveScan.py con maskload preso da carbonatics/maskload_4x4.py
+#  in getAllStatistics:
+#   - solo profili
+
+for var in Ac DIC O3c O3h pCO2 PH P_l; do
+    python ricostruzione_profili.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/4x4/STAT_PROFILES -m $MASKFILE -v $var
+done
+
 
 mkdir ./Fig4.17
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v PH -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v PH -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v PH -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v PH -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v PH -t mean -M $MASKFILE
 
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v pCO2 -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v pCO2 -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v pCO2 -t mean
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v pCO2 -t mean
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 2 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 5 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v pCO2 -t mean -M $MASKFILE
 
 
 --------------------------------------------------

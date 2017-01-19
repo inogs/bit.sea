@@ -18,9 +18,9 @@ python ScMYvalidation_plan.py -s $SAT_MONTHLY_DIR -i $INPUT_AGGR_DIR -m $MASKFIL
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
 # figure 4.3 and table 4.1
-mkdir fig4.3_offshore fig4.3_coast
-python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3_offshore
-python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3_coast
+mkdir -p fig4.3/offshore fig4.3/coast
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3/offshore
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3/coast
 
 python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_statics.pkl
 # table 4.3 and 4.4
@@ -32,6 +32,13 @@ python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  -l nut_layerlist
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t mean  -l nut_layerlist
+#questi poi sono da modificare in maniera da avere questi limiti :
+#N1p sempre [0,0.15], ma dai 100-150 in poi diventa [0,0.35] ,
+#N3n sempre [0,4]   , da dai 60-100  in poi diventa [0, 10]
+
+
+mkdir FigureP_c
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR -m $MASKFILE -o FigureP_c -v P_c -t mean  -l nut_layerlist
 
 
 # Figure IV.5

@@ -24,7 +24,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn','P_c'] )
     parser.add_argument(   '--layerfile', '-l',
                                 type = str,
                                 required = True,
@@ -80,6 +80,7 @@ UNITS_DICT={
          'PH'  : '',
          'pCO2': 'ppm',
          'P_l' :'mg Chl/ m^3',
+         'P_c' :'mg C/ m^3',
          'P_i' :'mg Chl/ m^3'
          }
 
@@ -90,6 +91,7 @@ CLIM_DICT={
          'PH'  : [7.9, 8.2],
          'pCO2': [300,480],
          'P_l' : [0, 0.4],
+         'P_c' : [0, 20],
          'P_i' : [0, 0.4]
          }
 
@@ -101,6 +103,7 @@ CONVERSION_DICT={
          'PH'  : 1,
          'pCO2': 1,
          'P_l' : 1,
+         'P_c' : 1,
          'P_i' : 1
          }
 

@@ -33,10 +33,16 @@ class ProfilesMatchup(matchup):
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)
         return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
 
-    def limval(self,value):
-        if sel.number() ==0:
+    def limmaxref(self,value):
+        if self.number() ==0:
             return self
         ii = (self.Ref <= value)
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
+
+    def limminmodel(self,value):
+        if self.number() ==0:
+            return self
+        ii = (self.Model >= value)
         return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
 
     def extend(self,fm):

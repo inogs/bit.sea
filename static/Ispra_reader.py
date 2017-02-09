@@ -12,8 +12,7 @@ class IspraReader():
         '''
         Reads the NetCDF Dataset
         '''
-#        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
-        self.filename="/pico/scratch/userexternal/ateruzzi/ispra2013.nc"
+        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/COASTAL/INSITU2013/ispra2013.nc"
         self.DataExtractor = IspraExtractor(self.filename)
 
 

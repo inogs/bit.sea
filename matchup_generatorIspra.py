@@ -5,7 +5,7 @@ import basins.V2 as V2
 from commons.layer import Layer
 from commons.mask import Mask
 
-from profiler import *
+from profilerIspra import *
 from instruments import var_conversions
 from static.Ispra_reader import *
 from limval_Ispra import AreasList as AreasListLim
@@ -23,10 +23,10 @@ nav_lev = TheMask.zlevels
 LIMFILE = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_17/limits17.npy'
 LIMITS = np.load(LIMFILE)
 
-area = 'allmed'
+area = 'ion3'
 
 VARLIST = ['N1p','N3n','P_l']
-#VARLIST = ['N1p']
+#VARLIST = ['N3n']
 
 #DictLimit = {
 #    'N1p': 0.3,
@@ -36,6 +36,7 @@ VARLIST = ['N1p','N3n','P_l']
 
 #SEASLIST = ['winter','spring','summer','autumn']
 SEASLIST = ['win-spr','sum-aut']
+#SEASLIST = ['win-spr']
 
 DICT_seas = {
     'winter': TimeInterval('20130101','20130331','%Y%m%d'),

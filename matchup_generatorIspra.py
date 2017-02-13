@@ -100,6 +100,10 @@ for ivar,var in enumerate(VARLIST):
         np.save(outfile,Llayer.Ref)
         outfile = OUTDIR + 'latitudes_all' + seas + var + area + '.npy'
         np.save(outfile,Llayer.Lat)
+        outfile = OUTDIR + 'longitudes_all' + seas + var + area + '.npy'
+        np.save(outfile,Llayer.Lon)
+        outfile = OUTDIR + 'names_all' + seas + var + area + '.npy'
+        np.save(outfile,Llayer.name)
         STATSall[ivar,iseas,0] = len(Llayer.Model)
         STATSall[ivar,iseas,1] = Llayer.Model.std()
         STATSall[ivar,iseas,2] = Llayer.Ref.std()
@@ -121,6 +125,10 @@ for ivar,var in enumerate(VARLIST):
         np.save(outfile,Lvalue.Ref)
         outfile = OUTDIR + 'latitudes_' + seas + var + area + '.npy'
         np.save(outfile,Lvalue.Lat)
+        outfile = OUTDIR + 'longitudes_' + seas + var + area + '.npy'
+        np.save(outfile,Lvalue.Lon)
+        outfile = OUTDIR + 'names_' + seas + var + area + '.npy'
+        np.save(outfile,Lvalue.name)
         STATS[ivar,iseas,0] = len(Lvalue.Model)
         STATS[ivar,iseas,1] = Lvalue.Model.std()
         STATS[ivar,iseas,2] = Lvalue.Ref.std()

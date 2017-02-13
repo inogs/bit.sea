@@ -7,7 +7,8 @@ from statistics import matchup
 
 
 class ProfilesMatchup(matchup):
-    def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, Time=None, Qc=None):
+#    def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, Time=None, Qc=None):
+    def __init__(self, Model=None, Ref=None, Depth=None, Lon=None, Lat=None, Time=None, Qc=None, name=None):
         if Model is None:
             self.Model = np.array([],np.float32)
             self.Ref   = np.array([],np.float32)
@@ -16,6 +17,7 @@ class ProfilesMatchup(matchup):
             self.Lat   = np.array([],np.float32)
             self.Time  = np.array([],np.float32)
             self.Qc    = np.array([],np.float32)
+            self.name  = []
             self.Lengths = []
         else:
             self.Model = Model
@@ -25,25 +27,35 @@ class ProfilesMatchup(matchup):
             self.Lat   = Lat
             self.Time  = Time
             self.Qc    = Qc
+            self.name  = name
             self.Lengths = [len(Model)]
 
     def subset(self,layer):
         if self.number() ==0:
             return self
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)
-        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
+        names = []
+        for iin,iname in enumerate(ii): 
+            if iname: names.append(self.name[iin])
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def limmaxref(self,value):
         if self.number() ==0:
             return self
         ii = (self.Ref <= value)
-        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
+        names = []
+        for iin,iname in enumerate(ii): 
+            if iname: names.append(self.name[iin])
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def limminmodel(self,value):
         if self.number() ==0:
             return self
         ii = (self.Model >= value)
-        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii])
+        names = []
+        for iin,iname in enumerate(ii): 
+            if iname: names.append(self.name[iin])
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def extend(self,fm):
         lenfm = fm.Model.size
@@ -56,6 +68,7 @@ class ProfilesMatchup(matchup):
         self.Lat   = np.concatenate((self.Lat,   fmLat))
         self.Time  = np.concatenate((self.Time,  fmTime))
         self.Qc    = np.concatenate((self.Qc,    fm.Qc ))
+        self.name.extend( [fm.instrument.name() for k in range(lenfm)] )
 
         self.Lengths.extend([ lenfm ])
 
@@ -68,6 +81,7 @@ class ProfilesMatchup(matchup):
         self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
         self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
+        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
 
 
     def plot(self,fig=None,ax=None):

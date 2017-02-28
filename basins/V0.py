@@ -7,11 +7,11 @@ alb = SimplePolygonalBasin('alb', alb, 'Alboran Sea')
 
 swm = Polygon([-1.0,  9.25,   9.25, -1.0 ],
               [32.0, 32.00,  39.50, 39.5 ])
-swm = SimplePolygonalBasin('swm', 'South West Med')
+swm = SimplePolygonalBasin('swm', swm, 'South West Med')
 
 nwm = Polygon([-1.0,9.25, 9.25,15.00,13.0, 10,-1],
               [39.5,39.5,41.25,41.25,42.5 ,46,46])
-nwm = SimplePolygonalBasin('nwm', 'North West Med')
+nwm = SimplePolygonalBasin('nwm', nwm, 'North West Med')
 
 tyr = Polygon([ 9.25,15.00,16.5,16.5,15.85,15.85,15.46875,14.6,12.5,12.5, 9.25],
               [41.25,41.25,40.0,38.6,38.20,38.30,38.21875,38.0,37.8,36.8,36.80])

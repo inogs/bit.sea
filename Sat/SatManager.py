@@ -14,11 +14,11 @@ def readfromfile(filename,var='CHL'):
     '''
     returns CHL
     ''' 
-    ncIN = NC.netcdf_file(filename,'r')
+    ncIN = netCDF4.Dataset(filename,'r')
     varObj = ncIN.variables[var]
     ndims = len(varObj.shape)
-    if ndims==2: CHL_IN=varObj.data.copy()
-    if ndims==3: CHL_IN=varObj.data[0,:,:].copy()
+    if ndims==2: CHL_IN=np.array(varObj)
+    if ndims==3: CHL_IN=np.array(varObj[0,:,:])
     del varObj
     ncIN.close()
     return CHL_IN
@@ -31,8 +31,8 @@ def readClimatology(filename):
     return MEAN,STD
 
 def readBathymetry(filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MODIS/Bathy_MODIS.nc"):
-    ncIN = NC.netcdf_file(filename,'r')
-    BATHY=ncIN.variables['bathy'].data.copy()
+    ncIN = netCDF4.Dataset(filename,'r')
+    BATHY=np.array(ncIN.variables['bathy'])
     ncIN.close()
     return BATHY
 

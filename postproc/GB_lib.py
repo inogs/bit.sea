@@ -25,7 +25,10 @@ class filename_manager():
         '''
         
         file_try1 = filename_for_timelist
-        prefix, datestr, _ = os.path.basename(filename).rsplit(".")
+        if filename_for_timelist.endswith("phys.nc"):
+            prefix, datestr,_,_=os.path.basename(filename_for_timelist).rsplit(".")
+        else:
+            prefix, datestr, _ = os.path.basename(filename_for_timelist).rsplit(".")
         
         file_try2 = AGGREGATE_AVEDIR + prefix + "." + datestr + "."  + var + ".nc"
 
@@ -93,7 +96,9 @@ def MoreRecent(file1,file2):
     return A>B
 
 def is_a_big_avefile(filename):
-    return os.path.basename(filename).count('.')==2
+    basename=os.path.basename(filename)
+    if basename.endswith("phys.nc") : return True
+    return basename.count('.')==2
 
 def getfileForRead(N1pfile, var):
     '''Can change var name in a file name

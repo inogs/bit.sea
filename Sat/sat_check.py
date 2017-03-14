@@ -5,9 +5,9 @@ import os
 
 import SatManager as Sat
 
-ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/"
-CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
-CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/SeaWifs/SatClimatology.nc"
+ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/ORIG/"
+CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"
+CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SatClimatology.nc"
 
 reset = False
 
@@ -34,6 +34,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
     if exit_condition:
         continue
     julian = int( TL_orig.Timelist[iTime].strftime("%j") )
+    if julian == 366:
+        julian = 365
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
@@ -54,10 +56,10 @@ for iTime, filename in enumerate(TL_orig.filelist):
     counter_elim = outOfRange.sum(axis = None)
     CHL_OUT[outOfRange] = Sat.fillValue 
     
-    print filename
+    print 'Done with ', filename, '  (',iTime,' of ', len(TL_orig.filelist), ')'
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpfile(outfile, CHL_OUT)
+    Sat.dump_SAT1km_nativefile(outfile, CHL_OUT)
 
 
     

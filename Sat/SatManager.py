@@ -125,18 +125,18 @@ def dumpfile(filename, CHL):
     ncvar[:] = NativeMesh.lon
     ncOUT.close()
 
-def dump_KD490_nativefile(filename, M):
+def dump_SAT1km_nativefile(filename, M, varname='KD490'):
     '''
     Used in sat check
     '''
-    mesh = masks.KD490mesh
+    mesh = masks.SAT1km_mesh
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)
     ncOUT.createDimension('depth',1)
     ncOUT.createDimension('lon',mesh.jpi)
     ncOUT.createDimension('lat',mesh.jpj)
     
-    ncvar = ncOUT.createVariable('KD490', 'f', ('time','lat','lon'))
+    ncvar = ncOUT.createVariable(varname, 'f', ('time','lat','lon'))
     chl = np.zeros((1,mesh.jpj,mesh.jpi),np.float32)
     chl[0,:,:] = M
     ncvar[:] = chl

@@ -21,5 +21,9 @@ V1mesh.lat = np.arange(30.15620,46.0312+eps, 1.0/8)
 KD490mesh = mesh(3308,1580)
 KD490mesh.lon = np.linspace(-6.0, 36.500481, 3308, endpoint=True)
 KD490mesh.lat = np.linspace(30.0, 45.998547, 1580, endpoint=True)
+
+SAT1km_mesh = mesh(3308,1580)
+SAT1km_mesh.lon = np.linspace(-6.0, 36.500481, 3308, endpoint=True)
+SAT1km_mesh.lat = np.linspace(30.0, 45.998547, 1580, endpoint=True)
 #approx values, because they have irregulare spacing
 #max error about 1.e-4 deg in longitude, 3.e-4 in latitude

@@ -11,19 +11,20 @@ from static.Ispra_reader import *
 from limval_Ispra import AreasList as AreasListLim
 from limval_Ispra import VARLIST as VARLISTlim
 from limval_Ispra import SEASLIST as SEASLISTlim
+from loadIspraDistances import statExcludeInt,statExcludeDist
 
 
 M = Matchup_Manager(ISPRA_PROFILES,TL,BASEDIR)
 
 
 OUTDIR = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_' + RUN + '/'
-MASKFILE = '/pico/scratch/userexternal/ateruzzi/DA_COAST_17/wrkdir/MODEL/meshmask.nc'
+MASKFILE = '/pico/scratch/userexternal/ateruzzi/DA_COAST_18/wrkdir/MODEL/meshmask.nc'
 TheMask = Mask(MASKFILE)
 nav_lev = TheMask.zlevels
-LIMFILE = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_17/limits17.npy'
+LIMFILE = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_18/limits18.npy'
 LIMITS = np.load(LIMFILE)
 
-area = 'ion3'
+area = 'tyr1'
 
 VARLIST = ['N1p','N3n','P_l']
 #VARLIST = ['N3n']
@@ -63,6 +64,10 @@ dictArea = {
 indarea = AreasListLim.index(area)
 
 
+# some stations to be excluded (not found..?) --> TO BE RESOLVED
+statExclude = ['12-T2_21A','12-T2_24A','12-T2_24','12-T2_21']
+
+
 nMetrics = 6
 STATS = np.ones((len(VARLIST),len(SEASLIST),nMetrics))*np.nan
 STATSall = np.ones((len(VARLIST),len(SEASLIST),nMetrics))*np.nan
@@ -81,17 +86,19 @@ for ivar,var in enumerate(VARLIST):
         print(seas)
         TI = DICT_seas[seas]
         Profilelist = N.Selector(varname,TI,dictArea[area])
+        newList = []
         for p in Profilelist:
-        #    if (p.name()=='12-T2_21') or (p.name()=='12-T2_24'): #N1p
-        #        print('removing station 12-T2_21 or 24')
-        #        Profilelist.remove(p)
-        #    if (p.name()=='12-T2_21') or (p.name()=='12-T2_24'): #N3n
-        #        print('removing station 12-T2_21 or 24')
-        #        Profilelist.remove(p)
-            if (p.name()=='12-T2_21A') or (p.name()=='12-T2_24A') or (p.name()=='12-T2_24') or (p.name()=='12-T2_21'): #P_l
-                print('removing station 12-T2_21A or 24A or 24 or 21')
-                Profilelist.remove(p)
-        L = M.getMatchups(Profilelist, nav_lev, var)
+            condexc1 = p.name().startswith('12-T2_21')
+            condexc4 = p.name().startswith('12-T2_24')
+            condexcI = p.name() in statExcludeInt
+            condexcD = p.name() in statExcludeDist
+            condexc = condexc1 | condexc4 | condexcI | condexcD
+            if condexc:
+                continue
+            else:
+                newList.append(p)
+        #L = M.getMatchups(Profilelist, nav_lev, var)
+        L = M.getMatchups(newList, nav_lev, var)
         Llayer = L.subset(layer)
         #allvalue
         outfile = OUTDIR + 'modvals_all' + RUN + seas + var + area + '.npy'

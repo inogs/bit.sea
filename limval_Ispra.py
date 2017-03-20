@@ -11,12 +11,13 @@ import basins.V2 as V2
 from instruments import lovbio_float
 from instruments import var_conversions
 from static.Ispra_reader import *
+from loadIspraDistances import statExcludeInt,statExcludeDist
 
 M = Matchup_Manager(ISPRA_PROFILES,TL,BASEDIR)
 
 
 OUTDIR = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_' + RUN + '/'
-MASKFILE = '/pico/scratch/userexternal/ateruzzi/DA_COAST_17/wrkdir/MODEL/meshmask.nc'
+MASKFILE = '/pico/scratch/userexternal/ateruzzi/DA_COAST_18/wrkdir/MODEL/meshmask.nc'
 TheMask = Mask(MASKFILE)
 nav_lev = TheMask.zlevels
 
@@ -52,6 +53,7 @@ if __name__ == '__main__':
     N = IspraReader()
     layer = Layer(0,3)
 
+    statExclude = ['12-T2_21A','12-T2_24A','12-T2_24','12-T2_21']
 
     LIMITS = np.ones((len(VARLIST),len(SEASLIST),len(AreasList)))*np.nan
     print(RUN)
@@ -67,19 +69,36 @@ if __name__ == '__main__':
                 print(seas)
                 TI = DICT_seas[seas]
                 Profilelist = N.Selector(varname,TI,dictArea[area])
+                print(len(Profilelist))
+                iexc = 0
+                iexcInt = 0
+                iexcDist = 0
+                newList = []
                 for p in Profilelist:
-                #    if (p.name()=='12-T2_21') or (p.name()=='12-T2_24'): #N1p
-                #        print('removing station 12-T2_21 or 24')
-                #        Profilelist.remove(p)
-                #    if (p.name()=='12-T2_21') or (p.name()=='12-T2_24'): #N3n
-                #        print('removing station 12-T2_21 or 24')
-                #        Profilelist.remove(p)
-                    if (p.name()=='12-T2_21A') or (p.name()=='12-T2_24A') or (p.name()=='12-T2_24') or (p.name()=='12-T2_21'): #P_l
-                        print('removing station 12-T2_21A or 24A or 24 or 21')
-                        Profilelist.remove(p)
-                L = M.getMatchups(Profilelist, nav_lev, var)
+                    #if p.name() in statExclude:
+                    #    print('removing station 12-T2_21A or 24A or 24 or 21')
+                    #    Profilelist.remove(p)
+                    #    iexc += 1
+                    condexc1 = p.name().startswith('12-T2_21')
+                    condexc4 = p.name().startswith('12-T2_24')
+                    condexcI = p.name() in statExcludeInt
+                    condexcD = p.name() in statExcludeDist
+                    condexc = condexc1 | condexc4 | condexcI | condexcD
+                    
+                    if condexc1:
+                        print(p.name())
+                        #Profilelist.remove(p)
+                        iexc += 1
+                    if condexc:
+                        continue
+                    else:
+                        newList.append(p)
+                #L = M.getMatchups(Profilelist, nav_lev, var)
+                L = M.getMatchups(newList, nav_lev, var)
                 Llayer = L.subset(layer)
                 LIMITS[ivar,iseas,iarea] = 1.2*Llayer.Model.max()
+                print(len(Profilelist),iexc,iexcInt,iexcDist)
+                print(len(newList))
                 print(LIMITS[ivar,iseas,iarea])
     
     outfile = OUTDIR + 'limits'+ RUN + '.npy'

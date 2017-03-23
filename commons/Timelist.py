@@ -26,18 +26,18 @@ class TimeList():
         (At least 2).
         '''
         nTimes = len(datelist)
-        assert  nTimes > 1
         self.Timelist = datelist
         self.Timelist.sort()
         self.nTimes   = nTimes
 
-        self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
         self.inputdir     = None
         self.searchstring = None
         self.filelist     = None
         self.filtervar    = None
-        self.inputFrequency= self.__searchFrequency()
-
+        self.inputFrequency = None
+        if (nTimes > 1 ) :
+            self.inputFrequency= self.__searchFrequency()
+            self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
     def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S"):
@@ -532,3 +532,4 @@ if __name__ == '__main__':
         TL.select(m)
     req = requestors.Monthly_req(2012,1)
     TLY.select_one(req)
+

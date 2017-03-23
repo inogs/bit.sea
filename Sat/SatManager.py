@@ -235,16 +235,14 @@ def logAverager(M):
     Inner matrix M has dimensions (nFrames, jpj, jpi )
     Performs average passing through natural logarithm
     Mean  = exp(ln(values).mean() ) 
-    At the moment works only for files on native mesh (253,733)
+    
 
     '''
     _,jpj,jpi = M.shape
-    assert jpj == NativeMesh.jpj
-    assert jpi == NativeMesh.jpi
-    CHL_OUT = np.ones((NativeMesh.jpj,NativeMesh.jpi),np.float32) * fillValue
+    CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(NativeMesh.jpi):
-        for j in range(NativeMesh.jpj):
+    for i in range(jpi):
+        for j in range(jpj):
             l = M[:,j,i]
             goodValues = l != fillValue
             if np.any(goodValues):

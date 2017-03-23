@@ -88,3 +88,25 @@ def is_valid_path(path, is_dir_check=False):
             return path
     else:
         die("'%s' is not a valid path." % (path,))
+
+
+def ticklabels_degree(ax,fsize=7):
+    '''
+    Argument : ax object (e.g. ax = fig.add_subplot())
+  
+    Modify ticklabels of ax in format degE and degN (deg is the degree symbol).
+    '''
+    degsymb = u'\xb0'
+    xticks = ax.get_xticks()
+    xticklabels = []
+    for xt in xticks:
+        xtint = np.int(xt)
+        xticklabels.append(np.str(xtint) + degsymb + 'E')
+    ax.set_xticklabels(xticklabels, fontsize=7)
+    yticks = ax.get_yticks()
+    yticklabels = []
+    for yt in yticks:
+        ytint = np.int(yt)
+        yticklabels.append(np.str(ytint) + degsymb + 'N')
+    ax.set_yticklabels(yticklabels, fontsize=7)
+

@@ -90,9 +90,15 @@ def is_valid_path(path, is_dir_check=False):
         die("'%s' is not a valid path." % (path,))
 
 
-def ticklabels_degree(ax,fsize=7):
+def ticklabels_degree(ax,fsize=7,intdeg=True):
     '''
-    Argument : ax object (e.g. ax = fig.add_subplot())
+    Argument : 
+         - ax: ax object (e.g. ax = fig.add_subplot())
+              the tick labels of ax will be modified
+         - fsize: fontsize of the tick labels (default=7)
+         - intdeg: if True the label values are integer
+                   if False the label values are decimal
+                   (default is True)
   
     Modify ticklabels of ax in format degE and degN (deg is the degree symbol).
     '''
@@ -100,13 +106,13 @@ def ticklabels_degree(ax,fsize=7):
     xticks = ax.get_xticks()
     xticklabels = []
     for xt in xticks:
-        xtint = np.int(xt)
-        xticklabels.append(np.str(xtint) + degsymb + 'E')
+        if intdeg: xt = np.int(xt)
+        xticklabels.append(np.str(xt) + degsymb + 'E')
     ax.set_xticklabels(xticklabels, fontsize=7)
     yticks = ax.get_yticks()
     yticklabels = []
     for yt in yticks:
-        ytint = np.int(yt)
-        yticklabels.append(np.str(ytint) + degsymb + 'N')
+        if intdeg: yt = np.int(yt)
+        yticklabels.append(np.str(yt) + degsymb + 'N')
     ax.set_yticklabels(yticklabels, fontsize=7)
 

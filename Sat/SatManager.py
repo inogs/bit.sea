@@ -5,7 +5,7 @@ import netCDF4
 
 
 
-NativeMesh = masks.SatOrigMesh
+NativeMesh = masks.SAT1km_mesh # SatOrigMesh
 V4 = masks.V4mesh
 fillValue = -999.0
 
@@ -183,7 +183,7 @@ def dumpV4file(filename,CHL,varname='lchlm'):
 
 def dump_simple_V4file(filename,CHL,varname='lchlm'):
     '''
-    Second argument CHL is a matrix in the native format
+    Second argument CHL is a matrix in the V4 format
     '''
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)

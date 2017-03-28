@@ -126,11 +126,11 @@ def dumpfile(filename, CHL):
     ncvar[:] = NativeMesh.lon
     ncOUT.close()
 
-def dump_SAT1km_nativefile(filename, M, varname='KD490'):
+def dumpGenericNativefile(filename, M, varname='KD490', mesh=masks.SAT1km_mesh):
     '''
     Used in sat check
     '''
-    mesh = masks.SAT1km_mesh
+    
     ncOUT  = NC.netcdf_file(filename,'w')
     ncOUT.createDimension('time', 1)
     ncOUT.createDimension('depth',1)

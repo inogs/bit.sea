@@ -16,6 +16,7 @@ def readfromfile(filename,var='CHL'):
     returns CHL
     ''' 
     ncIN = netCDF4.Dataset(filename,'r')
+    print filename
     varObj = ncIN.variables[var]
     ndims = len(varObj.shape)
     if ndims==2: CHL_IN=np.array(varObj)

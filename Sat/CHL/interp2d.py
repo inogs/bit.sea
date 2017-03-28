@@ -11,7 +11,7 @@ def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
             MaxIndex=i
             break
         MaxIndex = i
-    print "I AM HERE n=",n,MinValue,MaxValue, MinIndex, MaxIndex
+
     return MinIndex, MaxIndex
 
 def array_of_indices_for_slicing(xcoarse, xfine):

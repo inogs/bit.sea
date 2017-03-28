@@ -33,6 +33,7 @@ jpi = Sat.OneKmMesh.jpi
 jpj = Sat.OneKmMesh.jpj
 
 counter = 0
+MySize = len(TenDaysReqs[rank::nranks])
 
 for req in TenDaysReqs[rank::nranks]:
     counter = counter + 1
@@ -56,6 +57,6 @@ for req in TenDaysReqs[rank::nranks]:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
     CHL_OUT = Sat.logAverager(M)
-    Sat.dump_SAT1km_nativefile(outpathfile, CHL_OUT, varname='CHL')
+    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL')
 
-    print "\trequest ", counter, " of ", len(TenDaysReqs), " done by rank ", rank
+    print "\trequest ", counter, " of ", MySize, " done by rank ", rank

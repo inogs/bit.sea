@@ -28,8 +28,8 @@ y1km = Sat.OneKmMesh.lat
 I_START, I_END = interp2d.array_of_indices_for_slicing(x, x1km)
 J_START, J_END = interp2d.array_of_indices_for_slicing(y, y1km)
 
-INPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_Sat1km/"
-OUTPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_SatInterp24/"
+INPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_10Days_Sat1km/"
+OUTPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_10Days_SatInterp24/"
 dateformat="%Y%m%d"
 
 reset = False

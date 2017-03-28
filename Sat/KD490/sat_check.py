@@ -59,7 +59,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     print filename
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dump_SAT1km_nativefile(outfile, CHL_OUT)
+    Sat.dumpGenericNativefile(outfile, CHL_OUT)
 
 
     

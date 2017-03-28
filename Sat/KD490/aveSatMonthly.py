@@ -38,4 +38,4 @@ for req in MONTHLY_reqs:
         CHL = Sat.readfromfile(inputfile,'KD490')
         M[iFrame,:,:] = CHL
     Kext_OUT = Sat.averager(M)
-    Sat.dump_SAT1km_nativefile(outpathfile, Kext_OUT)
+    Sat.dumpGenericNativefile(outpathfile, Kext_OUT)

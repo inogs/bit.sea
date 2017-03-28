@@ -16,7 +16,7 @@ except:
     isParallel = False
 
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"
-WEEKLYDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/CheckedWeeklySat_1km/"
+WEEKLYDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_Sat1km/"
 
 reset = False
 
@@ -33,6 +33,7 @@ jpi = Sat.OneKmMesh.jpi
 jpj = Sat.OneKmMesh.jpj
 
 counter = 0
+MySize = len(WEEK_reqs[rank::nranks])
 
 for req in WEEK_reqs[rank::nranks]:
     counter = counter + 1
@@ -56,6 +57,6 @@ for req in WEEK_reqs[rank::nranks]:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
     CHL_OUT = Sat.logAverager(M)
-    Sat.dump_SAT1km_nativefile(outpathfile, CHL_OUT, varname='CHL')
+    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL')
 
-    print "\trequest ", counter, " of ", len(WEEK_reqs), " done by rank ", rank
+    print "\trequest ", counter, " of ", MySize, " done by rank ", rank

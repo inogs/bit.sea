@@ -5,7 +5,8 @@ import netCDF4
 
 
 
-NativeMesh = masks.SAT1km_mesh # SatOrigMesh
+NativeMesh = masks.SatOrigMesh
+OneKmMesh  = masks.SAT1km_mesh
 V4 = masks.V4mesh
 fillValue = -999.0
 

@@ -29,8 +29,8 @@ IOname = IOnames.IOnames(IonamesFile)
 
 TenDaysReqs = TLCheck.getSpecificIntervalList(deltastr='days=10', starttime="19500101-12:00:00")
 
-jpi = Sat.NativeMesh.jpi
-jpj = Sat.NativeMesh.jpj
+jpi = Sat.OneKmMesh.jpi
+jpj = Sat.OneKmMesh.jpj
 
 counter = 0
 
@@ -56,6 +56,6 @@ for req in TenDaysReqs[rank::nranks]:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
     CHL_OUT = Sat.logAverager(M)
-    Sat.dumpfile(outpathfile, CHL_OUT)
+    Sat.dump_SAT1km_nativefile(outpathfile, CHL_OUT, varname='CHL')
 
-    print "\trequest ", counter, " of ", len(TenDaysReqs), " done"
+    print "\trequest ", counter, " of ", len(TenDaysReqs), " done by rank ", rank

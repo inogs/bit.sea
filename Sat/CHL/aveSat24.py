@@ -4,16 +4,23 @@ from commons import IOnames
 import numpy as np
 import os
 import SatManager as Sat
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
 
-# CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
-# WEEKLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/"
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"
 WEEKLYDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/CheckedWeeklySat_1km/"
 
 reset = False
 
-# Timestart="19500101"
-Timestart="20011127"
+Timestart="19500101"
 Time__end="20500101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
@@ -22,12 +29,12 @@ IOname = IOnames.IOnames(IonamesFile)
 
 WEEK_reqs=TLCheck.getWeeklyList(2)
 
-jpi = Sat.NativeMesh.jpi
-jpj = Sat.NativeMesh.jpj
+jpi = Sat.OneKmMesh.jpi
+jpj = Sat.OneKmMesh.jpj
 
 counter = 0
 
-for req in WEEK_reqs:
+for req in WEEK_reqs[rank::nranks]:
     counter = counter + 1
     
     outfile = req.string + IOname.Output.suffix + ".nc"
@@ -49,6 +56,6 @@ for req in WEEK_reqs:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
     CHL_OUT = Sat.logAverager(M)
-    Sat.dumpfile(outpathfile, CHL_OUT)
+    Sat.dump_SAT1km_nativefile(outpathfile, CHL_OUT, varname='CHL')
 
-    print "\trequest ", counter, " of ", len(WEEK_reqs), " done"
+    print "\trequest ", counter, " of ", len(WEEK_reqs), " done by rank ", rank

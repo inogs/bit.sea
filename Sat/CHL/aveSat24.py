@@ -57,6 +57,6 @@ for req in WEEK_reqs[rank::nranks]:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
     CHL_OUT = Sat.logAverager(M)
-    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL')
+    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=Sat.OneKmMesh)
 
     print "\trequest ", counter, " of ", MySize, " done by rank ", rank

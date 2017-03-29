@@ -40,7 +40,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
     CHL_IN = Sat.readfromfile(filename)
-    CHL_IN[581:,164:] = Sat.fillValue # BLACK SEA
+    # CHL_IN[581:,164:] = Sat.fillValue # BLACK SEA
     cloudsLandTIME = CHL_IN         == Sat.fillValue
     cloudlandsCLIM = DAILY_REF_MEAN == Sat.fillValue
     
@@ -59,7 +59,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     print 'Done with ', filename, '  (',iTime,' of ', len(TL_orig.filelist), ')'
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL")
+    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL", mesh=Sat.OneKmMesh)
 
 
     

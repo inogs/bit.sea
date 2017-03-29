@@ -127,7 +127,7 @@ def dumpfile(filename, CHL):
     ncvar[:] = NativeMesh.lon
     ncOUT.close()
 
-def dumpGenericNativefile(filename, M, varname='KD490', mesh=masks.SAT1km_mesh):
+def dumpGenericNativefile(filename, M, varname='KD490', mesh=masks.KD490mesh):
     '''
     Used in sat check
     '''

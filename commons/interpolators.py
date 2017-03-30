@@ -19,8 +19,8 @@ def surf_interp_2d(Mask1, Mask2, Map2d):
     nP = tmask1.sum()
     points = np.zeros((nP,2), np.float32)
      
-    points[:,0] = Mask16.xlevels[tmask1]
-    points[:,1] = Mask16.ylevels[tmask1]
+    points[:,0] = Mask1.xlevels[tmask1]
+    points[:,1] = Mask1.ylevels[tmask1]
     values = Map2d[tmask1]
     MAP2d_nearest =griddata( points, values, (Mask2.xlevels, Mask2.ylevels), 'nearest', fill_value=np.nan)
     MAP2d_nearest[~tmask2]=np.nan

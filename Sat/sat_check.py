@@ -1,13 +1,56 @@
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
+from postproc import masks
 import numpy as np
+import argparse
 import os
 
 import SatManager as Sat
 
-ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/ORIG/"
-CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"
-CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SatClimatology.nc"
+
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Apply check based on climatology to sat ORIG files
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--origdir', '-i',
+                                type = str,
+                                required = True,
+                                help = ''' ORIG sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/'''
+
+                                )
+
+    parser.add_argument(   '--checkdir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' CHECKED sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/'''
+
+                                )
+
+    parser.add_argument(   '--climfile', '-c',
+                                type = str,
+                                required = True,
+                                help = ''' Climatology .nc file used to apply check on sat data, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI02/SatClimatology.nc'''
+
+                                )
+
+    parser.add_argument(   '--mesh', '-m',
+                                type = str,
+                                required = True,
+                                help = ''' Name of the mesh of sat ORIG and used to dump checked data. The name can be one of those defined in postproc.masks, e.g. SatOrigMesh, SAT1km_mesh '''
+                                )
+
+    return parser.parse_args()
+
+args = argument()
+
+
+ORIGDIR = args.origdir
+CHECKDIR = args.checkdir
+CLIM_FILE = args.climfile
+
+maskSat = getattr(masks,args.mesh)
 
 reset = False
 
@@ -59,14 +102,6 @@ for iTime, filename in enumerate(TL_orig.filelist):
     print 'Done with ', filename, '  (',iTime,' of ', len(TL_orig.filelist), ')'
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL")
-
-
-    
-     
-    
-
-
-
+    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
 
 

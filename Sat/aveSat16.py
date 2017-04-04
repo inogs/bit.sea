@@ -2,11 +2,39 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons import IOnames
 import numpy as np
+import argparse
 import os
 import SatManager as Sat
 
-CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/"
-WEEKLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/"
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Apply check based on climatology to sat ORIG files
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--checkdir', '-i',
+                                type = str,
+                                required = True,
+                                help = ''' CHECKED sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/CHECKED/'''
+
+                                )
+
+    parser.add_argument(   '--weeklydir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' CHECKED sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/WEEKLY/'''
+
+                                )
+
+
+    return parser.parse_args()
+
+args = argument()
+
+
+
+CHECKDIR = args.checkdir
+WEEKLYDIR= args.weeklydir
 
 reset = False
 

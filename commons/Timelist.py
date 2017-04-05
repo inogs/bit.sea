@@ -16,6 +16,7 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
     if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
+    if (freqString == '10days'):  req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,'days=10')
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 class TimeList():
@@ -123,7 +124,7 @@ class TimeList():
 
     def __searchFrequency(self):
         '''
-        Returns strings: 'daily','weekly','monthly','hourly'
+        Returns strings: 'daily','weekly','monthly','hourly','10days'
         '''
         if len(self.Timelist)<2:
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
@@ -149,6 +150,10 @@ class TimeList():
             return "hourly"
         if (days > 364 ) & (days < 367): 
             return "yearly"
+        if days == 10:
+            return "10days"
+        else:
+            raise NotImplementedError
             #hours = mydiff.seconds/3600
             #we want an integer number of hours
             #if (float(mydiff.seconds)/3600. == hours):
@@ -163,7 +168,7 @@ class TimeList():
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
-            if self.inputFrequency in ['weekly','monthly','yearly']:
+            if self.inputFrequency in ['weekly','monthly','yearly','10days']:
                 for it, t in enumerate(self.Timelist):
                     t1 = computeTimeWindow(self.inputFrequency,t);
                     t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
@@ -233,6 +238,14 @@ class TimeList():
                     if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
+            if self.inputFrequency == '10days':
+                for it,t in enumerate(self.Timelist):
+                    t1 = computeTimeWindow("10days",t);
+                    t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
+                    weight = t1.overlapTime(t2);
+                    if (weight > 0. ) :
+                        SELECTION.append(it)
+                        weights.append(weight)
             if self.inputFrequency == 'monthly':
                 #print "Not time aggregation"
                 for it,t in enumerate(self.Timelist):
@@ -245,6 +258,7 @@ class TimeList():
         if isinstance(requestor, requestors.Weekly_req):
             assert self.inputFrequency != "monthly"
             assert self.inputFrequency != "weekly"
+            assert self.inputFrequency != "10days"
 
             SELECTION=[]
             weights  =[]
@@ -440,6 +454,9 @@ class TimeList():
         if self.inputFrequency == 'daily':
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Daily_req(t.year,t.month,t.day))
+        if self.inputFrequency == '10days':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.Interval_req(t.year, t.month, t.day, 'days=10'))
         if self.inputFrequency == 'monthly':
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Monthly_req(t.year, t.month))
@@ -449,6 +466,8 @@ class TimeList():
         if self.inputFrequency == 'yearly' :
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Yearly_req(t.year))
+        if self.inputFrequency == None:
+            raise NotImplementedError
         return REQ_LIST
 
 
@@ -495,6 +514,13 @@ class TimeList():
 
 
 if __name__ == '__main__':
+    TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=10")
+    TTL     = TimeList(TenDays)
+    MyReqList = TTL.getMonthlist()
+    for req in MyReqList:
+        ii,weights = TTL.select(req)
+        # print "\nii = ", ii, "\nw = ", weights
+
     yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
     TLY = TimeList(yearly)
     REQSY=TLY.getOwnList()

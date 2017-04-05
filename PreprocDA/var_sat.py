@@ -1,6 +1,7 @@
 import numpy as np
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
+import SatManager as Sat
 
 def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
   """
@@ -28,23 +29,25 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
 
   for req in MONTHLY_reqs:
     ii, w = TLCheck.select(req)
-    #print req, "\tYear:", req.year, "\tMonth req.month", " ii = ", ii, " w = ", w
-    if req.year == 2015 : #and req.month == 11:
-      ii, w = TLCheck.select(req)
+    
+    # print req," ii = ", ii, " w = ", w
+    if req.year == 2015 and req.month == 11:
+
       nFiles = len(ii)
       M = np.zeros((nFiles,jpj,jpi),np.float32)
       print nFiles, "\t", ii
       for iFrame, j in enumerate(ii):
           inputfile = TLCheck.filelist[j]
+          # print inputfile
           CHL = Sat.readfromfile(inputfile,'CHL')
+          # print "MYSHAPE = ", CHL.shape, M.shape
           M[iFrame,:,:] = CHL
 
-  print "\n\tDone :)\n", INDIR
+  print "\n\tDone :)\n"
 
 if __name__ == "__main__":
 
     from postproc.masks import Mesh24
-    # print "pippo"
 
     INDIR  = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/Checked_10Days_SatInterp24/"
     OUTDIR = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/VarSat10Days/"

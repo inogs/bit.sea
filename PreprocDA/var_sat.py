@@ -13,24 +13,40 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
 
   Timestart="19500101"
   Time__end="20500101"
+
   TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
   TLCheck = TimeList.fromfilenames(TI, INDIR,"*.nc",prefix='',dateformat='%Y%m%d')
   MONTHLY_reqs=TLCheck.getMonthlist()
 
+  print "number of requests: ", len(MONTHLY_reqs), " inputFreq: ", TLCheck.inputFrequency
+
   jpi = MyMesh.jpi
   jpj = MyMesh.jpj
 
-  for req in MONTHLY_reqs:  
-    print req, "\tYear:", req.year, "\tMonth", req.month 
+  Chl = np.zeros((jpi,jpj,12), dtype=float)
+  ChlSquare = np.zeros((jpi,jpj,12), dtype=float)
 
-  print "\n\tDone :)\n"
+  for req in MONTHLY_reqs:
+    ii, w = TLCheck.select(req)
+    #print req, "\tYear:", req.year, "\tMonth req.month", " ii = ", ii, " w = ", w
+    if req.year == 2015 : #and req.month == 11:
+      ii, w = TLCheck.select(req)
+      nFiles = len(ii)
+      M = np.zeros((nFiles,jpj,jpi),np.float32)
+      print nFiles, "\t", ii
+      for iFrame, j in enumerate(ii):
+          inputfile = TLCheck.filelist[j]
+          CHL = Sat.readfromfile(inputfile,'CHL')
+          M[iFrame,:,:] = CHL
+
+  print "\n\tDone :)\n", INDIR
 
 if __name__ == "__main__":
 
     from postproc.masks import Mesh24
     # print "pippo"
 
-    INDIR  = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/Checked_10Days_SatInterp24"
+    INDIR  = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/Checked_10Days_SatInterp24/"
     OUTDIR = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/VarSat10Days/"
     limstd = 2
     dayF   = 10

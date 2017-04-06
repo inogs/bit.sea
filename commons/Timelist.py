@@ -252,6 +252,9 @@ class TimeList():
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
+            else:
+                raise NotImplementedError
+                
             return SELECTION , np.array(weights)
 
 

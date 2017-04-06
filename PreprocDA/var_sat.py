@@ -3,6 +3,8 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons.timerequestors import Clim_month
 import SatManager as Sat
+import netCDF4
+
 
 def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
   """
@@ -27,7 +29,13 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
 
   Chl = np.zeros((12,jpj,jpi), dtype=float)
   ChlSquare = np.zeros((12,jpj,jpi), dtype=float)
-  Var2D = np.zeros((12,jpj,jpi), dtype=float)
+
+  # get fillValue assuming that all files in the
+  # folder have the same fillValue
+  ncIN = netCDF4.Dataset(TLCheck.filelist[0],'r')
+  varObj = ncIN.variables['CHL']
+  fillValue = varObj.getncattr('_FillValue')
+  ncIN.close()
 
   for req in MONTHLY_reqs:
     ii, w = TLCheck.select(req)
@@ -39,15 +47,27 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]
         CHL = Sat.readfromfile(inputfile,'CHL')
+        TmpMat = np.zeros(CHL.shape)
         M[iFrame,:,:]  = CHL
-        M2[iFrame,:,:] = CHL*CHL
+
+        MyMask = np.where(CHL==fillValue)
+        TmpMat = CHL*CHL
+        TmpMat[MyMask] = fillValue
+        M2[iFrame,:,:] = TmpMat
     
     MonthIndex = req.month-1
     Chl[MonthIndex,:,:] = Sat.WeightedAverager(M,w)
     ChlSquare[MonthIndex,:,:] = Sat.WeightedAverager(M2,w)
 
   for ii in range(0,12):
-    Var2D = ChlSquare[ii,:,:] - Chl[ii,:,:]
+    # computing variance
+    Var2D = ChlSquare[ii,:,:] - Chl[ii,:,:]*Chl[ii,:,:]
+    
+    # filling missing points
+    MyMask = np.where(ChlSquare[ii,:,:] == fillValue)
+    Var2D[MyMask]  = fillValue
+    
+    # saving results
     MonthStr = '%02d'%(ii+1)
     fname = 'var2Dsat.CCI.F'+str(dayF)+'.'+str(limstd)+'.'+MonthStr+".nc"
     filename = OUTDIR+fname

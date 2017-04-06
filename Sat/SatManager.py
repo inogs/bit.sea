@@ -275,7 +275,7 @@ def averager(M):
 
 def WeightedAverager(M, w):
     '''
-    Inner matrix M has dimensions (nFrames, jpj, jpi )
+    Inner matrix M has dimensions (nFrames, jpj, jpi ), while w has dimension (nFrames)
     Performs a weighted average on present values (avoiding fillvalues)
 
     '''

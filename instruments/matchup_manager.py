@@ -109,8 +109,8 @@ class Matchup_Manager():
         os.system("mkdir " + TMPSDIR)
         os.chmod(profilername, 0755)
         os.system(profilername)
-
-    def readModelProfile(self, filename,var, wmo):
+    @staticmethod
+    def readModelProfile(filename,var, wmo):
         '''
         Reads profiles produced by aveScan.py.
         In these files each variable has dimensions (jpk, nProfiles)

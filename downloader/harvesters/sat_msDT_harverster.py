@@ -16,7 +16,7 @@ ftp_url = 'cmems-oc.isac.cnr.it'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT/MULTISENSOR/DAILY/ORIG/"
+relative_path = "SAT/MULTISENSOR/DAILY/DT/ORIG/"
 
 
 class Sat_MS_Harvester(HarvesterInterface):
@@ -28,8 +28,8 @@ class Sat_MS_Harvester(HarvesterInterface):
         """
         Download all the files inside a remote directory of the ftp server
         whose modification date is after the modification date of the last
-        file in the local dir. Do not download the files if the contain
-        '-NRT-' in their name.
+        file in the local dir. Download the files if the contain
+        '-DT-' in their name.
 
         Args:
             - *db_path*: the path of the directory set in the download program.
@@ -72,7 +72,7 @@ class Sat_MS_Harvester(HarvesterInterface):
             for year in years:
                 connection.cwd(year)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+                files_to_be_downloaded = [f for f in files if '-DT-' in f]
                 for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
                                       log, perms, False)
@@ -89,7 +89,7 @@ class Sat_MS_Harvester(HarvesterInterface):
             # file and download every file which is newer than that
             connection.cwd(str(last_year))
             files, _, perms = list_files(connection)
-            files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+            files_to_be_downloaded = [f for f in files if '-DT-' in f]
             for f in files_to_be_downloaded:
                 if f > last_file:
                     d = download_file(connection, f, path,
@@ -102,7 +102,7 @@ class Sat_MS_Harvester(HarvesterInterface):
             for year in new_years:
                 connection.cwd(year)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if not '-NRT-' in f]
+                files_to_be_downloaded = [f for f in files if '-DT-' in f]
                 for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
                                       log, perms, True, True)
@@ -127,7 +127,7 @@ class Sat_MS_Harvester(HarvesterInterface):
         """
         Download all the files inside a remote directory of the ftp server. If the
         file is already present on the local directory, rewrite it. Do not download
-        the file that contain the string '-NRT' in their filename.
+        the file that contain the string '-DT' in their filename.
 
         Args:
             - *db_path*: the path of the directory set in the download program.

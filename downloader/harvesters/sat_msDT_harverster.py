@@ -16,10 +16,10 @@ ftp_url = 'cmems-oc.isac.cnr.it'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT/MULTISENSOR/DAILY/DT/ORIG/"
+relative_path = "SAT/MULTISENSOR/DT/DAILY/ORIG/"
 
 
-class Sat_MS_Harvester(HarvesterInterface):
+class Sat_msDT_Harvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files from the
     ftp server myocean.artov.isac.cnr.it.

@@ -273,6 +273,27 @@ def averager(M):
                 CHL_OUT[j,i] = l[goodValues].sum() / count
     return CHL_OUT
 
+def WeightedAverager(M, w):
+    '''
+    Inner matrix M has dimensions (nFrames, jpj, jpi )
+    Performs a weighted average on present values (avoiding fillvalues)
+
+    '''
+    _,jpj,jpi = M.shape
+    #assert jpj == NativeMesh.jpj
+    #assert jpi == NativeMesh.jpi
+    CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
+
+    for i in range(jpi):
+        for j in range(jpj):
+            l = M[:,j,i]
+            goodValues = l != fillValue
+            MyWeights = w[goodValues]
+            if np.any(goodValues):
+                count = MyWeights.sum()
+                CHL_OUT[j,i] = (w[goodValues]*l[goodValues]).sum() / count
+    return CHL_OUT
+
 def getnextIndex(array,value):
     for i,val in enumerate(array):
         if val>value:

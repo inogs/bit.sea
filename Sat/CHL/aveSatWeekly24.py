@@ -16,7 +16,7 @@ except:
     isParallel = False
 
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"
-WEEKLYDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_Sat1km/"
+WEEKLYDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_Sat1kmFriday/"
 
 reset = False
 

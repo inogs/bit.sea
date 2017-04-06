@@ -3,7 +3,7 @@ from commons.time_interval import TimeInterval
 from commons import IOnames
 import numpy as np
 import os
-import SatManager as Sat
+import Sat.SatManager as Sat
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD

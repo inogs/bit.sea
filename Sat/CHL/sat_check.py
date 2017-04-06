@@ -3,7 +3,7 @@ from commons.time_interval import TimeInterval
 import numpy as np
 import os
 
-import SatManager as Sat
+import Sat.SatManager as Sat
 
 ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/ORIG/"
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI_1km/DAILY/CHECKED/"

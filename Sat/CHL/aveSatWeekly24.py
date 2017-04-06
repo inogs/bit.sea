@@ -27,7 +27,7 @@ TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%
 IonamesFile = '../../postproc/IOnames_sat.xml'
 IOname = IOnames.IOnames(IonamesFile)
 
-WEEK_reqs=TLCheck.getWeeklyList(2)
+WEEK_reqs=TLCheck.getWeeklyList(5)
 
 jpi = Sat.OneKmMesh.jpi
 jpj = Sat.OneKmMesh.jpj

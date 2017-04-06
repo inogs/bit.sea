@@ -31,7 +31,6 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
 
   for req in MONTHLY_reqs:
     ii, w = TLCheck.select(req)
-    print ii, "\n"
   
     nFiles = len(ii)
     M  = np.zeros((nFiles,jpj,jpi),np.float32)
@@ -48,7 +47,12 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
     ChlSquare[MonthIndex,:,:] = Sat.WeightedAverager(M2,w)
 
   for ii in range(0,12):
-    Var2D = ChlSquare(ii,0:,0:) - Chl(ii,0:,0:)
+    Var2D = ChlSquare[ii,0:,0:] - Chl[ii,0:,0:]
+    MonthStr = '%02d'%(ii+1)
+    fname = 'var2Dsat.CCI.F'+str(dayF)+'.'+str(limstd)+'.'+MonthStr+".nc"
+    filename = OUTDIR+fname
+    print "\tsaving ", fname
+    Sat.dumpGenericNativefile(filename,Var2D,varname='variance',mesh=MyMesh)
 
   print "\n\tDone :)\n"
 

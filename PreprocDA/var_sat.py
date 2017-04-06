@@ -47,7 +47,7 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
     ChlSquare[MonthIndex,:,:] = Sat.WeightedAverager(M2,w)
 
   for ii in range(0,12):
-    Var2D = ChlSquare[ii,0:,0:] - Chl[ii,0:,0:]
+    Var2D = ChlSquare[ii,:,:] - Chl[ii,:,:]
     MonthStr = '%02d'%(ii+1)
     fname = 'var2Dsat.CCI.F'+str(dayF)+'.'+str(limstd)+'.'+MonthStr+".nc"
     filename = OUTDIR+fname

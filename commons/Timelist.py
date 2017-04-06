@@ -230,6 +230,7 @@ class TimeList():
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)
                         weights.append(1.)
+                return SELECTION , np.array(weights)
             if self.inputFrequency == 'weekly':
                 for it,t in enumerate(self.Timelist):
                     t1 = computeTimeWindow("weekly",t);
@@ -238,6 +239,7 @@ class TimeList():
                     if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
+                return SELECTION , np.array(weights)
             if self.inputFrequency == '10days':
                 for it,t in enumerate(self.Timelist):
                     t1 = computeTimeWindow("10days",t);
@@ -246,16 +248,16 @@ class TimeList():
                     if (weight > 0. ) :
                         SELECTION.append(it)
                         weights.append(weight)
+                return SELECTION , np.array(weights)
             if self.inputFrequency == 'monthly':
                 #print "Not time aggregation"
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
+                return SELECTION , np.array(weights)
             else:
                 raise NotImplementedError
-                
-            return SELECTION , np.array(weights)
 
 
         if isinstance(requestor, requestors.Weekly_req):

@@ -4,7 +4,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates time series png files for mdeeaf web site.
     Each file has 3 subplots: bias, rms and number of points.
-    At each run time becomes longer.
+    The time window is 18 months.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -43,9 +43,14 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab as pl
 import matplotlib.dates as mdates
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
 from basins import V2 as OGS
 
-TI_V1 = TimeInterval('20150407','20160607','%Y%m%d')
+Graphic_DeltaT = relativedelta(months=18)
+datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
+timestart = datestart.strftime("%Y%m%d")
+TI_V1 = TimeInterval(timestart,'20160607','%Y%m%d')
 TI_V2 = TimeInterval('20160412', args.date,'%Y%m%d')
 ARCHIVE_DIR      = addsep(args.archivedir) #"/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/V2-dev"
 ARCHIVE_PREV     = addsep(args.previous_archive)   #r"/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/V4"
@@ -69,6 +74,7 @@ coast='open_sea'
 for sub in OGS.P:
     print sub.name
     outfile=OUTFIG_DIR + "NRTvalidation_chlsup_" + sub.name + "_" + coast + ".png"
+    #matplotlib.rc('xtick', labelsize=12)
     fig, (ax1, ax2, ax3) = pl.subplots(3, sharex=True, figsize=(15,10)) 
     # BIAS
     # v1 
@@ -84,7 +90,6 @@ for sub in OGS.P:
     ax1.set_ylabel('BIAS mg/m$^3$', fontsize=14)
     ax1.legend(bbox_to_anchor=(.31,1.15), fontsize = 12)
     ax1.xaxis.set_major_locator(mdates.MonthLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%m-%y"))
     ax1.grid(True)
     
     #RMS
@@ -99,7 +104,6 @@ for sub in OGS.P:
     ax2.set_ylabel('RMS mg/m$^3$',fontsize=14)
     ax2.legend(bbox_to_anchor=(.15,1.05), fontsize = 14)
     ax2.xaxis.set_major_locator(mdates.MonthLocator())
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%m-%y"))
     ax2.grid(True)
 
 

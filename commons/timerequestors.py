@@ -31,11 +31,24 @@ class Clim_season():
         
         '''
         assert season in range(seasonobj.get_seasons_number())
+        self.seasonobj = seasonobj
         self.season=season
         a=Season_req(2000,season,seasonobj)
         self.string = a.longname
     def __repr__(self):
         return "Climatologic Seasonal requestor object : "  + self.string
+
+    def contains(self,time):
+        '''
+        Argument:
+        * time * : a datetime object
+        Returns:
+           True if time is inside every time interval of the season
+        '''
+        yearly_date = datetime.datetime(self.seasonobj._reference_year, time.month, time.day, time.hour, time.minute, time.second)
+        TI, nameseas = self.seasonobj.get_season_dates(self.season)
+        return TI.contains(yearly_date)
+
 
 class Clim_month():
     '''

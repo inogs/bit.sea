@@ -5,6 +5,9 @@ from instruments.instrument import ContainerProfile
 import seawater
 from seawater.library import T90conv
 from commons.utils import find_index
+from commons.time_interval import TimeInterval
+from commons import timerequestors
+
 
 class DatasetExtractor():
     
@@ -57,11 +60,11 @@ class DatasetExtractor():
         '''
         Returns a profile list by selecting for
           variable (string),
-          T_int   (TimeInterval object)
+          T_int   (TimeInterval or timerequestors.Clim_season object)
           region  (region object)
 
          '''
-
+        assert isinstance(T_int, (TimeInterval, timerequestors.Clim_season))
         ivar  = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:]
         units = self.UNITS[ivar,:].tostring()

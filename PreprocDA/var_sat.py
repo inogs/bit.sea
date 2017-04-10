@@ -2,7 +2,7 @@ import numpy as np
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons.timerequestors import Clim_month
-import SatManager as Sat
+import Sat.SatManager as Sat
 import netCDF4
 
 

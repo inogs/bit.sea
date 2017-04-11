@@ -69,7 +69,12 @@ def var_sat_CCI_10gg(limstd, dayF, MyMesh, INDIR, OUTDIR):
     
     # saving results
     MonthStr = '%02d'%(ii+1)
-    fname = 'var2Dsat.CCI.F'+str(dayF)+'.'+str(limstd)+'.'+MonthStr+".nc"
+    if OUTDIR[-1]=="/":
+      fname = 'var2Dsat.CCI.F'
+    else:
+      fname = '/var2Dsat.CCI.F'
+    
+    fname += str(dayF)+'.'+str(limstd)+'.'+MonthStr+".nc"
     filename = OUTDIR+fname
     print "\tsaving ", fname
     Sat.dumpGenericNativefile(filename,Var2D,varname='variance',mesh=MyMesh)

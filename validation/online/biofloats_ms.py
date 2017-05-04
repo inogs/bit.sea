@@ -38,7 +38,7 @@ args = argument()
 
 from commons import timerequestors
 from basins import V2 as OGS
-from instruments import bio_float
+from instruments import lovbio_float as bio_float
 from instruments.var_conversions import FLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 from commons.Timelist import TimeList
@@ -49,6 +49,7 @@ from matchup.statistics import matchup
 import datetime
 import scipy.io.netcdf as NC
 from commons.utils import addsep
+from basins.region import Rectangle
 
 TheMask  = Mask(args.maskfile)
 BASEDIR =  addsep(args.basedir)
@@ -69,8 +70,9 @@ RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
 TI =R.time_interval
-TL = TimeList.fromfilenames(TI, BASEDIR, "ave*nc")
-M = Matchup_Manager(TI,TL,BASEDIR)
+TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
+ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
 for ivar, var in enumerate(VARLIST):

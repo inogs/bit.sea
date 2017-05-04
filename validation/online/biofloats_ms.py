@@ -4,7 +4,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates float validation data on a single week, from one single chain run.
     Week is centered on tuesday.
-    Produces a single file, containing bias, rmse and number of measurments for each subbasin and layer
+    Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
     for chlorophyll, nitrate and oxygen.
     In this approach we define the measurement as mean on layer of the float profile values.
     ''', formatter_class=argparse.RawTextHelpFormatter)
@@ -19,10 +19,6 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'dir containing PROFILES/')
-    parser.add_argument(   '--inputdir','-i',
-                                type = str,
-                                required = True,
-                                help = 'dir containg big ave files')
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
@@ -45,6 +41,7 @@ from basins import V2 as OGS
 from instruments import bio_float
 from instruments.var_conversions import FLOATVARS
 from instruments.matchup_manager import Matchup_Manager
+from commons.Timelist import TimeList
 from commons.mask import Mask
 from commons.layer import Layer
 import numpy as np
@@ -55,7 +52,6 @@ from commons.utils import addsep
 
 TheMask  = Mask(args.maskfile)
 BASEDIR =  addsep(args.basedir)
-INPUTDIR = addsep(args.inputdir)
 outfile  = args.outfile
 datestr  = args.date
 d = datetime.datetime.strptime(datestr,'%Y%m%d')
@@ -73,7 +69,8 @@ RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
 TI =R.time_interval
-M = Matchup_Manager(TI,INPUTDIR,BASEDIR)
+TL = TimeList.fromfilenames(TI, BASEDIR, "ave*nc")
+M = Matchup_Manager(TI,TL,BASEDIR)
 
 
 for ivar, var in enumerate(VARLIST):

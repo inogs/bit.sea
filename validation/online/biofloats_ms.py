@@ -39,7 +39,7 @@ args = argument()
 from commons import timerequestors
 from basins import V2 as OGS
 from instruments import lovbio_float as bio_float
-from instruments.var_conversions import FLOATVARS
+from instruments.var_conversions import LOVFLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 from commons.Timelist import TimeList
 from commons.mask import Mask
@@ -78,7 +78,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 for ivar, var in enumerate(VARLIST):
     print var
     for isub, sub in enumerate(OGS.NRT3):
-        Profilelist = bio_float.FloatSelector(FLOATVARS[var], TI, sub)
+        Profilelist = bio_float.FloatSelector(LOVFLOATVARS[var], TI, sub)
         nProfiles = len(Profilelist)
         print sub.name, nProfiles
         Matchup_object_list=[]

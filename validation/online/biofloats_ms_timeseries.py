@@ -90,7 +90,8 @@ class timelistcontainer():
 
 if __name__ == '__main__':
     from commons.time_interval import TimeInterval
-    TI = TimeInterval("20150608","20160101","%Y%m%d")
-    ARCHIVEDIR="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/"
-    A = timelistcontainer(TI,ARCHIVEDIR)
-    A.plotdata(A.bias, 'P_i','tyr', '10-30m')
+    TI = TimeInterval("20160412","20170502","%Y%m%d")
+#    ARCHIVEDIR="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/"
+    ARCHIVEDIR="/pico/scratch/userexternal/lfeudale/ANALYSIS/NRT3_outputs/"
+    A = timelistcontainer(TI,ARCHIVEDIR,postfix_dir="dir1/dir2/")
+    A.plotdata(A.bias, 'P_l','tyr', '10-30m')

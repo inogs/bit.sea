@@ -67,7 +67,7 @@ def argument():
                                 ''') 
     parser.add_argument(   '--pointlist',"-p",
                                 type = str,
-                                help = '''Path of the text file listing the points where extract point profiles''')             
+                                help = '''Path of the text file listing the the points where extract point profiles''')             
     parser.add_argument(   '--ionames',
                                 type = str,
                                 default="IOnames.xml",
@@ -81,6 +81,7 @@ def argument():
 args = argument()
 
 import scipy.io.netcdf as NC
+from commons.dataextractor import DataExtractor
 import glob
 import os
 import numpy as np
@@ -302,8 +303,11 @@ def getColumnIntegrals(var, objfileI):
             coast = COASTNESS_LIST[icoast]
             smask = m & COASTNESS[coast]
             Cdz   = VAR*dZ*smask
-            Int_Cdz = np.nansum(Cdz,axis=0)                        
-            INTEGRALS[isub,icoast,iDepth,iStat] = Int_Cdz[smask[0,:,:]].mean(axis=None)
+            Int_Cdz = np.nansum(Cdz,axis=0)
+            if np.any(smask[0,:,:]):
+                INTEGRALS[isub,icoast,iDepth,iStat] = Int_Cdz[smask[0,:,:]].mean(axis=None)
+            else:
+                print "getColumnIntegrals: no data found in ", sub, coast
     ncvar    = objfileI.createVariable(var, 'f', ('sub','coast','depth','stat'))
     ncvar[:] = INTEGRALS  
       
@@ -576,17 +580,12 @@ for ip in PROCESSES[rank::nranks]:
         ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
     F = GB_lib.filename_manager(avefile)
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
-    ncIN = NC.netcdf_file(filename,"r")
-    nDim = len(ncIN.variables[var].dimensions)
-    if var_dim [ivar] == '3D':
-        
-        if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
-        if nDim==3 : VAR   = ncIN.variables[var].data.copy()
 
+    if var_dim [ivar] == '3D':
+        VAR  = DataExtractor(TheMask,filename,var,dimvar=3).values
     else:
         VAR        = np.zeros((jpk,jpj,jpi),np.float32)
-        if nDim==3 : VAR[0,:,:] = ncIN.variables[var].data[0,:,:].copy()
-        if nDim==2 : VAR[0,:,:] = ncIN.variables[var].data.copy()
+        VAR[0,:,:] = DataExtractor(TheMask,filename,var,dimvar=2).values
     
     if doStatistics:
         if var_dim [ivar] == '3D':
@@ -597,7 +596,6 @@ for ip in PROCESSES[rank::nranks]:
         if var_dim[ivar] == '2D' :
             getAllStatistics2D(var, ncOUT__profiles)
     if doPointProfiles : dumpPointProfiles(var)
-    ncIN.close()
 
     if doStatistics:
         ncOUT__profiles.close()
@@ -607,10 +605,9 @@ for ip in PROCESSES[rank::nranks]:
 if isParallel : comm.Barrier()    
 if rank == 0: print "RICOSTRUZIONE FILES"
 
-for avefile in aveLIST[rank::nranks]:    
+for avefile in aveLIST[rank::nranks]:
     datestr = os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]    
-    
-    ncIN = NC.netcdf_file(avefile,"r")
+
     if doPointProfiles: ncOUT_Pprofiles = create_ave_pp_header(datestr)
     if doStatistics:    ncOUT__profiles,ncOUT_integrals = create_ave_headers(datestr)
 
@@ -653,15 +650,11 @@ if var not in NATIVE_VARS.union(SOME_VARS) or not doStatistics : sys.exit()
 
 for avefile in aveLIST[rank::nranks]:
     print avefile
-    datestr = os.path.basename(avefile)[4:21]
-    ncIN = NC.netcdf_file(avefile,"r")
-    nDim = len(ncIN.variables[var].dimensions)
-    if var_dim [ivar] == '3D':
-        
-        if nDim==4 : VAR   = ncIN.variables[var].data[0,:,:,:].copy()
-        if nDim==3 : VAR   = ncIN.variables[var].data.copy()
+    F=GB_lib.filename_manager(avefile)
+    filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
+    VAR  = DataExtractor(TheMask,filename,var,dimvar=3).values 
     
-    ave_integrals = OUTPUT_DIR_PPN + "ave." + datestr + ".col_integrals.nc"
+    ave_integrals = OUTPUT_DIR_PPN + "ave." + F.datestr + ".col_integrals.nc"
     ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")
     ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
     ncOUT_integrals.createDimension("coast"     ,ncoast)
@@ -675,6 +668,4 @@ for avefile in aveLIST[rank::nranks]:
     setattr(ncOUT_integrals,"depth_list"  ,DepthDescr[:-2])
     setattr(ncOUT_integrals,"stat__list"  , StatDescr    )
     ncOUT_integrals.close()
-    
-    ncIN.close()
 

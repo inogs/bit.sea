@@ -1,5 +1,4 @@
 import argparse
-
 def argument():
     parser = argparse.ArgumentParser(description = '''
     plot something
@@ -25,10 +24,10 @@ def argument():
                                 required = True,
                                 default = '',
                                 choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn','P_c'] )
-    parser.add_argument(   '--layerfile', '-l',
+    parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
-                                help = '''Text file with 3 columns: top, bottom, mapdepthfilter
+                                help = '''Plotlist_bio.xml"
                                 ''')
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
@@ -40,6 +39,14 @@ def argument():
                                 default = '',
                                 choices = ['integral','mean'],
                                 help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
+    parser.add_argument(   '--starttime','-s',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')
+    parser.add_argument(   '--endtime','-e',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')      
 
     return parser.parse_args()
 args = argument()
@@ -50,17 +57,17 @@ from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask
 from commons.layer import Layer
-
-from layer_integral.mapbuilder import MapBuilder
+from layer_integral.mapbuilder import MapBuilder, Plot
 from layer_integral.mapplot import mapplot,pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
 import commons.timerequestors as requestors
 from commons.utils import addsep
+from commons.xml_module import *
+from xml.dom import minidom
 
-clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+xmldoc = minidom.parse(args.plotlistfile)
 
 
 INPUTDIR  = addsep(args.inputdir)
@@ -68,33 +75,23 @@ OUTPUTDIR = addsep(args.outdir)
 var       = args.varname
 
 
-ldtype=[('top',np.float32),('bottom',np.float32),('mapdepthfilter',np.float32)]
-LF = np.loadtxt(args.layerfile,ldtype,ndmin=1)
+for lm in xmldoc.getElementsByTagName("LayersMaps"):
+    for pdef in get_subelements(lm, "plots"):
+        filevar = get_node_attr(pdef, "var")        
+        if not filevar == var : continue
+        PLOT = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "plotunits"), [], [0,1] )
+        for d in get_subelements(pdef, "depth"):
+            levplot  = float(get_node_attr(d, "levplot")) 
+            clim     = eval(get_node_attr(d, "clim"))
+            L = Layer(get_node_attr(d,"top"), get_node_attr(d, "bottom"))
+            PLOT.append_layer(L,clim=clim, mapdepthfilter=levplot)
+            
 
-LAYERLIST=[ Layer(l['top'], l['bottom']) for l in LF ]
 
-UNITS_DICT={
-         'ppn' : 'gC/m^2/y',
-         'N1p' : 'mmol /m^3',
-         'N3n' : 'mmol /m^3',
-         'PH'  : '',
-         'pCO2': 'ppm',
-         'P_l' :'mg Chl/ m^3',
-         'P_c' :'mg C/ m^3',
-         'P_i' :'mg Chl/ m^3'
-         }
 
-CLIM_DICT={
-         'ppn' : [0, 220],
-         'N1p' : [0, 0.15],
-         'N3n' : [0, 4],
-         'PH'  : [7.9, 8.2],
-         'pCO2': [300,480],
-         'P_l' : [0, 0.4],
-         'P_c' : [0, 20],
-         'P_i' : [0, 0.4]
-         }
 
+clon,clat = coastline.get()
+TheMask=Mask(args.maskfile, dzvarname="e3t_0")
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
@@ -107,14 +104,13 @@ CONVERSION_DICT={
          'P_i' : 1
          }
 
-TI = TimeInterval('20010101','20141230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-req_label='Ave.2001-2014' #official
+TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
+req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
-
-
 
 req = requestors.Generic_req(TI)
 indexes,weights = TL.select(req)
+
 
 VARCONV=CONVERSION_DICT[var]
 # setting up filelist for requested period -----------------
@@ -124,8 +120,10 @@ for k in indexes:
     filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
     filelist.append(filename)
 # ----------------------------------------------------------
+print "time averaging ..."
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)
-for il,layer in enumerate(LAYERLIST):
+print "... done."
+for il, layer in enumerate(PLOT.layerlist):
     De      = DataExtractor(TheMask,rawdata=M3d)
 
     if args.optype=='integral':
@@ -134,9 +132,11 @@ for il,layer in enumerate(LAYERLIST):
         integrated = MapBuilder.get_layer_average(De, layer)  
     integrated=integrated * VARCONV
 
-    mask=TheMask.mask_at_level(LF[il]['mapdepthfilter'])
+    z_mask = PLOT.depthfilters[il]
+    z_mask_string = "-%04gm" %z_mask
+    mask=TheMask.mask_at_level(z_mask)
 #        clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
-    clim=CLIM_DICT[var]
+    clim=PLOT.climlist[il]
     integrated_masked=integrated*mask # taglio il costiero
     integrated_masked[integrated_masked==0]=np.nan # sostituisco gli 0 con i NAN
 
@@ -149,13 +149,13 @@ for il,layer in enumerate(LAYERLIST):
     ax.set_xlabel('Lon').set_fontsize(11)
     ax.set_ylabel('Lat').set_fontsize(12)
     ax.ticklabel_format(fontsize=10)
-    ax.text(-4,44.5,var + ' [' + UNITS_DICT[var] + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+    ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
     if  args.optype=='integral':
         #ax.text(-4,32,'Int:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + ".png"
+        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + ".png"
     else:
         #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + ".png"
+        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + z_mask_string  + ".png"
     ax.xaxis.set_ticks(np.arange(-2,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))
     #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')

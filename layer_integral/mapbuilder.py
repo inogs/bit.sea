@@ -33,6 +33,7 @@ class Plot(object):
                 raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
         self.__climslist = list()
+        self.__depthfilters = list()
 
     @property
     def varname(self):
@@ -53,12 +54,18 @@ class Plot(object):
     @property
     def climlist(self):
         return self.__climslist
+    @property
+    def depthfilters(self):
+        return self.__depthfilters
 
-    def append_layer(self, layer, clim=None):
+    def append_layer(self, layer, clim=None, mapdepthfilter=None):
         if not isinstance(layer, (Layer,)):
             raise ValueError("layer must be a Layer object")
+        if mapdepthfilter is None:
+            mapdepthfilter = layer.bottom
         self.__layerlist.append(layer)
         self.__climslist.append(clim)
+        self.__depthfilters.append(mapdepthfilter)
 
 class MapBuilder(object):
 

@@ -317,7 +317,7 @@ class TimeList():
             weights   = []
             YEARLIST=self.getYearlist()
             for year_req in YEARLIST:
-                req = requestors.Season_req(year_req.year, requestor.season,seasonobj)
+                req = requestors.Season_req(year_req.year, requestor.season,requestor.seasonobj)
                 s,w = self.select(req)
                 SELECTION.extend(s)
                 weights.extend(w)

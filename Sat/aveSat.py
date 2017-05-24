@@ -23,7 +23,7 @@ def argument():
     parser.add_argument(   '--mesh', '-m',
                                 type = str,
                                 required = True,
-                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','OneKmMesh', 'Mesh24'],
+                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
 

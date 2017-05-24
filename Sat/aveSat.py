@@ -1,7 +1,8 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generic averager for sat files
+    Generic averager for sat files.
+    It works with an only mesh, without performing interpolations.
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -39,6 +40,7 @@ args = argument()
 
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
+from postproc import masks
 import numpy as np
 import os
 import Sat.SatManager as Sat

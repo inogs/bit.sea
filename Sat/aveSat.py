@@ -44,6 +44,7 @@ from postproc import masks
 import numpy as np
 import os
 import Sat.SatManager as Sat
+from commons.utils import addsep
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD
@@ -55,8 +56,8 @@ except:
     nranks = 1
     isParallel = False
 
-CHECKDIR =args.checkdir
-OUTDIR   =args.outdir
+CHECKDIR = addsep(args.checkdir)
+OUTDIR   = addsep(args.outdir)
 maskSat = getattr(masks,args.mesh)
 
 reset = False
@@ -65,7 +66,7 @@ Timestart="19500101"
 Time__end="20500101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
-suffix = TLCheck.filelist[0][8:]
+suffix = os.path.basename(TLCheck.filelist[0])[8:]
 
 if args.timeaverage == 'monthly'        : TIME_reqs=TLCheck.getMonthlist()
 if args.timeaverage == 'weekly_tuesday' : TIME_reqs=TLCheck.getWeeklyList(2)

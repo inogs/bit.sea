@@ -40,14 +40,14 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from postproc import masks
 import numpy as np
-
+from commons.utils import addsep
 import os
 
 import SatManager as Sat
 
 
-ORIGDIR = args.origdir
-CHECKDIR = args.checkdir
+ORIGDIR   = addsep(args.origdir)
+CHECKDIR  = addsep(args.checkdir)
 CLIM_FILE = args.climfile
 
 maskSat = getattr(masks,args.mesh)

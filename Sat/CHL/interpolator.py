@@ -1,11 +1,54 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Interpolates from 1km mesh to output mesh.
+    Works in parallel
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required = True,
+                                help = ''' E.g. dir with files on 1km mesh'''
+
+                                )
+
+    parser.add_argument(   '--outputdir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' E.g. dir with files on 1/24 mesh'''
+
+                                )
+
+    parser.add_argument(   '--outmesh', '-m',
+                                type = str,
+                                required = True,
+                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
+                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
+                                )
+    parser.add_argument(   '--maskfile', '-M',
+                                type = str,
+                                required = True,
+                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
+                                )
+
+    return parser.parse_args()
+
+args = argument()
+
+
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
-from commons.mask import Mask
 from Sat import SatManager as Sat
 from Sat.CHL import interp2d
-from postproc.masks import Mesh24
-
+from commons.mask import Mask
+from postproc import masks
+from commons.utils import addsep
 import os
+maskOut = getattr(masks,args.outmesh)
+
+
+
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD
@@ -17,10 +60,13 @@ except:
     nranks = 1
     isParallel = False
 
-TheMask=Mask('/pico/home/userexternal/pdicerbo/WorkDir/meshmask.nc',dzvarname="e3t_0")
-jpk,jpj,jpi = TheMask.shape
-x = TheMask.xlevels[0,:]
-y = TheMask.ylevels[:,0]
+if args.outmesh == 'Mesh24' : 
+    TheMask = Mask(args.maskfile, dzvarname='e3t_0')
+else:
+    TheMask = Mask(args.maskfile, dzvarname='e3t')
+
+x = maskOut.lon
+y = maskOut.lat
 
 x1km = Sat.OneKmMesh.lon
 y1km = Sat.OneKmMesh.lat
@@ -28,9 +74,9 @@ y1km = Sat.OneKmMesh.lat
 I_START, I_END = interp2d.array_of_indices_for_slicing(x, x1km)
 J_START, J_END = interp2d.array_of_indices_for_slicing(y, y1km)
 
-INPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_Sat1kmFriday/"
-OUTPUTDIR="/pico/home/userexternal/pdicerbo/WorkDir/AveSat24/Checked_Weekly_SatInterp24_Friday/"
-dateformat="%Y%m%d"
+INPUTDIR=addsep(args.inputdir)
+OUTPUTDIR=addsep(args.outputdir)
+dateformat="%Y%m"
 
 reset = False
 
@@ -50,7 +96,7 @@ for filename in TL.filelist[rank::nranks]:
     if exit_condition: 
         continue
     Mfine = Sat.readfromfile(filename)
-    M16  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END)
-    Sat.dumpGenericNativefile(outfile, M16, 'CHL', Mesh24)
+    Mout  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END)
+    Sat.dumpGenericNativefile(outfile, Mout, 'CHL', maskOut)
 
     print "\tfile ", counter, " of ", MySize, " done by rank ", rank

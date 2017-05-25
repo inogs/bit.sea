@@ -1,13 +1,4 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from postproc import masks
-import numpy as np
 import argparse
-import os
-
-import SatManager as Sat
-
-
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Apply check based on climatology to sat ORIG files
@@ -38,12 +29,21 @@ def argument():
     parser.add_argument(   '--mesh', '-m',
                                 type = str,
                                 required = True,
-                                help = ''' Name of the mesh of sat ORIG and used to dump checked data. The name can be one of those defined in postproc.masks, e.g. SatOrigMesh, SAT1km_mesh '''
+                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
+                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
 
     return parser.parse_args()
 
 args = argument()
+from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
+from postproc import masks
+import numpy as np
+
+import os
+
+import SatManager as Sat
 
 
 ORIGDIR = args.origdir

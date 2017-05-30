@@ -34,7 +34,10 @@ class Mask(object):
             if dzvarname in dset.variables:
                 self._dz = np.array(dset.variables[dzvarname][0,:,0,0])
             else:
-                raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
+                if 'e3t_0' in dset.variables:
+                    self._dz = np.array(dset.variables['e3t_0'][0,:,0,0])
+                else:
+                    raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
                 if ylevelsmatvar =='nav_lat':
                     self._ylevels = np.array(dset.variables[ylevelsmatvar])

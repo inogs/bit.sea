@@ -233,6 +233,15 @@ class BioFloat(Instrument):
         '''
         pres, prof, qc = self.read_raw(var,read_adjusted)
         if var=='CHLA': prof = prof*0.5
+        if (var=='SR_NO3') & read_adjusted :
+            prof = prof * 0.98 + 0.6
+            ii = (prof < 0) & (pres < 50)
+            prof[ii] = 0.01
+            ii = prof > 0
+            pres = pres[ii]
+            prof = prof[ii]
+            qc   =   qc[ii]
+
         if pres.size ==0:
             return pres, prof, qc
 

@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 import os
 import pylab as pl
+import seawater as sw
 
 from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
@@ -241,6 +242,13 @@ class BioFloat(Instrument):
             pres = pres[ii]
             prof = prof[ii]
             qc   =   qc[ii]
+        if (var=='DOXY'):
+            prof = self.convert_oxygen(pres, prof)
+            ii = (prof > 140) & (prof<280)
+            pres = pres[ii]
+            prof = prof[ii]
+            qc   =   qc[ii]
+            
 
         if pres.size ==0:
             return pres, prof, qc
@@ -257,6 +265,20 @@ class BioFloat(Instrument):
                 return pres, prof, qc
         else:
             return pres, mean.compute(prof, pres), mean.compute(qc,pres)
+
+    def convert_oxygen(self,doxypres,doxyprofile):
+        '''
+        from micromol/Kg to  mmol/m3
+        '''
+        if doxypres.size == 0: return doxyprofile
+        Pres, temp, Qc = self.read_raw("TEMP",False)
+        Pres, sali, Qc = self.read_raw("PSAL",False)
+        density = sw.dens(sali,temp,Pres)
+        density_on_zdoxy = np.interp(doxypres,Pres,density)
+        return doxyprofile * 1000./density_on_zdoxy
+        
+        
+        
 
     def basicplot(self,Pres,profile):
         pl.figure()
@@ -402,12 +424,13 @@ if __name__ == '__main__':
 
     for ip, p in enumerate(PROFILE_LIST):
         F = p._my_float
-        Pres,V,V_adj, Qc = F.read_very_raw(var)
+        Pres,V, Qc = F.read(var, read_adjusted=False)
         ii =~np.isnan(V)
         V = V[ii]
-        print V.max(), V.min()
-        if V.min() < -976:
-            break
+        if len(V)> 0:
+            print V.max(), V.min()
+            if V.min() < -976:
+                 break
     import sys
     sys.exit()
 

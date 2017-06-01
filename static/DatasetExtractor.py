@@ -70,7 +70,7 @@ class DatasetExtractor():
         values= self.DATA[ivar,:].copy()
         units = self.UNITS[ivar,:].tostring()
 
-        if units =="\\mumol/kg":
+        if False: #units =="\\mumol/kg":
             itemp  = find_index('temp'    , self.VARIABLES)
             ipsal  = find_index('salinity', self.VARIABLES)
             idens  = find_index('density' , self.VARIABLES)

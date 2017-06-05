@@ -36,7 +36,7 @@ from instruments.var_conversions import LOVFLOATVARS
 import matplotlib.pyplot as plt
 from commons.utils import addsep
 from profiler import *
-from ncreader import *
+from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
 def fig_setup(wmo,Lon,Lat,var):
     from layer_integral import coastline

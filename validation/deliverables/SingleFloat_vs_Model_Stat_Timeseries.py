@@ -31,7 +31,7 @@ from commons.utils import addsep
 from commons.layer import Layer
 from profiler import *
 from metrics import *
-from ncwriter import dumpfile
+from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 
 OUTDIR = addsep(args.outdir)
 TheMask=Mask(args.maskfile)

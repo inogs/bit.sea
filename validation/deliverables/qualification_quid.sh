@@ -21,3 +21,18 @@ python averager_and_plot_map.py -i $INPUTDIR        -v O2o  $COMMONS_PARAMS  # D
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_c  $COMMONS_PARAMS  # PHYC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v pH   $COMMONS_PARAMS  # PH-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v pCO2 $COMMONS_PARAMS  # PCO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+
+#python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral # per lo 0-200m
+
+SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
+INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP
+python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea.pkl
+python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
+python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
+
+
+#bioflots section
+OUTDIR=Timeseries_rmse_floats
+mkdir -p $OUTDIR
+python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc  #  CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+python biofloat_ms_plotter.py -i float_bias_rmse.nc -o $OUTDIR

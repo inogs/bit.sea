@@ -1,4 +1,24 @@
 import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Generates time series png files similar to them of mdeeaf web site.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument(   '--inputfile','-i',
+                                type = str,
+                                required = True,
+                                help = '')
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+
+    return parser.parse_args()
+
+args = argument()
+
 
 from commons.time_interval import TimeInterval
 import matplotlib
@@ -11,9 +31,8 @@ from commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
 
-OUTFIG_DIR       = "biofloats/" #addsep("args.outdir")
-
-inputfile="pippo.nc"
+OUTFIG_DIR       = addsep(args.outdir)
+inputfile        = args.inputfile
 
 class ncreader():
     def __init__(self, filename):

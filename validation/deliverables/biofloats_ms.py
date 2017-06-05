@@ -1,4 +1,29 @@
 import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Needs a profiler.py, already executed.
+
+    Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
+    for chlorophyll, nitrate and oxygen.
+    In this approach we define the measurement as mean on layer of the float profile values.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                required = False,
+                                help = ''' Path of maskfile''')
+
+    parser.add_argument(   '--outfile', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+
+    return parser.parse_args()
+
+args = argument()
 
 from basins import V2 as OGS
 from instruments import lovbio_float as bio_float
@@ -16,14 +41,14 @@ from commons.utils import addsep
 from basins.region import Rectangle
 from profiler import ALL_PROFILES, TL, BASEDIR
 
-maskfile="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc"
-TheMask  = Mask(maskfile)
+
+TheMask  = Mask(args.maskfile)
 
 
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o']
-read_adjusted = [True,False,False]
+read_adjusted = [True,True,False]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
@@ -71,8 +96,7 @@ for iFrame, req in enumerate(TL.getOwnList()):
 
 
 
-outfile = "pippo.nc"
-ncOUT = NC.netcdf_file(outfile,'w') #manca l'array times
+ncOUT = NC.netcdf_file(args.outfile,'w') #manca l'array times
 ncOUT.createDimension('time', nFrames)
 ncOUT.createDimension('var', nVar)
 ncOUT.createDimension('sub', nSub)

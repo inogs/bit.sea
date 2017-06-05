@@ -75,8 +75,8 @@ SUBLIST = OGS.NRT3.basin_list
 
 
 for ivar, var in enumerate(VARLIST):
-    for isub, sub in enumerate(SUBLIST[:2]):
-        for layer in LAYERLIST[:2]:
+    for isub, sub in enumerate(SUBLIST):
+        for layer in LAYERLIST:
             outfile = "%s%s.%s.%s.png" % (OUTFIG_DIR,var,sub.name,layer.longname())
             print outfile
             fig = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string())

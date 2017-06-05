@@ -1,13 +1,40 @@
-import os,sys
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Needs a profiler.py, already executed.
+
+    Produces 3 png files, containing timeseries for some statistics, for each wmo.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                required = False,
+                                help = ''' Path of maskfile''')
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+
+    return parser.parse_args()
+
+args = argument()
+
 import numpy as np
 from commons.mask import Mask
-from basins.region import Region, Rectangle
 from instruments import lovbio_float as bio_float
 from instruments.var_conversions import LOVFLOATVARS
-import pylab as pl
+
 import matplotlib.pyplot as plt
+from commons.utils import addsep
 from profiler import *
 from ncreader import *
 
@@ -41,9 +68,9 @@ def fig_setup(wmo,Lon,Lat,var):
     return fig, axs
 
 
-TheMask=Mask('/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc')
-INDIR = "/pico/scratch/userexternal/lfeudale/validation/work/output/"
-OUTDIR = "/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/"
+TheMask=Mask(args.masfile)
+INDIR = addsep(args.inputdir)
+OUTDIR = addsep(args.outdir)
 
 VARLIST = ['P_l','N3n','O2o']
 nVar = len(VARLIST)
@@ -56,23 +83,23 @@ wmo_list=bio_float.get_wmo_list(ALL_PROFILES)
 izmax = TheMask.getDepthIndex(200) # Max Index for depth 200m
 
 for wmo in wmo_list:
-      INPUT_FILE = INDIR + wmo + ".nc"
-      print INPUT_FILE
-      A = ncreader(INPUT_FILE)
-      wmo_track_list = bio_float.filter_by_wmo(ALL_PROFILES,wmo)
-      nP = len(wmo_track_list)
-      Lon = np.zeros((nP,), np.float64)
-      Lat = np.zeros((nP,), np.float64)
-      for ip, p in enumerate(wmo_track_list):
-          Lon[ip] = p.lon
-          Lat[ip] = p.lat
-      times = [p.time for p in wmo_track_list]
-      for var in VARLIST:
-	  OUTFILE = OUTDIR + var + "_" + wmo + ".png"
-	  print OUTFILE
-	  fig, axes = fig_setup(wmo,Lon,Lat,var)
-	  if (var == "P_l"): 
-	      model, float =A.plotdata(var,'Int_0-200')
-              axes[2].plot(times,float,'r')
-              axes[2].plot(times,model,'b')
-          fig.savefig(OUTFILE)
+    INPUT_FILE = INDIR + wmo + ".nc"
+    print INPUT_FILE
+    A = ncreader(INPUT_FILE)
+    wmo_track_list = bio_float.filter_by_wmo(ALL_PROFILES,wmo)
+    nP = len(wmo_track_list)
+    Lon = np.zeros((nP,), np.float64)
+    Lat = np.zeros((nP,), np.float64)
+    for ip, p in enumerate(wmo_track_list):
+        Lon[ip] = p.lon
+        Lat[ip] = p.lat
+    times = [p.time for p in wmo_track_list]
+    for var in VARLIST:
+        OUTFILE = OUTDIR + var + "_" + wmo + ".png"
+        print OUTFILE
+        fig, axes = fig_setup(wmo,Lon,Lat,var)
+        if (var == "P_l"): 
+            model, ref =A.plotdata(var,'Int_0-200')
+            axes[2].plot(times,  ref,'r')
+            axes[2].plot(times,model,'b')
+        fig.savefig(OUTFILE)

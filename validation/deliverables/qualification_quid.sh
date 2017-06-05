@@ -35,4 +35,11 @@ python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c exp
 OUTDIR=Timeseries_rmse_floats
 mkdir -p $OUTDIR
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc  #  CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-python biofloat_ms_plotter.py -i float_bias_rmse.nc -o $OUTDIR
+python biofloats_ms_plotter.py -i float_bias_rmse.nc -o $OUTDIR
+
+
+NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
+OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/
+python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
+python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
+

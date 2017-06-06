@@ -31,11 +31,10 @@ args = argument()
 import numpy as np
 from commons.mask import Mask
 from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
-
+from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 from commons.utils import addsep
-from profiler import *
+from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
 def fig_setup(wmo,Lon,Lat,var):

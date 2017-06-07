@@ -33,6 +33,7 @@ from commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
 from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
+import basins.V2 as OGS
 
 OUTDIR = addsep(args.outdir)
 TheMask=Mask(args.maskfile)
@@ -47,7 +48,8 @@ nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-wmo_list=bio_float.get_wmo_list(ALL_PROFILES)
+MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
+wmo_list=bio_float.get_wmo_list(MED_PROFILES)
 
 izmax = TheMask.getDepthIndex(200) # Max Index for depth 200m
 

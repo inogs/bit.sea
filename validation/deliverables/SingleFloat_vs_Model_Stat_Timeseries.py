@@ -51,7 +51,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
 wmo_list=bio_float.get_wmo_list(MED_PROFILES)
 
-izmax = TheMask.getDepthIndex(200) # Max Index for depth 200m
+iz200 = TheMask.getDepthIndex(200)+1 # Max Index for depth 200m
 
 for wmo in wmo_list:
     OUTFILE = OUTDIR + wmo + ".nc"
@@ -69,12 +69,14 @@ for wmo in wmo_list:
             p=list_float_track[itime]
             if p.available_params.find(var)<0 : continue
             Pres,Profile,Qc=p.read(var,read_adjusted=adj)
-            if len(Pres) < 1 : continue
+            if len(Pres) < 10 : continue
             GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
             gm200 = GM.subset(layer)
-
-            A_float[ivar,itime,0] =  np.sum(gm200.Ref  *TheMask.dz[:izmax+1])/TheMask.dz[:izmax+1].sum() # Integral
-            A_model[ivar,itime,0] =  np.sum(gm200.Model*TheMask.dz[:izmax+1])/TheMask.dz[:izmax+1].sum() # Integral
+            nLevels = gm200.number()
+            izmax = min(nLevels,iz200)
+ 
+            A_float[ivar,itime,0] =  np.sum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
+            A_model[ivar,itime,0] =  np.sum(gm200.Model*TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
 
             A_float[ivar,itime,1] = gm200.correlation() # Correlation
             A_model[ivar,itime,1] = gm200.correlation() # Correlation

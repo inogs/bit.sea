@@ -209,7 +209,7 @@ class Matchup_Manager():
             else:
                 OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
                 QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev, QC_ON_SPACE_MODEL, p)
+                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
 
             Group_Matchup.extend(Matchup)
 

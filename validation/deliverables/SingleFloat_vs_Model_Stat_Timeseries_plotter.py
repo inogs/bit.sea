@@ -36,8 +36,9 @@ import matplotlib.pyplot as plt
 from commons.utils import addsep
 from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
+import basins.V2 as OGS
 
-def fig_setup(wmo,Lon,Lat,var):
+def fig_setup(wmo,Lon,Lat):
     from layer_integral import coastline
 
     fig = plt.figure()
@@ -64,6 +65,13 @@ def fig_setup(wmo,Lon,Lat,var):
     ax0.set_ylabel("LAT",color = 'k')
     ax0.set_xlabel("LON",color = 'k')
 
+    extent=4
+    ax1.plot(c_lon,c_lat,'k')
+    ax1.plot(Lon,Lat,'ro')
+    ax1.plot(Lon[0],Lat[0],'bo')
+    ax1.set_xlim([Lon.min() -extent/2, Lon.max() +extent/2])
+    ax1.set_ylim([Lat.min() -extent/2, Lat.max() +extent/2])
+
     return fig, axs
 
 
@@ -77,7 +85,8 @@ METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
-wmo_list=bio_float.get_wmo_list(ALL_PROFILES)
+MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
+wmo_list=bio_float.get_wmo_list(MED_PROFILES)
 
 izmax = TheMask.getDepthIndex(200) # Max Index for depth 200m
 
@@ -96,9 +105,42 @@ for wmo in wmo_list:
     for var in VARLIST:
         OUTFILE = OUTDIR + var + "_" + wmo + ".png"
         print OUTFILE
-        fig, axes = fig_setup(wmo,Lon,Lat,var)
+        fig, axes = fig_setup(wmo,Lon,Lat)
+
+	model, ref =A.plotdata(var,'Int_0-200')
+	if (~np.isnan(model).all() == True) or (~np.isnan(ref).all() == True): 
+            axes[2].plot(times,  ref,'r',label='REF')
+            axes[2].plot(times,model,'b',label='MOD')
+	    axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-2} day^{-1}]$',fontsize='small')
+	    legend = axes[2].legend(loc='upper right', shadow=True, fontsize='xx-small')
+ 	    model_corr, ref_corr =A.plotdata(var,'Corr')
+	    axes[3].plot(times,ref_corr,'k')
+	    axes[3].set_ylabel('CORR',fontsize='small')
+
         if (var == "P_l"): 
-            model, ref =A.plotdata(var,'Int_0-200')
-            axes[2].plot(times,  ref,'r')
-            axes[2].plot(times,model,'b')
+            model_dcm, ref_dcm =A.plotdata(var,'DCM')
+	    model_mld, ref_mld =A.plotdata(var,'z_01')
+	    if (~np.isnan(model_dcm).all() == True) or (~np.isnan(ref_dcm).all() == True):
+                axes[4].plot(times,  ref_dcm,'r',label='REF')
+                axes[4].plot(times,model_dcm,'b',label='MOD')
+	        axes[4].invert_yaxis()
+	        axes[4].set_ylabel('DCM $[m]$ --',fontsize='small')
+	    if (~np.isnan(model_mld).all() == True) or (~np.isnan(ref_mld).all() == True):
+	        axes_4b = axes[4].twinx()
+	        axes_4b.plot(times, ref_mld,'--r',label='REF')
+                axes_4b.plot(times,model_mld,'--b',label='MOD')
+	        axes_4b.invert_yaxis()
+	        axes_4b.set_ylabel('MLD $[m]$ - -',fontsize='small')
+            legend = axes[4].legend(loc='upper right', shadow=True, fontsize='xx-small')
+
+        if (var == "N3n"):
+            model_nit, ref_nit =A.plotdata(var,'Nit_1')
+	    if (~np.isnan(ref_nit).all() == True) or (~np.isnan(model_nit).all() == True):
+            	axes[4].plot(times,  ref_nit,'r')
+            	axes[4].plot(times,model_nit,'b')
+            	axes[4].invert_yaxis()
+	    	axes[4].set_ylabel('NITRICL $[m]$',fontsize='small')
+            else: continue
         fig.savefig(OUTFILE)
+#        import sys
+#        sys.exit()

@@ -58,8 +58,8 @@ for wmo in wmo_list:
     print OUTFILE
     list_float_track=bio_float.filter_by_wmo(ALL_PROFILES,wmo)
     nTime = len(list_float_track)
-    A_float = np.zeros((nVar, nTime, nStat), np.float32 )
-    A_model = np.zeros((nVar, nTime, nStat), np.float32 )
+    A_float = np.zeros((nVar, nTime, nStat), np.float32 ) * np.nan
+    A_model = np.zeros((nVar, nTime, nStat), np.float32 ) * np.nan
 
 
     for ivar, var_mod in enumerate(VARLIST):

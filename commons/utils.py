@@ -4,7 +4,7 @@ from __future__ import print_function
 import os,sys
 import numpy as np
 import re
-
+import pylab as pl
 """Helper functions"""
 
 def is_number(val):
@@ -116,3 +116,22 @@ def ticklabels_degree(ax,fsize=7,intdeg=True):
         yticklabels.append(np.str(yt) + degsymb + 'N')
     ax.set_yticklabels(yticklabels, fontsize=7)
 
+
+def getcolor(ntimes,itime, colormap='gist_ncar'):
+    '''
+    Uses matplotlib colormap
+    Arguments:
+    * nTimes   * integer, the number of times
+    * itime    * integer, time index
+    * colormap * string (optional), is the name of matplotlib colormap
+                 See https://matplotlib.org/examples/color/colormaps_reference.html
+    Returns :
+    * color * rgba object, can be used in plot
+    
+    c = getcolor(10,0)
+    ax.plot(x,y,color=c)  
+    '''
+    cmap = pl.cm.get_cmap(colormap)
+    fact = float(itime)/ntimes
+    rgba = cmap(fact)
+    return rgba

@@ -243,7 +243,7 @@ class BioFloat(Instrument):
             prof = prof[ii]
             qc   =   qc[ii]
         if (var=='DOXY'):
-            prof = self.convert_oxygen(pres, prof)
+            #prof = self.convert_oxygen(pres, prof)
             ii = (prof > 140) & (prof<280)
             pres = pres[ii]
             prof = prof[ii]

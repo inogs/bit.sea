@@ -7,11 +7,11 @@ class Mask(object):
     """
     Defines a mask from a NetCDF file
     """
-    def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t"):
+    def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t", loadtmask=True):
         filename = str(filename)
         try:
             dset = netCDF4.Dataset(filename)
-            if maskvarname in dset.variables:
+            if (maskvarname in dset.variables) and (loadtmask):
                 m = dset.variables[maskvarname]
                 if len(m.shape) == 4:
                     self._mask = np.array(m[0,:,:,:], dtype=np.bool)
@@ -21,7 +21,11 @@ class Mask(object):
                     raise ValueError("Wrong shape: %s" % (m.shape,))
                 self._shape = self._mask.shape
             else:
-                raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
+                if loadtmask:
+                    raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
+                else:
+                    dims = dset.dimensions
+                    self._shape = (dims['z'].size, dims['y'].size, dims['x'].size)
             if zlevelsvar in dset.variables:
                 z = dset.variables[zlevelsvar]
                 if len(z.shape) != 1:

@@ -36,7 +36,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 import basins.V2 as OGS
 
 OUTDIR = addsep(args.outdir)
-TheMask=Mask(args.maskfile)
+TheMask=Mask(args.maskfile, loadtmask=False)
 layer=Layer(0,200)
 
 VARLIST = ['P_l','N3n','O2o']
@@ -84,6 +84,13 @@ for wmo in wmo_list:
             if (VARLIST[ivar] == "P_l"):
                 A_float[ivar,itime,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
                 A_model[ivar,itime,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
+                DCM2_float = find_DCM2(gm200.Ref  ,gm200.Depth)[1] # DCM
+                DCM2_model = find_DCM2(gm200.Model,gm200.Depth)[1] # DCM
+                print  "FLOAT MAX: " , A_float[ivar,itime,2]
+		print  "MODELMAX: " , A_model[ivar,itime,2]
+		
+#                print  "FLOAT MAX: " + np.str(A_float[ivar,itime,2]) + " " + np.str(DCM2_float)
+#                print  "MODELMAX: " + A_model[ivar,itime,2] + " " + DCM2_model
 
                 A_float[ivar,itime,3] = find_MLD(gm200.Ref  ,gm200.Depth) # MLD
                 A_model[ivar,itime,3] = find_MLD(gm200.Model,gm200.Depth) # MLD
@@ -91,6 +98,7 @@ for wmo in wmo_list:
             if (VARLIST[ivar] == "N3n"):
                 A_float[ivar,itime,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
                 A_model[ivar,itime,4] = find_NITRICL(gm200.Model,gm200.Depth) # Nitricline
-
+	    import sys
+#	    sys.exit()
 
     dumpfile(OUTFILE,A_float,A_model,VARLIST,METRICS)

@@ -1,6 +1,29 @@
+import numpy as np
+
 def find_DCM(Chl_profile,zlev):
-	CM  = 0
-        DCM = 0
+
+        A = Chl_profile
+        A_filtered=A[A>0.1]
+        D_filtered=zlev[A>0.1]
+        A_fil_rev = A_filtered[::-1]
+        D_fil_rev = D_filtered[::-1]
+
+	if (len(A_fil_rev) == 0): 
+	    return np.nan , np.nan
+
+	CM  = A_fil_rev[0]
+	DCM = D_fil_rev[0]
+        for ip, chl in enumerate(A_fil_rev):
+            if (chl > CM): 
+                CM  = chl
+                DCM = D_fil_rev[ip]
+
+        return CM, DCM
+
+
+def find_DCM1(Chl_profile,zlev):
+	CM  = np.nan
+        DCM = np.nan
         ## type = 0 float or type = 1 model 
         A = Chl_profile
         A_filtered=A[A>0.1]
@@ -20,8 +43,34 @@ def find_DCM(Chl_profile,zlev):
                 break
         return (CM, DCM)
 
+def find_DCM2(Chl_profile,zlev):
+        CM  = np.nan
+        DCM = np.nan
+
+        A = Chl_profile
+        A_filtered=A[A>0.1]
+        D_filtered=zlev[A>0.1]
+        A_fil_rev = A_filtered[::-1]
+        D_fil_rev = D_filtered[::-1]
+	d1 = np.diff(A_fil_rev,1)
+        d2 = np.diff(A_fil_rev,2)
+#        mindiff2=np.argmin(d2)
+        d1sign = np.sign(d1) >= 0
+	for ip, p in enumerate(d1):
+	    if (ip > 0) and (d1sign[ip] == False) and (d2[ip-1] <0):
+#	    if (d1[ip] == 0) and (d2[ip] <0):
+#                CM  = A_fil_rev[ip]
+#                DCM = D_fil_rev[ip]
+                max_cand = (A_fil_rev[ip-1],A_fil_rev[ip],A_fil_rev[ip+1])
+                d_max_cand = (D_fil_rev[ip-1],D_fil_rev[ip],D_fil_rev[ip+1])
+		CM = max(max_cand)
+		DCM = d_max_cand[max_cand.index(max(max_cand))] 
+#		DCM = np.argmax(A_fil_rev[ip-1],A_fil_rev[ip],A_fil_rev[ip+1])
+		break
+        return (CM, DCM)
+
 def find_MLD(Profile,Pres):
-        MLD = 0
+        MLD = np.nan
         A = Profile
 	A_filtered=A[Pres>20]
 	D_filtered=Pres[Pres>20]

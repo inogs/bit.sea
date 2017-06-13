@@ -33,6 +33,7 @@ from commons.mask import Mask
 from instruments import lovbio_float as bio_float
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from commons.utils import addsep
 from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
@@ -48,22 +49,25 @@ def fig_setup(wmo,Lon,Lat):
     ax3 = plt.subplot2grid((4, 3), (2, 0), colspan=3)
     ax4 = plt.subplot2grid((4, 3), (3, 0), colspan=3)
     axs = [ax0, ax1, ax2, ax3, ax4]
+    for ax in [ax2, ax3, ax4]:
+	ax.xaxis.grid(True)
 
     fig.set_size_inches(10,15)
+    fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
 
 #    list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo_list[j])
     ax0.plot(c_lon,c_lat,'k')
     ax0.plot(Lon,Lat,'r.')
-    ax0.set_title("TRAJECTORY of FLOAT " + wmo , color = 'r')
+    ax0.set_title("TRAJECTORY of FLOAT " + wmo , color = 'r', fontsize = 18)
 #    ind_max_sup=plotmat[0,:].argmax()
     
 #    print Lon[ind_max_sup],Lat[ind_max_sup]
 #    ax0.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
 #    ax0.plot(Lon[0],Lat[0],'bx')
     ax0.set_xlim([-10,36])
-    ax0.set_ylabel("LAT",color = 'k')
-    ax0.set_xlabel("LON",color = 'k')
+    ax0.set_ylabel("LAT",color = 'k', fontsize = 15)
+    ax0.set_xlabel("LON",color = 'k', fontsize = 15)
 
     extent=4
     ax1.plot(c_lon,c_lat,'k')
@@ -80,6 +84,7 @@ INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 
 VARLIST = ['P_l','N3n','O2o']
+VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
 nVar = len(VARLIST)
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1']
 nStat = len(METRICS)
@@ -91,6 +96,7 @@ wmo_list=bio_float.get_wmo_list(MED_PROFILES)
 izmax = TheMask.getDepthIndex(200) # Max Index for depth 200m
 
 for wmo in wmo_list:
+#for wmo in ['6901512']:
     INPUT_FILE = INDIR + wmo + ".nc"
     print INPUT_FILE
     A = ncreader(INPUT_FILE)
@@ -102,45 +108,73 @@ for wmo in wmo_list:
         Lon[ip] = p.lon
         Lat[ip] = p.lat
     times = [p.time for p in wmo_track_list]
-    for var in VARLIST:
+    for ivar, var in enumerate(VARLIST):
         OUTFILE = OUTDIR + var + "_" + wmo + ".png"
         print OUTFILE
         fig, axes = fig_setup(wmo,Lon,Lat)
+        fig.suptitle(VARLIST_NAME[ivar],fontsize=36,color='b')
 
 	model, ref =A.plotdata(var,'Int_0-200')
 	if (~np.isnan(model).all() == True) or (~np.isnan(ref).all() == True): 
             axes[2].plot(times,  ref,'r',label='REF')
             axes[2].plot(times,model,'b',label='MOD')
-	    axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-2} day^{-1}]$',fontsize='small')
-	    legend = axes[2].legend(loc='upper right', shadow=True, fontsize='xx-small')
+	    axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-2} day^{-1}]$',fontsize=15)
+	    legend = axes[2].legend(loc='upper left', shadow=True, fontsize=12)
  	    model_corr, ref_corr =A.plotdata(var,'Corr')
 	    axes[3].plot(times,ref_corr,'k')
-	    axes[3].set_ylabel('CORR',fontsize='small')
+	    axes[3].set_ylabel('CORR',fontsize=15)
+
+	    axes[2].set_xticklabels([])
+	    axes[3].set_xticklabels([])
+
 
         if (var == "P_l"): 
             model_dcm, ref_dcm =A.plotdata(var,'DCM')
 	    model_mld, ref_mld =A.plotdata(var,'z_01')
 	    if (~np.isnan(model_dcm).all() == True) or (~np.isnan(ref_dcm).all() == True):
-                axes[4].plot(times,  ref_dcm,'r',label='REF')
-                axes[4].plot(times,model_dcm,'b',label='MOD')
+                axes[4].plot(times,  ref_dcm,'r',label='DCM REF')
+                axes[4].plot(times,model_dcm,'b',label='DCM MOD')
+                axes[4].plot(times, ref_mld,'--r',label='MLD REF')
+                axes[4].plot(times,model_mld,'--b',label='MLD MOD')
+
 	        axes[4].invert_yaxis()
-	        axes[4].set_ylabel('DCM $[m]$ --',fontsize='small')
-	    if (~np.isnan(model_mld).all() == True) or (~np.isnan(ref_mld).all() == True):
-	        axes_4b = axes[4].twinx()
-	        axes_4b.plot(times, ref_mld,'--r',label='REF')
-                axes_4b.plot(times,model_mld,'--b',label='MOD')
-	        axes_4b.invert_yaxis()
-	        axes_4b.set_ylabel('MLD $[m]$ - -',fontsize='small')
-            legend = axes[4].legend(loc='upper right', shadow=True, fontsize='xx-small')
+	        axes[4].set_ylabel('DCM/MLD $[m]$',fontsize=15)
+#		axes[4].xaxis_date()
+#		axes[4].xaxis.set_major_locator(mdates.MonthLocator())
+		axes[4].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
+
+		xlabels = axes[4].get_xticklabels()
+		plt.setp(xlabels, rotation=30)
+
+
+#	    if (~np.isnan(model_mld).all() == True) or (~np.isnan(ref_mld).all() == True):
+#	        axes_4b = axes[4].twinx()
+#	        axes_4b.plot(times, ref_mld,'--r',label='REF')
+#                axes_4b.plot(times,model_mld,'--b',label='MOD')
+#	        axes_4b.invert_yaxis()
+#	        axes_4b.set_ylabel('MLD $[m]$ - -',fontsize=15)
+            legend = axes[4].legend(loc='lower left', shadow=True, fontsize=12)
 
         if (var == "N3n"):
             model_nit, ref_nit =A.plotdata(var,'Nit_1')
 	    if (~np.isnan(ref_nit).all() == True) or (~np.isnan(model_nit).all() == True):
-            	axes[4].plot(times,  ref_nit,'r')
-            	axes[4].plot(times,model_nit,'b')
+            	axes[4].plot(times,  ref_nit,'r',label='REF')
+            	axes[4].plot(times,model_nit,'b',label='MOD')
             	axes[4].invert_yaxis()
-	    	axes[4].set_ylabel('NITRICL $[m]$',fontsize='small')
-            else: continue
+	    	axes[4].set_ylabel('NITRICL $[m]$',fontsize=15)
+            else: 
+		axes[4].plot(times,  np.ones_like(times))
+            axes[4].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
+            xlabels = axes[4].get_xticklabels()
+            plt.setp(xlabels, rotation=30)
+	    legend = axes[4].legend(loc='upper left', shadow=True, fontsize=12)
+
+        if (var == "O2o"):
+	    axes[4].plot(times,  np.ones_like(times))
+            axes[4].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
+            xlabels = axes[4].get_xticklabels()
+            plt.setp(xlabels, rotation=30)
+
         fig.savefig(OUTFILE)
 #        import sys
 #        sys.exit()

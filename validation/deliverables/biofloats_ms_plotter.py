@@ -76,9 +76,9 @@ def single_plot(longvar, var, sub, layer ):
 
     ax.plot(times,bias1,'m.-', label='bias')
     ax.plot(times,rmse1,'k.-', label='rmse')
-    if longvar == 'Chlorophyll' : ax.set_ylim([-0.5, 0.5])
-    if longvar == 'Nitrate'     : ax.set_ylim([-10, 10])
-    if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
+    if longvar == 'Chlorophyll' : ax.set_ylim([-0.4, 0.4])
+    if longvar == 'Nitrate'     : ax.set_ylim([-5, 5])
+    #if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
         
     ax.set_ylabel('bias, rmse mg/m$^3$')
     ax.legend(loc=2)

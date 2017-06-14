@@ -31,6 +31,11 @@ python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
 
+STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
+OUTDIR=spaghettiplots
+mkdir -p $OUTDIR
+python plot_layer_timeseries_on_profiles.py -i $STAT_PROFILES_DIR -m $MASKFILE -o $OUTDIR
+
 #bioflots section
 OUTDIR=Timeseries_rmse_floats
 mkdir -p $OUTDIR
@@ -42,4 +47,7 @@ NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
 OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/
 python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
+
+
+
 

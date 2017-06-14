@@ -103,14 +103,14 @@ TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 VARLIST=['N1p','N3n','O2o','N5s','ppn','P_l','pCO2', 'Ac', 'B1c', 'P_c','R2c','pH','DIC']
 
 
-for var in VARLIST[:3]:
+for var in VARLIST:
     for iregion, SUBBASIN_LIST in enumerate(region_list):
         region = region_names[iregion]
         outfile = OUTDIR + var + "." + region + ".png"
         print outfile
         fig, axes = figure_generator(SUBBASIN_LIST, LAYERLIST, var, region)
         for iSub, sub in enumerate(SUBBASIN_LIST):
-            overall_isub = V2.P.basin_list.index(sub)
+            overall_isub = (V2.P.basin_list).index(sub)
             Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, overall_isub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
             for ilayer,layer in enumerate(LAYERLIST):
                 ax=axes[ilayer]

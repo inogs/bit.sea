@@ -134,11 +134,13 @@ for wmo in wmo_list:
 	    if (~np.isnan(model_dcm).all() == True) or (~np.isnan(ref_dcm).all() == True):
                 axes[4].plot(times,  ref_dcm,'r',label='DCM REF')
                 axes[4].plot(times,model_dcm,'b',label='DCM MOD')
-                axes[4].plot(times, ref_mld,'--r',label='MLD REF')
-                axes[4].plot(times,model_mld,'--b',label='MLD MOD')
+                axes[4].plot(times, ref_mld,'--r',label='MLB REF')
+                axes[4].plot(times,model_mld,'--b',label='MLB MOD')
+		axes[4].plot(times,np.ones_like(times)* np.nanmean(ref_dcm),'r',linewidth=3) 
+		axes[4].plot(times,np.ones_like(times)* np.nanmean(model_dcm),'b',linewidth=3) #marker='.')
 
 	        axes[4].invert_yaxis()
-	        axes[4].set_ylabel('DCM/MLD $[m]$',fontsize=15)
+	        axes[4].set_ylabel('DCM/MLB $[m]$',fontsize=15)
 #		axes[4].xaxis_date()
 #		axes[4].xaxis.set_major_locator(mdates.MonthLocator())
 		axes[4].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))

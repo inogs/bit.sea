@@ -74,8 +74,10 @@ def find_DCM2(Chl_profile,zlev):
 def find_MLD(Profile,Pres):
         MLD = np.nan
         A = Profile
-	A_filtered=A[Pres>20 and Pres<= 150]
-	D_filtered=Pres[Pres>20 and Pres<= 150]
+#	A_filtered=A[Pres>20 and Pres<= 150]
+#	D_filtered=Pres[Pres>20 and Pres<= 150]
+	A_filtered=A[Pres<150]
+	D_filtered=Pres[Pres<150]
 #        A_filtered=A[0,TheMask.zlevels[:max_depth]>20]
 #        D_filtered=TheMask.zlevels[TheMask.zlevels[:max_depth]>20]
 

@@ -74,19 +74,21 @@ def find_DCM2(Chl_profile,zlev):
 def find_MLD(Profile,Pres):
         MLD = np.nan
         A = Profile
-	A_filtered=A[Pres>20]
-	D_filtered=Pres[Pres>20]
+	A_filtered=A[Pres>20 and Pres<= 150]
+	D_filtered=Pres[Pres>20 and Pres<= 150]
 #        A_filtered=A[0,TheMask.zlevels[:max_depth]>20]
 #        D_filtered=TheMask.zlevels[TheMask.zlevels[:max_depth]>20]
 
-        for ip, p in enumerate(A_filtered[1:]):
+#        for ip, p in enumerate(A_filtered[1:]):
 #            if (p <= 0.05): 
-            if (p <= A[0]*0.1 ):
+#        for ip, p in enumerate(A_filtered):
+            if (p <= A[0]*0.1): # and D_filtered[ip] <= 150):
                 MLD  = D_filtered[ip]
                 Chl_min = A_filtered[ip]
-                break
-	    if (MLD > 120): 
-		MLD = np.nan
+		break
+#            if (MLD > 150):
+#                MLD = np.nan
+#                break
         return MLD
 
 def find_NITRICL(Profile,Pres):

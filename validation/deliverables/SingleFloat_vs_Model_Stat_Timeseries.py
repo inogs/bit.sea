@@ -43,7 +43,7 @@ VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
 nVar = len(VARLIST)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -81,6 +81,10 @@ for wmo in wmo_list:
             A_float[ivar,itime,1] = gm200.correlation() # Correlation
             A_model[ivar,itime,1] = gm200.correlation() # Correlation
 
+	    A_float[ivar,itime,5] = gm200.Ref[0] # Surf Value
+            A_model[ivar,itime,5] = gm200.Model[0] # Surf Value
+
+
             if (VARLIST[ivar] == "P_l"):
                 A_float[ivar,itime,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
                 A_model[ivar,itime,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
@@ -98,7 +102,7 @@ for wmo in wmo_list:
             if (VARLIST[ivar] == "N3n"):
                 A_float[ivar,itime,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
                 A_model[ivar,itime,4] = find_NITRICL(gm200.Model,gm200.Depth) # Nitricline
-	    import sys
+#	    import sys
 #	    sys.exit()
 
     dumpfile(OUTFILE,A_float,A_model,VARLIST,METRICS)

@@ -115,13 +115,30 @@ for wmo in wmo_list:
         fig.suptitle(VARLIST_NAME[ivar],fontsize=36,color='b')
 
 	model, ref =A.plotdata(var,'Int_0-200')
+        surf_model, surf_ref = A.plotdata(var,'SurfVal')
 	if (~np.isnan(model).all() == True) or (~np.isnan(ref).all() == True): 
-            axes[2].plot(times,  ref,'r',label='REF')
-            axes[2].plot(times,model,'b',label='MOD')
-	    axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-2} day^{-1}]$',fontsize=15)
+            axes[2].plot(times,  ref,'r',label='REF INTEG')
+            axes[2].plot(times,model,'b',label='MOD INTEG')
+	    
+	    axes[2].plot(times,  surf_ref,'--r',label='REF SURF')
+            axes[2].plot(times,  surf_model,'--b',label='MOD SURF')
+	    if (var == "P_l"):
+	        axes[2].set_ylabel('Chlorophyll \n $[mg{\  } m^{-3}]$',fontsize=15)
+	    if (var == "O2o"):
+                axes[2].set_ylabel('Oxygen 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
+            if (var == "N3n"):
+                axes[2].set_ylabel('Nitrate 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
+#		axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
 	    legend = axes[2].legend(loc='upper left', shadow=True, fontsize=12)
  	    model_corr, ref_corr =A.plotdata(var,'Corr')
+	    times_r = times
+	    for icr , cr in enumerate(ref_corr): 
+		if (cr <= 0):
+		    ref_corr[icr] = np.nan
+#                    times_r.remove(times[icr])
+
 	    axes[3].plot(times,ref_corr,'k')
+#           axes[3].plot(times_r,ref_corr[ref_corr>0],'k')
 	    axes[3].set_ylabel('CORR',fontsize=15)
 
 	    axes[2].set_xticklabels([])
@@ -131,13 +148,16 @@ for wmo in wmo_list:
         if (var == "P_l"): 
             model_dcm, ref_dcm =A.plotdata(var,'DCM')
 	    model_mld, ref_mld =A.plotdata(var,'z_01')
+#            if (model_mld > 150):
+#	       model_mld = np.nan
+
 	    if (~np.isnan(model_dcm).all() == True) or (~np.isnan(ref_dcm).all() == True):
                 axes[4].plot(times,  ref_dcm,'r',label='DCM REF')
                 axes[4].plot(times,model_dcm,'b',label='DCM MOD')
                 axes[4].plot(times, ref_mld,'--r',label='MLB REF')
                 axes[4].plot(times,model_mld,'--b',label='MLB MOD')
-		axes[4].plot(times,np.ones_like(times)* np.nanmean(ref_dcm),'r',linewidth=3) 
-		axes[4].plot(times,np.ones_like(times)* np.nanmean(model_dcm),'b',linewidth=3) #marker='.')
+#		axes[4].plot(times,np.ones_like(times)* np.nanmean(ref_dcm),'r',linewidth=3) 
+#		axes[4].plot(times,np.ones_like(times)* np.nanmean(model_dcm),'b',linewidth=3) #marker='.')
 
 	        axes[4].invert_yaxis()
 	        axes[4].set_ylabel('DCM/MLB $[m]$',fontsize=15)
@@ -178,5 +198,5 @@ for wmo in wmo_list:
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
-#        import sys
-#        sys.exit()
+    import sys
+#    sys.exit()

@@ -81,11 +81,12 @@ def find_MLD(Profile,Pres):
 
 #        for ip, p in enumerate(A_filtered[1:]):
 #            if (p <= 0.05): 
-#        for ip, p in enumerate(A_filtered):
-            if (p <= A[0]*0.1): # and D_filtered[ip] <= 150):
+        for ip, p in enumerate(A_filtered):
+            if (p <= A[0]*0.1): 
+# and D_filtered[ip] <= 150):
                 MLD  = D_filtered[ip]
                 Chl_min = A_filtered[ip]
-		break
+	        break
 #            if (MLD > 150):
 #                MLD = np.nan
 #                break

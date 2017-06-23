@@ -61,9 +61,10 @@ def VarianceDiffModelObs(MyMesh, ModDir, SatDir, OutDir):
       MyMask = np.where(SatChl == fillValue)
 
       # debug output
-      print "TLModel.Timelist[j] ", TLModel.Timelist[j], "  TLSat.Timelist[j] ",TLSat.Timelist[j], " j = ", j
+      # print "TLModel.Timelist[j] ", TLModel.Timelist[j], "  TLSat.Timelist[j] ",TLSat.Timelist[j], " j = ", j
 
-      assert(TLModel.Timelist[j]==TLSat.Timelist[j])
+      if j > 0:
+        assert(TLModel.Timelist[j]==TLSat.Timelist[j])
       assert(DiffModSat[0,:,:].shape == ModChl.shape)
       assert(DiffModSat[0,:,:].shape == SatChl.shape)
 
@@ -71,7 +72,7 @@ def VarianceDiffModelObs(MyMesh, ModDir, SatDir, OutDir):
       TmpMatrix = TmpMatrix*TmpMatrix      
       TmpMatrix[MyMask] = fillValue
 
-      DiffModSat[iframe,:,:] = TmpMatrix
+      DiffModSat[iFrame,:,:] = TmpMatrix
 
     ActualMonth = req.month-1
     ChlDiffSquared[ActualMonth,:,:] = Sat.averager(DiffModSat)
@@ -91,7 +92,7 @@ if __name__ == "__main__":
   
     from postproc.masks import Mesh24
 
-    ModDir = "/pico/scratch/userexternal/pdicerbo/WorkDir/ChlComputedModel/"
+    ModDir = "/pico/scratch/userexternal/ateruzzi/ChlSup_RACOAST_24/CHL_SUP24/"
     SatDir = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/WeeklySat24Friday/"
     OUTDIR = "/pico/scratch/userexternal/pdicerbo/WorkDir/AveSat24/VarDiffModObs/"
 

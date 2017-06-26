@@ -46,10 +46,12 @@ python biofloats_ms_plotter.py -i float_bias_rmse.nc -o $OUTDIR
 
 
 NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
-OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/
+OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/float/
 python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 
-
+OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/basin/
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
 

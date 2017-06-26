@@ -96,7 +96,7 @@ for iSub, sub in enumerate(V2.P.basin_list):
 
 
 
-TI = TimeInterval("201401","201601","%Y%m")
+TI = TimeInterval("195001","205001","%Y%m")
 TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 
 

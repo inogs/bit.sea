@@ -3,10 +3,16 @@
 # QUID REANALYSIS
 # SECTION 4?:
 export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc
+
+         INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/MODEL/AVE_FREQ_2
+   INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
 SAT_MONTHLY_DIR=
 
-INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/AVE_FREQ_2
-INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+OUTDIR=spaghettiplots
+mkdir -p $OUTDIR
+python plot_layer_timeseries_on_profiles.py -i $STAT_PROFILES_DIR -m $MASKFILE -o $OUTDIR
+
 
 
 
@@ -30,10 +36,7 @@ python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
 
-STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
-OUTDIR=spaghettiplots
-mkdir -p $OUTDIR
-python plot_layer_timeseries_on_profiles.py -i $STAT_PROFILES_DIR -m $MASKFILE -o $OUTDIR
+
 
 #bioflots section
 OUTDIR=Timeseries_rmse_floats

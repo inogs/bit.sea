@@ -49,8 +49,8 @@ args = argument()
 
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
-import commons.IOnames as IOnames
 import numpy as np
+import os
 import Sat.SatManager as Sat
 import matchup.matchup as matchup
 from commons.dataextractor import DataExtractor
@@ -70,19 +70,20 @@ def weighted_mean(Conc, Weight):
     return Weighted_Mean
 
 TheMask=Mask(args.maskfile)
+Sup_mask = TheMask.cut_at_level(0)
 MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
 
-Timestart="19990101"
-Time__end="20150901"
+Timestart="20141205"
+Time__end="20500901"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-
-sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat="%Y%m")
+dateformat ="%Y%m%d"
+sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
+suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
-IOname = IOnames.IOnames('IOnames_sat_monthly.xml')
 
 nFrames = model_TL.nTimes
 nSUB = len(OGS.P.basin_list)
@@ -91,7 +92,8 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    print sub.name
+    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 mask200_2D = TheMask.mask_at_level(200.0)
@@ -115,7 +117,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     print modeltime
     CoupledList = sat_TL.couple_with([modeltime])
     sattime = CoupledList[0][0]
-    satfile = REF_DIR + sattime.strftime(IOname.Input.dateformat) + IOname.Output.suffix + ".nc"
+    satfile = REF_DIR + sattime.strftime(dateformat) + suffix
     modfile = model_TL.filelist[itime]
 
     De         = DataExtractor(TheMask,filename=modfile, varname='P_l')
@@ -125,7 +127,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     #Model = ncIN.variables['lchlm'].data.copy()
     #ncIN.close()
 
-    Sat16 = Sat.readfromfile(satfile,var='lchlm') #.astype(np.float64)
+    Sat16 = Sat.readfromfile(satfile,var='CHL') #.astype(np.float64)
 
 
     cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)

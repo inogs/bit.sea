@@ -23,7 +23,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'pCO','pH','ppn','P_c'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','pH','ppn','P_c'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -91,13 +91,15 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile, dzvarname="e3t_0")
+TheMask=Mask(args.maskfile)
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
+         'O2o' : 1,
          'N1p' : 1,
          'N3n' : 1,
          'PH'  : 1,
+         'pH'  : 1,
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,

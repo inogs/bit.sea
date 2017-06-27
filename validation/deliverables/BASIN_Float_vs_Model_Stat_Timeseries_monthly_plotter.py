@@ -40,6 +40,8 @@ from commons.utils import addsep
 from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from basins.V2 import NRT3 as OGS
+from commons.time_interval import TimeInterval
+from matchup.statistics import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -93,11 +95,12 @@ INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 #S = SubMask(basV2.lev1, maskobject=TheMask)
 
-VARLIST = ['P_l','N3n','O2o']
+VARLIST      = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
-nVar = len(VARLIST)
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
-nStat = len(METRICS)
+nVar         = len(VARLIST)
+METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
+nStat        = len(METRICS)
+nSub         = len(OGS.basin_list)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 #MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
@@ -105,6 +108,9 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 #MonthlyRequestors=M.TL.getMonthlist()
 
 times = [req.time_interval.start_time for req in M.TL.getMonthlist()  ]
+ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+ii = np.zeros((len(times),) , np.bool)
+for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 
 
 izmax = TheMask.getDepthIndex(200) 
@@ -114,14 +120,26 @@ A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
 A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
+    TABLE_METRICS = np.zeros((nSub,17),np.float32)*np.nan
     for iSub, SubBasin in enumerate(OGS.basin_list):
 	OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
         S = SubMask(SubBasin, maskobject=TheMask)
 	fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
-	    axes[1].plot(times,  A_float[ivar,:,iSub,0],'r',label='REF INTEG')
-            axes[1].plot(times,A_model[ivar,:,iSub,0],'b',label='MOD INTEG')
+	    Int_Ref = A_float[ivar,:,iSub,0]
+	    Int_Mod = A_model[ivar,:,iSub,0]
+	    axes[1].plot(times, Int_Ref,'r',label='REF INTEG')
+            axes[1].plot(times,Int_Mod,'b',label='MOD INTEG')
+            
+	    TABLE_METRICS[iSub,1] = np.nanmean(Int_Ref[ii])
+	    TABLE_METRICS[iSub,2] = np.nanmean(Int_Mod[ii])
+            good = ~np.isnan(Int_Ref[ii]) &  ~np.isnan(Int_Mod[ii])
+            m = matchup(Int_Mod[ii][good],   Int_Ref[ii][good])
 
+            TABLE_METRICS[iSub,3] = m.bias()
+            TABLE_METRICS[iSub,4] = m.RMSE()
+
+             
             axes[1].plot(times,A_float[ivar,:,iSub,5],'--r',label='REF SURF')
             axes[1].plot(times,A_model[ivar,:,iSub,5],'--b',label='MOD SURF')
         if (var == "P_l"):
@@ -137,6 +155,7 @@ for ivar, var in enumerate(VARLIST):
         for icr , cr in enumerate(corr):
             if (cr <= 0):
                 corr[icr] = np.nan
+
         axes[1].set_xticklabels([])
 
 
@@ -144,6 +163,8 @@ for ivar, var in enumerate(VARLIST):
 	    axes[2].plot(times,corr,'k')
             axes[2].set_ylabel('CORR',fontsize=15)
             axes[2].set_xticklabels([])
+            TABLE_METRICS[iSub,0] = np.nanmean(corr[ii])
+
 	ax2 = axes[2].twinx()
         numP = A_float[ivar,:,iSub,6]
         ax2.bar(times,numP,width=7, color='g', alpha=0.3, label='n points',align='center')
@@ -152,10 +173,14 @@ for ivar, var in enumerate(VARLIST):
 	ax2.legend(loc=1)
  
         if (var == "P_l"):
-            axes[3].plot(times,A_float[ivar,:,iSub,2],'r',label='DCM REF')
-            axes[3].plot(times,A_model[ivar,:,iSub,2],'b',label='DCM MOD')
-            axes[3].plot(times,A_float[ivar,:,iSub,3],'--r',label='MLB REF')
-            axes[3].plot(times,A_model[ivar,:,iSub,3],'--b',label='MLB MOD')
+	    DCM_Ref = A_float[ivar,:,iSub,2]
+	    DCM_Mod = A_model[ivar,:,iSub,2]
+	    MLB_Ref = A_float[ivar,:,iSub,3]
+	    MLB_Mod = A_model[ivar,:,iSub,3]
+            axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
+            axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
+            axes[3].plot(times,MLB_Ref,'--r',label='MLB REF')
+            axes[3].plot(times,MLB_Mod,'--b',label='MLB MOD')
 
             axes[3].invert_yaxis()
             axes[3].set_ylabel('DCM/MLB $[m]$',fontsize=15)
@@ -165,12 +190,36 @@ for ivar, var in enumerate(VARLIST):
             plt.setp(xlabels, rotation=30)
 	    legend = axes[3].legend(loc='lower left', shadow=True, fontsize=12)
 
+            TABLE_METRICS[iSub,5] = np.nanmean(DCM_Ref[ii])
+            TABLE_METRICS[iSub,6] = np.nanmean(DCM_Mod[ii])
+            good = ~np.isnan(DCM_Ref[ii]) &  ~np.isnan(DCM_Mod[ii])
+            m = matchup(DCM_Mod[ii][good],   DCM_Ref[ii][good])
+            TABLE_METRICS[iSub,7] = m.bias()
+            TABLE_METRICS[iSub,8] = m.RMSE()
+
+            TABLE_METRICS[iSub,9] = np.nanmean(MLB_Ref[ii])
+            TABLE_METRICS[iSub,10] = np.nanmean(MLB_Mod[ii])
+            good = ~np.isnan(MLB_Ref[ii]) &  ~np.isnan(MLB_Mod[ii])
+            m = matchup(MLB_Mod[ii][good],   MLB_Ref[ii][good])
+            TABLE_METRICS[iSub,11] = m.bias()
+            TABLE_METRICS[iSub,12] = m.RMSE()
+
+
 
         if (var == "N3n"):
-            axes[3].plot(times,A_float[ivar,:,iSub,4],'r',label='REF')
-            axes[3].plot(times,A_model[ivar,:,iSub,4],'b',label='MOD')
+	    Nit_Ref = A_float[ivar,:,iSub,4]
+	    Nit_Mod = A_model[ivar,:,iSub,4]
+            axes[3].plot(times,Nit_Ref,'r',label='REF')
+            axes[3].plot(times,Nit_Mod,'b',label='MOD')
             axes[3].invert_yaxis()
             axes[3].set_ylabel('NITRICL $[m]$',fontsize=15)
+
+            TABLE_METRICS[iSub,13] = np.nanmean(Nit_Ref[ii])
+            TABLE_METRICS[iSub,14] = np.nanmean(Nit_Mod[ii])
+            good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
+            m = matchup(Nit_Mod[ii][good],   Nit_Ref[ii][good])
+	    TABLE_METRICS[iSub,15] = m.bias()
+            TABLE_METRICS[iSub,16] = m.RMSE()
 #        else:
             axes[3].plot(times,  np.ones_like(times))
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
@@ -184,8 +233,9 @@ for ivar, var in enumerate(VARLIST):
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
 
-
         fig.savefig(OUTFILE)
+    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd"
+    np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 

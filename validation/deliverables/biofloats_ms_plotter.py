@@ -39,7 +39,7 @@ from profiler import TL
 import scipy.io.netcdf as NC
 
 OUT_FIGDIR        = addsep(args.figdir)
-OUT_TABLEDIR       = addsep(args.table)
+OUT_TABLEDIR       = addsep(args.tabledir)
 inputfile        = args.inputfile
 
 class ncreader():

@@ -11,7 +11,7 @@ class matchup(object):
         self.Ref   = Ref
 
     def diff(self):
-        return self.Ref - self.Model
+        return self.Model - self.Ref
 
     def number(self):        
         return len(self.Model)

@@ -29,12 +29,24 @@ python averager_and_plot_map.py -i $INPUTDIR        -v pH   -t mean $COMMONS_PAR
 python averager_and_plot_map.py -i $INPUTDIR        -v pCO2 -t mean $COMMONS_PARAMS  # PCO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral $COMMONS_PARAMS  # per lo 0-200m
 
+
+mkdir -p fig4.2 fig4.3/offshore fig4.3/coast
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
 INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea.pkl
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
+# figure 4.3 and table 4.1
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3/offshore
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3/coast
+
+# Figure carbonatiche 1x1
+# ALK-LAYER-Y-CLASS4-CLIM-RMSD
+# ALK-LAYER-Y-CLASS4-CLIM-BIAS
+# DIC-LAYER-Y-CLASS4-CLIM-RMS
+# DIC-LAYER-Y-CLASS4-CLIM-BIAS
+python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
 
 

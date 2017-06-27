@@ -78,7 +78,7 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     ax2 = ax.twinx()
 
     ax2.bar(times,numb1,width=7, color='0.5', alpha=0.3, align='center')
-    ax2.set_ylabel(' # BioFloats')
+    ax2.set_ylabel(' n. of BGC-Argo floats')
     ax2.set_ylim([0,numb1.max() +2])
 
 

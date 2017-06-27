@@ -39,10 +39,16 @@ python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c exp
 
 
 #bioflots section
-OUTDIR=Timeseries_rmse_floats
+#  CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+#  NIT-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+#   DO-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+
+
+OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
+TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
 mkdir -p $OUTDIR
-python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc  #  CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-python biofloats_ms_plotter.py -i float_bias_rmse.nc -o $OUTDIR
+python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
+python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLEDIR
 
 
 NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/

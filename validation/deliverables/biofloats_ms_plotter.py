@@ -1,7 +1,9 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates time series png files similar to them of mdeeaf web site.
+    Generates
+     - in the first output directory time series png files similar to them of mdeeaf web site.
+     - in the 2nd output directory   two tables,  _BIAS.txt and _RMSE.txt for each variable
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputfile','-i',
@@ -9,7 +11,12 @@ def argument():
                                 required = True,
                                 help = '')
 
-    parser.add_argument(   '--outdir', '-o',
+    parser.add_argument(   '--figdir', '-f',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+    parser.add_argument(   '--tabledir', '-t',
                                 type = str,
                                 default = None,
                                 required = True,
@@ -31,7 +38,8 @@ from commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
 
-OUTFIG_DIR       = addsep(args.outdir)
+OUT_FIGDIR        = addsep(args.figdir)
+OUT_TABLEDIR       = addsep(args.table)
 inputfile        = args.inputfile
 
 class ncreader():
@@ -56,7 +64,7 @@ class ncreader():
 
 DATAfile = ncreader(inputfile)
 
-def single_plot(longvar, var, sub, layer ):
+def single_plot(longvar, var, sub, layer, timeinterval ):
     times = TL.Timelist
     bias1 = DATAfile.plotdata(DATAfile.bias   , var, sub, layer)
     rmse1 = DATAfile.plotdata(DATAfile.rmse   , var, sub, layer)
@@ -82,22 +90,36 @@ def single_plot(longvar, var, sub, layer ):
         
     ax.set_ylabel('bias, rmse mg/m$^3$')
     ax.legend(loc=2)
-    ax2.legend(loc=1)
+    #ax2.legend(loc=1)
     ax.set_title(longvar)
 
-    return fig
+    ii = np.zeros((len(times),) , np.bool)
+    for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
+    biasm = np.nanmean(bias1[ii])
+    rmsem = np.nanmean(rmse1[ii])
+    return fig, biasm, rmsem
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o']
 VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen']
 SUBLIST = OGS.NRT3.basin_list
-
+nSub = len(SUBLIST)
+nLayers = len(LAYERLIST)
+ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+headerstring=""
+for layer in LAYERLIST: headerstring=headerstring+layer.string() + "\t"
 
 for ivar, var in enumerate(VARLIST):
+    BIAS = np.zeros((nSub,nLayers),np.float32)
+    RMSE = np.zeros((nSub,nLayers),np.float32)
     for isub, sub in enumerate(SUBLIST):
-        for layer in LAYERLIST:
-            outfile = "%s%s.%s.%s.png" % (OUTFIG_DIR,var,sub.name,layer.longname())
+        for ilayer, layer in enumerate(LAYERLIST):
+            outfile = "%s%s.%s.%s.png" % (OUT_FIGDIR,var,sub.name,layer.longname())
             print outfile
-            fig = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string())
+            fig,bias,rmse  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
+            BIAS[isub,ilayer] = bias
+            RMSE[isub,ilayer] = rmse
             fig.savefig(outfile)
             pl.close(fig)
+    np.savetxt(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,fmt="%10.4f", delimiter="\t",header=headerstring)
+    np.savetxt(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,fmt="%10.4f", delimiter="\t",header=headerstring)

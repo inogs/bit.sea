@@ -90,11 +90,19 @@ VARLIST=['N1p','N3n','O2o','Ac','DIC']
 SUBlist = basV2.Pred.basin_list
 nSub = len(SUBlist)
 nLayers = len(LayerList)
+METRICvar = {'N1p':'PHO',
+             'N3n':'NIT',
+             'O2o':'DO',
+             'Ac':'ALK',
+             'DIC':'DIC'}
+
 
 
 for ivar, var in enumerate(VARLIST):
     print var
-    filename = OUTDIR + var + "ref_clim"
+    metric = METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-"
+    print ""
+    print metric + "BIAS", metric + "RMSD"
     CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList)
     
     CLIM_MODEL = np.zeros((nSub, nLayers))
@@ -105,4 +113,42 @@ for ivar, var in enumerate(VARLIST):
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim", CLIM_MODEL)
+    for ilayer, layer in enumerate(LayerList):
+        refsubs = CLIM_REF_static[:,ilayer]
+        modsubs =      CLIM_MODEL[:,ilayer]
+        bad = np.isnan(refsubs) | np.isnan(modsubs)
+        m = matchup(modsubs[~bad], refsubs[~bad])
+        print  m.bias(), m.RMSE()
+
+
+
+
+
+PresDOWN=np.array([25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+LayerList_2=[]
+top = 0
+for bottom in PresDOWN:
+    LayerList_2.append(Layer(top, bottom))
+    top = bottom
+nLayers = len(LayerList_2)
+
+for var in ['Ac','DIC']:
+    metric = METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
+    print ""
+    print metric
+    CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList_2)
+    CLIM_MODEL = np.zeros((nSub, nLayers))
+    for iSub, sub in enumerate(SUBlist):
+        Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
+        mean_profile = Mean_profiles.mean(axis=1)
+        mean_profile[mean_profile==0]=np.nan
+        CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)
+    np.save(OUTDIR + var + "ref_clim14", CLIM_REF_static)
+    np.save(OUTDIR + var + "mod_clim14", CLIM_MODEL)
+    for isub, sub in enumerate(SUBlist):
+        refsubs = CLIM_REF_static[isub,:]
+        modsubs =      CLIM_MODEL[isub,:]
+        bad = np.isnan(refsubs) | np.isnan(modsubs)
+        m = matchup(modsubs[~bad], refsubs[~bad])
+        print sub.name, m.correlation()
 

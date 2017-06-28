@@ -78,11 +78,14 @@ python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $
 #  DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+# on 8 layers
 
-# ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
-# DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD
 
-DIR = static_clim
+# ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
+# DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN
+# on 14 layers
+
+DIR=static_clim
 mkdir $DIR
-python static_clim_validation.py -i STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101
-python static_clim_metric_printer.py -i $DIR > climatology_staticDataset_validation.txt
+python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101  > staticdataset_clim_metrics.txt
+

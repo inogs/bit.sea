@@ -1,9 +1,34 @@
-#NIT-LAYER-Y-CLASS4-CLIM-BIAS
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Prints in standard output the following metrics
+
+    PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+     DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+
+    ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
+    DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD     
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument(   '--inputdir','-i',
+                                type = str,
+                                required = True,
+                                help = '')
+
+    return parser.parse_args()
+
+args = argument()
+
+
 import numpy as np
 from commons.layer import Layer
 from matchup.statistics import matchup
+from commons.utils import addsep
 
-INPUTDIR="../../static_clim/"
+INPUTDIR=addsep(args.inputdir)
 VARLIST=['N1p','N3n','O2o','Ac','DIC']
 METRICvar = {'N1p':'PHO',
              'N3n':'NIT',

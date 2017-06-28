@@ -72,4 +72,17 @@ OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/basin/
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
+# static climatology section
+# PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+# NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+#  DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+# ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+# DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 
+# ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
+# DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD
+
+DIR = static_clim
+mkdir $DIR
+python static_clim_validation.py -i STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101
+python static_clim_metric_printer.py -i $DIR > climatology_staticDataset_validation.txt

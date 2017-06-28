@@ -1,3 +1,47 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Generates in output directory two files ( model and ref) 
+    containing [nSub, nLayers] arrays of climatologies.
+    These arrays will be used in the next step to generate the following metrics:
+
+    PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+     DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+    DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+
+    ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
+    DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD     
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument(   '--inputdir','-i',
+                                type = str,
+                                required = True,
+                                help = '')
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+    parser.add_argument(   '--starttime','-s',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')
+    parser.add_argument(   '--endtime','-e',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')   
+    return parser.parse_args()
+
+args = argument()
+
 import numpy as np
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
@@ -6,27 +50,21 @@ from commons.mask import Mask
 from commons.layer import Layer
 from basins import V2 as basV2
 from static import climatology
+from commons.utils import addsep
 
-PresDOWN=np.array([10,30,60,100,150,300,600,1000])
-LayerList=[]
-top = 0
-for bottom in PresDOWN:
-    LayerList.append(Layer(top, bottom))
-    top = bottom
-    
+LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
-MODDIR="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-TI = TimeInterval("20140101","20180101","%Y%m%d")
-maskfile ="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc"
-OUTDIR = "static_clim/"
+INPUTDIR=addsep(args.inputdir)
+OUTDIR = addsep(args.outdir)
+TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
-TheMask= Mask(maskfile, loadtmask=False)
+TheMask= Mask(args.maskfile, loadtmask=False)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
 z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
-TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
+TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 
 def Layers_Mean(Pres,Values):
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
@@ -34,23 +72,23 @@ def Layers_Mean(Pres,Values):
     for ilayer, layer in enumerate(LayerList):
         ii = (Pres>=layer.top) & (Pres<=layer.bottom)
         if (ii.sum()> 1 ) :
-            local_pres = Pres[ii]
             local_profile = Values[ii]
             MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
 
 VARLIST=['N1p','N3n','O2o','Ac','DIC']
-nSub = len(basV2.P.basin_list)
+SUBlist = basV2.Pred.basin_list
+nSub = len(SUBlist)
 nLayers = len(LayerList)
 
 
 for ivar, var in enumerate(VARLIST):
     print var
     filename = OUTDIR + var + "ref_clim"
-    CLIM_REF_static = climatology.get_climatology(var,basV2.P.basin_list, LayerList)
+    CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList)
     
     CLIM_MODEL = np.zeros((nSub, nLayers))
-    for iSub, sub in enumerate(basV2.P):
+    for iSub, sub in enumerate(SUBlist):
         Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan

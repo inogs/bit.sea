@@ -120,7 +120,7 @@ A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
 A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
-    TABLE_METRICS = np.zeros((nSub,17),np.float32)*np.nan
+    TABLE_METRICS = np.zeros((nSub,18),np.float32)*np.nan
     for iSub, SubBasin in enumerate(OGS.basin_list):
 	OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
         S = SubMask(SubBasin, maskobject=TheMask)
@@ -171,6 +171,7 @@ for ivar, var in enumerate(VARLIST):
 	ax2.set_ylabel(' # Points')
         ax2.set_ylim([0,numP.max() +2])
 	ax2.legend(loc=1)
+	TABLE_METRICS[iSub,17] = np.mean(numP[ii])
  
         if (var == "P_l"):
 	    DCM_Ref = A_float[ivar,:,iSub,2]
@@ -234,7 +235,7 @@ for ivar, var in enumerate(VARLIST):
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
-    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd"
+    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
     np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']

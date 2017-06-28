@@ -11,8 +11,8 @@ def argument():
     ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 
-    ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
-    DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD     
+    ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
+    DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputdir','-i',
@@ -66,7 +66,17 @@ z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 
-def Layers_Mean(Pres,Values):
+def Layers_Mean(Pres,Values,LayerList):
+    '''
+    Performs mean of profile along layers.
+
+    Arguments:
+    * Pres      * numpy array of pressures
+    * Values    * numpy array of concetrations
+    * LayerList * list of layer objects
+    Returns :
+    * MEAN_LAY * [nLayers] numpy array, mean of each layer
+    '''
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
 
     for ilayer, layer in enumerate(LayerList):
@@ -92,7 +102,7 @@ for ivar, var in enumerate(VARLIST):
         Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
-        CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile)
+        CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim", CLIM_MODEL)
 

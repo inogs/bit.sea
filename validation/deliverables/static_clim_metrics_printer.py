@@ -9,8 +9,8 @@ def argument():
     ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 
-    ALK-PROF-Y-CLASS4-CLIM-BIAS/RMSD
-    DIC-PROF-Y-CLASS4-CLIM-BIAS/RMSD     
+    ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
+    DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputdir','-i',
@@ -61,9 +61,9 @@ from basins import V2
 SUBlist = V2.Pred.basin_list
 
 for var in ['Ac','DIC']:
-    metric = METRICvar[var] + "-PROF-Y-CLASS4-CLIM-"
+    metric = METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
     print ""
-    print metric + "BIAS", metric + "RMSD"
+    print metric
     REF = np.load(INPUTDIR + var + "ref_clim.npy")
     MOD = np.load(INPUTDIR + var + "mod_clim.npy")
     for isub, sub in enumerate(SUBlist):
@@ -71,4 +71,4 @@ for var in ['Ac','DIC']:
         modsubs = MOD[isub,:]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
         m = matchup(modsubs[~bad], refsubs[~bad])
-        print sub.name, m.bias(), m.RMSE()
+        print sub.name, m.correlation()

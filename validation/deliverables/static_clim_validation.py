@@ -51,6 +51,7 @@ from commons.layer import Layer
 from basins import V2 as basV2
 from static import climatology
 from commons.utils import addsep
+from matchup.statistics import matchup
 
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
@@ -99,9 +100,9 @@ METRICvar = {'N1p':'PHO',
 
 
 for ivar, var in enumerate(VARLIST):
+    print "" 
     print var
     metric = METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-"
-    print ""
     print metric + "BIAS", metric + "RMSD"
     CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList)
     
@@ -117,7 +118,8 @@ for ivar, var in enumerate(VARLIST):
         refsubs = CLIM_REF_static[:,ilayer]
         modsubs =      CLIM_MODEL[:,ilayer]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
-        m = matchup(modsubs[~bad], refsubs[~bad])
+        good = ~bad
+        m = matchup(modsubs[good], refsubs[good])
         print  m.bias(), m.RMSE()
 
 
@@ -149,6 +151,10 @@ for var in ['Ac','DIC']:
         refsubs = CLIM_REF_static[isub,:]
         modsubs =      CLIM_MODEL[isub,:]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
-        m = matchup(modsubs[~bad], refsubs[~bad])
-        print sub.name, m.correlation()
-
+        good = ~bad
+        ngoodlayers=good.sum()
+        if ngoodlayers>0:
+            m = matchup(modsubs[good], refsubs[good])
+            print sub.name, ngoodlayers, m.correlation()
+        else:
+            print sub.name, ngoodlayers, np.nan

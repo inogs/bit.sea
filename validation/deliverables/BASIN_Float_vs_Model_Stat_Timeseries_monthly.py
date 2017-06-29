@@ -3,7 +3,19 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Needs a profiler.py, already executed.
 
-    Produces a file, containing timeseries for some statistics, for each wmo.
+    Generates in output directory two files ( model and ref) 
+    containing [(nVar, nTime, nSub, nStat)] arrays.
+    The metrics are:
+    These arrays will be used in the next step to generate the following metrics:
+
+    CHL-PROF-D-CLASS4-PROF-CORR-BASIN
+    NIT-PROF-D-CLASS4-PROF-CORR-BASIN
+     DO-PROF-D-CLASS4-PROF-CORR-BASIN 
+
+    The following step will be in 
+    BASIN_Float_vs_Model_Stat_Timeseries_monthly.py
+    and the results will be displayed in FIG.IV.6 and TABLE IV.3
+
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -52,8 +64,6 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 MonthlyRequestors=M.TL.getMonthlist()
 nTime = len(MonthlyRequestors)
 
-#MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
-#wmo_list=bio_float.get_wmo_list(MED_PROFILES)
 
 iz200 = TheMask.getDepthIndex(200)+1 # Max Index for depth 200m
 

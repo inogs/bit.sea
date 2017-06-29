@@ -3,7 +3,16 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Needs a profiler.py, already executed.
 
-    Produces 3 png files, containing timeseries for some statistics, for each wmo.
+    It reads in the input directory two files ( model and ref) 
+    containing [(nVar, nTime, nSub, nStat)] arrays to generate
+    the following metrics:
+
+    CHL-PROF-D-CLASS4-PROF-CORR-BASIN
+    NIT-PROF-D-CLASS4-PROF-CORR-BASIN
+     DO-PROF-D-CLASS4-PROF-CORR-BASIN 
+
+    FIG.IV.6   - It produces 3 png files, containing timeseries for some statistics, for each basin (7 basins).
+    TABLE IV.3 - It produces also a table for the relative MEANS, BIAS and RMSD.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 

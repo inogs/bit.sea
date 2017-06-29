@@ -135,3 +135,41 @@ def getcolor(ntimes,itime, colormap='gist_ncar'):
     fact = float(itime)/ntimes
     rgba = cmap(fact)
     return rgba
+
+def writetable(filename, M, rows_names_list,column_names_list,fmt="%3.2f\t"):
+    '''
+    Writes a 2d numpy array into a text file.
+    It is a wrapper of np.savetxt
+
+    Arguments:
+    * filename * string
+    * M        * a 2d numpy array
+    * rows_names_list   * list of string, it will appear as first column
+    * column_names_list * list of string, it will appear as first row
+    
+    
+    Example:
+    import numpy as np
+    A=np.random.randn(3,2)
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'])
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'],fmt='%5.3f\t')
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'],fmt='%3.2f\t %d')
+    '''
+
+    headerstr="\t"
+    dtype = [('colnames','S20')]
+    for col_name in column_names_list:
+        dtype.append((col_name,np.float32))
+        headerstr = headerstr + col_name + "\t "
+
+    nrows,ncols=M.shape
+    X = np.zeros((nrows,), dtype=dtype)
+    for i in range(nrows):
+        X['colnames'][i] = rows_names_list[i]
+    for icol,colname  in enumerate(column_names_list):
+        X[colname] = M[:,icol]
+    if fmt.count("%") == 1:
+        myformat = "%s\t" + fmt*ncols
+    else:
+        myformat = "%s\t" + fmt
+    np.savetxt(filename, X, fmt=myformat, header=headerstr)

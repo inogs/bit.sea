@@ -11,8 +11,13 @@ def argument():
     NIT-PROF-D-CLASS4-PROF-CORR-BASIN
      DO-PROF-D-CLASS4-PROF-CORR-BASIN 
 
-    FIG.IV.6   - It produces 3 png files, containing timeseries for some statistics, for each basin (7 basins).
-    TABLE IV.3 - It produces also a table for the relative MEANS, BIAS and RMSD.
+    FIGURES    - It produces 3 png files, containing timeseries for some statistics, for each basin (7 basins).
+    FIG.IV.5   - for Chla
+    FIG.IV.13  - for Nitrate
+
+    TABLES     - It produces also a table for the relative MEANS, BIAS and RMSD.
+    TABLE IV.4 - for Chla
+    TABLE IV.7 - for Nitrate
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -51,6 +56,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from basins.V2 import NRT3 as OGS
 from commons.time_interval import TimeInterval
 from matchup.statistics import *
+from commons.utils import writetable
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -108,6 +114,7 @@ VARLIST      = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
+METRICS_SHORT= ['CORR','INT 0-200 BIAS','INT 0-200 RMSD','DCM BIAS','DCM RMDS','MLB BIAS','MLB RMSD','NIT BIAS','NIT RMSD','N POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
@@ -130,6 +137,7 @@ A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
     TABLE_METRICS = np.zeros((nSub,18),np.float32)*np.nan
+    TABLE_METRICS_SHORT = np.zeros((nSub,10),np.float32)*np.nan
     for iSub, SubBasin in enumerate(OGS.basin_list):
 	OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
         S = SubMask(SubBasin, maskobject=TheMask)
@@ -244,8 +252,24 @@ for ivar, var in enumerate(VARLIST):
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
+
+    column_names=[layer.string() for layer in LAYERLIST]
+    row_names   =[sub.name for sub in OGS.basin_list]
+
+    TABLE_METRICS_SHORT[:,0] = TABLE_METRICS[:,0]
+    TABLE_METRICS_SHORT[:,1] = TABLE_METRICS[:,3]
+    TABLE_METRICS_SHORT[:,2] = TABLE_METRICS[:,4]
+    TABLE_METRICS_SHORT[:,3] = TABLE_METRICS[:,7]
+    TABLE_METRICS_SHORT[:,4] = TABLE_METRICS[:,8]
+    TABLE_METRICS_SHORT[:,5] = TABLE_METRICS[:,11]
+    TABLE_METRICS_SHORT[:,6] = TABLE_METRICS[:,12]
+    TABLE_METRICS_SHORT[:,7] = TABLE_METRICS[:,15]
+    TABLE_METRICS_SHORT[:,8] = TABLE_METRICS[:,16]
+    TABLE_METRICS_SHORT[:,9] = TABLE_METRICS[:,17]
+
     headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
     np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
+    writetetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %d\t %d\t %d\t %d\t %d\t %d\t %d")
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 

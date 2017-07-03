@@ -13,10 +13,10 @@ OUTDIR=spaghettiplots
 mkdir -p $OUTDIR
 python plot_layer_timeseries_on_profiles.py -i $STAT_PROFILES_DIR -m $MASKFILE -o $OUTDIR
 
+mkdir -p Fig4.1/
 
 
-
-COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 20140101 -e 20180101"
+COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 20150101 -e 20170101"
 
 mkdir -p LayerMaps
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS  # CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
@@ -29,6 +29,7 @@ python averager_and_plot_map.py -i $INPUTDIR        -v pH   -t mean $COMMONS_PAR
 python averager_and_plot_map.py -i $INPUTDIR        -v pCO2 -t mean $COMMONS_PARAMS  # PCO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral $COMMONS_PARAMS  # per lo 0-200m
 
+python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
 mkdir -p fig4.2 fig4.3/offshore fig4.3/coast
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
@@ -61,10 +62,12 @@ python Hov_flots+model.py
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR
+mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.8/ table 4.11/
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
-
+cp $TABLE_DIR/P_l.BIAS.txt $TABLE_DIR/P_l.RMSE.txt table4.3/
+cp $TABLE_DIR/N3n.BIAS.txt $TABLE_DIR/N3n.RMSE.txt table4.8/
+cp $TABLE_DIR/O2o.BIAS.txt $TABLE_DIR/O2o.RMSE.txt table4.11/
 
 NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
 OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/float/

@@ -121,14 +121,9 @@ for ivar, var in enumerate(VARLIST):
             fig,bias,rmse  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse
-            fig.suptitle()
+            title = "%s %s" %(sub.extended_name, layer.string())
+            fig.suptitle(title)
             fig.savefig(outfile)
             pl.close(fig)
-    writetetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,rows_names, column_names)
-    writetetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,rows_names, column_names)
-
-
-
-
-chl - > table IV.3
-N3n -> table IV.14
+    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
+    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)

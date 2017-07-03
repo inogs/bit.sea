@@ -37,6 +37,7 @@ from basins import V2 as OGS
 from commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
+from commons.utils import writetable
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -106,8 +107,9 @@ SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)
 ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
-headerstring=""
-for layer in LAYERLIST: headerstring=headerstring+layer.string() + "\t"
+
+column_names=[layer.string() for layer in LAYERLIST]
+row_names   =[sub.name for sub in SUBLIST]
 
 for ivar, var in enumerate(VARLIST):
     BIAS = np.zeros((nSub,nLayers),np.float32)
@@ -119,7 +121,14 @@ for ivar, var in enumerate(VARLIST):
             fig,bias,rmse  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse
+            fig.suptitle()
             fig.savefig(outfile)
             pl.close(fig)
-    np.savetxt(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,fmt="%10.4f", delimiter="\t",header=headerstring)
-    np.savetxt(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,fmt="%10.4f", delimiter="\t",header=headerstring)
+    writetetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,rows_names, column_names)
+    writetetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,rows_names, column_names)
+
+
+
+
+chl - > table IV.3
+N3n -> table IV.14

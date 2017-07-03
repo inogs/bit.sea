@@ -48,6 +48,9 @@ python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
+# Figure IV.4b
+mkdir -p fig4.4b
+python Hov_flots+model.py
 
 
 #bioflots section

@@ -40,9 +40,6 @@ python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N3n -t m
 mkdir FigureP_c
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR -m $MASKFILE -o FigureP_c -v P_c -t mean  -l nut_layerlist
 
-# Figure IV.4b
-python Hov_flots+model.py
-
 # Figure IV.5
 INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/11_sub/INTEGRALS/PPN/
 INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro

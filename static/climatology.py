@@ -38,10 +38,12 @@ def get_climatology(modelvarname, subbasinlist, LayerList ):
     '''
     Returns 
     * CLIM * [nsub, nLayers] numpy array, a basic annual climatology
+    * STD  * [nsub, nLayers] numpy array, relative std values
     '''
     nSub    = len(subbasinlist)
     nLayers = len(LayerList)
-    CLIM = np.zeros((nSub, nLayers), np.float32)*np.nan
+    CLIM    = np.zeros((nSub, nLayers), np.float32)*np.nan
+    STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
     var, Dataset = DatasetInfo(modelvarname)
     for isub, sub in enumerate(subbasinlist):
         Profilelist =Dataset.Selector(var, TI, sub)
@@ -55,4 +57,5 @@ def get_climatology(modelvarname, subbasinlist, LayerList ):
             ii = (Pres>=layer.top) & (Pres<=layer.bottom)
             if (ii.sum()> 1 ) :
                 CLIM[isub, ilayer] = Values[ii].mean()
-    return CLIM
+                STD[isub, ilayer] = Values[ii].std()
+    return CLIM, STD

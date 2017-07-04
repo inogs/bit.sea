@@ -74,18 +74,26 @@ OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/float/
 python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 
+
+
+
 OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/basin/
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
-# static climatology section
+# static dataset climatology section
+# Figures 4.11 and 4.18
+mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.18
+python simulation_vs_clim.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles -s 20150101 -e 20170101 -m $MASKFILE
+mv sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
+mv sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
+
 # PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 #  DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
 # on 8 layers
-
 
 # ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
 # DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN
@@ -94,4 +102,3 @@ python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $
 DIR=static_clim
 mkdir $DIR
 python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101  > staticdataset_clim_metrics.txt
-

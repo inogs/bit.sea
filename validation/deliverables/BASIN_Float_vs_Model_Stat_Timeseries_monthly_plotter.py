@@ -57,6 +57,7 @@ from basins.V2 import NRT3 as OGS
 from commons.time_interval import TimeInterval
 from matchup.statistics import *
 from commons.utils import writetable
+from datetime import datetime
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -72,6 +73,7 @@ def fig_setup(S,subbasin_name):
     axs = [ax1, ax2, ax3, ax4]
     for ax in [ax2, ax3, ax4]:
         ax.xaxis.grid(True)
+        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
 
     fig.set_size_inches(10,15)
     fig.set_dpi(150)
@@ -114,7 +116,7 @@ VARLIST      = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
-METRICS_SHORT= ['CORR','INT 0-200 BIAS','INT 0-200 RMSD','DCM BIAS','DCM RMDS','MLB BIAS','MLB RMSD','NIT BIAS','NIT RMSD','N POINTS']
+METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMDS','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
@@ -253,7 +255,6 @@ for ivar, var in enumerate(VARLIST):
 
         fig.savefig(OUTFILE)
 
-    column_names=[layer.string() for layer in LAYERLIST]
     row_names   =[sub.name for sub in OGS.basin_list]
 
     TABLE_METRICS_SHORT[:,0] = TABLE_METRICS[:,0]
@@ -269,7 +270,7 @@ for ivar, var in enumerate(VARLIST):
 
     headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
     np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
-    writetetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %d\t %d\t %d\t %d\t %d\t %d\t %d")
+    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 

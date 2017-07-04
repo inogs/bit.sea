@@ -51,8 +51,10 @@ def readModelProfile(filename,var, wmo):
 T_start = DATESTART
 T_end   = DATE__END
 TI1 = T_INT
-T_start2num = mpldates.date2num(datetime.strptime(T_start,'%Y%m%d-%H:%M:%S'))
-T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d-%H:%M:%S'))
+#T_start2num = mpldates.date2num(datetime.strptime(T_start,'%Y%m%d-%H:%M:%S'))
+#T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d-%H:%M:%S'))
+T_start2num = mpldates.date2num(datetime.strptime(T_start,'%Y%m%d'))
+T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d'))
 reg1 = [OGS.med]
 reg_sn = ['med']
 
@@ -148,7 +150,11 @@ for j in range(0,len(wmo_list)):
       ax4.set_title("BFM model: " + plotvarname[0], color = 'b')
       ax4.set_ylabel("depth $[m]$",color = 'k')
 
-      cbaxes = fig.add_axes([0.95, 0.01, 0.02, 0.95]) 
+      colorbar_bottom= ax4.get_position().ymin
+      colorbar_extent= ax3.get_position().ymax - colorbar_bottom
+
+#      cbaxes = fig.add_axes([0.95, 0.01, 0.02, 0.95]) 
+      cbaxes = fig.add_axes([0.93, colorbar_bottom , 0.02, colorbar_extent])
       fig.colorbar(quadmesh, cax = cbaxes, )  
 
 

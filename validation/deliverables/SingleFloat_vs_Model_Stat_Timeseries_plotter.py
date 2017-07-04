@@ -38,6 +38,7 @@ from commons.utils import addsep
 from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import basins.V2 as OGS
+from datetime import datetime
 
 def fig_setup(wmo,Lon,Lat):
     from layer_integral import coastline
@@ -51,6 +52,7 @@ def fig_setup(wmo,Lon,Lat):
     axs = [ax0, ax1, ax2, ax3, ax4]
     for ax in [ax2, ax3, ax4]:
 	ax.xaxis.grid(True)
+        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
 
     fig.set_size_inches(10,15)
     fig.set_dpi(150)

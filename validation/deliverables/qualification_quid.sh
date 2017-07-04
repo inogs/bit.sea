@@ -49,9 +49,25 @@ python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
-# Figure IV.4b
-mkdir -p fig4.4b
+# Figures 4.4a
+mkdir -p Fig4.4a Fig4.4b Fig4.5 tmp_nc table4.4 table4.7
 python Hov_flots+model.py
+
+# Figures 4.4b
+NCDIR=tmp_nc
+OUTDIR=Fig4.4b
+python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
+python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
+mv $OUTDIR/N3n*.png Fig4.12
+
+# Figures 4.5
+OUTDIR=Fig4.5
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
+mv $OUTDIR/N3n*.png Fig4.13
+
+cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/ 
+cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.7/
 
 
 #bioflots section
@@ -69,17 +85,6 @@ cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
 cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.8/
 cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.11/
 
-NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
-OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/float/
-python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
-python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
-
-
-
-
-OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/basin/
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
 # static dataset climatology section
 # Figures 4.11 and 4.18

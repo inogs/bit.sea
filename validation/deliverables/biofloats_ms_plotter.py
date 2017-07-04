@@ -91,8 +91,6 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
         
     ax.set_ylabel('bias, rmse mg/m$^3$')
     ax.legend(loc=2)
-    #ax2.legend(loc=1)
-    ax.set_title(longvar)
 
     ii = np.zeros((len(times),) , np.bool)
     for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
@@ -121,7 +119,7 @@ for ivar, var in enumerate(VARLIST):
             fig,bias,rmse  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse
-            title = "%s %s" %(sub.extended_name, layer.string())
+            title = "%s %s %s " %(VARLONGNAMES[ivar], sub.extended_name, layer.string())
             fig.suptitle(title)
             fig.savefig(outfile)
             pl.close(fig)

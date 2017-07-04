@@ -62,12 +62,12 @@ python Hov_flots+model.py
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.8/ table 4.11/
+mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.8/ table4.11/
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
-cp $TABLE_DIR/P_l.BIAS.txt $TABLE_DIR/P_l.RMSE.txt table4.3/
-cp $TABLE_DIR/N3n.BIAS.txt $TABLE_DIR/N3n.RMSE.txt table4.8/
-cp $TABLE_DIR/O2o.BIAS.txt $TABLE_DIR/O2o.RMSE.txt table4.11/
+cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
+cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.8/
+cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.11/
 
 NCDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/
 OUTDIR=/pico/scratch/userexternal/lfeudale/validation/work/output/PNG/float/

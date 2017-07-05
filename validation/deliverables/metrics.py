@@ -3,6 +3,7 @@ import numpy as np
 def find_DCM(Chl_profile,zlev):
 
         A = Chl_profile
+	CHL_surf = Chl_profile[0]
         A_filtered=A[A>0.1]
         D_filtered=zlev[A>0.1]
         A_fil_rev = A_filtered[::-1]
@@ -19,6 +20,7 @@ def find_DCM(Chl_profile,zlev):
                 DCM = D_fil_rev[ip]
 
 	if (DCM < 40): DCM = np.nan
+	if (CM/CHL_surf < 1.5): DCM = np.nan
 
         return CM, DCM
 

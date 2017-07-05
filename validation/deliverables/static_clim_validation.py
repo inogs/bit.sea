@@ -52,6 +52,7 @@ from basins import V2 as basV2
 from static import climatology
 from commons.utils import addsep
 from matchup.statistics import matchup
+from commons.utils import writetable
 
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
@@ -99,6 +100,8 @@ METRICvar = {'N1p':'PHO',
 
 
 
+rows_names  =[layer.string() for layer in LAYERLIST]
+column_names=['bias','rmse','corr']
 for ivar, var in enumerate(VARLIST):
     print "" 
     print var
@@ -114,15 +117,21 @@ for ivar, var in enumerate(VARLIST):
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim", CLIM_MODEL)
+    STATS = np.zeros((nLayers,3),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
         refsubs = CLIM_REF_static[:,ilayer]
         modsubs =      CLIM_MODEL[:,ilayer]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
         good = ~bad
         m = matchup(modsubs[good], refsubs[good])
-        print  m.bias(), m.RMSE()
+        STATS[ilayer,0] = m.bias()
+        STATS[ilayer,1] = m.RMSE()
+        STATS[ilayer,2] = m.correlation()
+    writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM.txt", STATS,rows_names,column_names)
 
-
+# N1p e N3n in table 4.5
+# O2o in table 4.9
+# Alk, dic in table 4.12
 
 
 
@@ -134,7 +143,12 @@ for bottom in PresDOWN:
     top = bottom
 nLayers = len(LayerList_2)
 
-for var in ['Ac','DIC']:
+
+
+rows_names=[sub.name for sub in SUBlist]
+column_names = ['correlation']
+
+for var in VARLIST:
     metric = METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
     print ""
     print metric
@@ -147,14 +161,19 @@ for var in ['Ac','DIC']:
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)
     np.save(OUTDIR + var + "ref_clim14", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim14", CLIM_MODEL)
-    for isub, sub in enumerate(SUBlist):
-        refsubs = CLIM_REF_static[isub,:]
-        modsubs =      CLIM_MODEL[isub,:]
+    CORR = np.zeros((nSub,),np.float32)*np.nan
+    for iSub, sub in enumerate(SUBlist):
+        refsubs = CLIM_REF_static[iSub,:]
+        modsubs =      CLIM_MODEL[iSub,:]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
         good = ~bad
         ngoodlayers=good.sum()
         if ngoodlayers>0:
             m = matchup(modsubs[good], refsubs[good])
-            print sub.name, ngoodlayers, m.correlation()
-        else:
-            print sub.name, ngoodlayers, np.nan
+            CORR[iSub] = m.correlation()
+    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN", CORR, rows_names,column_names)
+
+
+# Table 4.6 Correlazione N1p, N3n per certi subbasins
+# Table 4.10 Correlazione O2o per certi subbasins
+# Table 4.13 Bias,Rms corr per V2.Pred subs

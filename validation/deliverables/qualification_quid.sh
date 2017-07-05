@@ -49,8 +49,9 @@ python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
+# BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.5 tmp_nc table4.4 table4.7
+mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.13 tmp_nc table4.4 table4.7
 OUTDIR=Fig4.4a
 python Hov_flots+model.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
@@ -61,7 +62,11 @@ python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.12
 
-# Figures 4.5
+# Figures 4.5 and 4.13 + tables 4.4 and 4.7
+# CHL-PROF-D-CLASS4-PROF-CORR-BASIN
+# NIT-PROF-D-CLASS4-PROF-CORR-BASIN
+#  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
+
 OUTDIR=Fig4.5
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
@@ -71,10 +76,10 @@ cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/
 cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.7/
 
 
-#bioflots section
-#  CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-#  NIT-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-#   DO-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+# BIOFLOATS SECTION: statistics on layers
+# CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+# NIT-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
+#  DO-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
 
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files

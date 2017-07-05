@@ -85,20 +85,22 @@ python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
 cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.8/
 cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.11/
-
+cp $OUTFIGDIR/*P_l* fig4.5
+cp $OUTFIGDIR/*N3n* fig4.14
+cp $OUTFIGDIR/*O2o* fig4.15
 
 # static dataset climatology section
 # Figures 4.11 and 4.18
 mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.18
 python simulation_vs_clim.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles -s 20150101 -e 20170101 -m $MASKFILE
-mv sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
-mv sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
+cp sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
+cp sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
 
-# PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-# NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-#  DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-# ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-# DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
+# PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
+# NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
+#  DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
+# ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
+# DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
 # on 8 layers
 
 # ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
@@ -106,5 +108,8 @@ mv sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
 # on 14 layers
 
 DIR=static_clim
-mkdir $DIR
+mkdir $DIR table4.5 table4.6 table4.9/ table4.10 table4.12/ table4.13
 python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101  > staticdataset_clim_metrics.txt
+cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.5/
+cp $DIR/O2o-LAYER-Y-CLASS4-CLIM.txt table4.9/
+cp $DIR/Ac-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt table4.12/

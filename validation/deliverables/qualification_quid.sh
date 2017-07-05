@@ -51,7 +51,8 @@ python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAS
 
 # Figures 4.4a
 mkdir -p Fig4.4a Fig4.4b Fig4.5 tmp_nc table4.4 table4.7
-python Hov_flots+model.py
+OUTDIR=Fig4.4a
+python Hov_flots+model.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 
 # Figures 4.4b
 NCDIR=tmp_nc

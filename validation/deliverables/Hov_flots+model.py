@@ -1,3 +1,33 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Produces Hovmoeller png files, containing the float trajectory and the two CHLA Hovmoeller for float and model for each wmo.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                default = "/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc",
+                                required = False,
+                                help = ''' Path of maskfile''')
+
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+#                                default = None,
+				default = "/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/",
+                                required = True,
+                                help = "")
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+
+    return parser.parse_args()
+
+args = argument()
+
 import os,sys
 import scipy.io.netcdf as NC
 from commons.mask import Mask
@@ -26,7 +56,11 @@ from timeseries.plot import *
 meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
 
-TheMask=Mask('/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc')
+TheMask=Mask(args.maskfile)
+INPUTDIR_model = addsep(args.inputdir)
+OUTDIR = addsep(args.outdir)
+#INPUTDIR_model="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/"
+# OUTDIR="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/Hovmoeller/"
 
 def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
     if (fig is None) or (ax is None):
@@ -51,14 +85,11 @@ def readModelProfile(filename,var, wmo):
 T_start = DATESTART
 T_end   = DATE__END
 TI1 = T_INT
-#T_start2num = mpldates.date2num(datetime.strptime(T_start,'%Y%m%d-%H:%M:%S'))
-#T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d-%H:%M:%S'))
 T_start2num = mpldates.date2num(datetime.strptime(T_start,'%Y%m%d'))
 T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d'))
 reg1 = [OGS.med]
 reg_sn = ['med']
 
-INPUTDIR_model="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/"
 max_depth = 26
 
 MM = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -182,5 +213,5 @@ for j in range(0,len(wmo_list)):
       ax2.set_ylim([np.min(Lat[:ipp]) -extent/2, np.max(Lat[:ipp]) +extent/2])
 
 
-      fig.savefig(''.join(['/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/Hovmoeller//Float+TRANS_',p.name(),'.png']))
+      fig.savefig(''.join([OUTDIR,'Hov_Float+TRANS_',p.name(),'.png']))
       fig.show()

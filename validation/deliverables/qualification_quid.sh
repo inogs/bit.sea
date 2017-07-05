@@ -98,8 +98,12 @@ cp sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
 cp sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
 
 DIR=static_clim
-mkdir $DIR table4.5 table4.6 table4.9/ table4.10 table4.12/ table4.13
+mkdir -p $DIR table4.5 table4.6 table4.9/ table4.10 table4.12/ table4.13
+# -------------------------------------------------------------------------
+
 python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101
+
+# -------------------------------------------------------------------------
 cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.5/
 cp $DIR/O2o-LAYER-Y-CLASS4-CLIM.txt                                  table4.9/
 cp $DIR/Ac-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.12/

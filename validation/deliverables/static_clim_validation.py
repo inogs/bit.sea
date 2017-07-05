@@ -100,14 +100,11 @@ METRICvar = {'N1p':'PHO',
 
 
 
-rows_names  =[layer.string() for layer in LAYERLIST]
+rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
 for ivar, var in enumerate(VARLIST):
-    print "" 
-    print var
-    metric = METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-"
-    print metric + "BIAS", metric + "RMSD"
-    CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList)
+    print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
+    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList)
     
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
@@ -149,10 +146,8 @@ rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
 
 for var in VARLIST:
-    metric = METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
-    print ""
-    print metric
-    CLIM_REF_static = climatology.get_climatology(var,SUBlist, LayerList_2)
+    print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
+    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
         Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
@@ -161,7 +156,7 @@ for var in VARLIST:
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)
     np.save(OUTDIR + var + "ref_clim14", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim14", CLIM_MODEL)
-    CORR = np.zeros((nSub,),np.float32)*np.nan
+    CORR = np.zeros((nSub,1),np.float32)*np.nan
     for iSub, sub in enumerate(SUBlist):
         refsubs = CLIM_REF_static[iSub,:]
         modsubs =      CLIM_MODEL[iSub,:]
@@ -170,8 +165,8 @@ for var in VARLIST:
         ngoodlayers=good.sum()
         if ngoodlayers>0:
             m = matchup(modsubs[good], refsubs[good])
-            CORR[iSub] = m.correlation()
-    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN", CORR, rows_names,column_names)
+            CORR[iSub,0] = m.correlation()
+    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
 
 
 # Table 4.6 Correlazione N1p, N3n per certi subbasins

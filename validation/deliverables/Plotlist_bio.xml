@@ -79,6 +79,7 @@
 
 <!--  PH @ insitu total scale -->
 <plots var="pH" units="@Tinsitu, Total Scale" plotunits="Total Scale" name="pH" longname="Seawater acidity">
+<depth top= "0000" bottom="0030" levplot="0000" clim="[7.95,8.25]"> </depth>
 <depth top= "0000" bottom="0010" levplot="0000" clim="[7.95,8.25]"> </depth>
 <depth top= "0010" bottom="0030" levplot="0010" clim="[7.95,8.25]"> </depth>
 <depth top= "0030" bottom="0060" levplot="0030" clim="[7.95,8.25]"> </depth>
@@ -91,6 +92,7 @@
 
 <!--  pCO2 -->
 <plots var="pCO2" units="uatm" plotunits="$\mu$ atm "  name="pCO2" longname="Seawater pCO2">
+<depth top= "0000" bottom="0030" levplot="0000" clim="[200,550]"> </depth>
 <depth top= "0000" bottom="0010" levplot="0000" clim="[200,550]"> </depth>
 <depth top= "0010" bottom="0030" levplot="0010" clim="[200,550]"> </depth>
 <depth top= "0030" bottom="0060" levplot="0030" clim="[200,550]"> </depth>

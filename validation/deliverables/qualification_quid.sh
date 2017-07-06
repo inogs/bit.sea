@@ -59,15 +59,16 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
 mkdir Fig4.19 Fig4.20
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 2 -v PH -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 5 -v PH -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 8 -v PH -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 11 -v PH -t mean -M $MASKFILE
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160201 -e 20160301  -M $MASKFILE -o Fig4.19/Feb
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160501 -e 20160601  -M $MASKFILE -o Fig4.19/May
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160801 -e 20160901  -M $MASKFILE -o Fig4.19/Aug
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20161101 -e 20161201  -M $MASKFILE -o Fig4.19/Nov
 
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 2 -v pCO2 -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 5 -v pCO2 -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 8 -v pCO2 -t mean -M $MASKFILE
-python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 11 -v pCO2 -t mean -M $MASKFILE
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160201 -e 20160301  -M $MASKFILE -o Fig4.20/Feb
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160501 -e 20160601  -M $MASKFILE -o Fig4.20/May
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160801 -e 20160901  -M $MASKFILE -o Fig4.20/Aug
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20161201  -M $MASKFILE -o Fig4.20/Nov
+
 
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin

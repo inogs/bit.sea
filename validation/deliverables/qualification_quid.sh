@@ -74,7 +74,7 @@ python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.13 tmp_nc table4.4 table4.7
+mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.12 Fig4.13 tmp_nc table4.4 table4.7
 OUTDIR=Fig4.4a
 python Hov_flots+model.py -m $MASKFILE -i $PROFILATORE_DIR -o $OUTDIR
 

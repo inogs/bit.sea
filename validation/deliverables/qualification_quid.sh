@@ -59,16 +59,16 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
-mkdir Fig4.19 Fig4.20
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160201 -e 20160301  -M $MASKFILE -o Fig4.19/Feb
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160501 -e 20160601  -M $MASKFILE -o Fig4.19/May
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160801 -e 20160901  -M $MASKFILE -o Fig4.19/Aug
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20161101 -e 20161201  -M $MASKFILE -o Fig4.19/Nov
+mkdir -p Fig4.19/Feb Fig1.19/May Fig4.19/Aug Fig4.19/Nov Fig4.20/Feb Fig4.20/May  Fig4.20/Aug  Fig4.20/Nov
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160201 -e 20160301  -m $MASKFILE -o Fig4.19/Feb
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160501 -e 20160601  -m $MASKFILE -o Fig4.19/May
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160801 -e 20160901  -m $MASKFILE -o Fig4.19/Aug
+python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20161101 -e 20161201  -m $MASKFILE -o Fig4.19/Nov
 
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160201 -e 20160301  -M $MASKFILE -o Fig4.20/Feb
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160501 -e 20160601  -M $MASKFILE -o Fig4.20/May
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160801 -e 20160901  -M $MASKFILE -o Fig4.20/Aug
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20161201  -M $MASKFILE -o Fig4.20/Nov
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160201 -e 20160301  -m $MASKFILE -o Fig4.20/Feb
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160501 -e 20160601  -m $MASKFILE -o Fig4.20/May
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160801 -e 20160901  -m $MASKFILE -o Fig4.20/Aug
+python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20161201  -m $MASKFILE -o Fig4.20/Nov
 
 
 

@@ -7,7 +7,6 @@ export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MOD
          INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/MODEL/AVE_FREQ_2
    INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
 STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
-PROFILATORE_DIR=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/
 SAT_MONTHLY_DIR=
 
 OUTDIR=spaghettiplots
@@ -74,9 +73,9 @@ python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.12 Fig4.13 tmp_nc table4.4 table4.7
+mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.13 tmp_nc table4.4 table4.7
 OUTDIR=Fig4.4a
-python Hov_flots+model.py -m $MASKFILE -i $PROFILATORE_DIR -o $OUTDIR
+python Hov_flots+model.py -m $MASKFILE -o $OUTDIR
 
 # Figures 4.4b
 NCDIR=tmp_nc

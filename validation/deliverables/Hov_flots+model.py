@@ -11,12 +11,6 @@ def argument():
                                 required = False,
                                 help = ''' Path of maskfile''')
 
-    parser.add_argument(   '--inputdir', '-i',
-                                type = str,
-#                                default = None,
-				default = "/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/",
-                                required = True,
-                                help = "")
 
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
@@ -57,10 +51,7 @@ meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
 
 TheMask=Mask(args.maskfile)
-INPUTDIR_model = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-#INPUTDIR_model="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/PROFILES/"
-# OUTDIR="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/Hovmoeller/"
 
 def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
     if (fig is None) or (ax is None):
@@ -79,9 +70,6 @@ def readModelProfile(filename,var, wmo):
     Profile = M[iProfile,:]
     return Profile
 
-#T_start = '20150101'
-#T_end   = '20161223'
-#TI1 = TimeInterval(T_start,T_end,'%Y%m%d')
 T_start = DATESTART
 T_end   = DATE__END
 TI1 = T_INT
@@ -127,7 +115,7 @@ for j in range(0,len(wmo_list)):
 
 	  # PLOT FOR THE MODEL
 	  TM=MM.modeltime(p)
-	  FILENAME = INPUTDIR_model + TM.strftime("ave.%Y%m%d-12:00:00.profiles.nc")
+	  FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
 	  print FILENAME
           M = readModelProfile(FILENAME,'P_l',p.ID())
 	  M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:26],M[:max_depth])
@@ -214,4 +202,4 @@ for j in range(0,len(wmo_list)):
 
 
       fig.savefig(''.join([OUTDIR,'Hov_Float+TRANS_',p.name(),'.png']))
-      fig.show()
+      pl.close(fig)

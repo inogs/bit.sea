@@ -19,28 +19,37 @@ mkdir -p Fig4.1/
 COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 20150101 -e 20170101"
 
 mkdir -p LayerMaps
-python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS  # CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-python averager_and_plot_map.py -i $INPUTDIR        -v N3n  -t mean $COMMONS_PARAMS  # NIT-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PARAMS  # PHOS-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS      # Fig4.1 CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+python averager_and_plot_map.py -i $INPUTDIR        -v N3n  -t mean $COMMONS_PARAMS      # FIg4.10 NIT-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PARAMS      # Fig4.9  PHOS-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 per lo 0-200m
+
 python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t mean $COMMONS_PARAMS  # NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v O2o  -t mean $COMMONS_PARAMS  # DO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_c  -t mean $COMMONS_PARAMS  # PHYC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v pH   -t mean $COMMONS_PARAMS  # PH-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v pCO2 -t mean $COMMONS_PARAMS  # PCO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral $COMMONS_PARAMS  # per lo 0-200m
+
 
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
-mkdir -p fig4.2 fig4.3/offshore fig4.3/coast
+mkdir -p fig4.2 fig4.3/offshore fig4.3/coast table4.1 table4.2
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
 INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_11/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea.pkl
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
 python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./fig4.2/
 
-# figure 4.3 and table 4.1
-python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3/offshore
-python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3/coast
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3/offshore  # table4.1
+python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3/coast     # table4.2
+cp fig4.3/offshore/table4.1 table4.1
+cp fig4.3/coast/table4.1    table4.2
+
+
+mkdir -p Fig4.8
+INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
+python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
+
 
 # Figure carbonatiche 1x1
 # ALK-LAYER-Y-CLASS4-CLIM-RMSD
@@ -48,6 +57,18 @@ python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o
 # DIC-LAYER-Y-CLASS4-CLIM-RMS
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
 python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
+
+mkdir Fig4.19 Fig4.20
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 2 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 5 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 8 -v PH -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.19/ -m 11 -v PH -t mean -M $MASKFILE
+
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 2 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 5 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 8 -v pCO2 -t mean -M $MASKFILE
+python seasonal_plot_map.py -i $INPUTDIR -o Fig4.20/ -m 11 -v pCO2 -t mean -M $MASKFILE
+
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a

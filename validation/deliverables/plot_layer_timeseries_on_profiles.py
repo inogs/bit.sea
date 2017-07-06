@@ -122,6 +122,7 @@ for var in VARLIST:
                     y[it] = weighted_mean(m, weights)
                 color=getcolor(len(SUBBASIN_LIST), iSub)
                 ax.plot(TL.Timelist,y,color=color,label=sub.name)
+                ax.yaxis.grid()
                 
         ax=axes[0]        
         ax.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0,labelspacing=0.25, handletextpad=0,borderpad=1.6)

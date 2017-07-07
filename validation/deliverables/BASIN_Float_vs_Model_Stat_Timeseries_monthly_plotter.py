@@ -254,6 +254,7 @@ for ivar, var in enumerate(VARLIST):
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
+	plt.close(fig)
 
     row_names   =[sub.name for sub in OGS.basin_list]
 

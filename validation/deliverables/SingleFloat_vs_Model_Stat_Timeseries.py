@@ -90,11 +90,8 @@ for wmo in wmo_list:
                 A_model[ivar,itime,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
                 DCM2_float = find_DCM2(gm200.Ref  ,gm200.Depth)[1] # DCM
                 DCM2_model = find_DCM2(gm200.Model,gm200.Depth)[1] # DCM
-                print  "FLOAT MAX: " , A_float[ivar,itime,2]
-		print  "MODELMAX: " , A_model[ivar,itime,2]
-		
-#                print  "FLOAT MAX: " + np.str(A_float[ivar,itime,2]) + " " + np.str(DCM2_float)
-#                print  "MODELMAX: " + A_model[ivar,itime,2] + " " + DCM2_model
+#               print  "FLOAT MAX: " , A_float[ivar,itime,2]
+#		print  "MODELMAX: " , A_model[ivar,itime,2]
 
                 A_float[ivar,itime,3] = find_MLD(gm200.Ref  ,gm200.Depth) # MLD
                 A_model[ivar,itime,3] = find_MLD(gm200.Model,gm200.Depth) # MLD

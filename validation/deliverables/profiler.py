@@ -13,28 +13,25 @@ from commons.Timelist import TimeList
 from basins.region import Rectangle
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
-#INPUTDIR='/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/AVE_FREQ_2/'
-INPUTDIR='/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/MODEL/AVE_FREQ_1/'
+
+INPUTDIR='/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/AVE_FREQ_1/'
 
 # output directory, where aveScan.py will be run.
-#BASEDIR='/pico/scratch/userexternal/lfeudale/validation/V3/PROFILATORE_eas_v12_11/'
-BASEDIR='/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/'
 
-#DATESTART = '20140116-12:00:00'
-#DATE__END = '20171216-12:00:00'
-DATESTART = '20150101' #-12:00:00'
-DATE__END = '20161224' #-12:00:00'
+BASEDIR='/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_3/PROFILATORE/'
 
 
-#T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
+DATESTART = '20150101'
+DATE__END = '20161227'
+
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
 
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
-#vardescriptorfile=BASEDIR+"VarDescriptorB.xml"
-vardescriptorfile="/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_2/PROFILATORE/VarDescriptorB.xml"
-#vardescriptorfile="/pico/scratch/userexternal/lfeudale/validation/V3/VarDescriptorB.xml"
+
+vardescriptorfile="VarDescriptorB.xml"
+
 #This previous part will be imported in matchups setup.
 
 # The following part, the profiler, is executed once and for all.
@@ -45,7 +42,7 @@ if __name__ == '__main__':
 
 
     profilerscript = BASEDIR + 'jobProfiler.sh'
-    aggregatedir="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
+    aggregatedir="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
     M.writefiles_for_profiling(vardescriptorfile, profilerscript, aggregatedir=aggregatedir) # preparation of data for aveScan
 
     M.dumpModelProfiles(profilerscript) # sequential launch of aveScan

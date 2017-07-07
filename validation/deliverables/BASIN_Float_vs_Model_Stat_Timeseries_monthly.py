@@ -79,10 +79,8 @@ for ivar, var_mod in enumerate(VARLIST):
 	print Req
 	for iSub, Sub in enumerate(OGS.basin_list):
 	    BASIN_PROFILES_float = bio_float.FloatSelector(var,Req.time_interval,Sub)
-	    print len(BASIN_PROFILES_float)
 	    A_float[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             A_model[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
-	    print  A_float[ivar,itime,iSub,6]
 	    if len(BASIN_PROFILES_float) == 0: continue
 	    
 	    Flo = np.zeros((len(BASIN_PROFILES_float), nStat), np.float32 ) * np.nan
@@ -124,6 +122,5 @@ for ivar, var_mod in enumerate(VARLIST):
 		A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[ip,iStat])
 
     print var
-print A_float
 np.save(OUTDIR + 'Basin_Statistics_FLOAT',A_float)
 np.save(OUTDIR + 'Basin_Statistics_MODEL',A_model)

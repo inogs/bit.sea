@@ -116,7 +116,6 @@ for j in range(0,len(wmo_list)):
 	  # PLOT FOR THE MODEL
 	  TM=MM.modeltime(p)
 	  FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
-	  print FILENAME
           M = readModelProfile(FILENAME,'P_l',p.ID())
 	  M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:26],M[:max_depth])
           plotmat_model[:,ip] = M_newDepth
@@ -128,7 +127,6 @@ for j in range(0,len(wmo_list)):
 	  Lon[ip] = p.lon
 	  Lat[ip] = p.lat
 	  F=p._my_float
-      #    print F.filename
 	  Pres,Prof,Profile_adj,Qc = F.read_very_raw('CHLA')
 	  Profile_adj
 	  ii300 = Pres<=300 ;
@@ -183,7 +181,7 @@ for j in range(0,len(wmo_list)):
       ax1.plot(Lon,Lat,'r.')
       ax1.set_title("TRAJECTORY of FLOAT " + p.name(), color = 'r')
       ind_max_sup=plotmat[0,:].argmax()
-      print Lon[ind_max_sup],Lat[ind_max_sup]
+#      print Lon[ind_max_sup],Lat[ind_max_sup]
       ax1.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
       ax1.plot(Lon[0],Lat[0],'bx')
       ax1.set_xlim([-10,36])

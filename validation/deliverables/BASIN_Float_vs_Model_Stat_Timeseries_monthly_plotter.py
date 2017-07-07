@@ -116,6 +116,8 @@ VARLIST      = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
+
+METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMDS','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
 METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMDS','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
@@ -254,6 +256,7 @@ for ivar, var in enumerate(VARLIST):
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
+	plt.close(fig)
 
     row_names   =[sub.name for sub in OGS.basin_list]
 
@@ -268,8 +271,9 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS_SHORT[:,8] = TABLE_METRICS[:,16]
     TABLE_METRICS_SHORT[:,9] = TABLE_METRICS[:,17]
 
-    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
-    np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
+#    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
+#    np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
+    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
     writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']

@@ -200,5 +200,6 @@ for wmo in wmo_list:
             plt.setp(xlabels, rotation=30)
 
         fig.savefig(OUTFILE)
+	plt.close(fig)
     import sys
 #    sys.exit()

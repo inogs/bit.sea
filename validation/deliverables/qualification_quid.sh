@@ -73,7 +73,7 @@ python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.12 Fig4.13 tmp_nc table4.4 table4.7
+mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.12 Fig4.13 tmp_nc table4.4 table4.8
 OUTDIR=Fig4.4a
 python Hov_flots+model.py -m $MASKFILE -o $OUTDIR
 
@@ -84,7 +84,7 @@ python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.12
 
-# Figures 4.5 and 4.13 + tables 4.4 and 4.7
+# Figures 4.5 and 4.13 + tables 4.4 and 4.8
 # CHL-PROF-D-CLASS4-PROF-CORR-BASIN
 # NIT-PROF-D-CLASS4-PROF-CORR-BASIN
 #  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
@@ -95,7 +95,7 @@ python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $
 mv $OUTDIR/N3n*.png Fig4.13
 
 cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/ 
-cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.7/
+cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
 
 
 # BIOFLOATS SECTION: statistics on layers
@@ -106,12 +106,12 @@ cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.7/
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.8/ table4.11/
+mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
-cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.8/
-cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.11/
+cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.9/
+cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.12/
 cp $OUTFIGDIR/*P_l* fig4.5
 cp $OUTFIGDIR/*N3n* fig4.14
 cp $OUTFIGDIR/*O2o* fig4.15
@@ -125,19 +125,19 @@ cp sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
 cp sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
 
 DIR=static_clim
-mkdir -p $DIR table4.5 table4.6 table4.9/ table4.10 table4.12/ table4.13
+mkdir -p $DIR table4.6 table4.7 table4.9/ table4.11 table4.13/ table4.14
 # -------------------------------------------------------------------------
 
 python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101
 
 # -------------------------------------------------------------------------
-cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.5/
+cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.6/
 cp $DIR/O2o-LAYER-Y-CLASS4-CLIM.txt                                  table4.9/
-cp $DIR/Ac-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.12/
+cp $DIR/Ac-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.13/
 
-cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt $DIR/N3n-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.6
-cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt                                            table4.10
-cp $DIR/Ac-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt  $DIR/DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.13
+cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt $DIR/N3n-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.7
+cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt                                            table4.11
+cp $DIR/Ac-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt  $DIR/DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14
 
 # PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR
 # NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR

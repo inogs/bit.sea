@@ -70,6 +70,18 @@ def readModelProfile(filename,var, wmo):
     Profile = M[iProfile,:]
     return Profile
 
+def get_level300(TheMask):
+
+    i0 = TheMask.getDepthIndex(300)
+    i1 = i0 + 1
+      
+    diff0 = 300 - TheMask.zlevels[i0]
+    diff1 = 300 - TheMask.zlevels[i1]
+    data = [(i0,diff0),(i1,diff1)]
+    ix,datamin = min(data, key=lambda t: t[1])
+
+    return ix
+
 T_start = DATESTART
 T_end   = DATE__END
 TI1 = T_INT
@@ -78,8 +90,9 @@ T_end2num   = mpldates.date2num(datetime.strptime(T_end,'%Y%m%d'))
 reg1 = [OGS.med]
 reg_sn = ['med']
 
-#max_depth = 26
-max_depth = 44 #Depth of 303m in the model with 125 levels
+#max_depth = 26 
+#max_depth = 44 # 303m in the 142 levels model
+max_depth = get_level300(TheMask)
 
 MM = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 varname = ['CHLA','DOXY','NITRATE','TEMP','PSAL']
@@ -118,7 +131,7 @@ for j in range(0,len(wmo_list)):
 	  TM=MM.modeltime(p)
 	  FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
           M = readModelProfile(FILENAME,'P_l',p.ID())
-          M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth],M[:max_depth])
+	  M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
           plotmat_model[:,ip] = M_newDepth
 
 

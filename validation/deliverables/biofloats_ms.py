@@ -65,6 +65,8 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
 for iFrame, req in enumerate(TL.getOwnList()):
+    if req.time_interval.start_time < TL.timeinterval.start_time : req.time_interval.start_time = TL.timeinterval.start_time
+    if req.time_interval.end_time   > TL.timeinterval.end_time   : req.time_interval.end_time   = TL.timeinterval.end_time
     print req.time_interval
     for ivar, var in enumerate(VARLIST):
         print var

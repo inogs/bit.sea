@@ -53,7 +53,7 @@ cp fig4.3/coast/table4.1.dat    table4.2
 
 
 mkdir -p Fig4.8
-INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/RA_COAST_ATM/wrkdir/POSTPROC/output/AVE_FREQ_2/ONLY_PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
+INTEGRALS_PPN=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/PPN/INTEGRALS/PPN/ # girato un aveScan ridotto solo per loro
 python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
 
 

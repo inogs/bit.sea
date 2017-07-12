@@ -77,7 +77,6 @@ nVar = len(VARLIST)
 
 
 for iSub, sub in enumerate(basV2.P):
-    continue
     submask = SubMask(sub,maskobject=Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
@@ -176,3 +175,4 @@ for iSub, sub in enumerate(basV2.P):
     fig.savefig(outfile)
     print outfile
     pl.close(fig)
+

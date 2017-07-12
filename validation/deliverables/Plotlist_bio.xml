@@ -67,14 +67,7 @@
 
 <!--  PPN -->
 <plots var="ppn" units="mgC/m2/y" plotunits="mgC m$ ^{-2}$ y$^{-1}$" name="NPP" longname="Net Primary Production">
-<depth top= "0000" bottom="0010"  levplot="0000" clim="[0,220]"> </depth>
-<depth top= "0010" bottom="0030"  levplot="0010" clim="[0,220]"> </depth>
-<depth top= "0030" bottom="0060"  levplot="0030" clim="[0,220]"> </depth>
-<depth top= "0060" bottom="0100"  levplot="0060" clim="[0,220]"> </depth>
-<depth top= "0100" bottom="0150"  levplot="0100" clim="[0,220]"> </depth>
-<depth top= "0150" bottom="0300"  levplot="0150" clim="[0,220]"> </depth>
-<depth top= "0300" bottom="0600"  levplot="0300" clim="[0,220]"> </depth>
-<depth top= "0600" bottom="1000"  levplot="0600" clim="[0,220]"> </depth>
+<depth top= "0000" bottom="0000"  levplot="0200" clim="[0,220]"> </depth>
 </plots>
 
 <!--  PH @ insitu total scale -->

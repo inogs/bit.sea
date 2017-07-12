@@ -27,7 +27,7 @@ python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t integral $COMMONS
 cp LayerMaps/*P_l* Fig4.1/
 cp LayerMaps/*N3n* Fig4.10/
 cp LayerMaps/*N1p* Fig4.9/
-cp LayerMaps/*N1p* Fig4.9/
+cp LayerMaps/*ppn* Fig4.7/
 
 
 # python averager_and_plot_map.py -i $INPUTDIR        -v ppn  -t mean $COMMONS_PARAMS  # NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
@@ -69,15 +69,16 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 
 
 mkdir -p Fig4.19/Feb Fig1.19/May Fig4.19/Aug Fig4.19/Nov Fig4.20/Feb Fig4.20/May  Fig4.20/Aug  Fig4.20/Nov
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160201 -e 20160301  -m $MASKFILE -o Fig4.19/Feb
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160501 -e 20160601  -m $MASKFILE -o Fig4.19/May
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160801 -e 20160901  -m $MASKFILE -o Fig4.19/Aug
-python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20161101 -e 20161201  -m $MASKFILE -o Fig4.19/Nov
+COMMONS_PARAMS="-i $INPUTDIR -m $MASKFILE -l Plotlist_bio.xml  -t mean "
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pH  -s 20160201 -e 20160301 -o Fig4.19/Feb
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pH  -s 20160501 -e 20160601 -o Fig4.19/May
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pH  -s 20160801 -e 20160901 -o Fig4.19/Aug
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pH  -s 20161101 -e 20161201 -o Fig4.19/Nov
 
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160201 -e 20160301  -m $MASKFILE -o Fig4.20/Feb
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160501 -e 20160601  -m $MASKFILE -o Fig4.20/May
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160801 -e 20160901  -m $MASKFILE -o Fig4.20/Aug
-python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20161201  -m $MASKFILE -o Fig4.20/Nov
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20160201 -e 20160301 -o Fig4.20/Feb
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20160501 -e 20160601 -o Fig4.20/May
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20160801 -e 20160901 -o Fig4.20/Aug
+python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20161101 -e 20161201 -o Fig4.20/Nov
 
 
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin

@@ -42,8 +42,8 @@ python plot_timeseries.py -o export_data_ScMYValidation_plan_open_sea.pkl -c exp
 
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_open_sea.pkl -o fig4.3/offshore  # table4.1
 python plot_timeseries_RMS.py -i export_data_ScMYValidation_plan_coast.pkl    -o fig4.3/coast     # table4.2
-cp fig4.3/offshore/table4.1 table4.1
-cp fig4.3/coast/table4.1    table4.2
+cp fig4.3/offshore/table4.1.dat table4.1
+cp fig4.3/coast/table4.1.dat    table4.2
 
 
 mkdir -p Fig4.8

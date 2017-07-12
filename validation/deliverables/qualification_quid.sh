@@ -4,9 +4,9 @@
 # SECTION 4?:
 export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc
 
-         INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/MODEL/AVE_FREQ_2
-   INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
-STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_2/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
+         INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/AVE_FREQ_2
+   INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+STAT_PROFILES_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
 SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/MONTHLY_24/
 
 OUTDIR=spaghettiplots

@@ -100,7 +100,7 @@ TI = TimeInterval("195001","205001","%Y%m")
 TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 
 
-VARLIST=['N1p','N3n','O2o','N5s','ppn','P_l','pCO2', 'Ac', 'B1c', 'P_c','R2c','pH','DIC']
+VARLIST=['N1p','N3n','O2o','N5s','ppn','P_l','pCO2', 'Ac', 'B1c', 'P_c','R2c','pH','DIC','CaCO3flux_dic','CaCO3flux_alk']
 
 
 for var in VARLIST:

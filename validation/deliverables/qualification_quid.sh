@@ -56,7 +56,7 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 # ALK-LAYER-Y-CLASS4-CLIM-BIAS
 # DIC-LAYER-Y-CLASS4-CLIM-RMS
 # DIC-LAYER-Y-CLASS4-CLIM-BIAS
-python ricostruzione_Integrals.py -i /gpfs/scratch/userexternal/gbolzon0/RA_COAST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
+python ricostruzione_Integrals.py -i /pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 
 mkdir -p Fig4.19/Feb Fig1.19/May Fig4.19/Aug Fig4.19/Nov Fig4.20/Feb Fig4.20/May  Fig4.20/Aug  Fig4.20/Nov
 python averager_and_plot_map.py -i $INPUTDIR  -v pH  -t mean -s 20160201 -e 20160301  -m $MASKFILE -o Fig4.19/Feb

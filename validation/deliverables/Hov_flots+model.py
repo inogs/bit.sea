@@ -32,7 +32,7 @@ from basins.region import Region, Rectangle
 from layer_integral import coastline
 import instruments
 from instruments import lovbio_float as bio_float
-from instruments.var_conversions import FLOATVARS
+from instruments.var_conversions import LOVFLOATVARS
 import scipy.io.netcdf as NC
 import numpy as np
 from commons.utils import addsep

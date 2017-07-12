@@ -70,10 +70,9 @@ python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20160801 -e 20
 python averager_and_plot_map.py -i $INPUTDIR  -v pCO2  -t mean -s 20161101 -e 20161201  -m $MASKFILE -o Fig4.20/Nov
 
 
-
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.5 Fig4.12 Fig4.13 tmp_nc table4.4 table4.8
+mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 tmp_nc table4.4 table4.8
 OUTDIR=Fig4.4a
 python Hov_flots+model.py -m $MASKFILE -o $OUTDIR
 
@@ -84,18 +83,19 @@ python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.12
 
-# Figures 4.5 and 4.13 + tables 4.4 and 4.8
+# Figures 4.6 and 4.13 + tables 4.4 and 4.8
 # CHL-PROF-D-CLASS4-PROF-CORR-BASIN
 # NIT-PROF-D-CLASS4-PROF-CORR-BASIN
 #  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
 
-OUTDIR=Fig4.5
+OUTDIR=Fig4.6
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.13
 
 cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/ 
 cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
+
 
 
 # BIOFLOATS SECTION: statistics on layers
@@ -106,23 +106,22 @@ cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/
+mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ Fig4.15/
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
 cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.9/
 cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.12/
-cp $OUTFIGDIR/*P_l* fig4.5
-cp $OUTFIGDIR/*N3n* fig4.14
-cp $OUTFIGDIR/*O2o* fig4.15
-
+cp $OUTFIGDIR/*P_l* Fig4.5
+cp $OUTFIGDIR/*N3n* Fig4.14
+cp $OUTFIGDIR/*O2o* Fig4.15
 
 #########################   static dataset climatology section ###################################
 # Figures 4.11 and 4.18
 mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.18
 python simulation_vs_clim.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 20150101 -e 20170101 -m $MASKFILE
-cp sim_vs_clim_profiles/Fig_4.11*png Fig.4.11
-cp sim_vs_clim_profiles/Fig_4.18*png Fig.4.18
+cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11
+cp sim_vs_clim_profiles/Fig_4.18*png Fig4.18
 
 DIR=static_clim
 mkdir -p $DIR table4.6 table4.7 table4.9/ table4.11 table4.13/ table4.14

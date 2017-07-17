@@ -201,6 +201,11 @@ for ivar, var in enumerate(VARLIST):
 	    MLB_Mod = A_model[ivar,:,iSub,3]
             axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
+	    # FILTER OUT MAY TO NOV INCLUDED:
+	    MLB_Ref[4:11] = np.nan
+	    MLB_Mod[4:11] = np.nan
+            MLB_Ref[16:23] = np.nan
+            MLB_Mod[16:23] = np.nan
             axes[3].plot(times,MLB_Ref,'--r',label='MLB REF')
             axes[3].plot(times,MLB_Mod,'--b',label='MLB MOD')
 
@@ -234,7 +239,7 @@ for ivar, var in enumerate(VARLIST):
             axes[3].plot(times,Nit_Ref,'r',label='REF')
             axes[3].plot(times,Nit_Mod,'b',label='MOD')
             axes[3].invert_yaxis()
-            axes[3].set_ylabel('NITRICL $[m]$',fontsize=15)
+            axes[3].set_ylabel('NITRACL $[m]$',fontsize=15)
 
             TABLE_METRICS[iSub,13] = np.nanmean(Nit_Ref[ii])
             TABLE_METRICS[iSub,14] = np.nanmean(Nit_Mod[ii])

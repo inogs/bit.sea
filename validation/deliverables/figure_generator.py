@@ -57,9 +57,9 @@ class figure_generator():
         fig.set_size_inches(hsize,vsize)
         #fig.subplots_adjust(hspace = 0.1, wspace=0.1)
 
-        fig.text(0.12,0.15,IDrun,fontsize=15)
+#        fig.text(0.12,0.15,IDrun,fontsize=15)
         fig.text(0.12,0.40,season,fontsize=10)
-        fig.text(0.12,0.35,subbasin_name,fontsize=10)
+        fig.text(0.12,0.35,subbasin_name,fontsize=18)
     
         for i,ax in enumerate(axs[:4]):
             ax.set_xlim(xmin[i],xmax[i])

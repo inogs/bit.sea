@@ -156,7 +156,8 @@ for var in VARLIST:
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)
     np.save(OUTDIR + var + "ref_clim14", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim14", CLIM_MODEL)
-    CORR = np.zeros((nSub,1),np.float32)*np.nan
+#    CORR = np.zeros((nSub,1),np.float32)*np.nan
+    STATS = np.zeros((nSub,3),np.float32)*np.nan
     for iSub, sub in enumerate(SUBlist):
         refsubs = CLIM_REF_static[iSub,:]
         modsubs =      CLIM_MODEL[iSub,:]
@@ -165,9 +166,12 @@ for var in VARLIST:
         ngoodlayers=good.sum()
         if ngoodlayers>0:
             m = matchup(modsubs[good], refsubs[good])
-            CORR[iSub,0] = m.correlation()
-    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
-
+#            CORR[iSub,0] = m.correlation()
+	    STATS[iSub,0] = m.bias()
+	    STATS[iSub,1] = m.RMSE()
+	    STATS[iSub,2] = m.correlation()
+#    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
+    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", STATS, rows_names, ['bias','rmse','corr'])
 
 # Table 4.6 Correlazione N1p, N3n per certi subbasins
 # Table 4.10 Correlazione O2o per certi subbasins

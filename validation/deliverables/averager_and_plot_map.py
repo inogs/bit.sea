@@ -23,7 +23,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','pH','ppn','P_c'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','ppn','P_c'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -66,6 +66,7 @@ import commons.timerequestors as requestors
 from commons.utils import addsep
 from commons.xml_module import *
 from xml.dom import minidom
+from commons import netcdf3
 
 xmldoc = minidom.parse(args.plotlistfile)
 
@@ -99,13 +100,14 @@ CONVERSION_DICT={
          'N1p' : 1,
          'N3n' : 1,
          'PH'  : 1,
-         'pH'  : 1,
+         'PH'  : 1,
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,
          'P_i' : 1
          }
 
+MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
@@ -165,7 +167,12 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.yaxis.set_ticks(np.arange(30,46,4))
     #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
-    title = "%s %s %s" % ('annual', var, layer.__repr__())
+#    title = "%s %s %s" % ('annual', var, layer.__repr__())
+    title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], var, layer.__repr__())
     fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)
+    if (var == "ppn"): 
+        ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + ".nc"
+#    netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,mask)
+        netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)

@@ -7,7 +7,7 @@ import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties
 
 
-def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0):
+def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coastline_lon=None, coastline_lat=None, dpi=72.0,colormap='jet'):
     """Map plotting procedure (draft)
     Hardcoded features:
         - colormap jet
@@ -55,7 +55,7 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         lon_max = mask.xlevels.max()
         lat_min = mask.ylevels.min()
         lat_max = mask.ylevels.max()
-        cmap=pl.get_cmap('jet',ncolors)
+        cmap=pl.get_cmap(colormap,ncolors)
         im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
     else:
         im = ax.imshow(map_dict['data'])

@@ -173,3 +173,59 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%3.2f\t"):
     else:
         myformat = "%s\t" + fmt
     np.savetxt(filename, X, fmt=myformat, header=headerstr)
+
+def data_for_linear_interp(array,value):
+    '''
+    Returns minimal data useful to perform linear interpolation
+    two indexes and a weight.
+
+    Arguments:
+    * array * a sorted array, meaning x in a function y=f(x)
+    * value * integer or float, meaning a point x(0)
+
+    Returns :
+    * before   * integer
+    * after    * integer
+    * t_interp * float
+
+
+    value = array[before]*(1-t_interp) + array[after]*t_interp
+    '''
+
+    if value > array[-1] :
+        l = len(array)
+        return l-1, l-1, 0
+    for i, array_elem in enumerate(array):
+        if value < array_elem: break
+
+
+    after = i
+    before= i-1
+    t_interp = float((value-array[before]))/(array[after]-array[before])
+
+    if after==0 :
+        before=0
+        t_interp=0
+
+    return before, after, t_interp
+
+def Time_Interpolation(Instant_datetime, TimeList):
+    '''
+    Returns minimal data useful to perform linear interpolation in time,
+    two indexes and a weight.
+
+    Arguments:
+    Instant_datetime : a datetime object
+    Timelist         : a list of sorted datetime objects
+
+    Returns :
+    * before   * integer
+    * after    * integer
+    * t_interp * float
+
+    '''
+    instant_seconds = int(Instant_datetime.strftime("%s"))
+    array___seconds = np.array([int(date.strftime("%s"))  for date in TimeList   ])
+
+    before, after,t_interp = data_for_linear_interp(array___seconds,instant_seconds)
+    return before, after,t_interp

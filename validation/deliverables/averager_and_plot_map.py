@@ -175,6 +175,7 @@ for il, layer in enumerate(PLOT.layerlist):
 #    if (var == "PH"): title = "%s %s %s" % ('annual', "pH$\mathrm{_T}$", layer.__repr__())
 #    title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], var, layer.__repr__())
     if (var == "PH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
+    if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
     fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)

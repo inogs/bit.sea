@@ -100,7 +100,6 @@ CONVERSION_DICT={
          'N1p' : 1,
          'N3n' : 1,
          'PH'  : 1,
-         'PH'  : 1,
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,
@@ -143,8 +142,6 @@ for il, layer in enumerate(PLOT.layerlist):
     else:
         integrated = MapBuilder.get_layer_average(De, layer)  
     integrated=integrated * VARCONV
-    if (var == 'PH'):
-	integrated=integrated+0.009
 
     z_mask = PLOT.depthfilters[il]
     z_mask_string = "-%04gm" %z_mask

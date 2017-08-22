@@ -99,37 +99,27 @@
 
 <!--  DIC -->
 <plots var="DIC" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="DIC" longname="Dissolved inorganic Carbon">
-<depth top= "0000" bottom="0010"  clim="[2120,2340]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[2120,2340]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[2120,2340]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[2120,2340]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[2120,2340]"> </depth>
-<depth top= "0150" bottom="0300"  clim="[2250,2340]"> </depth>
-<depth top= "0300" bottom="0600"  clim="[2250,2340]"> </depth>
-<depth top= "0600" bottom="1000"  clim="[2250,2340]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[2250,2340]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[2250,2340]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[2250,2340]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[2250,2340]"> </depth>
+<depth top= "0000" bottom="0030" levplot="0000" clim="[2050,2400]"> </depth>
+<depth top= "0000" bottom="0060" levplot="0030" clim="[2050,2400]"> </depth>
+<depth top= "0060" bottom="0100" levplot="0060" clim="[2050,2400]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[2050,2400]"> </depth>
+<depth top= "0150" bottom="0300" levplot="0150" clim="[2050,2400]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0300" clim="[2050,2400]"> </depth>
+<depth top= "0600" bottom="1000" levplot="0600" clim="[2050,2400]"> </depth>
+<depth top= "1000" bottom="2000" levplot="1000" clim="[2050,2400]"> </depth>
 </plots>
 
 <!--  ALK -->
 <plots var="Ac" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
-<depth top= "0000" bottom="0010"  clim="[2350,2730]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[2350,2730]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[2350,2730]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[2350,2730]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[2350,2730]"> </depth>
-<depth top= "0150" bottom="0300"  clim="[2350,2730]"> </depth>
-<depth top= "0300" bottom="0600"  clim="[2500,2700]"> </depth>
-<depth top= "0600" bottom="1000"  clim="[2500,2700]"> </depth>
-<depth top= "1000" bottom="1500"  clim="[2500,2700]"> </depth>
-<depth top= "1500" bottom="2000"  clim="[2500,2700]"> </depth>
-<depth top= "2000" bottom="2500"  clim="[2500,2700]"> </depth>
-<depth top= "2500" bottom="3000"  clim="[2500,2700]"> </depth>
+<depth top= "0000" bottom="0030" levplot="0000" clim="[2400,2750]"> </depth>
+<depth top= "0000" bottom="0060" levplot="0030" clim="[2400,2750]"> </depth>
+<depth top= "0060" bottom="0100" levplot="0060" clim="[2400,2750]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[2400,2750]"> </depth>
+<depth top= "0150" bottom="0300" levplot="0150" clim="[2400,2750]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0300" clim="[2400,2750]"> </depth>
+<depth top= "0600" bottom="1000" levplot="0600" clim="[2400,2750]"> </depth>
+<depth top= "1000" bottom="2000" levplot="1000" clim="[2400,2750]"> </depth>
 </plots>
-
-
 
 
 </LayersMaps>

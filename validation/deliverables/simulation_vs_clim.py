@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates png files for fig4.11 and fig4.18
+    Generates png files for fig4.11 and fig4.19
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputdir','-i',
@@ -125,7 +125,7 @@ for iSub, sub in enumerate(basV2.P):
     pl.close(fig)
 
 
-# Figures 4.18
+# Figures 4.19
 Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST, LayerList)
 DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 
@@ -135,7 +135,7 @@ for iSub, sub in enumerate(basV2.P):
     submask = SubMask(sub,maskobject=Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
-    outfile = OUTDIR + "Fig_4.18_annual." + sub.name + ".png"
+    outfile = OUTDIR + "Fig_4.19_annual." + sub.name + ".png"
     
     for iTime, filename in enumerate(TL.filelist):
         datetimelist= [TL.Timelist[iTime] ]

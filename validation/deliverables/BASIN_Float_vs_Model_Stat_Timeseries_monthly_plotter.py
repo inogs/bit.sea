@@ -179,11 +179,11 @@ for ivar, var in enumerate(VARLIST):
 
         axes[1].set_xticklabels([])
 
-
 	if ((np.isnan(corr)).all() == False ): 
 	    axes[2].plot(times,corr,'k')
             axes[2].set_ylabel('CORR',fontsize=15)
             axes[2].set_xticklabels([])
+	    axes[2].set_ylim([0.2,1])
             TABLE_METRICS[iSub,0] = np.nanmean(corr[ii])
 
 	ax2 = axes[2].twinx()
@@ -212,10 +212,13 @@ for ivar, var in enumerate(VARLIST):
             axes[3].invert_yaxis()
             axes[3].set_ylabel('DCM/MLB $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
+            axes[1].set_ylim([0,1.0])
+	    ax2.set_ylim([0,50])
+            axes[3].set_ylim([160,40])
 
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-	    legend = axes[3].legend(loc='lower left', shadow=True, fontsize=12)
+	    legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
 
             TABLE_METRICS[iSub,5] = np.nanmean(DCM_Ref[ii])
             TABLE_METRICS[iSub,6] = np.nanmean(DCM_Mod[ii])
@@ -252,14 +255,19 @@ for ivar, var in enumerate(VARLIST):
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-            legend = axes[3].legend(loc='upper left', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            axes[1].set_ylim([0,6])
+            ax2.set_ylim([0,45])
+            axes[3].set_ylim([200,0])
 
         if (var == "O2o"):
             axes[3].plot(times,  np.ones_like(times))
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
+	    legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
 
+        if ( (np.isnan(corr)).all() == True ) : continue
         fig.savefig(OUTFILE)
 	plt.close(fig)
 

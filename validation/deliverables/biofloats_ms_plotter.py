@@ -79,24 +79,40 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     ax2 = ax.twinx()
 
     ax2.bar(times,numb1,width=7, color='0.5', alpha=0.3, align='center')
-    ax2.set_ylabel(' n. of BGC-Argo floats')
+    ax2.set_ylabel(' n. of BGC-Argo floats', fontsize=20)
     ax2.set_ylim([0,numb1.max() +2])
+#    ax2.set_yticklabels(ax2.yaxis.get_major_ticks(),fontsize=16)
 
 
     ax.plot(times,bias1,'m.-', label='bias')
     ax.plot(times,rmse1,'k.-', label='rmse')
-    if longvar == 'Chlorophyll' : ax.set_ylim([-0.4, 0.4])
-    if longvar == 'Nitrate'     : ax.set_ylim([-5, 5])
+    if longvar == 'Chlorophyll' : 
+	ax.set_ylim([-0.4, 0.4])
+	ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+#	ax.ticklabel_format(axis='both', fontsize=20)
+
+    if longvar == 'Nitrate'     : 
+	ax.set_ylim([-5, 5])
+	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
+    if longvar == 'Oxygen'      :
+	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     #if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
         
-    ax.set_ylabel('bias, rmse mg/m$^3$')
+#    ax.set_ylabel('bias, rmse mg/m$^3$')
     ax.legend(loc=2)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16) 
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax2.yaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for l in ax2.get_yticklabels() : l.set_fontsize(16)
 
     ii = np.zeros((len(times),) , np.bool)
     for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
     biasm = np.nanmean(bias1[ii])
     rmsem = np.nanmean(rmse1[ii])
-    return fig, biasm, rmsem
+    return fig, biasm, rmsem, ax, ax2
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o']
@@ -116,12 +132,15 @@ for ivar, var in enumerate(VARLIST):
         for ilayer, layer in enumerate(LAYERLIST):
             outfile = "%s%s.%s.%s.png" % (OUT_FIGDIR,var,sub.name,layer.longname())
             print outfile
-            fig,bias,rmse  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
+            fig,bias,rmse,ax,ax2  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse
             title = "%s %s %s " %(VARLONGNAMES[ivar], sub.extended_name, layer.string())
-            fig.suptitle(title)
+            fig.suptitle(title, fontsize=20)
             fig.savefig(outfile)
             pl.close(fig)
-    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
-    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
+#	    import sys
+#	    sys.exit()
+#    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
+#    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
+    

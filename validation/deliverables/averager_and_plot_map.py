@@ -23,7 +23,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','ppn','P_c'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','ppn','P_c','Ac','DIC'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -104,13 +104,18 @@ CONVERSION_DICT={
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,
-         'P_i' : 1
+         'P_i' : 1,
+	 'Ac'  : 1,
+         'DIC' : 1
          }
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
+if (var == 'Ac'):
+	TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.Ac.nc")
+else:
+	TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 if TL.inputFrequency is None:
     TL.inputFrequency='monthly'
     print "inputFrequency forced to monthly because of selection of single time"
@@ -138,6 +143,8 @@ for il, layer in enumerate(PLOT.layerlist):
     else:
         integrated = MapBuilder.get_layer_average(De, layer)  
     integrated=integrated * VARCONV
+    if (var == 'PH'):
+	integrated=integrated+0.009
 
     z_mask = PLOT.depthfilters[il]
     z_mask_string = "-%04gm" %z_mask
@@ -167,8 +174,10 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.yaxis.set_ticks(np.arange(30,46,4))
     #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
-#    title = "%s %s %s" % ('annual', var, layer.__repr__())
-    title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], var, layer.__repr__())
+    title = "%s %s %s" % ('annual', var, layer.__repr__())
+#    if (var == "PH"): title = "%s %s %s" % ('annual', "pH$\mathrm{_T}$", layer.__repr__())
+#    title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], var, layer.__repr__())
+    if (var == "PH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
     fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)

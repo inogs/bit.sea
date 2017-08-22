@@ -213,7 +213,7 @@ for j in range(0,len(wmo_list)):
 	ax1.set_title("TRAJECTORY of FLOAT " + p.name() + " - " + var_mod, color = 'r')
 	ind_max_sup=plotmat[0,:].argmax()
   #      print Lon[ind_max_sup],Lat[ind_max_sup]
-	ax1.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
+#	ax1.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
 	ax1.plot(Lon[0],Lat[0],'bx')
 	ax1.set_xlim([-10,36])
 	ax1.set_ylabel("LAT",color = 'k')

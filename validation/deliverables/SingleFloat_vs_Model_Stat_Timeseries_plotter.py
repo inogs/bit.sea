@@ -126,11 +126,14 @@ for wmo in wmo_list:
             axes[2].plot(times,  surf_model,'--b',label='MOD SURF')
 	    if (var == "P_l"):
 	        axes[2].set_ylabel('Chlorophyll \n $[mg{\  } m^{-3}]$',fontsize=15)
+                axes[4].set_ylim(40,200)
 	    if (var == "O2o"):
                 axes[2].set_ylabel('Oxygen 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             if (var == "N3n"):
                 axes[2].set_ylabel('Nitrate 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
 #		axes[2].set_ylabel('INTEG 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
+                axes[2].set_ylim(0,8)
+                axes[4].set_ylim(0,200)
 	    legend = axes[2].legend(loc='upper left', shadow=True, fontsize=12)
  	    model_corr, ref_corr =A.plotdata(var,'Corr')
 	    times_r = times
@@ -146,6 +149,7 @@ for wmo in wmo_list:
 	    axes[2].set_xticklabels([])
 	    axes[3].set_xticklabels([])
 
+            axes[3].set_ylim(0,1)
 
         if (var == "P_l"): 
             model_dcm, ref_dcm =A.plotdata(var,'DCM')

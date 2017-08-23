@@ -2,7 +2,7 @@
 
 # QUID REANALYSIS
 # SECTION 4?:
-export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc
+export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/meshmask.nc
 
          INPUTDIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/AVE_FREQ_2
    INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP

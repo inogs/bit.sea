@@ -50,15 +50,12 @@ OUTPUTDIR = args.outdir
 
 
 
-#TI = TimeInterval('20010101','20141230',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TI = TimeInterval('20150101','20170101',"%Y%m%d")
+TI = TimeInterval('20140101','20170101',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m")
 
 
-#MY_YEAR = TimeInterval('20010101','20141230',"%Y%m%d") 
-MY_YEAR = TimeInterval('20150101','20170101',"%Y%m%d")
-#req_label='Ave:2001-2014'
-req_label='Ave:2015-2016'
+MY_YEAR = TimeInterval('20140101','20170101',"%Y%m%d") 
+req_label='Ave:2014-2016'
 
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)
@@ -67,8 +64,8 @@ SAT_3D=np.zeros((nFrames,jpj,jpi), np.float32)
 
 for iFrame, k in enumerate(indexes):
     t = TL.Timelist[k]
-    inputfile = INPUTDIR + t.strftime("%Y%m") + "_d-OC_CNR-L4-CHL-MedOC4_SAM_7KM-MED-REP-v02.nc"
-    CHL = Sat.readfromfile(inputfile,'lchlm')
+    inputfile = TL.filelist[k]
+    CHL = Sat.readfromfile(inputfile,'CHL')
     SAT_3D[iFrame,:,:] = CHL
 
 Sat2d=Sat.averager(SAT_3D)

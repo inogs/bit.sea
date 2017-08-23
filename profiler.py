@@ -5,8 +5,8 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-from instruments import instruments
-
+#from instruments import instruments
+from instruments import lovbio_float
 from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
@@ -23,7 +23,8 @@ DATE__END = '20150917-00:00:00'
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc")
 
-ALL_PROFILES = instruments.getAllProfiles(T_INT)
+import basins.OGS as OGS
+ALL_PROFILES = lovbio_float.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)
 
 vardescriptorfile="VarDescriptor_valid_online.xml"
 #This previous part will be imported in matchups setup.

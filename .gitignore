@@ -1,3 +1,7 @@
 *.pyc
 .coverage
 downloader/harvesters/vlfr.py
+instruments/case_study
+tutorial/
+.*project
+commitpico*

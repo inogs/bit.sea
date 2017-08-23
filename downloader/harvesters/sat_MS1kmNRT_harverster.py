@@ -67,13 +67,17 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             _, years, _ = list_files(connection)
             for year in years:
                 connection.cwd(year)
-                files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if '-NRT-' in f]
-                for f in files_to_be_downloaded:
-                    d = download_file(connection, f, path,
-                                      log, perms, False)
-                    if d:
-                        downloaded.append(f)
+                _, months, _ = list_files(connection)
+                for month in months:
+                    connection.cwd(month)
+                    files, _, perms = list_files(connection)
+                    files_to_be_downloaded = [f for f in files if '-NRT-' in f]
+                    for f in files_to_be_downloaded:
+                        d = download_file(connection, f, path,
+                                               log, perms, False)
+                        if d:
+                            downloaded.append(f)
+                    connection.cwd('..')
                 connection.cwd('..')
         else:
             loc_files.sort()
@@ -165,12 +169,13 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             for month in months:
                 connection.cwd(month)
                 files, _, perms = list_files(connection)
-                for f in files:
+                files_to_be_downloaded = [f for f in files if '-NRT-' in f]
+                for f in files_to_be_downloaded:
                     d = download_file(connection, f, path,
                                            log, perms, False)
                     if d:
                         downloaded.append(f)
                 connection.cwd('..')
-
+            connection.cwd('..')
         connection.quit()
         return downloaded

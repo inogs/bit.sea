@@ -40,7 +40,7 @@ args = argument()
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from Sat import SatManager as Sat
-from Sat.CHL import interp2d
+from Sat import interp2d
 from commons.mask import Mask
 from postproc import masks
 from commons.utils import addsep
@@ -60,10 +60,7 @@ except:
     nranks = 1
     isParallel = False
 
-if args.outmesh == 'Mesh24' : 
-    TheMask = Mask(args.maskfile, dzvarname='e3t_0')
-else:
-    TheMask = Mask(args.maskfile, dzvarname='e3t')
+TheMask = Mask(args.maskfile)
 
 x = maskOut.lon
 y = maskOut.lat

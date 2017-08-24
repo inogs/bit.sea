@@ -411,18 +411,49 @@ def filter_by_wmo(Profilelist,wmo):
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
 
+def remove_bad_sensors(Profilelist,var):
+    '''
+
+    Subsetter, filtering out bad sensors for that var
+
+     Arguments:
+      * Profilelist * list of Profile objects
+      * var         * string
+
+      Returns:
+        a list of Profile Objects
+    '''
+ 
+    OUT_N3n = ["6903197","6901767","6901773","6901771"]
+    OUT_O2o = ["6901766","6901510"]
+
+    if ( var == 'SR_NO3' ):
+	return [p for p in Profilelist if p.name not in OUT_N3n]
+
+    if ( var == 'DOXY' ):
+        return [p for p in Profilelist if p.name not in OUT_O2o]
+
+    return Profilelist
 
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
     var = 'DOXY'
-    TI = TimeInterval('20150520','20150830','%Y%m%d')
+#    var = 'SR_NO3'
+    TI = TimeInterval('20140120','20170130','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
+    
+    print len(PROFILE_LIST)
+    print len(remove_bad_sensors(PROFILE_LIST,var))
+
+    import sys
+    sys.exit()
 
     for ip, p in enumerate(PROFILE_LIST):
+	continue
         F = p._my_float
         Pres,V, Qc = F.read(var, read_adjusted=False)
         ii =~np.isnan(V)
@@ -431,8 +462,6 @@ if __name__ == '__main__':
             print V.max(), V.min()
             if V.min() < -976:
                  break
-    import sys
-    sys.exit()
 
 
     for p in PROFILE_LIST[:1]:
@@ -445,4 +474,3 @@ if __name__ == '__main__':
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:
         sublist = filter_by_wmo(PROFILE_LIST, wmo)
-

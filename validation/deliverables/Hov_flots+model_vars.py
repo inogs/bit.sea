@@ -214,6 +214,7 @@ for j in range(0,len(wmo_list)):
 	ind_max_sup=plotmat[0,:].argmax()
   #      print Lon[ind_max_sup],Lat[ind_max_sup]
 #	ax1.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
+        ax1.plot(Lon[0],Lat[0],'bo')
 	ax1.plot(Lon[0],Lat[0],'bx')
 	ax1.set_xlim([-10,36])
 	ax1.set_ylabel("LAT",color = 'k')
@@ -223,7 +224,7 @@ for j in range(0,len(wmo_list)):
 	ipp = len(list_float_track)
 	ax2.plot(c_lon,c_lat,'k')
 	ax2.plot(Lon,Lat,'ro')
-	ax2.plot(Lon[ind_max_sup],Lat[ind_max_sup],'go')
+#	ax2.plot(Lon[ind_max_sup],Lat[ind_max_sup],'go')
 	ax2.plot(Lon[0],Lat[0],'bo')
 	ax2.plot(Lon[0],Lat[0],'bx',markersize=12)
 	ax2.set_xlim([np.min(Lon[:ipp]) -extent/2, np.max(Lon[:ipp]) +extent/2])

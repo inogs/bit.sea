@@ -61,6 +61,7 @@ def fig_setup(wmo,Lon,Lat):
 #    list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo_list[j])
     ax0.plot(c_lon,c_lat,'k')
     ax0.plot(Lon,Lat,'r.')
+    ax0.plot(Lon[0],Lat[0],'b.')
     ax0.set_title("TRAJECTORY of FLOAT " + wmo , color = 'r', fontsize = 18)
 #    ind_max_sup=plotmat[0,:].argmax()
     

@@ -10,10 +10,6 @@ import sys
 import numpy as np
 import argparse
 #
-INPUTDIR="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
-OUTDIR="TMP_week/"
-MASKFILE="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc"
-
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons.mask import Mask
@@ -24,8 +20,6 @@ import numpy as np
 from basins import V2
 import pylab as pl
 from commons.utils import getcolor, addsep
-TheMask=Mask(MASKFILE)
-jpk,jpj,jpi=TheMask.shape
 #
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -33,6 +27,16 @@ def argument():
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
+
+    parser.add_argument(   '--inputmodeldir', '-i',
+                                type = str,
+                                required =True,
+                                help = ''' Input model dir, where P_l files are, usually ../wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/'''
+                                )
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = True,
+                                help = 'Path of the mask file')
 
     parser.add_argument(   '--outdir', '-O',
                             type = str,
@@ -55,18 +59,20 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-
+INPUTDIR = addsep(args.inputmodeldir)
 fid = open(args.open_sea_file)
 LIST = pickle.load(fid)
 fid.close()
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
+    
 
+TheMask = Mask(args.maskfile)
+jpk,jpj,jpi=TheMask.shape
 
 fid = open(args.coast_file)
 LIST = pickle.load(fid)
 fid.close()
 model_coast = LIST[3]
-
 TI = TimeInterval("201403","201601","%Y%m")
 TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 var = 'P_l'

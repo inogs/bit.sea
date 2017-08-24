@@ -73,7 +73,7 @@ fid = open(args.coast_file)
 LIST = pickle.load(fid)
 fid.close()
 model_coast = LIST[3]
-TI = TimeInterval("201403","201601","%Y%m")
+TI = TimeInterval("201403","201501","%Y%m")
 TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 var = 'P_l'
 

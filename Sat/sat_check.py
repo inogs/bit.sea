@@ -83,7 +83,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
     CHL_IN = Sat.readfromfile(filename)
-    CHL_IN[581:,164:] = Sat.fillValue # BLACK SEA
+    if args.mesh == 'SatOrigMesh': CHL_IN[581:,164:] = Sat.fillValue # BLACK SEA
     cloudsLandTIME = CHL_IN         == Sat.fillValue
     cloudlandsCLIM = DAILY_REF_MEAN == Sat.fillValue
     

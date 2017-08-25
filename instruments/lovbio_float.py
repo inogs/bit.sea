@@ -428,10 +428,10 @@ def remove_bad_sensors(Profilelist,var):
     OUT_O2o = ["6901766","6901510"]
 
     if ( var == 'SR_NO3' ):
-	return [p for p in Profilelist if p.name not in OUT_N3n]
+        return [p for p in Profilelist if p.name() not in OUT_N3n]
 
     if ( var == 'DOXY' ):
-        return [p for p in Profilelist if p.name not in OUT_O2o]
+        return [p for p in Profilelist if p.name() not in OUT_O2o]
 
     return Profilelist
 

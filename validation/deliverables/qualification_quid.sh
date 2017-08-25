@@ -42,9 +42,11 @@ python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
 INPUT_AGGR_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP
+STAT_PROFILES_DIR1=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/
+OUTDIR=TMP_week/
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea.pkl
 python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast.pkl
-python plot_timeseries_2014_2016.py -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./Fig4.2/
+python plot_timeseries_2014_2016.py -i $STAT_PROFILES_DIR1 -m $MASKFILE -o export_data_ScMYValidation_plan_open_sea.pkl -c export_data_ScMYValidation_plan_coast.pkl -O ./Fig4.2/
 
 # CHL-SURF-W-CLASS4-SIMG-BIAS-BASIN
 # CHL-SURF-W-CLASS4-SIMG-RMSD-BASIN
@@ -108,7 +110,7 @@ mv $OUTDIR/O2o*.png Fig4.15
 #  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
 
 OUTDIR=Fig4.6
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly_filtered.py -m $MASKFILE -o $NCDIR
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.13
 
@@ -126,7 +128,7 @@ cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
 mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ Fig4.16/
-python biofloats_ms_filtered.py  -m $MASKFILE -o float_bias_rmse.nc
+python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
 cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.9/

@@ -78,7 +78,10 @@ for ivar, var_mod in enumerate(VARLIST):
 	    Req.time_interval.end_time = TL.timeinterval.end_time
 	print Req
 	for iSub, Sub in enumerate(OGS.basin_list):
-	    BASIN_PROFILES_float = bio_float.FloatSelector(var,Req.time_interval,Sub)
+	    BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
+            BASIN_PROFILES_float = bio_float.remove_bad_sensors(BASIN_PROFILES_float_raw,var)
+            print "RAW  : " + np.str(len(BASIN_PROFILES_float_raw))
+            print "FILT.: " + np.str(len(BASIN_PROFILES_float))
 	    A_float[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             A_model[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
 	    if len(BASIN_PROFILES_float) == 0: continue

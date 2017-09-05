@@ -54,7 +54,8 @@ nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
 
 
-nFrames = TL.nTimes
+WEEKLY=TL.getWeeklyList(5)
+nFrames = len(WEEKLY)
 BIAS    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)
 RMSE    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nFrames, nSub,nDepth), np.int32)
@@ -64,7 +65,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
 
-for iFrame, req in enumerate(TL.getOwnList()):
+for iFrame, req in enumerate(WEEKLY):
     if req.time_interval.start_time < TL.timeinterval.start_time : req.time_interval.start_time = TL.timeinterval.start_time
     if req.time_interval.end_time   > TL.timeinterval.end_time   : req.time_interval.end_time   = TL.timeinterval.end_time
     print req.time_interval

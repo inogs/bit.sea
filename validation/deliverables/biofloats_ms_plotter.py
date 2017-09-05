@@ -38,6 +38,7 @@ from commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
 from commons.utils import writetable
+from datetime import datetime
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -66,7 +67,12 @@ class ncreader():
 DATAfile = ncreader(inputfile)
 
 def single_plot(longvar, var, sub, layer, timeinterval ):
-    times = TL.Timelist
+    if TL.inputFrequency == 'weekly':
+        times = TL.Timelist
+    else:
+        if TL.inputFrequency=='daily':
+             WEEKS=TL.getWeeklyList(5)
+             times = [datetime(w.year,w.month, w.day)  for w in WEEKS]
     bias1 = DATAfile.plotdata(DATAfile.bias   , var, sub, layer)
     rmse1 = DATAfile.plotdata(DATAfile.rmse   , var, sub, layer)
     numb1 = DATAfile.plotdata(DATAfile.npoints, var, sub, layer)

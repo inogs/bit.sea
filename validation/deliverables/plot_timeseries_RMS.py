@@ -77,8 +77,51 @@ for isub,sub in enumerate(OGS.P):
     outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
 
-start_year=1999
-end___year=2014
+
+from commons.season import season
+S=season()
+S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
+from commons import timerequestors
+from commons.Timelist import TimeInterval, TimeList
+TL=TimeList(TIMES)
+from commons.utils import writetable
+
+iSeas=0 # JAN-APR
+CLIM_REQ=timerequestors.Clim_season(iSeas,S)
+ii,w=TL.select(CLIM_REQ)
+RMS__win = BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:].mean(axis=0)
+BIAS_win = BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:].mean(axis=0)
+RMSL_win = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:].mean(axis=0)
+BIASLwin = BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:].mean(axis=0)
+
+iSeas=2 # JUN-SEP
+CLIM_REQ=timerequestors.Clim_season(iSeas,S)
+ii,w=TL.select(CLIM_REQ)
+RMS__sum = BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:].mean(axis=0)
+BIAS_sum = BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:].mean(axis=0)
+RMSL_sum = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:].mean(axis=0)
+BIASLsum = BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:].mean(axis=0)
+mat = np.zeros((nSUB,8),np.float32)
+
+mat[:,0] = RMS__win
+mat[:,1] = RMS__sum
+mat[:,2] = BIAS_win
+mat[:,3] = BIAS_sum
+mat[:,4] = RMSL_win
+mat[:,5] = RMSL_sum
+mat[:,6] = BIASLwin
+mat[:,7] = BIASLsum
+outfiletable = args.outdir+"/"+"table4.1.dat"
+rows_names=[sub.name for sub in OGS.P.basin_list]
+column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum']
+writetable(outfiletable, mat, rows_names, column_names, fmt='%5.3f\t')
+
+import sys
+sys.exit()
+
+
+start_year=2015
+end___year=2017
 nyr=end___year-start_year+1
 RMS__sum=np.zeros((nyr,nSUB),np.float32)
 RMS__win=np.zeros((nyr,nSUB),np.float32)

@@ -145,8 +145,7 @@ for ivar, var in enumerate(VARLIST):
             fig.suptitle(title, fontsize=20)
             fig.savefig(outfile)
             pl.close(fig)
-#	    import sys
-#	    sys.exit()
-#    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
-#    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
+
+    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
+    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
     

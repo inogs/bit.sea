@@ -89,18 +89,18 @@ from commons.utils import writetable
 iSeas=0 # JAN-APR
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)
 ii,w=TL.select(CLIM_REQ)
-RMS__win = BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:].mean(axis=0)
-BIAS_win = BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:].mean(axis=0)
-RMSL_win = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:].mean(axis=0)
-BIASLwin = BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:].mean(axis=0)
+RMS__win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+BIAS_win = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+RMSL_win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+BIASLwin = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 
 iSeas=2 # JUN-SEP
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)
 ii,w=TL.select(CLIM_REQ)
-RMS__sum = BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:].mean(axis=0)
-BIAS_sum = BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:].mean(axis=0)
-RMSL_sum = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:].mean(axis=0)
-BIASLsum = BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:].mean(axis=0)
+RMS__sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+BIAS_sum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+RMSL_sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+BIASLsum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 mat = np.zeros((nSUB,8),np.float32)
 
 mat[:,0] = RMS__win

@@ -1,5 +1,6 @@
 import netCDF4 as NC
 import os
+import numpy as np
 def lon_dimension_name(ncObj):
     '''
     Argument:

@@ -223,20 +223,20 @@ class Decadal_req():
 
 class Interval_req():
     ''' Useful for 10 days averages
-    Interval_req(2005,1,25,'days=10')
+    Interval_req(2005,1,25,days=10)
     '''
-    def __init__(self,year,month,day, deltastr):
+    def __init__(self,year,month,day, days=10):
         self.year   = year
         self.month  = month
         self.day    = day
         centertime     = datetime.datetime(self.year,self.month,self.day,12)
-        delta = relativedelta(10)
-        exec 'delta= relativedelta(' + deltastr + ')'
+        delta = datetime.timedelta(days)
+        #exec 'delta= relativedelta(' + deltastr + ')'
         self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
         self.string  = centertime.strftime("%Y%m%d")
-        self.deltastr = deltastr
+        self.deltadays = days
     def __repr__(self):
-        return "Interval requestor object: " + self.string + "  delta :  " + self.deltastr
+        return "Interval requestor object: " + self.string + "  delta :  " + self.deltadays  + " days"
 
 
 
@@ -252,3 +252,6 @@ class Generic_req():
         self.time_interval = ti
     def __repr__(self):
         return "Generic requestor object definded by: %s  "  %self.time_interval.__repr__()
+    
+if __name__=="__main__":
+    a = Interval_req(2015,1,25,days=9)

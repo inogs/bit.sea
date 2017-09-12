@@ -75,6 +75,7 @@ med = ComposedBasin('med',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,
 
 wes = ComposedBasin('wes', [alb ,swm1,swm2,nwm,tyr1,tyr2], 'West Mediterranean Sea')
 eas = ComposedBasin('eas', [ion1,ion2,ion3,lev1,lev2,lev3,lev4], 'East Mediterranean Sea')
+eas2 = ComposedBasin('eas2', [ion1,ion2,ion3,lev1,lev2,lev3,lev4,adr1,adr2,aeg], 'East Mediterranean Sea with marginal seas')
 mnm = ComposedBasin('mnm', [alb ,swm1,swm2,nwm,tyr1,tyr2,ion1,ion2,ion3,lev1,lev2,lev3,lev4],"Med without marginal seas")
 
 Pred = ComposedBasin('Pr',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4])

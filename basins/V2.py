@@ -67,7 +67,7 @@ aeg = Polygon([21.85, 24.00, 24.90, 26.25, 26.25, 26.30, 28.00, 28.00, 21.85],
 aeg = SimplePolygonalBasin('aeg', aeg, 'Aegean Sea')
 
 
-atl  = Polygon([ -5.5,-5.5,-9.0,-9.0], 
+atl  = Polygon([ -5.5,-5.5,-30.0,-30.0], 
                [ 32.0,40.0,40.0,32.0]) 
 atl  = SimplePolygonalBasin('atl', atl,'Atlantic buffer')
 

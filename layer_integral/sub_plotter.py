@@ -32,10 +32,11 @@ for isub, sub in enumerate(SUBLIST):
 
 SUB_matrix[~mask] = np.NaN
 
-
+x,y = TheMask_all.coastline(200,50) # executed before axis creation, in order to avoid the plot of all contours
 map_dict = {'data':SUB_matrix, 'clim':[0,nSub-1]}
 bkg=pl.imread("/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/etc/static-data/POSTPROC/background_medeaf.png")
 fig,ax = generic_mapplot_medeaf(map_dict, fig=None, ax=None, mask=TheMask, ncolors=nSub, background_img=bkg)
+ax.plot(x,y,color='k',linewidth=0.7)
 
 #pl.close('all')
 font=FontProperties()
@@ -44,4 +45,5 @@ for isub,sub in enumerate(SUBLIST):
     t = ax.text(xC[isub],yC[isub],sub.name, color=colortext[isub], verticalalignment='center', horizontalalignment='center')
     t.set_font_properties(font_prop)
 
-fig.savefig('Subbasin_V3_color.png',dpi=96)
+fig.savefig('Subbasin_V3_200_color.png',dpi=96)
+

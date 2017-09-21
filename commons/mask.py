@@ -2,6 +2,7 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
 import netCDF4
+import pylab as pl
 
 class Mask(object):
     """
@@ -217,7 +218,33 @@ class Mask(object):
         New_mask._zlevels = [self._zlevels[index]]
         New_mask._dz      = [self._dz[index]]
         return New_mask
+    def coastline(self,depth, min_line_length=30):
+        '''
+        Calculates a mesh-dependent coastline at a choosen depth.
 
+        Arguments :
+        * level           * depths expressed in meters
+        * min_line_length * integer indicating the minimum number of points of each coastline,
+                            it is a threshold to avoid a lot of small islands.
+        Returns:
+        * x,y *  numpy 1d arrays, containing nans to separate the lines, in order to be easily plotted.
+        '''
+        tmask= self.mask_at_level(depth).astype(np.float64)
+
+        H = pl.contour(self.xlevels, self.ylevels, tmask, levels=[float(0.5)])
+
+        PATH_LIST = H.collections[0].get_paths()
+
+        X = np.zeros((0,2))
+        nan = np.zeros((1,2))*np.nan
+        for p in PATH_LIST:
+            v = p.vertices
+            nPoints, _ = v.shape
+            if nPoints > min_line_length:
+                X = np.concatenate((X, v, nan),axis=0)
+        x = X[:-1,0]
+        y = X[:-1,1]
+        return x,y
 
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
@@ -232,6 +259,7 @@ if __name__ == '__main__':
     il, jl = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,15)
     it, jt = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
     ipt, jpt = TheMask.convert_lon_lat_to_indices(lon,lat)
+    x,y = TheMask.coastline(200, min_line_length=20)
 
 
 

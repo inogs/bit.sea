@@ -1,6 +1,10 @@
 #! /bin/bash
 
+export    MASK_V2=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc   #1/16
+export   MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/meshmask.nc        #1/24
 
+
+ln -s ../deliverables/profiler.py # link to the profiler.py
 
 mkdir -p Fig4.3/offshore Fig4.3/coast
 V2_PKL=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_open_sea.pkl
@@ -27,9 +31,13 @@ cp $OUTFIGDIR/*P_l* Fig4.5
 cp $OUTFIGDIR/*N3n* Fig4.14
 cp $OUTFIGDIR/*O2o* Fig4.16
 
+mkdir -p Fig4.6 Fig4.13
+NCDIR=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/tmp_nc/
+NCDIR2=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/tmp_nc/
+OUTDIR=Fig4.6/
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter_V2vsV3.py -m $MASK_V2 -i $NCDIR -i2 $NCDIR2 -o $OUTDIR
+mv $OUTDIR/N3n*.png Fig4.13
 
-
-export MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/meshmask.nc
 STAT_PROFILES_MONTHLY_DIR_V3=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v20_1/wrkdir/POSTPROC/output/MONTHLY/STAT_PROFILES/
 STAT_PROFILES_MONTHLY_DIR_V2=/pico/scratch/userexternal/gbolzon0/V2C/MONTHLY/STAT_PROFILES/
 MASK_V2=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc

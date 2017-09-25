@@ -118,9 +118,9 @@ class figure_generator():
         return self._gen_structure(IDrun, season, subbasin_name, var_list, TEXTxlabel, xmin, xmax, xinc)
     
         
-def add_legend(axes):
-        axes[4].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,labelspacing=-0.25, handletextpad=0,borderpad=0.1)
-        leg = axes[4].get_legend()
+def add_legend(ax):
+        ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,labelspacing=-0.25, handletextpad=0,borderpad=0.1)
+        leg = ax.get_legend()
         ltext  = leg.get_texts()
         pl.setp(ltext,fontsize=8)
 

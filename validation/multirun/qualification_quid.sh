@@ -31,12 +31,13 @@ cp $OUTFIGDIR/*P_l* Fig4.5
 cp $OUTFIGDIR/*N3n* Fig4.14
 cp $OUTFIGDIR/*O2o* Fig4.16
 
-mkdir -p Fig4.6 Fig4.13
+mkdir -p Fig4.6 Fig4.13 Fig4.15
 NCDIR=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/tmp_nc/
 NCDIR2=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/tmp_nc/
 OUTDIR=Fig4.6/
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter_V2vsV3.py -m $MASK_V2 -i $NCDIR -i2 $NCDIR2 -o $OUTDIR
-mv $OUTDIR/N3n*.png Fig4.13
+mv $OUTDIR/*N3n*.png Fig4.13
+mv $OUTDIR/*O2o*.png Fig4.15
 
 STAT_PROFILES_MONTHLY_DIR_V3=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v20_1/wrkdir/POSTPROC/output/MONTHLY/STAT_PROFILES/
 STAT_PROFILES_MONTHLY_DIR_V2=/pico/scratch/userexternal/gbolzon0/V2C/MONTHLY/STAT_PROFILES/

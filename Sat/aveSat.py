@@ -81,7 +81,7 @@ MySize = len(TIME_reqs[rank::nranks])
 for req in TIME_reqs[rank::nranks]:
     counter = counter + 1
     
-    outfile = req.string + suffix + ".nc"
+    outfile = req.string + suffix
     outpathfile = OUTDIR + outfile
     conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
 

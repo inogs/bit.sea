@@ -73,7 +73,7 @@ J_START, J_END = interp2d.array_of_indices_for_slicing(y, y1km)
 
 INPUTDIR=addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outputdir)
-dateformat="%Y%m"
+dateformat="%Y%m%d"
 
 reset = False
 

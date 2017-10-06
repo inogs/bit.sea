@@ -4,19 +4,23 @@ export    MASK_V2=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672
 export   MASKFILE=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/meshmask.nc        #1/24
 
 
-ln -s ../deliverables/profiler.py # link to the profiler.py
+ln -fs ../deliverables/profiler.py # link to the profiler.py
+
+mkdir -p Fig4.2
+
 
 mkdir -p Fig4.3/offshore Fig4.3/coast
-V2_PKL=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_open_sea.pkl
-V3_PKL=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_open_sea.pkl
-python plot_timeseries_RMS_2.py -i1 $V3_PKL -i2 $V2_PKL    -o Fig4.3/offshore  # table4.1
 
+V2_PKL_O=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_open_sea.pkl
+V3_PKL_O=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_open_sea.pkl
+V2_PKL_C=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_coast.pkl
+V3_PKL_C=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_coast.pkl
+python plot_timeseries_2.py -oV2 $V2_PKL_O -oV3 $V3_PKL_O -cV2 $V2_PKL_C   -cV3 $V3_PKL_C -O Fig4.2
 
+exit 0
 
-
-V2_PKL=/pico/scratch/userexternal/lfeudale/validation/V2C/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_coast.pkl
-V3_PKL=/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v20_1/bit.sea/validation/deliverables/export_data_ScMYValidation_plan_coast.pkl
-python plot_timeseries_RMS_2.py -i1 $V3_PKL -i2 $V2_PKL   -o Fig4.3/coast     # table4.2
+python plot_timeseries_RMS_2.py -i1 $V3_PKL_O -i2 $V2_PKL_O    -o Fig4.3/offshore  # table4.1
+python plot_timeseries_RMS_2.py -i1 $V3_PKL_C -i2 $V2_PKL_C   -o Fig4.3/coast     # table4.2
 
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files

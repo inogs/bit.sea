@@ -2,7 +2,6 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
 import netCDF4
-import pylab as pl
 
 class Mask(object):
     """
@@ -229,6 +228,7 @@ class Mask(object):
         Returns:
         * x,y *  numpy 1d arrays, containing nans to separate the lines, in order to be easily plotted.
         '''
+        import pylab as pl 
         tmask= self.mask_at_level(depth).astype(np.float64)
 
         H = pl.contour(self.xlevels, self.ylevels, tmask, levels=[float(0.5)])

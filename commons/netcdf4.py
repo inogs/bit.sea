@@ -42,7 +42,7 @@ def readfile(filename, var):
     return VAR
     
 
-def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
+def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     '''
     Dumps a 3D array in a NetCDF file.
 
@@ -61,18 +61,18 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
     Does not return anything.
     '''
 
-#     if os.path.exists(outfile):
-#         ncOUT=NC.Dataset(outfile,'a')
-#         print "appending ", varname, " in ", outfile
-#     else:
-    ncOUT = NC.Dataset(outfile,'w')
-    jpk, jpj, jpi= mask.shape
-    ncOUT.createDimension("longitude", jpi)
-    ncOUT.createDimension("latitude", jpj)
-    ncOUT.createDimension("depth"   , jpk)
+    if os.path.exists(outfile):
+        ncOUT=NC.Dataset(outfile,'a')
+        print "appending ", varname, " in ", outfile
+    else:
+        ncOUT = NC.Dataset(outfile,'w')
+        jpk, jpj, jpi= mask.shape
+        ncOUT.createDimension("longitude", jpi)
+        ncOUT.createDimension("latitude", jpj)
+        ncOUT.createDimension("depth"   , jpk)
     
     dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
-    ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=True, fill_value=1.0e+20) 
+    ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
     setattr(ncvar,'fillValue'    ,fillValue)
     setattr(ncvar,'missing_value',fillValue)
     ncvar[:] = M3d

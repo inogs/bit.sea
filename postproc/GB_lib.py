@@ -25,10 +25,7 @@ class filename_manager():
         '''
         
         file_try1 = filename_for_timelist
-        if filename_for_timelist.endswith("phys.nc"):
-            prefix, datestr,_,_=os.path.basename(filename_for_timelist).rsplit(".")
-        else:
-            prefix, datestr, _ = os.path.basename(filename_for_timelist).rsplit(".")
+        prefix, datestr, _ = os.path.basename(file_try1).rsplit(".")
         
         file_try2 = AGGREGATE_AVEDIR + prefix + "." + datestr + "."  + var + ".nc"
 
@@ -81,7 +78,10 @@ class filename_manager():
         POSTPROC/AVE_FREQ_1/TMP/ave.20130101-12:00:00.nc
         POSTPROC/AVE_FREQ_1/TMP/ave.20130101-12:00:00.P_l.nc
         MODEL/AVE_FREQ_1/ave.20130101-12:00:00.N3n.nc
+        AVE_PHYS/ave.20000116-12:00:00.phys.nc
         '''
+        if is_a_phys_file(filename_for_timelist):
+            return filename_for_timelist
         if is_a_big_avefile(filename_for_timelist):
             return self.search_in_postproc_files(filename_for_timelist, var,AGGREGATE_AVEDIR)
         else:
@@ -95,10 +95,11 @@ def MoreRecent(file1,file2):
     B=time.gmtime(os.path.getmtime(file2))
     return A>B
 
+def is_a_phys_file(filename):
+    return filename.endswith("phys.nc")
+
 def is_a_big_avefile(filename):
-    basename=os.path.basename(filename)
-    if basename.endswith("phys.nc") : return True
-    return basename.count('.')==2
+    return os.path.basename(filename).count('.')==2
 
 def getfileForRead(N1pfile, var):
     '''Can change var name in a file name

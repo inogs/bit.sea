@@ -104,10 +104,10 @@ def Hovmoeller_matrix(datetime_list, file_list, varname, subbasin, coast=CoastEn
     xs,ys = np.meshgrid(xlabel_list, dlabels)
     return plotmat, xs, ys
 
-def Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
+def Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None, vmin=None, vmax=None, cmap=None):
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
-    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat')# default is 'flat'
+    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat',vmin=vmin,vmax=vmax,cmap=cmap)# default is 'flat'
     #Inform matplotlib that the x axis is made by dates
     ax.xaxis_date()
     ax.invert_yaxis()

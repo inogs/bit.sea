@@ -1,9 +1,8 @@
 # from qualification_quid.sh in ../deliverables
 
-export RUN=DA_FLOAT_SAT/Winter/RUN_CR/
+export RUN=DA_FLOAT_SAT/Summer/RUN_FLOAT_02/
 export MASKFILE=/pico/scratch/userexternal/ateruzzi/$RUN/wrkdir/MODEL/meshmask.nc
 
-cd $CINECA_SCRATCH/bit.sea/validation/floatsat
 
 mkdir -p $RUN/Fig4.2 $RUN/Fig4.3/offshore $RUN/table4.1 $RUN/table4.2
 SAT_DAILY_DIR=/pico/scratch/userexternal/ateruzzi/SATELLITE/MULTISENSOR/DAILY/CHECKED_INTERP/
@@ -41,7 +40,7 @@ python Hov_flots+model_vars_runs.py -m $MASKFILE -o $OUTDIR -r $RUN
 NCDIR=$RUN/tmp_nc
 OUTDIR=$RUN/Fig4.4b
 mkdir -p $NCDIR
-kdir -p $OUTDIR
+mkdir -p $OUTDIR
 python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 #mv $OUTDIR/N3n*.png Fig4.12
@@ -53,6 +52,8 @@ python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 BASEDIR=$RUN/PROFILATORE/
 mkdir -p $BASEDIR
 python profiler_floatsat_DAdates.py #to be executed one time
+# ATTENTION: profiler is imported in the following scripts.
+#            Use consistent run name
 
 
 # Statistics on DA dates

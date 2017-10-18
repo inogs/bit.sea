@@ -79,7 +79,14 @@ class DataExtractor(object):
         else:
             #test dimensions
             if dimvar==3:
-                if self.__shape != mask.shape: raise ValueError("mask must have the same shape of the data")
+                if self.__shape[1:] != mask.shape[1:]: raise ValueError("mask must have the same shape of the data")
+                if self.__shape[0] > mask.shape[0]: raise ValueError("mask must have the same shape of the data")
+                if self.__shape[0] < mask.shape[0]:
+                    print('WARNING: loading field limited to a certain level NOT complete full 3d dataset')
+                    appval = self.__values
+                    self.__values = np.zeros(mask.shape)
+                    self.__values[:self.__shape[0],:,:] = appval
+                    self.__shape = self.__values.shape
             if dimvar==2:
                 if self.__shape != mask.shape[1:] : raise ValueError("mask must have the same shape of the data")
         #Preserve mask reference

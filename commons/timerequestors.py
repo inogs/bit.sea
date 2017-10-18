@@ -236,7 +236,7 @@ class Interval_req():
         self.string  = centertime.strftime("%Y%m%d")
         self.deltadays = days
     def __repr__(self):
-        return "Interval requestor object: " + self.string + "  delta :  " + self.deltadays  + " days"
+        return "Interval requestor object: " + self.string + "  delta :  " + str(self.deltadays)  + " days"
 
 
 

@@ -18,7 +18,11 @@ def argument():
     parser.add_argument(   '--inputdir','-i',
                                 type = str,
                                 required = True,
-                                help = 'input dir validation tmp')
+                                help = 'input dir with bio ave 3D')
+    parser.add_argument(   '--physdir','-p',
+                                type = str,
+                                required = True,
+                                help = 'input dir with 3D of T,S')
 
     parser.add_argument(   '--basedir', '-b',
                                 type = str,
@@ -55,6 +59,7 @@ from datetime import timedelta
 starttime=args.starttime
 end__time=args.endtime
 INPUTDIR=addsep(args.inputdir)
+PHYSDIR =addsep(args.physdir)
 BASEDIR=addsep(args.basedir)
 
 
@@ -64,11 +69,11 @@ TI.end_time = TI.end_time + timedelta(1)
 TheMask=Mask(args.maskfile)
 
 Profilelist=bio_float.FloatSelector(None,TI,OGS.med)
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc")
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="P_l")
 M = Matchup_Manager(Profilelist,TL,BASEDIR)
 
 profilerscript = BASEDIR + 'jobProfiler.sh'
-M.writefiles_for_profiling('VarDescriptor_valid_online.xml', profilerscript) # preparation of data for aveScan
+M.writefiles_for_profiling('VarDescriptor_valid_online.xml', profilerscript, aggregatedir=PHYSDIR) # preparation of data for aveScan
 M.dumpModelProfiles(profilerscript) # sequential launch of aveScan
 
 M.getFloatMatchups(Profilelist,TheMask.zlevels,args.outdir)

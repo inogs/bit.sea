@@ -42,20 +42,26 @@ archive_dir= args.arcdir
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 
 if args.type=='analysis':
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*gz")
-    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz"   )
+    for var in ['P_l','O2o','N3n']:
+        T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
+        T_bio.extract_analysis( LOC + 'output_bio/')
+
+    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc"   )
+    T_phys.extract_analysis(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
     
-    T_bio.extract_analysis( LOC + 'output_bio/')
-    T_phys.extract_analysis(LOC + 'output_phys/');
+    
+    
 
 if args.type =='forecast':
-    
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*gz")
-    T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*gz" )
-    T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*gz" )
-    
-    T_bio.extract_simulation(LOC + 'output_bio/')
-    T_phys_s.extract_simulation(LOC + 'output_phys/');
-    
-    T_bio.extract_forecast( LOC + 'output_bio/')
-    T_phys_f.extract_forecast(  LOC + 'output_phys/');
+
+    for var in  ['P_l','O2o','N3n']:
+       T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
+       T_bio.extract_simulation(LOC + 'output_bio/')
+       T_bio.extract_forecast(  LOC + 'output_bio/')
+
+    T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc" )
+    T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*T.nc" )
+
+
+    T_phys_s.extract_simulation(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
+    T_phys_f.extract_forecast(  LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);

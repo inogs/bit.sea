@@ -57,6 +57,19 @@ from commons.utils import is_valid_path
 import numpy as np
 from glob import glob
 from layer_integral import coastline
+from commons.Timelist import TimeInterval, TimeList
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
+
 
 try:
     from layer_integral.mapbuilder import MapBuilder
@@ -94,10 +107,10 @@ except:
     c_lon=None
     c_lat=None
 
-
-file_list = glob(inputdir + "/" + file_pattern)
-mb = MapBuilder(plotlistfile, file_list, maskfile, outputdir)
+TI = TimeInterval("1950","2050","%Y")
+TL = TimeList.fromfilenames(TI, inputdir, "*nc")
+mb = MapBuilder(plotlistfile, TL, maskfile, outputdir)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
 background=mb.read_background(args.background)
-mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1)
+mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1, nranks=nranks, rank=rank)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)

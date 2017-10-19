@@ -19,7 +19,7 @@ ONLINE_VALIDATION_DIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_dat
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL
 
-if [ 1 == 1 ]; then
+if [ 1 == 0 ]; then
 
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
@@ -32,7 +32,7 @@ INGV_MASK=/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_141/me
 
 python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o  ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
 
-fi
+
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE
 IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
@@ -41,4 +41,14 @@ IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
 
 mkdir -p $IMG_DIR_PREV
 python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIR} -p ${PHYS_DIR}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+fi
 
+
+BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
+MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/MODEL/AVE_FREQ_1
+MAPS_ORIG=/marconi_scratch/usera07ogs/a07ogs01/MAPS/
+XML_FILE=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bit.sea/postproc/Plotlist_bio.xml
+mkdir -p $MAPS_ORIG
+
+BITSEA=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/
+python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS_ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE

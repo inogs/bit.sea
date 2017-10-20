@@ -136,7 +136,7 @@ def getcolor(ntimes,itime, colormap='gist_ncar'):
     rgba = cmap(fact)
     return rgba
 
-def writetable(filename, M, rows_names_list,column_names_list,fmt="%3.2f\t"):
+def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
     '''
     Writes a 2d numpy array into a text file.
     It is a wrapper of np.savetxt

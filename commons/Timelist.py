@@ -41,7 +41,7 @@ class TimeList():
             self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S"):
+    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",hour=12):
         '''
         Generates a TimeList object by reading a directory
 
@@ -116,7 +116,7 @@ class TimeList():
         if TimeListObj.inputFrequency == 'daily':
             for iFrame, t in enumerate(TimeListObj.Timelist):
                 if t.hour==0:
-                    newt = datetime.datetime(t.year,t.month,t.day,12,0,0)
+                    newt = datetime.datetime(t.year,t.month,t.day,hour,0,0)
                     TimeListObj.Timelist[iFrame] = newt
 
         return TimeListObj
@@ -502,6 +502,20 @@ class TimeList():
                     LIST_of_IND.append(ind_date)
             if (len(LIST_of_IND) >0 ): Coupled_List.append((self.Timelist[ir],LIST_of_IND))
         return Coupled_List
+
+    def merge_with(self,datetimelist):
+        '''
+        Merge with a datetimelist
+        Returns a datetimelist with all the dates
+         from both lists
+         without repetitions
+        '''
+        Merged_List=[]
+        Merged_List.extend(self.Timelist)
+        Merged_List.extend(datetimelist)
+        Merged_List.sort()
+        Merged_List=list(np.unique(Merged_List))
+        return Merged_List
 
     def find(self,datetimeObj):
         '''

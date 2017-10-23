@@ -44,11 +44,15 @@ python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIR} -p
 fi
 
 
+
 BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
 MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/MODEL/AVE_FREQ_1
-MAPS_ORIG=/marconi_scratch/usera07ogs/a07ogs01/MAPS/
-XML_FILE=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bit.sea/postproc/Plotlist_bio.xml
-mkdir -p $MAPS_ORIG
 
+MAPS=/marconi_scratch/usera07ogs/a07ogs01/MAPS/
+XML_FILE=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bit.sea/postproc/Plotlist_bio.xml
+mkdir -p $MAPS/ORIG
+cp /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/fonts/TitilliumWeb-Regular.ttf $MAPS
+
+cd $MAPS
 BITSEA=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/
-python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS_ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE
+python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE

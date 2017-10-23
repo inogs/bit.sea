@@ -53,11 +53,12 @@ args = argument()
 
 
 import sys
-from commons.utils import is_valid_path
+from commons.utils import is_valid_path, nan_compare
 import numpy as np
 from glob import glob
 from layer_integral import coastline
 from commons.Timelist import TimeInterval, TimeList
+from commons.mask import Mask
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD
@@ -89,17 +90,15 @@ inputdir     = is_valid_path(args.inputdir,True)
 outputdir    = is_valid_path(args.outputdir,True)
 file_pattern = args.pattern
 
-
-
 try:
     c_lon, c_lat=coastline.get()
     # Elimination of some parts of the coastline,
     # in order to leave more space for text, if needed
-    ii = (c_lat > 40.0) & (c_lon < 0.0) # atlantic coast
-    jj = (c_lat > 42.0) & (c_lon > 26 ) # black sea
+    ii = nan_compare(c_lat, ">", 40.0) & nan_compare(c_lon,"<", 0.0) # atlantic coast
+    jj = nan_compare(c_lat, ">", 42.0) & nan_compare(c_lon, ">", 26 ) # black sea
     c_lon[ii | jj] = np.NaN
     c_lat[ii | jj] = np.NaN
-    ii = (c_lon < -6) | (c_lon > 36 )# out of box
+    ii = nan_compare(c_lon, "<", -6) | nan_compare(c_lon, ">", 36)# out of box
     c_lon[ii] = np.NaN
     c_lat[ii] = np.NaN
 
@@ -109,8 +108,10 @@ except:
 
 TI = TimeInterval("1950","2050","%Y")
 TL = TimeList.fromfilenames(TI, inputdir, "*nc")
-mb = MapBuilder(plotlistfile, TL, maskfile, outputdir)
+TheMask = Mask(maskfile)
+mb = MapBuilder(plotlistfile, TL, TheMask, outputdir)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
 background=mb.read_background(args.background)
 mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1, nranks=nranks, rank=rank)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
+

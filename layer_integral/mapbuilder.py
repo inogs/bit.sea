@@ -6,7 +6,6 @@ import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
 
-from commons.mask import Mask
 from commons.layer import Layer,LayerMap
 from commons.utils import is_number, get_date_string
 from commons.xml_module import *
@@ -69,7 +68,7 @@ class Plot(object):
 
 class MapBuilder(object):
 
-    def __init__(self, plotlistfile, TL, maskfile, outputdir):
+    def __init__(self, plotlistfile, TL, MaskObject, outputdir):
         '''
         Arguments : 
         * TL * is a Timelist object
@@ -80,7 +79,7 @@ class MapBuilder(object):
             self.__outputdir = outputdir
         else:
             raise ValueError("outputdir must be a path to a directory")
-        self._mask = Mask(maskfile)
+        self._mask = MaskObject
         xmldoc = minidom.parse(plotlistfile)
         self.__plotlist = list()
         #For each LayersMaps element
@@ -165,8 +164,8 @@ class MapBuilder(object):
                     fig.canvas.print_figure(outfile + ".svg")
                     return
                 
-            fig = None
-            ax = None
+                fig = None
+                ax = None
 
     @staticmethod
     def get_layer_max(data_extractor, layer):

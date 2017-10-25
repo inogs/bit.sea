@@ -49,11 +49,16 @@ IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG
 # Matchup analysis
 mkdir -p $IMG_DIR_PREV
 mkdir -p $IMG_DIR__ACT
+#${STARTTIME_a} -et ${END__TIME_a} confronto Float-Analysis previous
+#${STARTTIME_f} -et ${END__TIME_f} confronto Float con {analisi attuale, IMG_DIR__ACT}, {forecast, IMG_DIR_PREV}
 python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
 #Matchup forecasts
 python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
 # Matchup actual
 python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA} -p ${PHYS_DIRA}  -b $PROFILERDIRA  -o $IMG_DIR__ACT -m $MASKFILE
+
+mkdir -p ${ONLINE_VALIDATION_DIR}/matchup_outputs
+python profileplotter_3.py -p $IMG_DIR_PREV -a $IMG_DIR__ACT -o  ${ONLINE_VALIDATION_DIR}/matchup_outputs  -f  ${ONLINE_VALIDATION_DIR}/BioFloats_Descriptor.xml # scorre tutti i files e genera le immagini a 3
 fi
 
 

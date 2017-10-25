@@ -24,23 +24,36 @@ if [ 1 == 0 ]; then
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
-
+python archive_extractor.py --type analysis -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/ACTUAL
 
 
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS/output_phys
+mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL/output_phys
 INGV_MASK=/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_141/meshmask.nc
 
+#Cutting the physics domain INGV to OGS:
 python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o  ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
-
+python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys_ingv -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE
 
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE
 IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
-    PHYS_DIR=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys
-    BIO_DIR=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_bio
+   PHYS_DIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys
+    BIO_DIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_bio
 
+PROFILERDIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/PROFILATORE
+IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG
+   PHYS_DIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys
+    BIO_DIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/output_bio
+
+# Matchup analysis
 mkdir -p $IMG_DIR_PREV
-python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIR} -p ${PHYS_DIR}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+mkdir -p $IMG_DIR__ACT
+python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+#Matchup forecasts
+python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+# Matchup actual
+python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA} -p ${PHYS_DIRA}  -b $PROFILERDIRA  -o $IMG_DIR__ACT -m $MASKFILE
 fi
 
 

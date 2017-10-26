@@ -98,14 +98,9 @@ XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_bio.x
 mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*N1p.nc
 echo NATIVE DONE
 
-# aggr
-MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP
-XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_bio_aggr.xml
-mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*P_l.nc
-echo AGGR DONE
-
 # phys
 MODELDIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_data/ACTUAL/output_phys
 XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_phys.xml
 mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*votemper.nc
 echo PHYS DONE
+

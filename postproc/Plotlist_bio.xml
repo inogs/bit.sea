@@ -52,6 +52,38 @@
 </plots>
 
 
+<!--  Pc -->
+<plots var="P_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="PhytoC" longname="Phytoplankton biomass">
+<depth top= "0000" bottom="0010"  clim="[0,30]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,30]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,30]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,30]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,30]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,30]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,30]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,30]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,30]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,30]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,30]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,30]"> </depth>
+</plots>
+
+
+<!--  Pi -->
+<plots var="P_l" units="mgCHLa/m3" plotunits="mgCHLa m$^{-3}$" name="Chla" longname="Chlorophyll" >
+<depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,1]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,1]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,1]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,1]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,1]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,1]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,1]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,1]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,1]"> </depth>
+</plots>
 
 <!--  PPN -->
 <plots var="ppn" units="mgC/m3/d" plotunits="mgC m$ ^{-3}$ d$^{-1}$" name="NPP" longname="Net Primary Production">

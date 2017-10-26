@@ -16,7 +16,6 @@ def argument():
                                 required =False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
                                 help = ''' Input directory'''
-
                                 )
 
     parser.add_argument(   '--outputdir', '-o',
@@ -51,7 +50,8 @@ def argument():
 
 args = argument()
 
-
+import matplotlib
+matplotlib.use('Agg')
 import sys
 from commons.utils import is_valid_path, nan_compare
 import numpy as np
@@ -107,7 +107,7 @@ except:
     c_lat=None
 
 TI = TimeInterval("1950","2050","%Y")
-TL = TimeList.fromfilenames(TI, inputdir, "*nc")
+TL = TimeList.fromfilenames(TI, inputdir, file_pattern )
 TheMask = Mask(maskfile)
 mb = MapBuilder(plotlistfile, TL, TheMask, outputdir)
 #mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)

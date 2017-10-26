@@ -1,3 +1,26 @@
+#! /bin/bash
+
+#PBS -N MAPS
+#PBS -l walltime=0:30:00
+#PBS -l select=1:ncpus=36:mpiprocs=36:mem=100GB
+#PBS -q route
+#PBS -A OGS_dev_0
+
+if [ 1 == 0 ]; then
+module purge
+module load profile/advanced
+module load autoload
+module load intel/pe-xe-2017--binary
+module load netcdf/4.4.1--intel--pe-xe-2017--binary
+module load python/2.7.12 scipy/0.18.1--python--2.7.12
+
+source /marconi_work/OGS_dev_0/COPERNICUS/py_env_2.7.12/bin/activate
+PYTHONPATH=$PYTHONPATH:/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea
+module load mpi4py/2.0.0--python--2.7.12
+
+fi
+
+
 OPA_RUNDATE=20171010 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
@@ -9,7 +32,7 @@ STARTTIME_f=$( date -d " $OPA_RUNDATE  -7 days " +%Y%m%d )
 END__TIME_f=$( date -d " $OPA_RUNDATE  -4 days " +%Y%m%d )
 
 export MASKFILE=/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_125/meshmask.nc
-
+      INGV_MASK=/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_141/meshmask.nc
 WRKDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2
 ARCHIVE_DIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/archive
 
@@ -29,11 +52,11 @@ python archive_extractor.py --type analysis -st ${STARTTIME_f} -et ${END__TIME_f
 
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS/output_phys
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL/output_phys
-INGV_MASK=/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_141/meshmask.nc
+
 
 #Cutting the physics domain INGV to OGS:
-python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o  ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
-python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys_ingv -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE
+python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
+python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys_ingv   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys   -M $INGV_MASK -m $MASKFILE
 
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE
@@ -63,14 +86,30 @@ fi
 
 
 
-BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
-MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/MODEL/AVE_FREQ_1
+python ingv_cutter.py -i /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/OPAOPER   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE -l *T.nc -p "" -f "%y%m%d"
+if [ $? -ne 0 ] ; then echo "ERROR" ; exit 1 ; fi
 
+BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
 MAPS=/marconi_scratch/usera07ogs/a07ogs01/MAPS/
-XML_FILE=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bit.sea/postproc/Plotlist_bio.xml
 mkdir -p $MAPS/ORIG
 cp /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/fonts/TitilliumWeb-Regular.ttf $MAPS
-
 cd $MAPS
 BITSEA=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/
-python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE
+
+# native
+MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/MODEL/AVE_FREQ_1
+XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_bio.xml
+mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*N1p.nc
+echo NATIVE DONE
+
+# aggr
+MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP
+XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_bio_aggr.xml
+mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*P_l.nc
+echo AGGR DONE
+
+# phys
+MODELDIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_data/ACTUAL/output_phys
+XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_phys.xml
+mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*votemper.nc
+echo PHYS DONE

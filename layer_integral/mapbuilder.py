@@ -115,8 +115,7 @@ class MapBuilder(object):
          * nranks, rank * integers to manage the ranks
         
         ''' 
-        fig = None
-        ax = None
+
         TL = self.__TL
         INPUTDIR = TL.inputdir
         nTimes   = TL.nTimes 
@@ -131,13 +130,10 @@ class MapBuilder(object):
             longdate , shortdate = get_date_string(filename)
 #        for f in self.__netcdffileslist: 
 #            for p in self.__plotlist:
-            try:
-                print filename, p.varname
-                de = DataExtractor(self._mask, filename=filename, varname=p.varname)
-            except NotFoundError as e:
-                msg="File: %s\n%s" % (f, e)
-                warn_user(msg)
-                continue
+            msg = "rank %d works on %s %s" %(rank,filename,var)
+            print msg
+            de = DataExtractor(self._mask, filename=filename, varname=p.varname)
+
             for i,l in enumerate(p.layerlist):
                 outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
                 mapdata = MapBuilder.get_layer_average(de, l)
@@ -156,16 +152,14 @@ class MapBuilder(object):
                 if maptype == 1:
                     dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
                     mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
-                    fig, ax = mapplot_medeaf(mapdict, fig=fig, ax=ax, mask=self._mask, ncolors=24,background_img=background_img)
+                    fig, ax = mapplot_medeaf(mapdict, fig=None, ax=None, mask=self._mask, ncolors=24,background_img=background_img)
                     fig.savefig(outfile + ".png",dpi=86)
                     pl.close(fig)
                 if maptype == 2:
                     fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                     fig.canvas.print_figure(outfile + ".svg")
                     return
-                
-                fig = None
-                ax = None
+
 
     @staticmethod
     def get_layer_max(data_extractor, layer):

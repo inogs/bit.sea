@@ -21,7 +21,7 @@ module load mpi4py/2.0.0--python--2.7.12
 fi
 
 
-OPA_RUNDATE=20171010 # tuesday 
+OPA_RUNDATE=20171017 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
 END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
@@ -47,17 +47,17 @@ if [ 1 == 0 ]; then
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
-python archive_extractor.py --type analysis -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/ACTUAL
 
 
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS/output_phys
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL/output_phys
 
-
 #Cutting the physics domain INGV to OGS:
 python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
-python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys_ingv   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys   -M $INGV_MASK -m $MASKFILE
+python ingv_cutter.py -i /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/OPAOPER   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE -l *T.nc -p "" -f "%y%m%d"
+if [ $? -ne 0 ] ; then echo "ERROR" ; exit 1 ; fi
 
+fi
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE
 IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
@@ -67,7 +67,7 @@ IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
 PROFILERDIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/PROFILATORE
 IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG
    PHYS_DIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys
-    BIO_DIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/output_bio
+    BIO_DIRA=${WRKDIR}/MODEL/AVE_FREQ_1
 
 # Matchup analysis
 mkdir -p $IMG_DIR_PREV
@@ -82,12 +82,8 @@ python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA} -
 
 mkdir -p ${ONLINE_VALIDATION_DIR}/matchup_outputs
 python profileplotter_3.py -p $IMG_DIR_PREV -a $IMG_DIR__ACT -o  ${ONLINE_VALIDATION_DIR}/matchup_outputs  -f  ${ONLINE_VALIDATION_DIR}/BioFloats_Descriptor.xml # scorre tutti i files e genera le immagini a 3
-fi
 
-
-
-python ingv_cutter.py -i /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/OPAOPER   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE -l *T.nc -p "" -f "%y%m%d"
-if [ $? -ne 0 ] ; then echo "ERROR" ; exit 1 ; fi
+exit 0
 
 BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
 MAPS=/marconi_scratch/usera07ogs/a07ogs01/MAPS/

@@ -16,6 +16,10 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'Output compressed dir')
+    parser.add_argument(   '--bindir', '-b',
+                                type = str,
+                                required = True,
+                                help = 'HOST/ chain bin directory, where to find pngquant')
 
     return parser.parse_args()
 
@@ -36,6 +40,7 @@ except:
 
 INPUTDIR =addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outputdir)
+BINDIR   =addsep(args.bindir)
 
 localdir = "%s%d/" %(OUTPUTDIR, rank)
 os.system("mkdir -p " + localdir)
@@ -45,7 +50,7 @@ os.chdir(localdir)
 for filename in FILELIST[rank::nranks]:
     os.system("ln -fs " + filename)
 
-os.system("/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bin/pngquant *png")
+os.system(BINDIR + "pngquant *png")
 os.system("mv *-fs8.png ../")
 os.system("rm -rf " + localdir)
 

@@ -108,7 +108,8 @@ echo PHYS DONE
 rm -rf $MAPS/OUT
 mkdir $MAPS/OUT
 cd $BITSEA/validation/online
-mpirun -np 36 python map_compressor.py -i $MAPS/ORIG -o $MAPS/OUT
+BINDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/HOST/marconi/bin/
+mpirun -np 36 python map_compressor.py -i $MAPS/ORIG -o $MAPS/OUT -b $BINDIR
 
 
 

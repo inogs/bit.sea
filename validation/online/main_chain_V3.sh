@@ -22,7 +22,7 @@ module load mpi4py/2.0.0--python--2.7.12
 fi
 
 
-OPA_RUNDATE=20171017 # tuesday 
+OPA_RUNDATE=20171024 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
 END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
@@ -49,7 +49,35 @@ python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
+######
+SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/
+SAT_DAILY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/
+OPA_WRKDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2 #???
+PREVIOUS_TUE_RUNDIR=${STARTTIME_s}
+#TMP_DIR_PREV=$TMP_DIR
+TMP_DIR__ACT=$OPA_WRKDIR/POSTPROC/AVE_FREQ_1/TMP
 
+f0_name=${ONLINE_VALIDATION_DIR}/Validation_f0_${PREVIOUS_TUE_RUNDIR}_on_weekly_Sat.${STARTTIME_s}.nc
+#opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name -m $MASKFILE " # MISFIT   
+
+#for fc_day in 1 2; do
+#   DAY=$(date -d "$STARTTIME_s + $fc_day days"  +%Y%m%d )
+#   f_name=${ONLINE_VALIDATION_DIR}/Validation_f${fc_day}_${PREVIOUS_TUE_RUNDIR}_on_daily_Sat.${DAY}.nc
+#   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${f_name}  -m $MASKFILE"     # ERROR  
+#done
+
+# Questi devono essere archiviati in $ARCHIVE_DIR/POSTPROC/AVE_FREQ_1/validation/Sat
+
+a0_name=${ONLINE_VALIDATION_DIR}/Validation_a0_${OPA_RUNDATE}_on_weekly_Sat.${STARTTIME_s}.nc
+opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR__ACT -s ${SAT_WEEKLY_DIR} -o $a0_name  -m $MASKFILE "  # MISFIT   
+
+for ac_day in 1 2; do
+   DAY=$(date -d "$STARTTIME_s + $ac_day days"  +%Y%m%d )
+   a_name=${ONLINE_VALIDATION_DIR}/Validation_a${ac_day}_${OPA_RUNDATE}_on_daily_Sat.${DAY}.nc
+   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR__ACT -s ${SAT_DAILY_DIR} -o ${a_name}  -m $MASKFILE "     # ERROR  
+done
+
+######
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS/output_phys
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL/output_phys
 

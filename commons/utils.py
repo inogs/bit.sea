@@ -229,3 +229,30 @@ def Time_Interpolation(Instant_datetime, TimeList):
 
     before, after,t_interp = data_for_linear_interp(array___seconds,instant_seconds)
     return before, after,t_interp
+
+
+def nan_compare(array_with_nan,operator, value):
+    '''
+    Compares array with scalar value, returning an array of logicals,
+    without producing boresome warnings because of nans.
+
+    Arguments:
+    * array_with_nan * numpy array, it can contain nans
+    * operator       * string, like ">", or ">="
+    * value          * integer, or float
+
+    nan_compare(array,">",value)  works like array > value
+    It is the same of disable warnings, but it is safer.
+
+    Returns:
+    * out *  array of logicals, having the shape of array_with_nan.
+    '''
+
+    ii = np.isnan(array_with_nan)
+    out = np.zeros(array_with_nan.shape, np.bool)
+    if operator=='>'  : out[~ii] = array_with_nan[~ii] >  value
+    if operator=='>=' : out[~ii] = array_with_nan[~ii] >= value
+    if operator=='< ' : out[~ii] = array_with_nan[~ii] <  value
+    if operator=='<=' : out[~ii] = array_with_nan[~ii] <= value
+    return out
+

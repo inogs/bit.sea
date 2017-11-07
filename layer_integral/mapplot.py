@@ -151,11 +151,13 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None
 
     cax = fig.add_axes((0.88,.13, 0.03, 0.78))
     cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
-    cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
+    matplotlib_version=2.0
+    if matplotlib_version<1.4 : cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
     ax.invert_yaxis()
 
-    ax.set_yticklabels([], 'fontproperties', font_prop)
-    ax.set_xticklabels([], 'fontproperties', font_prop)
+    if matplotlib_version < 1.4:
+        ax.set_yticklabels([], 'fontproperties', font_prop)
+        ax.set_xticklabels([], 'fontproperties', font_prop)
     ax.set_xticks(np.arange(-2,36,4).tolist())
     ax.set_yticks(np.arange(32,46,4).tolist())
 

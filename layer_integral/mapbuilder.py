@@ -6,7 +6,6 @@ import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
 
-from commons.mask import Mask
 from commons.layer import Layer,LayerMap
 from commons.utils import is_number, get_date_string
 from commons.xml_module import *
@@ -69,7 +68,7 @@ class Plot(object):
 
 class MapBuilder(object):
 
-    def __init__(self, plotlistfile, TL, maskfile, outputdir):
+    def __init__(self, plotlistfile, TL, MaskObject, outputdir):
         '''
         Arguments : 
         * TL * is a Timelist object
@@ -80,7 +79,7 @@ class MapBuilder(object):
             self.__outputdir = outputdir
         else:
             raise ValueError("outputdir must be a path to a directory")
-        self._mask = Mask(maskfile)
+        self._mask = MaskObject
         xmldoc = minidom.parse(plotlistfile)
         self.__plotlist = list()
         #For each LayersMaps element
@@ -116,8 +115,7 @@ class MapBuilder(object):
          * nranks, rank * integers to manage the ranks
         
         ''' 
-        fig = None
-        ax = None
+
         TL = self.__TL
         INPUTDIR = TL.inputdir
         nTimes   = TL.nTimes 
@@ -132,13 +130,10 @@ class MapBuilder(object):
             longdate , shortdate = get_date_string(filename)
 #        for f in self.__netcdffileslist: 
 #            for p in self.__plotlist:
-            try:
-                print filename, p.varname
-                de = DataExtractor(self._mask, filename=filename, varname=p.varname)
-            except NotFoundError as e:
-                msg="File: %s\n%s" % (f, e)
-                warn_user(msg)
-                continue
+            msg = "rank %d works on %s %s" %(rank,filename,var)
+            print msg
+            de = DataExtractor(self._mask, filename=filename, varname=p.varname)
+
             for i,l in enumerate(p.layerlist):
                 outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
                 mapdata = MapBuilder.get_layer_average(de, l)
@@ -157,16 +152,14 @@ class MapBuilder(object):
                 if maptype == 1:
                     dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
                     mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
-                    fig, ax = mapplot_medeaf(mapdict, fig=fig, ax=ax, mask=self._mask, ncolors=24,background_img=background_img)
+                    fig, ax = mapplot_medeaf(mapdict, fig=None, ax=None, mask=self._mask, ncolors=24,background_img=background_img)
                     fig.savefig(outfile + ".png",dpi=86)
                     pl.close(fig)
                 if maptype == 2:
                     fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                     fig.canvas.print_figure(outfile + ".svg")
                     return
-                
-            fig = None
-            ax = None
+
 
     @staticmethod
     def get_layer_max(data_extractor, layer):

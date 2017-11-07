@@ -24,6 +24,22 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = ''' Path of maskfile''')
+    parser.add_argument(   '--prefix', '-p',
+                                type = str,
+                                default = "mfs_efs2_20171003_",
+                                required = False,
+                                help = ''' Typical prefix of ingv file, the important is the length''')
+    parser.add_argument(   '--dateformat', '-f',
+                                type = str,
+                                default = "%Y%m%d",
+                                required = False,
+                                help = ''' dateformat''')
+    parser.add_argument(   '--filepattern', '-l',
+                                type = str,
+                                default = "*nc",
+                                required = False,
+                                help = ''' file pattern''')    
+
 
 
     return parser.parse_args()
@@ -49,7 +65,7 @@ lon_cut = JPI - jpi
  
 
 TI = TimeInterval("1950","2050",'%Y')
-TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", prefix="mfs_efs2_20171003_", dateformat="%Y%m%d")
+TL = TimeList.fromfilenames(TI, INPUTDIR, args.filepattern, prefix=args.prefix, dateformat=args.dateformat)
 
 for iFrame, ingv_file in enumerate(TL.filelist):
     outfile = OUTPUTDIR + TL.Timelist[iFrame].strftime("ave.%Y%m%d-12:00:00.votemper.nc")

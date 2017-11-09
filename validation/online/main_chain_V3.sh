@@ -111,8 +111,8 @@ python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA} -
 
 mkdir -p ${ONLINE_VALIDATION_DIR}/matchup_outputs
 python profileplotter_3.py -p $IMG_DIR_PREV -a $IMG_DIR__ACT -o  ${ONLINE_VALIDATION_DIR}/matchup_outputs  -f  ${ONLINE_VALIDATION_DIR}/BioFloats_Descriptor.xml # scorre tutti i files e genera le immagini a 3
-fi
 
+fi
 
 BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
 MAPS=/marconi_scratch/usera07ogs/a07ogs01/MAPS/
@@ -128,10 +128,11 @@ mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m
 echo NATIVE DONE
 
 # phys
-MODELDIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_data/ACTUAL/output_phys
+MODELDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/MODEL/AVE_PHYS
 XML_FILE=/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea/postproc/Plotlist_phys.xml
-mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*votemper.nc
+mpirun -np 36 python $BITSEA/build_layer_maps.py -b $BACKGROUND -o $MAPS/ORIG -m $MASKFILE -i $MODELDIR -p $XML_FILE -g ave*phys.nc
 echo PHYS DONE
+
 
 rm -rf $MAPS/OUT
 mkdir $MAPS/OUT

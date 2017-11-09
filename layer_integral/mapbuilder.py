@@ -105,6 +105,8 @@ class MapBuilder(object):
     def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0, background_img=None,nranks=1, rank=0):
         '''
         Parallel generator of a large set of images.
+        Manages ave.date17.var.nc and ave.date17.phys.nc
+
         Arguments : 
           * coastline_lon *  1-D array 
           * coastline_lat *  1-D array
@@ -118,15 +120,19 @@ class MapBuilder(object):
 
         TL = self.__TL
         INPUTDIR = TL.inputdir
-        nTimes   = TL.nTimes 
-        
+        nTimes   = TL.nTimes
+        is_file_phys = TL.filelist[0].endswith("phys.nc")
+
         nplots = len(self.__plotlist)
         PROCESSES = np.arange(nTimes * nplots)
         for ip in PROCESSES[rank::nranks]:
             (itime, ivar) = divmod(ip,nplots)
             p = self.__plotlist[ivar]
             var     =  self.__plotlist[ivar].varname   #VARLIST[ivar]
-            filename= INPUTDIR + "ave." + TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S.") + var + ".nc"
+            if is_file_phys:
+                filename = INPUTDIR + "ave." + TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S.") + "phys.nc"
+            else:
+                filename= INPUTDIR + "ave." + TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S.") + var + ".nc"
             longdate , shortdate = get_date_string(filename)
 #        for f in self.__netcdffileslist: 
 #            for p in self.__plotlist:

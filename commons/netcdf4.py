@@ -64,16 +64,25 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
         print "appending ", varname, " in ", outfile
+        variable_exist= ncOUT.variables.has_key(varname)
+        if variable_exist:
+            ncvar=ncOUT.variables[varname]
+        else:
+            dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
+            ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
+            setattr(ncvar,'fillValue'    ,fillValue)
+            setattr(ncvar,'missing_value',fillValue)
     else:
         ncOUT = NC.Dataset(outfile,'w')
+        
         jpk, jpj, jpi= mask.shape
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude", jpj)
         ncOUT.createDimension("depth"   , jpk)
-    
-    dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
-    ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
-    setattr(ncvar,'fillValue'    ,fillValue)
-    setattr(ncvar,'missing_value',fillValue)
+        dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
+        ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
+        setattr(ncvar,'fillValue'    ,fillValue)
+        setattr(ncvar,'missing_value',fillValue)
+
     ncvar[:] = M3d
     ncOUT.close()

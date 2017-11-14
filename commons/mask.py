@@ -150,13 +150,16 @@ class Mask(object):
         indd = distind<=maxradius
         ipnarr = IImask[indd]
         jpnarr = JJmask[indd]
-        #Assign the first of the nearest wet points 
+        #Assign the nearest wet points 
         if len(ipnarr)>0:
-            newip = ipnarr[0]
-            newjp = jpnarr[0]
+            distmask = distind[indd]
+            indmin = np.argmin(distmask)
+            newip = ipnarr[indmin]
+            newjp = jpnarr[indmin]
             return newip,newjp
         #If there aren't wet points with distance < maxradius, assign the non-wet point
         else:
+            print('WARNING: Using terrain point indexes')
             return ip,jp
 
 
@@ -249,14 +252,14 @@ class Mask(object):
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
     TheMask = Mask('/pico/scratch/userexternal/ateruzzi/DA_COAST_15/wrkdir/MODEL/meshmask.nc')
-    lon = 13.4
-    lat = 43.6
+    lon = 18.1398
+    lat = 37.9585
     i, j = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2)
     id, jd = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
     ip, jp = TheMask.convert_lon_lat_to_indices(lon,lat)
     lon = 9.44
     lat = 40.25
-    il, jl = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,15)
+    il, jl = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,30)
     it, jt = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
     ipt, jpt = TheMask.convert_lon_lat_to_indices(lon,lat)
     x,y = TheMask.coastline(200, min_line_length=20)

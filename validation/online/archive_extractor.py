@@ -2,7 +2,9 @@ import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Extracts files from archive, both for bio and phys variables '''
+    Extracts files from archive,
+    for V3C version where bio and phys files are stored in the same directory.
+    '''
     ,formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(   '--starttime','-st',
                                 type = str,
@@ -20,7 +22,7 @@ def argument():
                                 type = str,
                                 default = None,
                                 required = True,
-                                help = "Base output directory; inside it output_bio/ and output_phys/ will be created.")
+                                help = "Base output directory; inside it output/ will be created.")
     parser.add_argument(   '--type', 
                                 type = str,
                                 choices = ['analysis','forecast'],
@@ -42,26 +44,21 @@ archive_dir= args.arcdir
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 
 if args.type=='analysis':
-    for var in ['P_l','O2o','N3n']:
+    for var in ['P_l','O2o','N3n','vosaline','votemper']:
         T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
-        T_bio.extract_analysis( LOC + 'output_bio/')
+        T_bio.extract_analysis( LOC + 'output/')
+#     T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc"   )
+#     T_phys.extract_analysis(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
 
-    T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc"   )
-    T_phys.extract_analysis(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
-    
-    
-    
 
 if args.type =='forecast':
 
-    for var in  ['P_l','O2o','N3n']:
+    for var in  ['P_l','O2o','N3n','vosaline','votemper']:
        T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
-       T_bio.extract_simulation(LOC + 'output_bio/')
-       T_bio.extract_forecast(  LOC + 'output_bio/')
+       T_bio.extract_simulation(LOC + 'output/')
+       T_bio.extract_forecast(  LOC + 'output/')
 
-    T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc" )
-    T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*T.nc" )
-
-
-    T_phys_s.extract_simulation(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
-    T_phys_f.extract_forecast(  LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
+#     T_phys_s= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc" )
+#     T_phys_f= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_F/'          ,glob_pattern="*T.nc" )
+#     T_phys_s.extract_simulation(LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);
+#     T_phys_f.extract_forecast(  LOC + 'output_phys_ingv/', command="cp $INFILE $OUTFILE", remove_ext=False);

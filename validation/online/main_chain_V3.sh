@@ -20,7 +20,9 @@ PYTHONPATH=$PYTHONPATH:/marconi/home/usera07ogs/a07ogs01/MAPPE/bit.sea
 module load mpi4py/2.0.0--python--2.7.12
 
 fi
-
+#######################################
+. profile.inc
+#######################################
 
 OPA_RUNDATE=20171024 # tuesday 
 
@@ -49,70 +51,68 @@ python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
+fi
+
 ######
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/
 SAT_DAILY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/
 OPA_WRKDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2 #???
 PREVIOUS_TUE_RUNDIR=${STARTTIME_s}
-TMP_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_bio/
-TMP_DIR__ACT=$OPA_WRKDIR/POSTPROC/AVE_FREQ_1/TMP/
+TMP_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/output/
+TMP_DIR__ACT=$OPA_WRKDIR/MODEL/AVE_FREQ_1/
 
 f0_name=${ONLINE_VALIDATION_DIR}/Validation_f0_${PREVIOUS_TUE_RUNDIR}_on_weekly_Sat.${STARTTIME_s}.nc
-opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name -m $MASKFILE " # MISFIT   
+opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name -m $MASKFILE" # MISFIT
 
 for fc_day in 1 2; do
    DAY=$(date -d "$STARTTIME_s + $fc_day days"  +%Y%m%d )
    f_name=${ONLINE_VALIDATION_DIR}/Validation_f${fc_day}_${PREVIOUS_TUE_RUNDIR}_on_daily_Sat.${DAY}.nc
-   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${f_name}  -m $MASKFILE"     # ERROR  
+   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${f_name}  -m $MASKFILE"     # ERROR
 done
 
 # Questi devono essere archiviati in $ARCHIVE_DIR/POSTPROC/AVE_FREQ_1/validation/Sat ???
 
 a0_name=${ONLINE_VALIDATION_DIR}/Validation_a0_${OPA_RUNDATE}_on_weekly_Sat.${STARTTIME_s}.nc
-opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR__ACT -s ${SAT_WEEKLY_DIR} -o $a0_name  -m $MASKFILE "  # MISFIT   
+opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR__ACT -s ${SAT_WEEKLY_DIR} -o $a0_name  -m $MASKFILE"  # MISFIT
 
 for ac_day in 1 2; do
    DAY=$(date -d "$STARTTIME_s + $ac_day days"  +%Y%m%d )
    a_name=${ONLINE_VALIDATION_DIR}/Validation_a${ac_day}_${OPA_RUNDATE}_on_daily_Sat.${DAY}.nc
-   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR__ACT -s ${SAT_DAILY_DIR} -o ${a_name}  -m $MASKFILE "     # ERROR  
+   opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR__ACT -s ${SAT_DAILY_DIR} -o ${a_name}  -m $MASKFILE"    # ERROR
 done
 
 ######
-mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS/output_phys
-mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL/output_phys
-
-#Cutting the physics domain INGV to OGS:
-python ingv_cutter.py -i ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys_ingv -o ${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys -M $INGV_MASK -m $MASKFILE
-python ingv_cutter.py -i /marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/OPAOPER   -o ${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys -M $INGV_MASK -m $MASKFILE -l *T.nc -p "" -f "%y%m%d"
-if [ $? -ne 0 ] ; then echo "ERROR" ; exit 1 ; fi
 
 
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE
 IMG_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/IMG
-   PHYS_DIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_phys
-    BIO_DIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/output_bio
+    BIO_DIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/output
 
 PROFILERDIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/PROFILATORE
 IMG_DIR__ACT=${ONLINE_VALIDATION_DIR}/ACTUAL/IMG
-   PHYS_DIRA=${ONLINE_VALIDATION_DIR}/ACTUAL/output_phys
     BIO_DIRA=${WRKDIR}/MODEL/AVE_FREQ_1
+
 
 # Matchup analysis
 mkdir -p $IMG_DIR_PREV
 mkdir -p $IMG_DIR__ACT
 #${STARTTIME_a} -et ${END__TIME_a} confronto Float-Analysis previous
 #${STARTTIME_f} -et ${END__TIME_f} confronto Float con {analisi attuale, IMG_DIR__ACT}, {forecast, IMG_DIR_PREV}
-python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+python float_extractor.py -st ${STARTTIME_a} -et ${END__TIME_a} -i ${BIO_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
 #Matchup forecasts
-python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRP} -p ${PHYS_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
+python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRP}  -b $PROFILERDIRP  -o $IMG_DIR_PREV -m $MASKFILE
 # Matchup actual
-python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA} -p ${PHYS_DIRA}  -b $PROFILERDIRA  -o $IMG_DIR__ACT -m $MASKFILE
+python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA}  -b $PROFILERDIRA  -o $IMG_DIR__ACT -m $MASKFILE
 
 mkdir -p ${ONLINE_VALIDATION_DIR}/matchup_outputs
 python profileplotter_3.py -p $IMG_DIR_PREV -a $IMG_DIR__ACT -o  ${ONLINE_VALIDATION_DIR}/matchup_outputs  -f  ${ONLINE_VALIDATION_DIR}/BioFloats_Descriptor.xml # scorre tutti i files e genera le immagini a 3
 
-fi
+exit 0
+
+
+# PARALLEL MAP GENERATION -- done in phase_C1
+
 
 BACKGROUND=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/etc/static-data/POSTPROC/background_medeaf.png
 MAPS=/marconi_scratch/usera07ogs/a07ogs01/MAPS/

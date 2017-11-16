@@ -1,8 +1,32 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Creates Float_Index.txt files.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--coriolis',
+                                type = str,
+                                required = False,
+                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/",
+                                help = 'directory of coriolis dataset')
+    parser.add_argument(   '--lov',
+                                type = str,
+                                required = False,
+                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/",
+                                help = 'directory of lov dataset ')
+
+    return parser.parse_args()
+
+args = argument()
+
+
 import scipy.io.netcdf as NC
 import datetime
 import os,glob
 import numpy as np
 from StringIO import StringIO
+from commons.utils import addsep
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
 #e.g. lines as 
@@ -38,8 +62,8 @@ def file_header_content(filename,VARLIST, avail_params=None):
         s=s+" " + avail_params
     return s
 
-LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
-FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+LOC=addsep(args.coriolis) #"/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
+FloatIndexer=LOC + "Float_Index.txt"
 DIRLIST=os.listdir(LOC)
 
 
@@ -58,8 +82,8 @@ F.close()
 
 CORIOLIS_LINES=LINES[:]
 #VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
-LOC="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/"
-FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
+LOC=addsep(args.lov)
+FloatIndexer=LOC + "Float_Index.txt"
 DIRLIST=os.listdir(LOC)
 
 

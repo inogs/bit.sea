@@ -45,17 +45,20 @@ ONLINE_VALIDATION_DIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_dat
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL
 
+INPDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/inpdir
+SAT_WEEKLY_DIR=${INPDIR}/ONLINE/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/
+SAT_DAILY_DIR=${INPDIR}/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/
+export ONLINE_REPO=${INPDIR}/ONLINE
+
 if [ 1 == 0 ]; then
 
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
-fi
-
 ######
-SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/
-SAT_DAILY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/
+
+
 OPA_WRKDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2 #???
 PREVIOUS_TUE_RUNDIR=${STARTTIME_s}
 TMP_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/output/
@@ -82,7 +85,7 @@ for ac_day in 1 2; do
 done
 
 ######
-
+fi
 
 
 PROFILERDIRP=${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE

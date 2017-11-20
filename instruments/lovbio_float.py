@@ -4,6 +4,7 @@ import datetime
 import os
 import pylab as pl
 import seawater as sw
+from commons.utils import addsep
 
 from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
@@ -349,6 +350,11 @@ def FloatSelector(var, T, region):
        
     Returns:
         a list of BioFloatProfile objects.
+    Caveats:
+       In order to work on dataset different from the cineca DRES archive
+       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/
+       remember to define the environment variable ONLINE_REPO
+       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/
     '''
 
     mydtype= np.dtype([
@@ -357,8 +363,9 @@ def FloatSelector(var, T, region):
               ('lon',np.float32),
               ('time','S17'),
               ('parameters','S200')] )
-
-    FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
+    GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
+    ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
+    FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size

@@ -1,72 +1,75 @@
  id_float |   wmo   | id_type |     type      |  nome_fs   | status 
 ----------+---------+---------+---------------+------------+--------
-      885 | 6901766 |      64 | Provor NUT NC | lovbio085d | D
-      902 | 6901466 |      59 | Provor-DO-NC  | 6901466    | D
-      892 | 6901655 |      44 | Provor-BIO-NC | lovbio066d | D
-      884 | 6901765 |      64 | Provor NUT NC | lovbio084d | A
-      768 | 6900684 |      52 | Provor BIO    | 6900684    | D
-      846 | 6901464 |      59 | Provor-DO-NC  | 6901464    | D
-      952 | 6901596 |      59 | Provor-DO-NC  | 6901596    | D
-      883 | 6901764 |      64 | Provor NUT NC | lovbio083d | D
-      887 | 6901768 |      64 | Provor NUT NC | lovbio088d | A
-      816 | 6901865 |      58 | Provor NUT    | ogsbio006b | D
-      918 | 6901888 |      62 | DOVA          |            | D
-      898 | 6901648 |      52 | Provor BIO    | lovbio068d | D
-      811 | 6901605 |      52 | Provor BIO    | lovbio066c | D
-      888 | 6901769 |      64 | Provor NUT NC | lovbio089d | A
-      791 | 6901490 |      44 | Provor-BIO-NC | lovbio042c | D
-      964 | 6902688 |      59 | Provor-DO-NC  | 6902688    | A
-      919 | 6903152 |      62 | DOVA          |            | D
-      886 | 6901767 |      64 | Provor NUT NC | lovbio086d | A
-      895 | 6901653 |      52 | Provor BIO    | lovbio063c | A
-      963 | 6902687 |      59 | Provor-DO-NC  | 6902687    | A
-      802 | 7900592 |      52 | Provor BIO    | basbio002d | D
-       53 | 6900679 |      52 | Provor BIO    | 6900679    | D
-      889 | 6901770 |      64 | Provor NUT NC | lovbio090d | A
-      891 | 6901773 |      64 | Provor NUT NC | lovbio093d | A
-      890 | 6901771 |      64 | Provor NUT NC | lovbio091d | A
-      785 | 6901512 |      44 | Provor-BIO-NC | lovbio017b | D
-      897 | 6901649 |      52 | Provor BIO    | lovbio067c | D
-      834 | 6901900 |      57 | Provor-DO-I   |            | D
-      953 | 6903180 |      62 | DOVA          |            | A
-      950 | 6903197 |      64 | Provor NUT NC | ogsbio006d | A
-      847 | 6901465 |      59 | Provor-DO-NC  | 6901465    | D
-      797 | 6901881 |      49 | Provor-DO     |            | D
-      818 | 6901483 |      52 | Provor BIO    | lovbio039b | D
-      876 | 6901863 |      52 | Provor BIO    | ogsbio004b | A
-      857 | 6900807 |      52 | Provor BIO    | gembio001b | A
-      943 | 6903183 |      62 | DOVA          |            | A
-      914 | 7900594 |      57 | Provor-DO-I   |            | A
-      845 | 6901463 |      59 | Provor-DO-NC  | 6901463    | D
-      800 | 6901898 |      49 | Provor-DO     |            | D
-      921 | 6903153 |      49 | Provor-DO     |            | A
-      901 | 6901600 |      52 | Provor BIO    | lovbio072c | D
        52 | 6900677 |      52 | Provor BIO    | 6900677    | D
-      881 | 6901864 |      52 | Provor BIO    | ogsbio002b | A
-      832 | 7900593 |      57 | Provor-DO-I   |            | D
-      812 | 6901860 |      52 | Provor BIO    | ogsbio005b | D
+      898 | 6901648 |      52 | Provor BIO    | lovbio068d | D
+      845 | 6901463 |      59 | Provor-DO-NC  | 6901463    | D
+      918 | 6901888 |      62 | DOVA          |            | D
+      950 | 6903197 |      64 | Provor NUT NC | ogsbio006d | D
+      847 | 6901465 |      59 | Provor-DO-NC  | 6901465    | D
+      844 | 6901462 |      59 | Provor-DO-NC  | 6901462    | D
+      790 | 6901529 |      44 | Provor-BIO-NC | lovbio053b | D
+       51 | 6900674 |      52 | Provor BIO    | 6900674    | D
+      895 | 6901653 |      52 | Provor BIO    | lovbio063c | D
+     1046 | 6903226 |      62 | DOVA          |            | A
+      792 | 6901491 |      44 | Provor-BIO-NC | lovbio058c | D
+      789 | 6901528 |      58 | Provor NUT    | lovbio018c | D
+      795 | 6901895 |      49 | Provor-DO     |            | D
+      883 | 6901764 |      64 | Provor NUT NC | lovbio083d | D
+      886 | 6901767 |      64 | Provor NUT NC | lovbio086d | A
+      768 | 6900684 |      52 | Provor BIO    | 6900684    | D
+      901 | 6901600 |      52 | Provor BIO    | lovbio072c | D
+      801 | 6901897 |      49 | Provor-DO     |            | D
+      794 | 6901896 |      49 | Provor-DO     |            | D
+     1014 | 6903222 |      62 | DOVA          |            | D
+      816 | 6901865 |      58 | Provor NUT    | ogsbio006b | D
+      953 | 6903180 |      62 | DOVA          |            | D
+      788 | 6901513 |      44 | Provor-BIO-NC | lovbio015c | D
+      787 | 6901511 |      44 | Provor-BIO-NC | lovbio035b | D
+      988 | 6903204 |      62 | DOVA          |            | D
       831 | 6901861 |      52 | Provor BIO    | ogsbio001b | D
+      921 | 6903153 |      49 | Provor-DO     |            | A
       803 | 7900591 |      52 | Provor BIO    | basbio001d | A
       877 | 6901866 |      58 | Provor NUT    | ogsbio007c | A
-      817 | 6901496 |      52 | Provor BIO    | lovbio064b | D
-      871 | 6901862 |      52 | Provor BIO    | ogsbio003b | A
-      790 | 6901529 |      44 | Provor-BIO-NC | lovbio053b | D
+      926 | 6903178 |      62 | DOVA          |            | D
+     1029 | 6903225 |      62 | DOVA          |            | D
+      943 | 6903183 |      62 | DOVA          |            | D
+      888 | 6901769 |      64 | Provor NUT NC | lovbio089d | A
+      889 | 6901770 |      64 | Provor NUT NC | lovbio090d | A
+      887 | 6901768 |      64 | Provor NUT NC | lovbio088d | A
       946 | 6903191 |      62 | DOVA          |            | D
-      934 | 6903190 |      62 | DOVA          |            | P
+      884 | 6901765 |      64 | Provor NUT NC | lovbio084d | A
+      984 | 6902700 |      64 | Provor NUT NC | 6902700    | D
+     1047 | 6902828 |      59 | Provor-DO-NC  | 6902828    | D
+      785 | 6901512 |      44 | Provor-BIO-NC | lovbio017b | D
       769 | 6900939 |      52 | Provor BIO    | 6900939    | D
-      926 | 6903178 |      62 | DOVA          |            | A
-       51 | 6900674 |      52 | Provor BIO    | 6900674    | D
-      795 | 6901895 |      49 | Provor-DO     |            | A
-      792 | 6901491 |      44 | Provor-BIO-NC | lovbio058c | D
-      788 | 6901513 |      44 | Provor-BIO-NC | lovbio015c | D
-      789 | 6901528 |      58 | Provor NUT    | lovbio018c | D
-      801 | 6901897 |      49 | Provor-DO     |            | A
-      798 | 7900590 |      49 | Provor-DO     |            | D
-      786 | 6901510 |      58 | Provor NUT    | lovbio016c | D
-      787 | 6901511 |      44 | Provor-BIO-NC | lovbio035b | D
-      833 | 6901899 |      57 | Provor-DO-I   |            | D
+      834 | 6901900 |      57 | Provor-DO-I   |            | D
       838 | 6901476 |      59 | Provor-DO-NC  | 6901476    | D
-      853 | 6901886 |      62 | DOVA          |            | D
+      818 | 6901483 |      52 | Provor BIO    | lovbio039b | D
+      817 | 6901496 |      52 | Provor BIO    | lovbio064b | D
+      902 | 6901466 |      59 | Provor-DO-NC  | 6901466    | D
+      797 | 6901881 |      49 | Provor-DO     |            | D
+      791 | 6901490 |      44 | Provor-BIO-NC | lovbio042c | D
+      846 | 6901464 |      59 | Provor-DO-NC  | 6901464    | D
+      914 | 7900594 |      57 | Provor-DO-I   |            | D
+      892 | 6901655 |      44 | Provor-BIO-NC | lovbio066d | D
+      812 | 6901860 |      52 | Provor BIO    | ogsbio005b | D
+      952 | 6901596 |      59 | Provor-DO-NC  | 6901596    | D
+      897 | 6901649 |      52 | Provor BIO    | lovbio067c | D
       843 | 6901460 |      59 | Provor-DO-NC  | 6901460    | D
-      844 | 6901462 |      59 | Provor-DO-NC  | 6901462    | D
-      794 | 6901896 |      49 | Provor-DO     |            | D
+      833 | 6901899 |      57 | Provor-DO-I   |            | D
+      811 | 6901605 |      52 | Provor BIO    | lovbio066c | D
+      853 | 6901886 |      62 | DOVA          |            | D
+      800 | 6901898 |      49 | Provor-DO     |            | D
+      891 | 6901773 |      64 | Provor NUT NC | lovbio093d | A
+      919 | 6903152 |      62 | DOVA          |            | D
+      885 | 6901766 |      64 | Provor NUT NC | lovbio085d | A
+      871 | 6901862 |      52 | Provor BIO    | ogsbio003b | A
+       53 | 6900679 |      52 | Provor BIO    | 6900679    | D
+      857 | 6900807 |      52 | Provor BIO    | gembio001b | A
+      934 | 6903190 |      62 | DOVA          |            | D
+      802 | 7900592 |      52 | Provor BIO    | basbio002d | D
+      881 | 6901864 |      52 | Provor BIO    | ogsbio002b | A
+      786 | 6901510 |      58 | Provor NUT    | lovbio016c | D
+      832 | 7900593 |      57 | Provor-DO-I   |            | D
+      890 | 6901771 |      64 | Provor NUT NC | lovbio091d | D
+      876 | 6901863 |      52 | Provor BIO    | ogsbio004b | D

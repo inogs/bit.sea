@@ -1,0 +1,2 @@
+curl "http://maos.inogs.it/api/api.php?key=ogs112211&sql=SELECT%20tbl_float.id_float,%20tbl_float.wmo,%20tbl_float.id_type,%20tbl_type.type,%20tbl_float.nome_fs,%20tbl_float.status%20FROM%20tbl_float%20INNER%20JOIN%20tbl_type%20ON%20tbl_float.id_type%20=%20tbl_type.id_type%20WHERE%20(((tbl_float.id_type)=64%20Or%20(tbl_float.id_type)=62%20Or%20(tbl_float.id_type)=59%20Or%20(tbl_float.id_type)=58%20Or%20(tbl_float.id_type)=57%20Or%20(tbl_float.id_type)=52%20Or%20(tbl_float.id_type)=49%20Or%20(tbl_float.id_type)=44))%20ORDER%20BY%20tbl_float.wmo;"
+

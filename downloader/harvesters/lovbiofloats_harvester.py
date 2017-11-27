@@ -102,9 +102,17 @@ def download_file(url, f, path, log, perms=None,
 
 
 
-wmo_file = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
-xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
+wmo_default = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
+wmo_file=os.getenv("WMO_FILE")
+if wmo_file is None:
+    print("Env WMO_FILE is not defined. Taking the hardcoded wmo.txt")
+    wmo_file=wmo_default
+else:
+    print("Taking regularly " + wmo_file) 
+    
 
+xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
+print(wmo_file)
 
 class LovBioFloatsHarvester(HarvesterInterface):
     """

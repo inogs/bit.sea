@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mpldates
 import netCDF4
+import pickle
 
 from datetime import datetime
 
@@ -31,6 +32,14 @@ class StatEnum:
     @staticmethod
     def valid(val):
         return val in range(5)
+
+def read_pickle_file(filename):
+    print filename
+    fid =open(filename,'r')
+    [TIMESERIES,TL] = pickle.load(fid)
+    fid.close()
+    return TIMESERIES, TL
+
 
 def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depth_index=0, fig=None, ax=None):
     """
@@ -73,9 +82,37 @@ def plot_from_files(file_list, varname, subbasin, coast=CoastEnum.open_sea, stat
     ax.plot(label_list, plot_list)
     return fig,ax
 
+def Hovmoeller_matrix(TIMESERIES, TL, depths, isub, icoast=0, istat=0):
+    '''
+    Arguments:
+    TIMESERIES : numpy 4D array [nFrames,nSub,nCoast,jpk, nStat]
+    TL         : Timelist object
+    depths     : numpy array of nav_lev
+    isub       : integer
+    icoast     : integer
+    istat      : integer
+    '''
+    ndepths=len(depths)
+    plotmat = TIMESERIES[:,isub,icoast,0:ndepths,istat]
+    first_nan = np.argmax(np.isnan(plotmat[0,:]))
+    plotmat = plotmat[:,:first_nan]
+    depths = depths[:first_nan]
+
+    xlabel_list = mpldates.date2num(TL.Timelist)
+    xs,ys = np.meshgrid(xlabel_list, depths)
+    return plotmat.T, xs, ys
+
+def Simple_timeseries(TIMESERIES,TL, iLev=0, iSub=0, iCoast=0, iStat=0):
+    '''
+    Retrives data for (x,y) plot
+    '''
+    return TL.Timelist, TIMESERIES[:,iSub,iCoast,iLev,iStat]
 
 
-def Hovmoeller_matrix(datetime_list, file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72):
+def Hovmoeller_matrix_from_SP(datetime_list, file_list, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean, depths=72):
+    '''
+    Reads directly from STAT_PROFILES
+    '''
     dlabels=None
     if isinstance(depths, (int, long)):
         pass
@@ -182,6 +219,27 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     return fig, ax, quadmesh
 
 if __name__ == "__main__":
+    INPUTDIR="/Users/gbolzon/Documents/workspace/chain/postproc/"
+    var="P_l"
+    iSub=0
+    iCoast=2
+    iLev=0
+    iStat=0
+    plt.close('all')
+    filename = INPUTDIR + var + ".pkl"
+    TIMESERIES, TL = read_pickle_file(filename)
+
+    fig,ax = plt.subplots()
+    t,y = Simple_timeseries(TIMESERIES, TL, iLev, iSub, iCoast, iStat)
+    ax.plot(t,y)
+    fig.show()
+
+    depths = np.arange(120)
+    M, xs, ys = Hovmoeller_matrix(TIMESERIES,TL, depths, iSub, iCoast, iStat)
+    fig, ax, quadmesh = Hovmoeller_diagram(M, xs, ys)
+
+    fig.show()
+
     from glob import glob
     from commons.mask import Mask
     m = Mask('./layer_integral/meshmask.nc')

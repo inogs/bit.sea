@@ -73,7 +73,8 @@ class TimeList():
         inputdir = addsep(inputdir)
         filelist_ALL = glob.glob(inputdir + searchstring)
         if not filtervar is None:
-            filelist_ALL=[f for f in filelist_ALL if filtervar in f ]
+            filename, file_extension = os.path.splitext(filelist_ALL[0])
+            filelist_ALL=[f for f in filelist_ALL if f.endswith(filtervar + file_extension) ]
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]

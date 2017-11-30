@@ -1,7 +1,19 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    plot something
+    Generates png maps of time averaged fields.
+    
+    Brief description of the algorithm:
+    INPUTS                                               OPERATOR              OUTPUT
+    (InputDir, varname, StartTime, EndTime)  ---->     time average       ---> 3D field
+    (3d_field, Layer list )                  ----> vertical mean/integral ---> 2d map
+    
+    
+    Example of output file: 
+    Map_pCO2_Ave.2016-2015_Ave0060-0100m-0060m.png
+    
+    Caveats:
+    A unit conversion is performed, about ppn.
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )

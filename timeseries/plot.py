@@ -33,6 +33,17 @@ class StatEnum:
     def valid(val):
         return val in range(5)
 
+def read_basic_info(stat_profile_file):
+    '''
+    Returns basin info
+    '''
+    ncIN = netCDF4.Dataset(stat_profile_file,'r')
+    SUBLIST = str(ncIN.sub___list).split(", ")
+    COASTLIST=str(ncIN.coast_list).split(", ")
+    STAT_LIST=str(ncIN.stat__list).split(", ")
+    ncIN.close()
+    return SUBLIST, COASTLIST, STAT_LIST
+
 def read_pickle_file(filename):
     print filename
     fid =open(filename,'r')
@@ -94,9 +105,14 @@ def Hovmoeller_matrix(TIMESERIES, TL, depths, isub, icoast=0, istat=0):
     '''
     ndepths=len(depths)
     plotmat = TIMESERIES[:,isub,icoast,0:ndepths,istat]
-    first_nan = np.argmax(np.isnan(plotmat[0,:]))
+    nans_in_profile = np.isnan(plotmat[0,:])
+    if not nans_in_profile.all(): # case of no nans
+        first_nan = ndepths+1
+    else:
+        first_nan = np.argmax(nans_in_profile)
+
     plotmat = plotmat[:,:first_nan]
-    depths = depths[:first_nan]
+    depths  =  depths[  :first_nan]
 
     xlabel_list = mpldates.date2num(TL.Timelist)
     xs,ys = np.meshgrid(xlabel_list, depths)
@@ -141,10 +157,10 @@ def Hovmoeller_matrix_from_SP(datetime_list, file_list, varname, subbasin, coast
     xs,ys = np.meshgrid(xlabel_list, dlabels)
     return plotmat, xs, ys
 
-def Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None, vmin=None, vmax=None, cmap=None):
+def Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None, shading='flat',vmin=None, vmax=None, cmap=None):
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
-    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat',vmin=vmin,vmax=vmax,cmap=cmap)# default is 'flat'
+    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading=shading,vmin=vmin,vmax=vmax,cmap=cmap)
     #Inform matplotlib that the x axis is made by dates
     ax.xaxis_date()
     ax.invert_yaxis()
@@ -213,7 +229,7 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     xlabel_list = mpldates.date2num(xlabel_list)
     xs,ys = np.meshgrid(xlabel_list, dlabels)
     #Plot the matrix
-    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat')# default is 'flat'
+    quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='flat')
     #Inform matplotlib that the x axis is made by dates
     ax.xaxis_date()
     return fig, ax, quadmesh

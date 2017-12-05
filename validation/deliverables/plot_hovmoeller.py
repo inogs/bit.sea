@@ -47,7 +47,7 @@ INPUTDIR=addsep(args.inputdir)
 OUTDIR  =addsep(args.outdir)
 TheMask = Mask(args.maskfile)
 
-var=args.varname()
+var=args.varname
 filename=INPUTDIR + var + ".pkl"
 iLev = TheMask.getDepthIndex(400) #m
 

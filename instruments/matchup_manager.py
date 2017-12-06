@@ -93,20 +93,24 @@ class Matchup_Manager():
 
 
 
-    def dumpModelProfiles(self,profilername):
+    def dumpModelProfiles(self,profilername, erase=False):
         '''
-        The text file provided as argument
-         - becomes executable
-         - it is launched on cluster
          A series of aveScan.py are executed, once and for all the following analysis.
-        '''
 
+        Arguments:
+        * profilername * string, text file
+        * erase        * logica, if True PROFILES and TMP/ are erased and re-created
+
+        profilername becoomes executable and itit is launched on cluster
+
+        '''
         MODEL_PROFILES_DIR =self.profilingDir + "PROFILES/"
         TMPSDIR =           self.profilingDir + "TMP/"
-        os.system("rm -rf " + MODEL_PROFILES_DIR)
-        os.system("rm -rf " + TMPSDIR)
-        os.system("mkdir " + MODEL_PROFILES_DIR)
-        os.system("mkdir " + TMPSDIR)
+        if erase:
+            os.system("rm -rf " + MODEL_PROFILES_DIR)
+            os.system("rm -rf " + TMPSDIR)
+            os.system("mkdir " + MODEL_PROFILES_DIR)
+            os.system("mkdir " + TMPSDIR)
         os.chmod(profilername, 0755)
         os.system(profilername)
     @staticmethod

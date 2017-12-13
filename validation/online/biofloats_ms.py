@@ -60,7 +60,7 @@ R=timerequestors.Weekly_req(d.year,d.month,d.day)
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o']
-read_adjusted = [True,False,False]
+read_adjusted = [True,True,False]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
@@ -70,7 +70,9 @@ RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
 TI =R.time_interval
+#print TI
 TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
+print TL.filelist
 ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
@@ -78,9 +80,11 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 for ivar, var in enumerate(VARLIST):
     print var
     for isub, sub in enumerate(OGS.NRT3):
-        Profilelist = bio_float.FloatSelector(LOVFLOATVARS[var], TI, sub)
+        Profilelist_all = bio_float.FloatSelector(LOVFLOATVARS[var], TI, sub)
+        Profilelist = bio_float.remove_bad_sensors(Profilelist_all,LOVFLOATVARS[var])
         nProfiles = len(Profilelist)
-        print sub.name, nProfiles
+#        print "ALL " + np.str(len(Profilelist_all))
+#        print sub.name, nProfiles
         Matchup_object_list=[]
         for ip in range(nProfiles):
             floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar])

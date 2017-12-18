@@ -24,7 +24,7 @@ fi
 . profile.inc
 #######################################
 
-OPA_RUNDATE=20171024 # tuesday 
+OPA_RUNDATE=20171121 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
 END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
@@ -40,8 +40,40 @@ WRKDIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2
 ARCHIVE_DIR=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/archive
 
 ONLINE_VALIDATION_DIR=/marconi_scratch/usera07ogs/a07ogs01/online_validation_data/
+ONLINE_VALIDATION_DIR_INPUT=/marconi/home/usera07ogs/a07ogs00/OPA/V3C-dev/wrkdir/2/POSTPROC/AVE_FREQ_1/online_validation/
+
+if [ 1 == 0 ]; then
+mkdir -p ${ONLINE_VALIDATION_DIR}/ANALYSIS_PROFILES_1week/PROFILATORE/PROFILES ${ONLINE_VALIDATION_DIR}/biofloat_ms
+#cp Archive_biofloats_ms_validation_V2C.tar
+for I in `ls ${ONLINE_VALIDATION_DIR_INPUT}/PREVIOUS/PROFILATORE/PROFILES/*nc ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_PROFILES_1week/PROFILATORE/PROFILES
+done
+for I in `ls ${ONLINE_VALIDATION_DIR_INPUT}/ACTUAL/PROFILATORE/PROFILES/*nc  ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_PROFILES_1week/PROFILATORE/PROFILES
+done
+
+NRT_biofloat_out_name=${ONLINE_VALIDATION_DIR}/ANALYSIS_PROFILES_1week/NRT_validation_${OPA_RUNDATE}_on_week_floats.${STARTTIME_s}.nc
+
+python biofloats_ms.py -d $STARTTIME_s -m $MASKFILE -b ${ONLINE_VALIDATION_DIR}/ANALYSIS_PROFILES_1week/PROFILATORE -o ${NRT_biofloat_out_name}
+fi
+
+#-----------------
+OLD_ARCHIVE=Archive_biofloats_ms_validation_V2.tar
+mkdir -p ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
+#cp ${OPA_ETCDIR}/static-data/POSTPROC/${OLD_ARCHIVE} ${ONLINE_VALIDATION_DIR}/biofloat_ms
+cp /marconi_scratch/usera07ogs/a07ogs01/Archive_biofloats_ms_validation_V2.tar   ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms
+tar -xf ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/${OLD_ARCHIVE} -C  ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
+PREVIOUS_ARCH=${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
+
+#opa_prex_or_die "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR} -a $OPA_ARCDIR_ROOT -d $OPA_RUNDATE "
+#python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR} -a $ARCHIVE_DIR -d $STARTTIME_s
+echo "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE"  #$STARTTIME_s"
+python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE #$STARTTIME_s
 
 
+exit 0
+
+if [ 1 == 0 ]; then
 mkdir -p $ONLINE_VALIDATION_DIR/PREVIOUS
 mkdir -p $ONLINE_VALIDATION_DIR/ACTUAL
 
@@ -50,12 +82,12 @@ SAT_WEEKLY_DIR=${INPDIR}/ONLINE/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/
 SAT_DAILY_DIR=${INPDIR}/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/
 export ONLINE_REPO=${INPDIR}/ONLINE
 
-if [ 1 == 0 ]; then
 
 python archive_extractor.py --type analysis -st ${STARTTIME_a} -et ${END__TIME_a}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_s} -et ${STARTTIME_s}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 python archive_extractor.py --type forecast -st ${STARTTIME_f} -et ${END__TIME_f}  -a ${ARCHIVE_DIR}  -o ${ONLINE_VALIDATION_DIR}/PREVIOUS
 
+fi
 ######
 
 
@@ -64,6 +96,7 @@ PREVIOUS_TUE_RUNDIR=${STARTTIME_s}
 TMP_DIR_PREV=${ONLINE_VALIDATION_DIR}/PREVIOUS/output/
 TMP_DIR__ACT=$OPA_WRKDIR/MODEL/AVE_FREQ_1/
 
+if [ 1 == 0 ]; then
 f0_name=${ONLINE_VALIDATION_DIR}/Validation_f0_${PREVIOUS_TUE_RUNDIR}_on_weekly_Sat.${STARTTIME_s}.nc
 opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name -m $MASKFILE" # MISFIT
 
@@ -111,6 +144,33 @@ python float_extractor.py -st ${STARTTIME_f} -et ${END__TIME_f} -i ${BIO_DIRA}  
 mkdir -p ${ONLINE_VALIDATION_DIR}/matchup_outputs
 python profileplotter_3.py -p $IMG_DIR_PREV -a $IMG_DIR__ACT -o  ${ONLINE_VALIDATION_DIR}/matchup_outputs  -f  ${ONLINE_VALIDATION_DIR}/BioFloats_Descriptor.xml # scorre tutti i files e genera le immagini a 3
 
+######### biofloats matchups validation #######
+
+mkdir -p ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/TMP  ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/PROFILATORE/PROFILES
+for I in `ls ${TMP_DIR_PREV}/*nc ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/TMP
+done
+for I in `ls ${TMP_DIR__ACT}/*nc ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/TMP
+done
+
+for I in `ls ${ONLINE_VALIDATION_DIR}/PREVIOUS/PROFILATORE/PROFILES/*nc ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/PROFILATORE/PROFILES
+done
+for I in `ls ${ONLINE_VALIDATION_DIR}/ACTUAL/PROFILATORE/PROFILES/*nc  ` ; do
+  ln -fs $I ${ONLINE_VALIDATION_DIR}/ANALYSIS_over_2_weeks/PROFILATORE/PROFILES
+done
+
+
+OLD_ARCHIVE=Archive_biofloats_ms_validation_V4.tar
+mkdir -p ${ONLINE_VALIDATION_DIR}/biofloat_ms/V4
+cp ${OPA_ETCDIR}/static-data/POSTPROC/${OLD_ARCHIVE} ${ONLINE_VALIDATION_DIR}/biofloat_ms
+tar -xf ${ONLINE_VALIDATION_DIR}/biofloat_ms/${OLD_ARCHIVE} -C  ${ONLINE_VALIDATION_DIR}/biofloat_ms/V4
+PREVIOUS_ARCH=${ONLINE_VALIDATION_DIR}/biofloat_ms/V4
+
+opa_prex_or_die "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR} -a $OPA_ARCDIR_ROOT -d $OPA_RUNDATE "
+
+###################################
 exit 0
 
 

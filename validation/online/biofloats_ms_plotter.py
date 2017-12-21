@@ -92,8 +92,8 @@ def single_plot(longvar, var, sub, layer ):
     fig, ax = pl.subplots(figsize=(16,4))
     ax2 = ax.twinx()
 
-    ax2.bar(times0,numb0,width=7, color='0.3', alpha=0.3, align='center', edgecolor="k")
-    ax2.bar(times1,numb1,width=7, color='0.3', alpha=0.3, align='center', edgecolor="k")
+    ax2.bar(times0,numb0,width=7, color='0.9', align='center', edgecolor="k")
+    ax2.bar(times1,numb1,width=7, color='0.9', align='center', edgecolor="k")
     ax2.set_ylabel(' n. of BGC-Argo floats', fontsize=20)
     ax2.set_ylim([0,max(numb0.max(),numb1.max()) +2])
 #    ax2.set_ylim([0,numb1.max() +2])
@@ -135,6 +135,8 @@ def single_plot(longvar, var, sub, layer ):
 #    rmsem = np.nanmean(rmse1[ii])
 #    return fig, biasm, rmsem, ax, ax2
 #    return fig, ax, ax2
+    ax.set_zorder(ax2.get_zorder()+1) # put ax in front of ax2
+    ax.patch.set_visible(False) # hide the 'canvas'
     return fig
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]

@@ -46,13 +46,20 @@ import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS
 from commons.utils import addsep
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 ARCHIVEDIR       = addsep(args.archivedir)
 ARCHIVE_PREV     = addsep(args.previous_archive)
 VALID_WRKDIR     = addsep(args.validation_dir)
 OUTFIG_DIR       = addsep(args.outdir)
 
-TI_V2 = TimeInterval("20160401","20171206","%Y%m%d")
+Graphic_DeltaT = relativedelta(months=18)
+datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
+timestart = datestart.strftime("%Y%m%d")
+
+#TI_V2 = TimeInterval("20160401","20171206","%Y%m%d")
+TI_V2 = TimeInterval(timestart,"20171206","%Y%m%d")
 TI_V3 = TimeInterval('20171114', args.date,'%Y%m%d')
 
 #V4_data  = timelistcontainer(TI_V1,ARCHIVE_PREV,postfix_dir="")
@@ -85,8 +92,8 @@ def single_plot(longvar, var, sub, layer ):
     fig, ax = pl.subplots(figsize=(16,4))
     ax2 = ax.twinx()
 
-    ax2.bar(times0,numb0,width=7, color='0.5', alpha=0.3, align='center', edgecolor="k")
-    ax2.bar(times1,numb1,width=7, color='0.5', alpha=0.3, align='center', edgecolor="k")
+    ax2.bar(times0,numb0,width=7, color='0.3', alpha=0.3, align='center', edgecolor="k")
+    ax2.bar(times1,numb1,width=7, color='0.3', alpha=0.3, align='center', edgecolor="k")
     ax2.set_ylabel(' n. of BGC-Argo floats', fontsize=20)
     ax2.set_ylim([0,max(numb0.max(),numb1.max()) +2])
 #    ax2.set_ylim([0,numb1.max() +2])

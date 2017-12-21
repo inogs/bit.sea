@@ -24,7 +24,7 @@ fi
 . profile.inc
 #######################################
 
-OPA_RUNDATE=20171121 # tuesday 
+OPA_RUNDATE=20171128 # tuesday 
 
 STARTTIME_a=$( date -d " $OPA_RUNDATE -10 days " +%Y%m%d ) 
 END__TIME_a=$( date -d " $OPA_RUNDATE  -8 days " +%Y%m%d )
@@ -59,16 +59,16 @@ fi
 
 #-----------------
 OLD_ARCHIVE=Archive_biofloats_ms_validation_V2.tar
-mkdir -p ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
+mkdir -p ${ONLINE_VALIDATION_DIR}/biofloat_ms/V2
 #cp ${OPA_ETCDIR}/static-data/POSTPROC/${OLD_ARCHIVE} ${ONLINE_VALIDATION_DIR}/biofloat_ms
-cp /marconi_scratch/usera07ogs/a07ogs01/Archive_biofloats_ms_validation_V2.tar   ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms
-tar -xf ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/${OLD_ARCHIVE} -C  ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
-PREVIOUS_ARCH=${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms/V2
+cp /marconi_scratch/usera07ogs/a07ogs01/Archive_biofloats_ms_validation_V2.tar   ${ONLINE_VALIDATION_DIR}/biofloat_ms
+tar -xf ${ONLINE_VALIDATION_DIR}/biofloat_ms/${OLD_ARCHIVE} -C  ${ONLINE_VALIDATION_DIR}/biofloat_ms/V2
+PREVIOUS_ARCH=${ONLINE_VALIDATION_DIR}/biofloat_ms/V2
 
 #opa_prex_or_die "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR} -a $OPA_ARCDIR_ROOT -d $OPA_RUNDATE "
 #python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR} -a $ARCHIVE_DIR -d $STARTTIME_s
-echo "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE"  #$STARTTIME_s"
-python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR_INPUT}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE #$STARTTIME_s
+echo "python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE"  #$STARTTIME_s"
+python biofloats_ms_plotter.py  -o ${ONLINE_VALIDATION_DIR}/biofloat_ms -p $PREVIOUS_ARCH -v ${ONLINE_VALIDATION_DIR_INPUT}/ANALYSIS_PROFILES_1week/ -a $ARCHIVE_DIR -d $OPA_RUNDATE #$STARTTIME_s
 
 
 exit 0

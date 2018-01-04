@@ -63,10 +63,10 @@ class IspraExtractor():
          '''
 
         ivar  = find_index(var, self.VARIABLES)
-        values= self.DATA[ivar,:]
+        values= self.DATA[ivar,:].copy()
         units = self.UNITS[ivar,:].tostring()
 
-        if units =="\\mumol/kg":
+        if False: #units =="\\mumol/kg":
             itemp  = find_index('temp'    , self.VARIABLES)
             ipsal  = find_index('salinity', self.VARIABLES)
             idens  = find_index('density' , self.VARIABLES)
@@ -106,7 +106,7 @@ class IspraExtractor():
         lon     = self.DATA[ 4,good]
         depth   = self.DATA[ 5,good]
         dataset = self.DATA[-1,good]
-
+        
         nValues=values.size
         Selected = np.zeros((nValues,),dtype=np.bool)
         TIME     = np.zeros((nValues), dtype=np.int32)
@@ -121,9 +121,9 @@ class IspraExtractor():
         Lat     =  lat[Selected]
         values  =  values[Selected]
         depth   =   depth[Selected]
-        dataset =  dataset[Selected]
+        dataset = dataset[Selected]
         
-        return self.profileGenerator(Time, Lon, Lat, values, depth,dataset)
+        return self.profileGenerator(Time, Lon, Lat, values, depth, dataset)
     
     def stationSelector(self, var,stationname):
         '''

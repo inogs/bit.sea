@@ -23,7 +23,7 @@ class MassimiliReader():
         Cruisename (string)
 
         var can be one of these:
-         - chl
+         - CHL
          - nitrate
          - phosphate
          - silicate

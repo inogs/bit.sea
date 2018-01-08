@@ -47,3 +47,6 @@ ISPRAVARS = {'N1p': 'orthophosphates', \
              'N3n': 'nitrate', \
              'P_l': 'chlorophyll a'}
 
+MASSIMILIVARS = {'N1p': 'phosphate', \
+             'N3n': 'nitrate', \
+             'P_l': 'CHL'}

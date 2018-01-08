@@ -47,13 +47,13 @@ class MassimiliReader():
         can be one of these:
          - nitrate
          - phosphate
-         - silicate
+         - CHL
          - oxygen
          if var is None, no selection is done about variable
          '''
         if var is None:
             Profilelist=list()
-            for myvar in ['nitrate','phosphate','silicate','oxygen']:
+            for myvar in ['nitrate','phosphate','CHL','oxygen']:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
                     if not p in Profilelist: Profilelist.append(p)
@@ -70,13 +70,17 @@ if __name__ == '__main__':
     
     var= 'nitrate';
     TI = TimeInterval('2015','2016','%Y')
-    Reg= Rectangle(0,20,30,46)
+    Reg= Rectangle(-6,36,30,46)
     N = MassimiliReader()
     ProfileLIST = N.Selector('nitrate', TI, Reg)
+    s=0
+    for p in ProfileLIST:
+        Pres,Profile,Qc = p.read('nitrate')
+        s = s + len(Pres)
+    print s
     
-    
-    Cruisename='MOOSE'
-    ProfileLIST2 = N.CruiseSelector(var, Cruisename)
+    #Cruisename='MOOSE'
+    #ProfileLIST2 = N.CruiseSelector(var, Cruisename)
 
 
         

@@ -12,7 +12,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['N1p', 'N3n', 'O2o'] )
+                                choices = ['N1p', 'N3n', 'O2o', 'P_l'] )
 
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
@@ -36,32 +36,39 @@ args = argument()
 
 
 import os
-from profiler_RA import *
+from profiler import *
 from commons.mask import Mask
-import basins.OGS as OGS
-from instruments.var_conversions import NUTRVARS
-from static.Nutrients_reader import NutrientsReader
+import basins.V2 as OGS
+from instruments.var_conversions import MASSIMILIVARS as NUTRVARS
+from static.Massimili_reader import MassimiliReader
+from commons.utils import addsep
+
 from instruments.matchup_manager import Matchup_Manager
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
-N=NutrientsReader()
+N=MassimiliReader()
 
 TheMask = Mask(args.maskfile)
 nav_lev = TheMask.zlevels
 
-OUTPUTDIR=args.outdir
+OUTPUTDIR=addsep(args.outdir)
 modelvarname = args.varname
 os.system('mkdir -p ' + OUTPUTDIR)
 
 UNITS_DICT={'N1p' : 'mmol P/m$^3$', 
          'N3n' : 'mmol N/m$^3$',
-         'O2o' :'mmol O$_2$/m$^3$' 
+         'O2o' :'mmol O$_2$/m$^3$',
+         'P_l' :'mmol CHL/m$^3$'
          }
 
 
-for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
-#for sub in OGS.P:
+#for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
+for sub in OGS.NRT3:
     print sub.name
     Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
+    nProfiles=len(Profilelist)
+    print nProfiles
+    if nProfiles==0: continue
+
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
     fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
     maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())

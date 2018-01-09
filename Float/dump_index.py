@@ -83,7 +83,7 @@ F.close()
 CORIOLIS_LINES=LINES[:]
 #VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']
 LOC=addsep(args.lov)
-FloatIndexer=LOC + "Float_Index.txt"
+FloatIndexer=LOC + "Float_Index.0.txt"
 DIRLIST=os.listdir(LOC)
 
 

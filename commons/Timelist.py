@@ -153,6 +153,8 @@ class TimeList():
             return "yearly"
         if days == 10:
             return "10days"
+        if (days>1) & (days<7):
+            return None
         else:
             raise NotImplementedError
             #hours = mydiff.seconds/3600

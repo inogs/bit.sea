@@ -46,10 +46,22 @@ python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR
 #mv $OUTDIR/N3n*.png Fig4.12
 #mv $OUTDIR/O2o*.png Fig4.15
 
+# Figures 4.6 and tables 4.4 
+# subbasin DCM and MLB
+NCDIR=$RUN/tmp_nc
+OUTDIR=$RUN/Fig4.6
+mkdir -p $OUTDIR $RUN/table4.4
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
+python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
+#mv $OUTDIR/N3n*.png Fig4.13
+
+cp $OUTDIR/P_l_tab_statistics_SHORT.txt $RUN/table4.4/ 
+#cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
+
 
 # Comparison on DA dates (not on float dates)
 # The first time execute profiler_floatsat_DAdates.py
-BASEDIR=$RUN/PROFILATORE/
+BASEDIR=$RUN/PROFILATORE_DAtimes/
 mkdir -p $BASEDIR
 python profiler_floatsat_DAdates.py #to be executed one time
 # ATTENTION: profiler is imported in the following scripts.
@@ -58,26 +70,13 @@ python profiler_floatsat_DAdates.py #to be executed one time
 
 # Statistics on DA dates
 NCDIR=$RUN/tmp_nc_DAdates
-mkdir -p $NCDIR
+mkdir -p $NCDIR 
 python SingleFloat_vs_Model_Stat_TS_DAdates.py -m $MASKFILE -o $NCDIR
 # Plots with all runs in allruns.sh
 
 
+
 exit 0
-# Figures 4.6 and 4.13 + tables 4.4 and 4.8
-# CHL-PROF-D-CLASS4-PROF-CORR-BASIN
-# NIT-PROF-D-CLASS4-PROF-CORR-BASIN
-#  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
-
-OUTDIR=Fig4.6
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
-mv $OUTDIR/N3n*.png Fig4.13
-
-cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/ 
-cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
-
-
 
 # BIOFLOATS SECTION: statistics on layers
 # CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN

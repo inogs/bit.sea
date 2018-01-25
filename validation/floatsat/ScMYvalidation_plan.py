@@ -80,8 +80,10 @@ Timestart="20141205"
 Time__end="20500901"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 dateformat ="%Y%m%d"
+print(REF_DIR)
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
+print(sat_TL.nTimes)
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"ave.*00:00*P_l.nc")
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 
@@ -91,10 +93,13 @@ nSUB = len(OGS.P.basin_list)
 jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
-for sub in OGS.P:
+for sub in OGS.Pred:
     print sub.name
     sbmask         = SubMask(sub,maskobject=Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
+
+for sub in OGS.Pred:
+    SUB['med'] = SUB['med'] | SUB[sub.name]
 
 mask200_2D = TheMask.mask_at_level(200.0)
 mask0_2D = TheMask.mask_at_level(0.0)
@@ -109,6 +114,7 @@ MODEL_MEAN                         = np.zeros((nFrames,nSUB),np.float32)
 SAT___MEAN                         = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
+MODEL_MEAN_allpoints               = np.zeros((nFrames,nSUB),np.float32)
 
 # This is the surface layer choosen to match satellite chl data
 surf_layer = Layer(0,10)
@@ -116,6 +122,7 @@ surf_layer = Layer(0,10)
 for itime, modeltime in enumerate(model_TL.Timelist):
     print modeltime
     CoupledList = sat_TL.couple_with([modeltime])
+    print(CoupledList)
     sattime = CoupledList[0][0]
     satfile = REF_DIR + sattime.strftime(dateformat) + suffix
     modfile = model_TL.filelist[itime]
@@ -148,12 +155,14 @@ for itime, modeltime in enumerate(model_TL.Timelist):
         Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
         BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[itime,isub]  = Mlog.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[itime,isub] = Mlog.bias()
+        selectionall = SUB[sub.name] & coastmask
+        MODEL_MEAN_allpoints[itime,isub] = np.nanmean(Model[selectionall])
 
 BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
 BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
 
 
-LIST   =[i for i in range(7)]
+LIST   =[i for i in range(8)]
 
 LIST[0]=model_TL.Timelist
 LIST[1]=BGC_CLASS4_CHL_RMS_SURF_BASIN
@@ -162,6 +171,7 @@ LIST[3]=MODEL_MEAN
 LIST[4]=SAT___MEAN
 LIST[5]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG
 LIST[6]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
+LIST[7]=MODEL_MEAN_allpoints
 
 fid = open(outfile,'wb')
 pickle.dump(LIST, fid)

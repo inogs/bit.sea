@@ -36,7 +36,7 @@ args = argument()
 import numpy as np
 import pylab as plt
 #from commons.layer import Layer
-import basins.V2 as OGS
+import basins.OGS as OGS
 #from static.climatology import get_climatology
 #import figure_generator
 from commons.time_interval import TimeInterval
@@ -46,7 +46,7 @@ from commons.mask import Mask
 from commons.submask import SubMask
 #import pylab as pl
 from commons.utils import addsep
-from profileruns_2015 import runList,colorList
+from profileruns import runList,colorList
 
 
 OUTDIR=addsep(args.outdir)
@@ -101,12 +101,12 @@ print('---------')
 print('---------')
 print('Plot')
 plt.close('all')
-fig1,axs = plt.subplots(4,4,num=1,facecolor='w',edgecolor='k', \
+fig1,axs = plt.subplots(2,5,num=1,dpi=200,facecolor='w',edgecolor='k', \
                 sharex=True,sharey=True)
 
 for isub,sub in enumerate(OGS.Pred):
-    iplot = isub/4
-    jplot = isub-iplot*4
+    iplot = isub/5
+    jplot = isub-iplot*5
     ax1 = axs[iplot,jplot]
     plt.sca(ax1)
     for run in runList:
@@ -122,6 +122,6 @@ for isub,sub in enumerate(OGS.Pred):
 
 plt.show(block=False)
 
-outfile = OUTDIR + 'profiles_sub16.png'
+outfile = OUTDIR + 'profiles_sub10.png'
 plt.savefig(outfile)
 

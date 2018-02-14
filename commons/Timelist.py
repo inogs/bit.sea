@@ -16,7 +16,9 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
     if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
-    if (freqString == '10days'):  req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,'days=10')
+    if (freqString[:5]=='days='):
+        ndays=int(freqString[5:])
+        req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,days=ndays)
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 class TimeList():
@@ -151,6 +153,8 @@ class TimeList():
             return "hourly"
         if (days > 364 ) & (days < 367): 
             return "yearly"
+        if (abs (int(days) -days)) < 0.1:
+             return "days=%d" %days
         if days == 10:
             return "10days"
         if (days>1) & (days<7):
@@ -243,9 +247,9 @@ class TimeList():
                         SELECTION.append(it)
                         weights.append(weight)
                 return SELECTION , np.array(weights)
-            if self.inputFrequency == '10days':
+            if self.inputFrequency[:5]=='days=':
                 for it,t in enumerate(self.Timelist):
-                    t1 = computeTimeWindow("10days",t);
+                    t1 = computeTimeWindow(self.inputFrequency,t);
                     t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
                     weight = t1.overlapTime(t2);
                     if (weight > 0. ) :

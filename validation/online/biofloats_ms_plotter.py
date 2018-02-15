@@ -117,7 +117,7 @@ def single_plot(longvar, var, sub, layer ):
         ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
 
     ax.legend(loc=2)
-    ax2.legend(loc=1)
+    #ax2.legend(loc=1)
     ax.set_title(longvar)
 
     for tick in ax.xaxis.get_major_ticks():

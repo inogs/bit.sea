@@ -251,7 +251,7 @@ class MapBuilder(object):
             else:
                 bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
             if bottom_index == (top_index-1) : #when layer.top==layer.bottom
-                bottom_index == top_index
+                bottom_index = top_index
             if top_index == bottom_index:
                 #Just one layer so we return the sliced data
                 output = data_extractor.filled_values[top_index,:,:]

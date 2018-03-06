@@ -123,8 +123,9 @@ class Weekly_req():
         self.day    = day
         centertime     = datetime.datetime(self.year,self.month,self.day,12)
         t = TimeInterval()
-        t.start_time = centertime - datetime.timedelta(days=3.5)
-        t.end_time   = centertime + datetime.timedelta(days=3.5)
+        deltaseconds = 3.5*24*3600
+        t.start_time = centertime - datetime.timedelta(seconds=deltaseconds)
+        t.end_time   = centertime + datetime.timedelta(seconds=deltaseconds-1)
         self.time_interval = t
         self.string  = centertime.strftime("%Y%m%d")
         self.isoweekday = centertime.isoweekday()

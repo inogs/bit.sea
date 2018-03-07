@@ -30,6 +30,7 @@ from commons.time_interval import TimeInterval
 from commons.mask import Mask
 from commons.submask import SubMask
 from commons.layer import Layer
+from timeseries.plot import read_pickle_file, read_basic_info
 from timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from basins import V2
@@ -86,7 +87,7 @@ for i in range(jpk):
 
 
 nSub    = len(V2.P.basin_list)
-LAYER_VOLUME = np.zeros((jpk,nSub), np.float32)
+LAYER_VOLUME = np.ones((jpk,nSub), np.float32)
 for iSub, sub in enumerate(V2.P.basin_list):
     submask=SubMask(sub,maskobject = TheMask).mask
     for k in range(jpk):
@@ -104,6 +105,8 @@ VARLIST=['N1p','N3n','O2o','N5s','ppn','P_l','pCO2', 'Ac', 'B1c', 'P_c','R2c','p
 
 
 for var in VARLIST:
+    filename = INPUTDIR + var + ".pkl"
+    TIMESERIES,TL=read_pickle_file(filename)
     for iregion, SUBBASIN_LIST in enumerate(region_list):
         region = region_names[iregion]
         outfile = OUTDIR + var + "." + region + ".png"
@@ -111,7 +114,7 @@ for var in VARLIST:
         fig, axes = figure_generator(SUBBASIN_LIST, LAYERLIST, var, region)
         for iSub, sub in enumerate(SUBBASIN_LIST):
             overall_isub = (V2.P.basin_list).index(sub)
-            Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, overall_isub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
+            Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), overall_isub, icoast=1, istat=0)
             for ilayer,layer in enumerate(LAYERLIST):
                 ax=axes[ilayer]
                 ii = (TheMask.zlevels>=layer.top) & (TheMask.zlevels<=layer.bottom)

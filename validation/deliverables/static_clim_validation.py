@@ -46,6 +46,7 @@ import numpy as np
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from timeseries.plot import Hovmoeller_matrix
+from timeseries.plot import read_pickle_file
 from commons.mask import Mask
 from commons.layer import Layer
 from basins import V2 as basV2
@@ -103,12 +104,15 @@ METRICvar = {'N1p':'PHO',
 rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
 for ivar, var in enumerate(VARLIST):
+    filename = INPUTDIR + var + ".pkl"
+    TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
     CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList)
+
     
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
+        Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
@@ -146,11 +150,13 @@ rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
 
 for var in VARLIST:
+    filename = INPUTDIR + var + ".pkl"
+    TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
     CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
+        Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)

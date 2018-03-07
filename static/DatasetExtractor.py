@@ -50,7 +50,7 @@ class DatasetExtractor():
             Values=values[inthisprofile]
             Depth = depth[inthisprofile]
             
-            iddataset = dataset[inthisprofile][0]
+            iddataset = int(dataset[inthisprofile][0])
             Cruise    = self.CRUISES[iddataset-1,:].tostring().strip()
             LP = ContainerProfile(lon,lat,time,Depth,Values,Cruise)
             Profilelist.append(LP)

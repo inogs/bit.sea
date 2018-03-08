@@ -1,15 +1,4 @@
-import numpy as np
 import argparse
-import pickle
-import os
-from Sat import SatManager as Sat
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins import V2
-from postproc import masks
-from commons.utils import addsep
-
-
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Apply check based on climatology to sat ORIG files.
@@ -22,6 +11,13 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = ''' ORIG sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/ORIG/'''
+
+                                )
+
+    parser.add_argument(   '--checkdir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' Base for CHECKED and REJECTED sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/'''
 
                                 )
 
@@ -45,13 +41,6 @@ def argument():
                                 help = '''  Directory with subbasins on satellite mask'''
                                 )
 
-    parser.add_argument(   '--checkdir', '-o',
-                                type = str,
-                                required = True,
-                                help = ''' base of CHECKED and REJECTED directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/DAILY/'''
-
-                                )
-
     parser.add_argument(   '--statsdir', '-w',
                                 type = str,
                                 required = False,
@@ -63,6 +52,16 @@ def argument():
 
 
 args = argument()
+import pickle
+from commons.time_interval import TimeInterval
+from commons.Timelist import TimeList
+from basins import V2
+from postproc import masks
+import numpy as np
+from commons.utils import addsep
+import os
+
+import SatManager as Sat
 
 
 ORIGDIR   = addsep(args.origdir)
@@ -94,8 +93,8 @@ for filename in TL_orig.filelist:
             filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
             if (not os.path.exists(filechlsub)) or (not os.path.exists(fileclim)):
                 somecheck = True
-                break
-        if somecheck:
+        break
+if somecheck:
                 break
 
 if somecheck or reset:
@@ -124,7 +123,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     exit_condition = os.path.exists(outfile) and (not reset)
     if exit_condition:
         if args.statsdir is None:
-            continue
+        continue
         else:
             exit_conditionstats = False
             for masktype in ['ORIG','CHECK','ALLP']:
@@ -133,7 +132,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
                 exit_conditionstats = exit_conditionstats | (os.path.exists(fileclim) and \
                              os.path.exists(filechlsub) and (not reset))
             if exit_conditionstats:
-                    continue
+        continue
 
     iDate = TL_orig.Timelist[iTime] 
     date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
@@ -167,14 +166,14 @@ for iTime, filename in enumerate(TL_orig.filelist):
     outOfRange[cloudsLandTIME | cloudlandsCLIM ] = False
     
     counter_elim = outOfRange.sum(axis = None)
-    CHL_OUT[outOfRange] = Sat.fillValue
+    CHL_OUT[outOfRange] = Sat.fillValue 
     maskreject[outOfRange] = 1
     
     if exit_condition==False:
         print 'Done check with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')'
-        print 'Rejection:  after check', counter_elim, ' values'
-        print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-        Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
+    print 'Rejection:  after check', counter_elim, ' values'
+    print 'rejected for NAN in Climatology', counter_refNAN, ' values'
+    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
         Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
 
 

@@ -2,7 +2,8 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
-    It works with an only mesh, without performing interpolations.
+    It works with one mesh, without performing interpolations.
+    Files with dates used for the average provided (OUTDIR/../AVESATdates/).
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -16,7 +17,7 @@ def argument():
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 required = True,
-                                help = ''' MONTHLY sat directory, e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MODIS/MONTHLY'''
+                                help = ''' OUT average and dates sat directory'''
 
                                 )
 
@@ -80,7 +81,7 @@ MySize = len(TIME_reqs[rank::nranks])
 
 for req in TIME_reqs[rank::nranks]:
     counter = counter + 1
-    
+
     outfile = req.string + suffix
     outpathfile = OUTDIR + outfile
     conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
@@ -90,6 +91,7 @@ for req in TIME_reqs[rank::nranks]:
     print outfile
     ii, w = TLCheck.select(req)
     nFiles = len(ii)
+    dateweek = []
     if nFiles < 3 : 
         print req
         print "less than 3 files"
@@ -99,7 +101,16 @@ for req in TIME_reqs[rank::nranks]:
         inputfile = TLCheck.filelist[j]
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
+        idate = TLCheck.Timelist[j]
+        date8 = '%04d' %(idate.year) + \
+                '%02d' %(idate.month) + \
+                '%02d' %(idate.day)
+        dateweek.append(date8)
     CHL_OUT = Sat.logAverager(M)
-    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
+    Sat.dumpV4file(outpathfile, CHL_OUT)
+
+
+    filedates = OUTDIR + '/../AVESATdates/' + req.string + 'weekdates.txt'
+    np.savetxt(filedates,dateweek,fmt='%s')
 
     print "\trequest ", counter, " of ", MySize, " done by rank ", rank

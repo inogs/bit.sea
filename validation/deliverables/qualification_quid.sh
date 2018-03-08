@@ -153,7 +153,7 @@ cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11
 cp sim_vs_clim_profiles/Fig_4.19*png Fig4.19
 
 DIR=static_clim
-mkdir -p $DIR table4.6 table4.7 table4.9/ table4.11 table4.13/ table4.14
+mkdir -p $DIR table4.6 table4.7 table4.9/ table4.11 table4.13/ table4.14 table4.10
 # -------------------------------------------------------------------------
 
 python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20150101 -e 20170101

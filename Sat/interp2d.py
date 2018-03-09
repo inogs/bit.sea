@@ -3,7 +3,7 @@ import numpy as np
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
     for i in range(istart, n):
-        if array[i]> MinValue:
+        if array[i]>= MinValue:
             MinIndex=i
             break
     for i in range(MinIndex,n):

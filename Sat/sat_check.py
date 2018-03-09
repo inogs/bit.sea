@@ -74,7 +74,7 @@ if args.statsdir is not None:
 
 maskSat = getattr(masks,args.mesh)
 
-reset = True #False
+reset = False
 
 Timestart="19501231"
 Time__end="20500101"
@@ -82,8 +82,10 @@ TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 
 somecheck = False
-for filename in TL_orig.filelist:
+for iTime,filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
+    iDate = TL_orig.Timelist[iTime] 
+    date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
     if not os.path.exists(outfile) :
         somecheck = True
         break
@@ -93,9 +95,9 @@ for filename in TL_orig.filelist:
             filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
             if (not os.path.exists(filechlsub)) or (not os.path.exists(fileclim)):
                 somecheck = True
-        break
-if somecheck:
                 break
+    if somecheck:
+        break
 
 if somecheck or reset:
     print('Read climatology')
@@ -103,7 +105,6 @@ if somecheck or reset:
 
     filemaskmed = SUBMASKDIR + 'maskmed_1km.npy'
     maskmed_1km = np.load(filemaskmed)
-    numP = maskmed_1km.sum(axis=None)
 
     masksub_M = {}
     for sub in V2.P:
@@ -115,15 +116,19 @@ if somecheck or reset:
 
 else:
     print('All checks done')
+    import sys
+    sys.exit(0)
 
 
 
 for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
     exit_condition = os.path.exists(outfile) and (not reset)
+    iDate = TL_orig.Timelist[iTime] 
+    date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
     if exit_condition:
         if args.statsdir is None:
-        continue
+            continue
         else:
             exit_conditionstats = False
             for masktype in ['ORIG','CHECK','ALLP']:
@@ -132,10 +137,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
                 exit_conditionstats = exit_conditionstats | (os.path.exists(fileclim) and \
                              os.path.exists(filechlsub) and (not reset))
             if exit_conditionstats:
-        continue
+                continue
 
-    iDate = TL_orig.Timelist[iTime] 
-    date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
     julian = int( iDate.strftime("%j") )
     print(' ... day ' + np.str(julian) + '  of ' + np.str(iDate.year))
     if julian == 366:
@@ -174,7 +177,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
     Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
-        Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
+    Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
 
 
     if args.statsdir is not None:

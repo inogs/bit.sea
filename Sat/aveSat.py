@@ -61,7 +61,7 @@ CHECKDIR = addsep(args.checkdir)
 OUTDIR   = addsep(args.outdir)
 maskSat = getattr(masks,args.mesh)
 
-reset = False
+reset = True
 
 Timestart="19500101"
 Time__end="20500101"
@@ -83,7 +83,7 @@ for req in TIME_reqs[rank::nranks]:
     counter = counter + 1
 
     outfile = req.string + suffix
-    outpathfile = OUTDIR + outfile
+    outpathfile = OUTDIR + '/AVEfiles/' + outfile
     conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
 
     if conditionToSkip: continue
@@ -95,6 +95,9 @@ for req in TIME_reqs[rank::nranks]:
     if nFiles < 3 : 
         print req
         print "less than 3 files"
+        filedates = OUTDIR + '/AVEdates/' + req.string + 'weekdates.txt'
+        print(filedates)
+        np.savetxt(filedates,dateweek,fmt='%s')
         continue
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
@@ -106,11 +109,12 @@ for req in TIME_reqs[rank::nranks]:
                 '%02d' %(idate.month) + \
                 '%02d' %(idate.day)
         dateweek.append(date8)
-    CHL_OUT = Sat.logAverager(M)
-    Sat.dumpV4file(outpathfile, CHL_OUT)
+    # CHL_OUT = Sat.logAverager(M)
+    # Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
 
 
-    filedates = OUTDIR + '/../AVESATdates/' + req.string + 'weekdates.txt'
+    filedates = OUTDIR + '/AVEdates/' + req.string + 'weekdates.txt'
+    print(filedates)
     np.savetxt(filedates,dateweek,fmt='%s')
 
     print "\trequest ", counter, " of ", MySize, " done by rank ", rank

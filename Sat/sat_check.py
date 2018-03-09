@@ -85,7 +85,7 @@ somecheck = False
 for iTime,filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
     iDate = TL_orig.Timelist[iTime] 
-    date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
+    date8 = iDate.strftime('%Y%m%d')
     if not os.path.exists(outfile) :
         somecheck = True
         break
@@ -116,8 +116,6 @@ if somecheck or reset:
 
 else:
     print('All checks done')
-    import sys
-    sys.exit(0)
 
 
 
@@ -125,7 +123,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
     exit_condition = os.path.exists(outfile) and (not reset)
     iDate = TL_orig.Timelist[iTime] 
-    date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
+    date8 = iDate.strftime('%Y%m%d')
     if exit_condition:
         if args.statsdir is None:
             continue

@@ -105,9 +105,7 @@ for req in TIME_reqs[rank::nranks]:
         CHL = Sat.readfromfile(inputfile)
         M[iFrame,:,:] = CHL
         idate = TLCheck.Timelist[j]
-        date8 = '%04d' %(idate.year) + \
-                '%02d' %(idate.month) + \
-                '%02d' %(idate.day)
+        date8 = idate.strftime('%Y%m%d')
         dateweek.append(date8)
     # CHL_OUT = Sat.logAverager(M)
     # Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)

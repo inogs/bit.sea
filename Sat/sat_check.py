@@ -132,8 +132,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
         else:
             exit_condmask = np.zeros(3,dtype=bool)
             for imsk,masktype in enumerate(['ORIG','CHECK','ALLP']):
-                fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
-                filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
+                fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
+                filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
                 exit_condmask[imsk] = (os.path.exists(fileclim)) and \
                                 (os.path.exists(filechlsub)) and (not reset)
             if all(exit_condmask):
@@ -187,8 +187,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
             masksubday['ALLP'] = masksub_M[sub.name]
 
         for masktype in ['ORIG','CHECK','ALLP']:
-            fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
-            filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
+            fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
+            filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
             stats_clima = {}
             stats_day = {}
             print(masktype + ' --- Cycle on sub   ---')

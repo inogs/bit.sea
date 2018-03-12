@@ -84,9 +84,10 @@ TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%
 somecheck = False
 for iTime,filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
+    rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
     iDate = TL_orig.Timelist[iTime] 
     date8 = iDate.strftime('%Y%m%d')
-    if not os.path.exists(outfile) :
+    if (not os.path.exists(outfile)) or (not os.path.exists(rejfile)):
         somecheck = True
         break
     if args.statsdir is not None:
@@ -121,22 +122,21 @@ else:
 
 for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
-    exit_condition = os.path.exists(outfile) and (not reset)
+    rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
+    exit_condition = os.path.exists(outfile) and os.path.exists(rejfile) and (not reset)
     iDate = TL_orig.Timelist[iTime] 
     date8 = iDate.strftime('%Y%m%d')
     if exit_condition:
         if args.statsdir is None:
             continue
         else:
-            exit_conditionstats = True
-            for masktype in ['ORIG','CHECK','ALLP']:
+            exit_condmask = np.zeros(3,dtype=bool)
+            for imsk,masktype in enumerate(['ORIG','CHECK','ALLP']):
                 fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
                 filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
-                exit_condmask = (os.path.exists(fileclim) and \
-                                (os.path.exists(filechlsub) and (not reset))
-                if exit_condmask:
-                    exit_conditionstats = exit_conditionstats and exit_condmask
-            if exit_conditionstats:
+                exit_condmask[imsk] = (os.path.exists(fileclim)) and \
+                                (os.path.exists(filechlsub)) and (not reset)
+            if all(exit_condmask):
                 continue
 
     julian = int( iDate.strftime("%j") )
@@ -144,7 +144,6 @@ for iTime, filename in enumerate(TL_orig.filelist):
     if julian == 366:
         julian = 365
 
-    rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
 
     maskreject = np.zeros_like(maskmed_1km,dtype=int)
 
@@ -174,13 +173,13 @@ for iTime, filename in enumerate(TL_orig.filelist):
     
     if exit_condition==False:
         print 'Done check with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')'
-    print 'Rejection:  after check', counter_elim, ' values'
-    print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
-    Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
+        print 'Rejection:  after check', counter_elim, ' values'
+        print 'rejected for NAN in Climatology', counter_refNAN, ' values'
+        Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
+        Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
 
 
-    if args.statsdir is not None:
+    if (args.statsdir is not None) and (not all(exit_condmask)):
         for sub in V2.P:
             masksubday = {}
             masksubday['ORIG'] = masksub_M[sub.name] & (cloudsLandTIME == False)
@@ -188,9 +187,11 @@ for iTime, filename in enumerate(TL_orig.filelist):
             masksubday['ALLP'] = masksub_M[sub.name]
 
         for masktype in ['ORIG','CHECK','ALLP']:
+            fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
+            filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
             stats_clima = {}
             stats_day = {}
-            print('    ---   Cycle on sub   ---')
+            print(masktype + ' --- Cycle on sub   ---')
             for sub in V2.P:
                 stats_clima[sub.name] = np.zeros(12)
                 stats_clima[sub.name][:] = np.nan

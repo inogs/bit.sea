@@ -132,8 +132,10 @@ for iTime, filename in enumerate(TL_orig.filelist):
             for masktype in ['ORIG','CHECK','ALLP']:
                 fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
                 filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
-                exit_conditionstats = exit_conditionstats and (os.path.exists(fileclim) and \
-                             os.path.exists(filechlsub) and (not reset))
+                exit_condmask = (os.path.exists(fileclim) and \
+                                (os.path.exists(filechlsub) and (not reset))
+                if exit_condmask:
+                    exit_conditionstats = exit_conditionstats and exit_condmask
             if exit_conditionstats:
                 continue
 

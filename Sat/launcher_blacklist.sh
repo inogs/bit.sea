@@ -1,46 +1,40 @@
-GSSOBS_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/
+#! /bin/bash
 annaDIR=/pico/scratch/userexternal/ateruzzi/Sat_Check_Clima/
 
-DIR_ORIG1km=$GSSOBS_DIR/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/ORIG/
-DIR_CLIMA1km=$GSSOBS_DIR/CLIMATOLOGY/SAT/CCI_1km/
-FILEClima=$DIR_CLIMA1km/SatClimatology.nc
+  DIR_ORIG1km=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/ORIG/
+DIR_CHECK_1km=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/
+DIR_CLIMA1km=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/
+   FILEClima=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SatClimatology.nc
+ DIR_SUBMASK=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SUBMASKsat
 
-MESH=SAT1km_mesh
+DIR_CHECK_1km=/marconi_scratch/userexternal/gbolzon0/SAT_CHECK
 
 ## Creation of subask indexes for sat mesh
-# To be executed only one time (once for each climatology)
-
-# OUT_SUBMASK=$DIR_CLIMA1km 
-##### Io metterei là questi file perché sonno basati sulla climatologia
-
-OUT_SUBMASK=$annaDIR/SUBMASKsat
-# mkdir -p $OUT_SUBMASK
-
-# echo python sat_indsub.py -o $OUT_SUBMASK -c $FILEClima -m $MESH
+# To be executed once and for all (once for each climatology)
+# echo python sat_indsub.py -o $DIR_SUBMASK -c $FILEClima -m SAT1km_mesh
 
 # --------------------------------
 ## Check of sat files
 
-OUT_CHECK=$annaDIR/OUTPUT # 
-OUT_STATS=$OUT_CHECK/STATISTICS
-mkdir -p $OUT_CHECK/CHECKED
-mkdir -p $OUT_CHECK/REJECTED
+OUT_STATS=$DIR_CHECK_1km/STATISTICS
+mkdir -p $DIR_CHECK_1km/CHECKED
+mkdir -p $DIR_CHECK_1km/REJECTED
 mkdir -p $OUT_STATS
 
-echo python sat_check.py -i $DIR_ORIG1km -o $OUT_CHECK -c $FILEClima -m $MESH  -s $OUT_SUBMASK -w $OUT_STATS
+echo python sat_check.py -i $DIR_ORIG1km -o $DIR_CHECK_1km -c $FILEClima -m SAT1km_mesh  -s $DIR_SUBMASK -w $OUT_STATS
 
 # --------------------------------
 ## Figures
 
 # OUT_FIG=FIGURES/$TYPEIN/
 # mkdir -p $OUT_FIG
-# echo python plot_climastats_time.py -o $OUT_FIG -i $OUT_STATS -m $OUT_SUBMASK
+# echo python plot_climastats_time.py -o $OUT_FIG -i $OUT_STATS -m $DIR_SUBMASK
 
 
 # --------------------------------
 ## Ave sat
 
-CHECKMULTI=$GSSOBS_DIR/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED/
+CHECKMULTI=$DRES/Observations//TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED/
 WEEKLYMULTI=$annaDIR/WEEKLY
 mkdir -p $WEEKLYMULTI/AVEfiles/
 mkdir -p $WEEKLYMULTI/AVEdates/

@@ -128,11 +128,11 @@ for iTime, filename in enumerate(TL_orig.filelist):
         if args.statsdir is None:
             continue
         else:
-            exit_conditionstats = False
+            exit_conditionstats = True
             for masktype in ['ORIG','CHECK','ALLP']:
                 fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
                 filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
-                exit_conditionstats = exit_conditionstats | (os.path.exists(fileclim) and \
+                exit_conditionstats = exit_conditionstats and (os.path.exists(fileclim) and \
                              os.path.exists(filechlsub) and (not reset))
             if exit_conditionstats:
                 continue
@@ -142,7 +142,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     if julian == 366:
         julian = 365
 
-    rejfile = CHECKDIR + '/REJECTED/' + date8 + '_rejected.nc'
+    rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
 
     maskreject = np.zeros_like(maskmed_1km,dtype=int)
 

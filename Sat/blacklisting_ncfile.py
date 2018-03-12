@@ -100,7 +100,7 @@ for iDate,directory in path_dadir:
     date8DA = iDate.strftime('%Y%m%d')
 
     req = timerequestors.Weekly_req(iDate.year,iDate.month,iDate.day)
-    TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*_rejected.nc", \
+    TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*.nc", \
                 prefix='',dateformat='%Y%m%d')
     for dd in TL_rej.Timelist:
         date8 = dd.strftime('%Y%m%d')

@@ -124,13 +124,13 @@ for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
     rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
     exit_condition = os.path.exists(outfile) and os.path.exists(rejfile) and (not reset)
+    exit_condmask = np.zeros(3,dtype=bool)
     iDate = TL_orig.Timelist[iTime] 
     date8 = iDate.strftime('%Y%m%d')
     if exit_condition:
         if args.statsdir is None:
             continue
         else:
-            exit_condmask = np.zeros(3,dtype=bool)
             for imsk,masktype in enumerate(['ORIG','CHECK','ALLP']):
                 fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
                 filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'

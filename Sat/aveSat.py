@@ -3,7 +3,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
     It works with one mesh, without performing interpolations.
-    Files with dates used for the average provided (OUTDIR/../AVESATdates/).
+    Files with dates used for the average provided (dirdates).
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -17,7 +17,14 @@ def argument():
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 required = True,
-                                help = ''' OUT average and dates sat directory'''
+                                help = ''' OUT average dates sat directory'''
+
+                                )
+
+    parser.add_argument(   '--dirdates', '-d',
+                                type = str,
+                                required = True,
+                                help = ''' OUT dates sat directory'''
 
                                 )
 
@@ -59,6 +66,7 @@ except:
 
 CHECKDIR = addsep(args.checkdir)
 OUTDIR   = addsep(args.outdir)
+DIRDATES = addsep(args.dirdates)
 maskSat = getattr(masks,args.mesh)
 
 reset = True
@@ -83,7 +91,7 @@ for req in TIME_reqs[rank::nranks]:
     counter = counter + 1
 
     outfile = req.string + suffix
-    outpathfile = OUTDIR + '/AVEfiles/' + outfile
+    outpathfile = OUTDIR + outfile
     conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
 
     if conditionToSkip: continue
@@ -95,7 +103,7 @@ for req in TIME_reqs[rank::nranks]:
     if nFiles < 3 : 
         print req
         print "less than 3 files"
-        filedates = OUTDIR + '/AVEdates/' + req.string + 'weekdates.txt'
+        filedates = DIRDATES + req.string + 'weekdates.txt'
         print(filedates)
         np.savetxt(filedates,dateweek,fmt='%s')
         continue
@@ -107,11 +115,11 @@ for req in TIME_reqs[rank::nranks]:
         idate = TLCheck.Timelist[j]
         date8 = idate.strftime('%Y%m%d')
         dateweek.append(date8)
-    # CHL_OUT = Sat.logAverager(M)
-    # Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
+    CHL_OUT = Sat.logAverager(M)
+    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
 
 
-    filedates = OUTDIR + '/AVEdates/' + req.string + 'weekdates.txt'
+    filedates = DIRDATES + req.string + 'weekdates.txt'
     print(filedates)
     np.savetxt(filedates,dateweek,fmt='%s')
 

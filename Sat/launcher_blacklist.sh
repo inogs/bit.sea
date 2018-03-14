@@ -7,7 +7,7 @@ DIR_CLIMA1km=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/
    FILEClima=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SatClimatology.nc
  DIR_SUBMASK=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SUBMASKsat
 
-DIR_CHECK_1km=/marconi_scratch/userexternal/gbolzon0/SAT_CHECK
+#DIR_CHECK_1km=/marconi_scratch/userexternal/gbolzon0/SAT_CHECK
 
 ## Creation of subask indexes for sat mesh
 # To be executed once and for all (once for each climatology)
@@ -34,11 +34,11 @@ echo python sat_check.py -i $DIR_ORIG1km -o $DIR_CHECK_1km -c $FILEClima -m SAT1
 # --------------------------------
 ## Ave sat
 
-CHECKMULTI=$DRES/Observations//TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED/
 WEEKLYMULTI=$annaDIR/WEEKLY
-mkdir -p $WEEKLYMULTI/AVEfiles/
-mkdir -p $WEEKLYMULTI/AVEdates/
-echo python aveSat.py -i $CHECKMULTI -o $WEEKLYMULTI -m SAT1km_mesh -t weekly_tuesday
+WEEKLYDATES=$annaDIR/WEEKLY_2_AVEDATES
+mkdir -p $WEEKLYMULTI
+mkdir -p $WEEKLYDATES
+echo python aveSat.py -i $DIR_CHECK_1km/CHECKED -o $WEEKLYMULTI -d $WEEKLYDATES -m SAT1km_mesh -t weekly_tuesday
 
 
 # --------------------------------

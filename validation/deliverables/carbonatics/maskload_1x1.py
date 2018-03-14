@@ -52,16 +52,26 @@ if annaCoast:
         kmask2[i,:,:] = kmask2_2D
 
 # Coastness must be defined one by one
-COASTNESS_LIST=[ 'open_sea']
+COASTNESS_LIST=['open_sea']
+if annaCoast: COASTNESS_LIST=['coast','open_sea','everywhere','coast1','coast2']
     
 COASTNESS = np.ones((jpk,jpj,jpi) ,dtype=[(coast,np.bool) for coast in COASTNESS_LIST])
 COASTNESS['open_sea']  =  mask200_3D;
 
-#DEPTH1=np.array([00, 050, 100, 150, 200, 0500, 1000, 1500, 2000, 2500, 3000, 3500, 4000])
-Bottom_list=np.array([50, 100, 150, 200, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500])
+if annaCoast:
+    COASTNESS['coast1']  =  kmask1;
+    COASTNESS['coast2']  =  kmask2;
+
+# Depth are defined by their names and bottom levels
+Bottom_list=np.array([30, 60, 100, 150, 300, 600, 1000, 2000])
 
 nDepths = len(Bottom_list)
 DEPTHlist      =['depth%02d' %(i) for i in range(nDepths)]
+
+if annaCoast:
+    DEPTHlist   =['shallow','deep']
+    Bottom_list =[200, 6000]
+    
 
 DEPTH  = np.zeros((jpk,jpj,jpi),dtype=[(depth,np.bool) for depth in DEPTHlist])
 tk_top = 0
@@ -87,17 +97,32 @@ for i in range(jpk):
     Volume[i,:,:] = area*e3t[i]
     dZ[i,:,:]     = e3t[i]
 
+submask_on_the_fly=True # set True when there is a very large number of subbasins
+
+
 L = SubMask.from_square_cutting(TheMask,1,-8.5, 29.5)
 SUBlist=[ sub.name for sub in L ]
 
+if not submask_on_the_fly:
+    mydtype = [(sub.name, np.bool) for sub in OGS.P.basin_list ]
+    SUBM = np.zeros((jpk,jpj,jpi),dtype=mydtype)
+    for sub in SUBlist:
+        index= SUBlist.index(sub)
+        basin = L[index]
+        s=SubMask(basin,maskobject = TheMask)
+        SUBM[sub] = s.mask
+ 
+
 def SUB(sub):
-    ''' sub is a string'''
-    index= SUBlist.index(sub)
-    basin = L[index]
-    s=SubMask(basin,maskobject = TheMask)
-    return s.mask
-
-
+    ''' sub is a string '''
+    if submask_on_the_fly:
+        index= SUBlist.index(sub)
+        basin = L[index]
+        s=SubMask(basin,maskobject = TheMask)
+        return s.mask
+    else:
+        return SUBM[sub]
+        
 
 # SUB[med] is not applied by aveScan. 
 #If we want it we hav to apply to each subbasin

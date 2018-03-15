@@ -40,6 +40,7 @@ import figure_generator
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from timeseries.plot import Hovmoeller_matrix
+from timeseries.plot import read_pickle_file, read_basic_info
 import numpy as np
 from commons.mask import Mask
 from commons.submask import SubMask
@@ -64,7 +65,7 @@ z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
 SUBLIST = basV2.P.basin_list
 
-    
+
 N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
 N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList)
 O2o_clim, O2o_std = get_climatology('O2o', SUBLIST, LayerList)
@@ -74,7 +75,17 @@ VARLIST=['P_l','N1p','N3n','O2o']
 var_dype = [(var,np.float32) for var in VARLIST]
 nVar = len(VARLIST)
 
+# reading of input files is limited here ----------
+_, COASTLIST, STAT_LIST = read_basic_info(TL.filelist[0])
+icoast = COASTLIST.index('open_sea')
+istat =  STAT_LIST.index('Mean')
 
+timeseries_DICT={}
+for var in VARLIST:
+    filename=MODDIR + var + ".pkl"
+    TIMESERIES,_=read_pickle_file(filename)
+    timeseries_DICT[var]=TIMESERIES
+#-------------------------------------------------
 
 for iSub, sub in enumerate(basV2.P):
     submask = SubMask(sub,maskobject=Mask8)
@@ -86,8 +97,10 @@ for iSub, sub in enumerate(basV2.P):
         datetimelist= [TL.Timelist[iTime] ]
         MEAN = np.zeros((jpk,), dtype=var_dype )
         for ivar, var in enumerate(VARLIST):
-            Mean_profiles,_,_ = Hovmoeller_matrix(datetimelist,[filename], var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
-            mean_profile = Mean_profiles[:,0]#.mean(axis=1)
+            TIMESERIES=timeseries_DICT[var]
+            mean_profile = TIMESERIES[iTime,iSub,icoast,:,istat]
+            #Mean_profiles,_,_ = Hovmoeller_matrix(datetimelist,[filename], var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
+            #mean_profile = Mean_profiles[:,0]#.mean(axis=1)
             mean_profile[mean_profile==0]=np.nan
             MEAN[var] = mean_profile
         
@@ -100,8 +113,8 @@ for iSub, sub in enumerate(basV2.P):
         MEAN = np.zeros((jpk,), dtype=var_dype )
 
     for ivar, var in enumerate(VARLIST):
-        Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
-        mean_profile = Mean_profiles.mean(axis=1)
+        TIMESERIES=timeseries_DICT[var]
+        mean_profile = TIMESERIES[:,iSub,icoast,:,istat].mean(axis=0)
         mean_profile[mean_profile==0]=np.nan
         MEAN[var] = mean_profile    
     figure_generator.profile_plotter(z,MEAN['P_l'],'k', axes[0], None,   label)
@@ -131,6 +144,13 @@ DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 
 VARLIST=['pCO2','DIC','Ac','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
+timeseries_DICT={}
+for var in VARLIST:
+    filename=MODDIR + var + ".pkl"
+    TIMESERIES,_=read_pickle_file(filename)
+    timeseries_DICT[var]=TIMESERIES
+
+
 for iSub, sub in enumerate(basV2.P):
     submask = SubMask(sub,maskobject=Mask8)
     F = figure_generator.figure_generator(submask)
@@ -141,8 +161,8 @@ for iSub, sub in enumerate(basV2.P):
         datetimelist= [TL.Timelist[iTime] ]
         MEAN = np.zeros((jpk,), dtype=var_dype )
         for ivar, var in enumerate(VARLIST):
-            Mean_profiles,_,_ = Hovmoeller_matrix(datetimelist,[filename], var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
-            mean_profile = Mean_profiles[:,0]
+            TIMESERIES=timeseries_DICT[var]
+            mean_profile = TIMESERIES[iTime,iSub,icoast,:,istat]
             mean_profile[mean_profile==0]=np.nan
             MEAN[var] = mean_profile
         
@@ -155,8 +175,8 @@ for iSub, sub in enumerate(basV2.P):
         MEAN = np.zeros((jpk,), dtype=var_dype )
 
     for ivar, var in enumerate(VARLIST):
-        Mean_profiles,_,_ = Hovmoeller_matrix(TL.Timelist,TL.filelist, var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
-        mean_profile = Mean_profiles.mean(axis=1)
+        TIMESERIES=timeseries_DICT[var]
+        mean_profile = TIMESERIES[:,iSub,icoast,:,istat].mean(axis=0)
         mean_profile[mean_profile==0]=np.nan
         MEAN[var] = mean_profile    
     figure_generator.profile_plotter(z,MEAN['pCO2'],'k', axes[0], None,   label)

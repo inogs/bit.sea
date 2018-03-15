@@ -191,7 +191,9 @@ class BioFloat(Instrument):
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
         #goodQc     = (rawQc == '2' ) | (rawQc == '1' )
-        badProfile = np.isnan(rawProfile)
+        nanProfile = (np.isnan(rawProfile))
+        rawProfile [nanProfile] = 1  # just for not complaining
+        badProfile = (rawProfile>1e+20) | nanProfile 
         bad = badPres | badProfile #| (~goodQc )
 
 

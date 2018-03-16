@@ -39,6 +39,7 @@ from profiler import TL
 import scipy.io.netcdf as NC
 from commons.utils import writetable
 from datetime import datetime
+from profiler import *
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -126,7 +127,8 @@ VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen']
 SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)
-ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+#ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+ti_restrict = TimeInterval(DATESTART,DATE__END,"%Y%m%d")
 
 column_names=[layer.string() for layer in LAYERLIST]
 row_names   =[sub.name for sub in SUBLIST]

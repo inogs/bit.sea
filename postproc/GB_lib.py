@@ -8,6 +8,10 @@ class filename_manager():
     def __init__(self,filename):
         sep = "."
         nsep = os.path.basename(filename).count(".")
+        if nsep ==4:
+            prefix1, prefix2,datestr, varname,_ = os.path.basename(filename).rsplit(sep)
+            prefix = prefix1 + sep + prefix2
+            self.varname = varname
         if nsep ==3:
             prefix, datestr, varname,_ = os.path.basename(filename).rsplit(sep)
             self.varname = varname
@@ -145,7 +149,11 @@ def WriteAggregateAvefiles(mask, N1pfile,OUTDIR,VarDescriptor):
         junk = np.zeros((jpk,jpj,jpi),np.float32)
         for lvar in VarDescriptor.AGGREGATE_DICT[var]:
             avefile=getfileForRead(N1pfile, lvar)
-            DE = DataExtractor(mask,avefile,lvar)   
+            if ('RST' in avefile) or not('bef' in avefile):
+               rvar = 'TRN' + lvar
+            else:
+               rvar = lvar
+            DE = DataExtractor(mask,avefile,rvar)   
             junk +=DE.values
         junk[~mask.mask] = 1.e+20
         ncvar[:]=junk

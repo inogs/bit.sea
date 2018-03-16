@@ -69,7 +69,7 @@ OUTDIR   = addsep(args.outdir)
 DIRDATES = addsep(args.dirdates)
 maskSat = getattr(masks,args.mesh)
 
-reset = True
+reset = False
 
 Timestart="19500101"
 Time__end="20500101"

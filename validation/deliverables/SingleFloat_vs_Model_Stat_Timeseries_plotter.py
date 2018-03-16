@@ -9,7 +9,7 @@ def argument():
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
                                 required = False,
                                 help = ''' Path of maskfile''')
     parser.add_argument(   '--inputdir', '-i',
@@ -39,6 +39,8 @@ from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import basins.V2 as OGS
 from datetime import datetime
+from datetime import timedelta
+from profiler import *
 
 def fig_setup(wmo,Lon,Lat):
     from layer_integral import coastline
@@ -52,7 +54,8 @@ def fig_setup(wmo,Lon,Lat):
     axs = [ax0, ax1, ax2, ax3, ax4]
     for ax in [ax2, ax3, ax4]:
 	ax.xaxis.grid(True)
-        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
+        #ax.set_xlim([datetime(2016,1,1),datetime(2018,1,1)])
+        ax.set_xlim([datetime(int(DATESTART[0:4]),int(DATESTART[4:6]),int(DATESTART[6:9])),datetime(int(DATE__END[0:4]),int(DATE__END[4:6]),int(DATE__END[6:9]))+timedelta(days=1)])
 
     fig.set_size_inches(10,15)
     fig.set_dpi(150)
@@ -207,4 +210,4 @@ for wmo in wmo_list:
         fig.savefig(OUTFILE)
 	plt.close(fig)
     import sys
-#    sys.exit()
+    sys.exit()

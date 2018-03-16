@@ -23,7 +23,7 @@ def argument():
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
                                 required = False,
                                 help = ''' Path of maskfile''')
     parser.add_argument(   '--inputdir', '-i',
@@ -58,6 +58,8 @@ from commons.time_interval import TimeInterval
 from matchup.statistics import *
 from commons.utils import writetable
 from datetime import datetime
+from datetime import timedelta
+from profiler import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -73,7 +75,8 @@ def fig_setup(S,subbasin_name):
     axs = [ax1, ax2, ax3, ax4]
     for ax in [ax2, ax3, ax4]:
         ax.xaxis.grid(True)
-        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
+#        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
+        ax.set_xlim([datetime(int(DATESTART[0:4]),int(DATESTART[4:6]),int(DATESTART[6:9])),datetime(int(DATE__END[0:4]),int(DATE__END[4:6]),int(DATE__END[6:9]))+timedelta(days=1)])
 
     fig.set_size_inches(10,15)
     fig.set_dpi(150)
@@ -128,7 +131,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 #MonthlyRequestors=M.TL.getMonthlist()
 
 times = [req.time_interval.start_time for req in M.TL.getMonthlist()  ]
-ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+ti_restrict = TimeInterval(DATESTART,DATE__END,"%Y%m%d")
 ii = np.zeros((len(times),) , np.bool)
 for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 

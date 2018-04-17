@@ -215,6 +215,15 @@ class TimeList():
 
 
         '''
+        if isinstance(requestor,requestors.Hourly_req):
+            assert self.inputFrequency == 'hourly'
+            SELECTION=[]
+            weights = []
+            for it,t in enumerate(self.Timelist):
+                if requestor.time_interval.contains(t):
+                    SELECTION.append(it)
+                    weights.append(1.)
+            return SELECTION , np.array(weights)
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
@@ -232,7 +241,7 @@ class TimeList():
             SELECTION=[]
             weights = []
 
-            if self.inputFrequency == 'daily':
+            if self.inputFrequency in  ['daily','hourly'] :
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)
@@ -329,7 +338,16 @@ class TimeList():
                 SELECTION.extend(s)
                 weights.extend(w)
             return SELECTION , np.array(weights)
-
+        if isinstance(requestor, requestors.Clim_Hourly_req):
+            SELECTION=[]
+            weights  =[]
+            DAILYLIST=self.getDailyList()
+            for day_req in DAILYLIST:
+                req = requestors.Hourly_req(day_req.year, day_req.month, day_req.day, requestor.hour, requestor.delta_hours)
+                s,w = self.select(req)
+                SELECTION.extend(s)
+                weights.extend(w)
+            return SELECTION , np.array(weights)
 
     def getDailyList(self):
         '''
@@ -540,6 +558,19 @@ class TimeList():
 
 
 if __name__ == '__main__':
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    TL     = TimeList(Min15)
+    Hourly_req=requestors.Hourly_req(2018,3,5,12,delta_hours=2)
+    ii,w = TL.select(Hourly_req)
+
+
+    Clim_Hour_req  = requestors.Clim_Hourly_req(12,delta_hours=2)
+    Clim_Montlhy_req = requestors.Clim_month(4)
+    ii,w = TL.select(Clim_Hour_req)
+    jj,wj = TL.select(Clim_Montlhy_req)
+    intersection=[ k for k in ii if k in jj]
+
+
     TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=10")
     TTL     = TimeList(TenDays)
     MyReqList = TTL.getMonthlist()

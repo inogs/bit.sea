@@ -34,7 +34,7 @@ def argument():
     parser.add_argument(   '--archivedir', '-d',
                                 type = str,
                                 required = True,
-                                help = ''' Dir with .nc DA limitation'''
+                                help = ''' Dir with .nc DA flag'''
                                 )
 
     parser.add_argument(   '--avesatdir', '-s',
@@ -47,7 +47,7 @@ def argument():
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 required = True,
-                                help = ''' Out dir with .nc file of rejected/DAlimited flags'''
+                                help = ''' Out dir with .nc file of rejected/DA flags'''
 
                                 )
 
@@ -88,7 +88,7 @@ TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 TS = TimeSeries(TI,archive_dir=ARCHIVEDIR, \
                 postfix_dir='DA__FREQ_1', \
-                glob_pattern='limcorr.')
+                glob_pattern='flagsat.')
 path_dadir = TS.get_runs([2]) # Tuesday assimilation
 # TL_DA = TimeList.fromfilenames(TI, DADIR ,"*.txt", \
 #                 prefix='',dateformat='%Y%m%d')
@@ -104,7 +104,7 @@ for iDate,directory in path_dadir:
                 prefix='',dateformat='%Y%m%d')
     for dd in TL_rej.Timelist:
         date8 = dd.strftime('%Y%m%d')
-        outfile = OUTDIR + date8 + 'satflags.nc'
+        outfile = OUTDIR + date8 + 'blacklistflags.nc'
         if not os.path.exists(outfile):
             somecheck = True
             break
@@ -132,7 +132,7 @@ else:
 
 for iDate,directory in path_dadir:
     date8DA = iDate.strftime('%Y%m%d')
-    fileDA = directory + '/limcorr.' + date8DA + '-000000.nc'
+    fileDA = directory + '/flagsat.' + date8DA + '-120000.nc'
     
     file_weekdates = AVESATDIR + \
                      date8DA + 'weekdates.txt'
@@ -140,11 +140,11 @@ for iDate,directory in path_dadir:
     Ndates = len(weekdates)
 
     req = timerequestors.Weekly_req(iDate.year,iDate.month,iDate.day)
-    TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*_rejected.nc", \
+    TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*.nc", \
                 prefix='',dateformat='%Y%m%d')
     
     if (os.path.exists(fileDA)):
-        flagDA = netcdf3.read_2d_file(fileDA,'lim_to_corr_FLAG')
+        flagDA = netcdf3.read_2d_file(fileDA,'flag_lim_misf')
         indlonflag,indlatflag = np.nonzero(flagDA)
         NflagDA = indlonflag.shape[0]
         maskDA_satmesh = np.zeros((maskSat.jpj,maskSat.jpi),dtype=int)
@@ -168,9 +168,10 @@ for iDate,directory in path_dadir:
             continue
         
         if Ndates==0:
-            print(date8DA + ' file not used for avesat because Ndates<3')
-            flagmap[:,:] = np.nan
-        else:        
+            print(date8 + ' file not used for avesat because Ndates<3')
+            flagmap[:,:] = -5
+        else:
+            print(date8)
             if not(date8 in weekdates):
                 print(date8 + ' in rejected but NOT in aveSat list: CHECK')
             fileflagclima = TL_rej.filelist[iid]
@@ -179,6 +180,7 @@ for iDate,directory in path_dadir:
             flagmap[maskDA_satmesh==1] = 3
 
         Sat.dumpGenericNativefile(outfile, flagmap, "flagValues",mesh=maskSat)
+        print('    ' + os.path.basename(outfile))
     
 
 

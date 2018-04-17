@@ -226,11 +226,12 @@ class Interval_req():
     ''' Useful for 10 days averages
     Interval_req(2005,1,25,days=10)
     '''
-    def __init__(self,year,month,day, days=10):
+    def __init__(self,year,month,day, hour=12, days=10):
         self.year   = year
         self.month  = month
         self.day    = day
-        centertime     = datetime.datetime(self.year,self.month,self.day,12)
+        self.hour   = hour
+        centertime     = datetime.datetime(self.year,self.month,self.day,self.hour)
         delta = datetime.timedelta(days)
         #exec 'delta= relativedelta(' + deltastr + ')'
         self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
@@ -238,6 +239,35 @@ class Interval_req():
         self.deltadays = days
     def __repr__(self):
         return "Interval requestor object: " + self.string + "  delta :  " + str(self.deltadays)  + " days"
+
+
+class Hourly_req():
+    '''
+    '''
+    def __init__(self,year,month,day, hour, delta_hours=1):
+        self.year   = year
+        self.month  = month
+        self.day    = day
+        self.hour   = hour
+        centertime     = datetime.datetime(self.year,self.month,self.day,self.hour)
+        delta = datetime.timedelta(hours=delta_hours)
+
+        self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
+        self.string  = centertime.strftime("%Y%m%d-%H%M%S")
+        self.delta_hours = delta_hours
+    def __repr__(self):
+        return "Hourly requestor object: " + self.string + "  delta :  " + str(self.delta_hours)  + " hours"
+
+
+class Clim_Hourly_req():
+    '''
+    '''
+    def __init__(self, hour, delta_hours=1):
+        self.hour   = hour
+        self.string  = ""
+        self.delta_hours = delta_hours
+    def __repr__(self):
+        return "CLimatologic requestor object: " + self.string + "  delta :  " + str(self.delta_hours)  + " hours"
 
 
 

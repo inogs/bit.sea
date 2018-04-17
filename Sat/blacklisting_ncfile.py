@@ -31,7 +31,7 @@ def argument():
 
                                 )
 
-    parser.add_argument(   '--archivedir', '-d',
+    parser.add_argument(   '--flagsatdir', '-d',
                                 type = str,
                                 required = True,
                                 help = ''' Dir with .nc DA flag'''
@@ -72,7 +72,7 @@ args = argument()
 
 
 REJECTDIR  = addsep(args.rejdir)
-ARCHIVEDIR = addsep(args.archivedir)
+FLAGDIR = addsep(args.flagsatdir)
 AVESATDIR  = addsep(args.avesatdir)
 OUTDIR     = addsep(args.outdir)
 
@@ -86,20 +86,17 @@ Time__end="20170909"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 
 
-TS = TimeSeries(TI,archive_dir=ARCHIVEDIR, \
-                postfix_dir='DA__FREQ_1', \
-                glob_pattern='flagsat.')
-path_dadir = TS.get_runs([2]) # Tuesday assimilation
-# TL_DA = TimeList.fromfilenames(TI, DADIR ,"*.txt", \
-#                 prefix='',dateformat='%Y%m%d')
 
+TL_flag = TimeList.fromfilenames(TI,FLAGDIR,"flag*.nc", \
+                prefix='flagsat.',dateformat='%Y%m%d-%H%M%S')
 
 
 somecheck = False
-for iDate,directory in path_dadir:
-    date8DA = iDate.strftime('%Y%m%d')
 
-    req = timerequestors.Weekly_req(iDate.year,iDate.month,iDate.day)
+for ddDA in TL_flag.Timelist:
+    date8DA = ddDA.strftime('%Y%m%d')
+
+    req = timerequestors.Weekly_req(ddDA.year,ddDA.month,ddDA.day)
     TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*.nc", \
                 prefix='',dateformat='%Y%m%d')
     for dd in TL_rej.Timelist:
@@ -130,16 +127,17 @@ else:
 
 
 
-for iDate,directory in path_dadir:
-    date8DA = iDate.strftime('%Y%m%d')
-    fileDA = directory + '/flagsat.' + date8DA + '-120000.nc'
+for iDAdate,ddDA in enumerate(TL_flag.Timelist):
+    date8DA = ddDA.strftime('%Y%m%d')
+    
+    fileDA = TL_flag.filelist[iDAdate]
     
     file_weekdates = AVESATDIR + \
                      date8DA + 'weekdates.txt'
     weekdates = np.loadtxt(file_weekdates,dtype=str)
     Ndates = len(weekdates)
 
-    req = timerequestors.Weekly_req(iDate.year,iDate.month,iDate.day)
+    req = timerequestors.Weekly_req(ddDA.year,ddDA.month,ddDA.day)
     TL_rej = TimeList.fromfilenames(req.time_interval, REJECTDIR,"*.nc", \
                 prefix='',dateformat='%Y%m%d')
     
@@ -156,7 +154,7 @@ for iDate,directory in path_dadir:
         print(date8DA + ' Not existing flagDA file: ' + fileDA)
         continue
     
-    print(iDate)
+    print(ddDA)
 
 
     flagmap = np.zeros((maskSat.jpj,maskSat.jpi))

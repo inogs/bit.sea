@@ -44,10 +44,10 @@ echo python aveSat.py -i $DIR_CHECK_1km/CHECKED -o $WEEKLYMULTI -d $WEEKLYDATES 
 # --------------------------------
 ## Compose blacklisting file
 
-DADIR=$annaDIR/FakeArchive
+FLAGSATDIR=$annaDIR/FakeArchive
 OUTNC=$annaDIR/NC_OUT
 MASKMOD=/pico/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc
 mkdir -p $OUTNC
 
-echo python blacklisting_ncfile.py -r $DIR_CHECK_1km/REJECTED -d $DADIR -s $WEEKLYDATES -o $OUTNC -t SAT1km_mesh -m $MASKMOD
+echo python blacklisting_ncfile.py -r $DIR_CHECK_1km/REJECTED -d $FLAGSATDIR -s $WEEKLYDATES -o $OUTNC -t SAT1km_mesh -m $MASKMOD
 

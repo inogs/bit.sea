@@ -7,7 +7,7 @@ def argument():
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
-                                default = "/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc",
+                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
                                 required = False,
                                 help = ''' Path of maskfile''')
 
@@ -41,7 +41,7 @@ from basins import OGS
 from validation.online.profileplotter import figure_generator, ncwriter #, add_metadata
 import matplotlib
 from mhelpers.pgmean import PLGaussianMean
-from profiler_2014_2016 import *
+from profiler import *
 from instruments.matchup_manager import Matchup_Manager
 
 
@@ -109,6 +109,7 @@ Profilelist_1=bio_float.FloatSelector(None,TI1,OGS.med)
 wmo_list=bio_float.get_wmo_list(Profilelist_1)
 
 for j in range(0,len(wmo_list)):
+#    if (j==4): 
       list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo_list[j])
       nP = len(list_float_track)
       Lon = np.zeros((nP,), np.float64)
@@ -119,6 +120,7 @@ for j in range(0,len(wmo_list)):
       plotmat_model = np.zeros([len(depths), len(list_float_track)])
 
       for ivar, var_mod in enumerate(VARLIST):
+#       if (ivar==0):
 	timelabel_list = list()
         var = LOVFLOATVARS[var_mod]
         adj=Adj[ivar]
@@ -170,11 +172,11 @@ for j in range(0,len(wmo_list)):
 
 	xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
 	if (var_mod == 'P_l'):
-                quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=0.40)# default is 'flat'
+                quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=0.40,cmap="jet")# default is 'flat'
 	if (var_mod == 'O2o'):
-		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=200,vmax=250)# default is 'flat'
+		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=200,vmax=250,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
-		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=4)# default is 'flat'
+		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=4,cmap="jet")# default is 'flat'
 	#Inform matplotlib that the x axis is made by dates
 	ax3.set_xlim([T_start2num,T_end2num])
 	ax3.xaxis_date()
@@ -187,11 +189,11 @@ for j in range(0,len(wmo_list)):
 	###ax = axs[2]
 	xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
         if (var_mod == 'P_l'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40)# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40,cmap="jet")# default is 'flat'
         if (var_mod == 'O2o'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=200,vmax=250)# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=200,vmax=250,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4)# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4,cmap="jet")# default is 'flat'
 	ax4.set_xlim([T_start2num,T_end2num])
 	ax4.xaxis_date()
 	ax4.invert_yaxis()

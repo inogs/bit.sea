@@ -3,7 +3,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Apply check based on climatology to sat ORIG files.
     Produces CHECKED and REJECTED files for each date at satellite resolution.
-    Statistic provided if argument dirstats is setted.
+    Statistics provided if argument dirstats is setted.
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -91,7 +91,7 @@ for iTime,filename in enumerate(TL_orig.filelist):
         somecheck = True
         break
     if args.statsdir is not None:
-        for masktype in ['ORIG','CHECK','ALLP']:
+        for masktype in ['ORIG','CHECK']:
             fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
             filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
             if (not os.path.exists(filechlsub)) or (not os.path.exists(fileclim)):
@@ -131,7 +131,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
         if args.statsdir is None:
             continue
         else:
-            for imsk,masktype in enumerate(['ORIG','CHECK','ALLP']):
+            for imsk,masktype in enumerate(['ORIG','CHECK']):
                 fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
                 filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
                 exit_condmask[imsk] = (os.path.exists(fileclim)) and \
@@ -180,13 +180,13 @@ for iTime, filename in enumerate(TL_orig.filelist):
 
 
     if (args.statsdir is not None) and (not all(exit_condmask)):
+        masksubday = {}
         for sub in V2.P:
-            masksubday = {}
-            masksubday['ORIG'] = masksub_M[sub.name] & (cloudsLandTIME == False)
-            masksubday['CHECK'] = masksub_M[sub.name] & (cloudsLandTIME == False) & (maskreject == 0)
-            masksubday['ALLP'] = masksub_M[sub.name]
+            masksubday[sub.name] = {}
+            masksubday[sub.name]['ORIG'] = masksub_M[sub.name] & (cloudsLandTIME == False)
+            masksubday[sub.name]['CHECK'] = masksub_M[sub.name] & (cloudsLandTIME == False) & (maskreject == 0)
 
-        for masktype in ['ORIG','CHECK','ALLP']:
+        for masktype in ['ORIG','CHECK']:
             fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
             filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
             stats_clima = {}
@@ -198,18 +198,18 @@ for iTime, filename in enumerate(TL_orig.filelist):
                 stats_day[sub.name] = np.zeros(8)
                 stats_day[sub.name][:] = np.nan
 
-                climadmean = DAILY_REF_MEAN[masksubday[masktype]]
+                climadmean = DAILY_REF_MEAN[masksubday[sub.name][masktype]]
                 climadmean[climadmean<0] = np.nan
-                climadstd = DAILY_REF_STD[masksubday[masktype]]
+                climadstd = DAILY_REF_STD[masksubday[sub.name][masktype]]
                 climadstd[climadmean<0] = np.nan
 
                 climadmadd_2std = climadmean + 2*climadstd
                 climadmsub_2std = climadmean - 2*climadstd
 
-                chlsub = CHL_IN[masksubday[masktype]]
+                chlsub = CHL_IN[masksubday[sub.name][masktype]]
                 chlsub[chlsub<0] = np.nan
 
-                if np.nansum(masksubday[masktype])>0:
+                if np.nansum(masksubday[sub.name][masktype])>0:
                     #print(sub.name + ' ... Np ' + np.str(np.nansum(masksubday)))
                     stats_clima[sub.name][0] = np.nanmean(climadmean)
                     stats_clima[sub.name][1] = np.nanmin(climadmean)
@@ -231,9 +231,10 @@ for iTime, filename in enumerate(TL_orig.filelist):
                     stats_day[sub.name][3] = np.nanmean(np.abs(chlsub-climadmean)/climadstd)
                     stats_day[sub.name][4] = np.nanmean(chlsub/climadmean)
 
-                    stats_day[sub.name][5] = np.nansum(masksubday['ORIG'])
-                    stats_day[sub.name][6] = np.nansum(outOfRange[masksubday['ORIG']])   #maskreject=1
-                    stats_day[sub.name][7] = np.nansum(~cloudsLandTIME & cloudlandsCLIM & masksubday['ORIG']) #maskreject=2
+                    stats_day[sub.name][5] = np.nansum(masksubday[sub.name]['ORIG'])
+                    stats_day[sub.name][6] = np.nansum(outOfRange[masksubday[sub.name]['ORIG']])   #maskreject=1
+                    stats_day[sub.name][7] = np.nansum(~cloudsLandTIME & cloudlandsCLIM & \
+                                                        masksubday[sub.name]['ORIG']) #maskreject=2
 
 
             fid = open(fileclim,'wb')

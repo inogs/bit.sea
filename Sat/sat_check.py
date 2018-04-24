@@ -93,8 +93,6 @@ for iTime,filename in enumerate(TL_orig.filelist):
     if args.statsdir is not None:
         for masktype in ['ORIG','CHECK']:
             filestats = STATSDIR + 'stats_stats' + date8 + masktype + '.nc'
-            # fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
-            # filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
             if (not os.path.exists(filestats)):
                 somecheck = True
                 break
@@ -137,9 +135,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
             continue
         else:
             for imsk,masktype in enumerate(['ORIG','CHECK']):
-                filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.pkl'
-                # fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
-                # filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
+                filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.nc'
                 exit_condmask[imsk] = (os.path.exists(filestats)) and (not reset)
             if all(exit_condmask):
                 continue
@@ -193,8 +189,6 @@ for iTime, filename in enumerate(TL_orig.filelist):
 
         for masktype in ['ORIG','CHECK']:
             filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.nc'
-            # fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
-            # filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
             stats_clima = np.zeros((nsub,12))
             stats_clima[:,:] = np.nan
             stats_day = np.zeros((nsub,8))

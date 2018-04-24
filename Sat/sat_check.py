@@ -52,7 +52,6 @@ def argument():
 
 
 args = argument()
-import pickle
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from basins import V2
@@ -60,6 +59,7 @@ from postproc import masks
 import numpy as np
 from commons.utils import addsep
 import os
+import scipy.io.netcdf as NC
 
 import SatManager as Sat
 
@@ -92,9 +92,10 @@ for iTime,filename in enumerate(TL_orig.filelist):
         break
     if args.statsdir is not None:
         for masktype in ['ORIG','CHECK']:
-            fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
-            filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
-            if (not os.path.exists(filechlsub)) or (not os.path.exists(fileclim)):
+            filestats = STATSDIR + 'stats_stats' + date8 + masktype + '.nc'
+            # fileclim = STATSDIR + 'stats_clim' + date8 + masktype + '.pkl'
+            # filechlsub = STATSDIR + 'stats_time' + date8 + masktype + '.pkl'
+            if (not os.path.exists(filestats)):
                 somecheck = True
                 break
     if somecheck:
@@ -108,7 +109,11 @@ if somecheck or reset:
     maskmed_1km = np.load(filemaskmed)
 
     masksub_M = {}
+    nsub = 0
+    subnames = ''
     for sub in V2.P:
+        nsub += 1
+        subnames += sub.name + ', '
         filemasksub = SUBMASKDIR + 'masksub.' + sub.name + '.npy'
         masksub = np.load(filemasksub)
         masksub_M[sub.name] = np.zeros((maskSat.jpj,maskSat.jpi),dtype=bool)
@@ -132,10 +137,10 @@ for iTime, filename in enumerate(TL_orig.filelist):
             continue
         else:
             for imsk,masktype in enumerate(['ORIG','CHECK']):
-                fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
-                filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
-                exit_condmask[imsk] = (os.path.exists(fileclim)) and \
-                                (os.path.exists(filechlsub)) and (not reset)
+                filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.pkl'
+                # fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
+                # filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
+                exit_condmask[imsk] = (os.path.exists(filestats)) and (not reset)
             if all(exit_condmask):
                 continue
 
@@ -187,17 +192,15 @@ for iTime, filename in enumerate(TL_orig.filelist):
             masksubday[sub.name]['CHECK'] = masksub_M[sub.name] & (cloudsLandTIME == False) & (maskreject == 0)
 
         for masktype in ['ORIG','CHECK']:
-            fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
-            filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
-            stats_clima = {}
-            stats_day = {}
+            filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.nc'
+            # fileclim = STATSDIR + os.path.basename(filename)[:-3] + '_clim' + masktype + '.pkl'
+            # filechlsub = STATSDIR + os.path.basename(filename)[:-3] + '_time' + masktype + '.pkl'
+            stats_clima = np.zeros((nsub,12))
+            stats_clima[:,:] = np.nan
+            stats_day = np.zeros((nsub,8))
+            stats_day[:,:] = np.nan
             print(masktype + ' --- Cycle on sub   ---')
-            for sub in V2.P:
-                stats_clima[sub.name] = np.zeros(12)
-                stats_clima[sub.name][:] = np.nan
-                stats_day[sub.name] = np.zeros(8)
-                stats_day[sub.name][:] = np.nan
-
+            for isub,sub in enumerate(V2.P):
                 climadmean = DAILY_REF_MEAN[masksubday[sub.name][masktype]]
                 climadmean[climadmean<0] = np.nan
                 climadstd = DAILY_REF_STD[masksubday[sub.name][masktype]]
@@ -211,39 +214,53 @@ for iTime, filename in enumerate(TL_orig.filelist):
 
                 if np.nansum(masksubday[sub.name][masktype])>0:
                     #print(sub.name + ' ... Np ' + np.str(np.nansum(masksubday)))
-                    stats_clima[sub.name][0] = np.nanmean(climadmean)
-                    stats_clima[sub.name][1] = np.nanmin(climadmean)
-                    stats_clima[sub.name][2] = np.nanmax(climadmean)
-                    stats_clima[sub.name][3] = np.nanmean(climadmadd_2std)
-                    stats_clima[sub.name][4] = np.nanmin(climadmadd_2std)
-                    stats_clima[sub.name][5] = np.nanmax(climadmadd_2std)
-                    stats_clima[sub.name][6] = np.nanmean(climadmsub_2std)
-                    stats_clima[sub.name][7] = np.nanmin(climadmsub_2std)
-                    stats_clima[sub.name][8] = np.nanmax(climadmsub_2std)
-                    stats_clima[sub.name][9] = np.nanmean(climadstd)
-                    stats_clima[sub.name][10] = np.nanmin(climadstd)
-                    stats_clima[sub.name][11] = np.nanmax(climadstd)
+                    stats_clima[isub,0] = np.nanmean(climadmean)
+                    stats_clima[isub,1] = np.nanmin(climadmean)
+                    stats_clima[isub,2] = np.nanmax(climadmean)
+                    stats_clima[isub,3] = np.nanmean(climadmadd_2std)
+                    stats_clima[isub,4] = np.nanmin(climadmadd_2std)
+                    stats_clima[isub,5] = np.nanmax(climadmadd_2std)
+                    stats_clima[isub,6] = np.nanmean(climadmsub_2std)
+                    stats_clima[isub,7] = np.nanmin(climadmsub_2std)
+                    stats_clima[isub,8] = np.nanmax(climadmsub_2std)
+                    stats_clima[isub,9] = np.nanmean(climadstd)
+                    stats_clima[isub,10] = np.nanmin(climadstd)
+                    stats_clima[isub,11] = np.nanmax(climadstd)
 
 
-                    stats_day[sub.name][0] = np.nanmean(chlsub)
-                    stats_day[sub.name][1] = np.nanmin(chlsub)
-                    stats_day[sub.name][2] = np.nanmax(chlsub)
-                    stats_day[sub.name][3] = np.nanmean(np.abs(chlsub-climadmean)/climadstd)
-                    stats_day[sub.name][4] = np.nanmean(chlsub/climadmean)
+                    stats_day[isub,0] = np.nanmean(chlsub)
+                    stats_day[isub,1] = np.nanmin(chlsub)
+                    stats_day[isub,2] = np.nanmax(chlsub)
+                    stats_day[isub,3] = np.nanmean(np.abs(chlsub-climadmean)/climadstd)
+                    stats_day[isub,4] = np.nanmean(chlsub/climadmean)
 
-                    stats_day[sub.name][5] = np.nansum(masksubday[sub.name]['ORIG'])
-                    stats_day[sub.name][6] = np.nansum(outOfRange[masksubday[sub.name]['ORIG']])   #maskreject=1
-                    stats_day[sub.name][7] = np.nansum(~cloudsLandTIME & cloudlandsCLIM & \
+                    stats_day[isub,5] = np.nansum(masksubday[sub.name]['ORIG'])
+                    stats_day[isub,6] = np.nansum(outOfRange[masksubday[sub.name]['ORIG']])   #maskreject=1
+                    stats_day[isub,7] = np.nansum(~cloudsLandTIME & cloudlandsCLIM & \
                                                         masksubday[sub.name]['ORIG']) #maskreject=2
 
 
-            fid = open(fileclim,'wb')
-            pickle.dump(stats_clima,fid)
-            fid.close()
+            ncOUT = NC.netcdf_file(filestats,'w')
+            ncOUT.createDimension('subbasin',nsub)
+            ncOUT.createDimension('stattype_clim',12)
+            ncOUT.createDimension('stattype_day',8)
 
-            fid = open(filechlsub,'wb')
-            pickle.dump(stats_day,fid)
-            fid.close()
+            setattr(ncOUT,'sublist',subnames)
+
+            ncvar = ncOUT.createVariable('SUBstatistics_clim','f',('subbasin','stattype_clim'))
+            ncvar[:] = stats_clima
+
+            ncvar = ncOUT.createVariable('SUBstatistics_day','f',('subbasin','stattype_day'))
+            ncvar[:] = stats_day
+
+            ncOUT.close()
+            # fid = open(fileclim,'wb')
+            # pickle.dump(stats_clima,fid)
+            # fid.close()
+
+            # fid = open(filechlsub,'wb')
+            # pickle.dump(stats_day,fid)
+            # fid.close()
 
         print 'Done statistics with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')'
         print '   ---------------------------------------------------   '

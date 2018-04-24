@@ -39,9 +39,7 @@ def argument():
 
 
 args = argument()
-import pickle
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
+import scipy.io.netcdf as NC
 from basins import V2
 from postproc import masks
 import numpy as np
@@ -62,7 +60,7 @@ reset = False
 somestats = False
 for ii in range(365):
     strday = "%03d" %(ii+1)
-    climstatsfile = STATSDIR + 'statsday' + strday + '_clim.pkl'
+    climstatsfile = STATSDIR + 'statsday' + strday + '_clim.nc'
     if (not os.path.exists(climstatsfile)):
         somestats = True
         break
@@ -75,11 +73,17 @@ if somestats or reset:
     maskmed_1km = np.load(filemaskmed)
 
     masksub_M = {}
+    nsub = 0
+    subnames = ''
     for sub in V2.P:
+        nsub += 1
+        subnames += sub.name + ', '
         filemasksub = SUBMASKDIR + 'masksub.' + sub.name + '.npy'
         masksub = np.load(filemasksub)
         masksub_M[sub.name] = np.zeros((maskSat.jpj,maskSat.jpi),dtype=bool)
         masksub_M[sub.name][maskmed_1km] = masksub
+
+
 
 
 else:
@@ -88,7 +92,7 @@ else:
 
 for ii in range(365):
     strday = "%03d" %(ii+1)
-    filestatsclim = STATSDIR + 'statsday' + strday + '_clim.pkl'
+    filestatsclim = STATSDIR + 'statsday' + strday + '_clim.nc'
     exit_condition = os.path.exists(filestatsclim)
 
     if (exit_condition) and (reset==False):
@@ -100,10 +104,9 @@ for ii in range(365):
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
-    stats_clima = {}
-    for sub in V2.P:
-        stats_clima[sub.name] = np.zeros(12)
-        stats_clima[sub.name][:] = np.nan
+    stats_clima = np.zeros((nsub,12))
+    stats_clima[:,:] = np.nan
+    for isub,sub in enumerate(V2.P):
 
         climadmean = DAILY_REF_MEAN[masksub_M[sub.name]]
         climadmean[climadmean<0] = np.nan
@@ -115,24 +118,31 @@ for ii in range(365):
 
 
         if np.nansum(masksub_M[sub.name])>0:
-            stats_clima[sub.name][0] = np.nanmean(climadmean)
-            stats_clima[sub.name][1] = np.nanmin(climadmean)
-            stats_clima[sub.name][2] = np.nanmax(climadmean)
-            stats_clima[sub.name][3] = np.nanmean(climadmadd_2std)
-            stats_clima[sub.name][4] = np.nanmin(climadmadd_2std)
-            stats_clima[sub.name][5] = np.nanmax(climadmadd_2std)
-            stats_clima[sub.name][6] = np.nanmean(climadmsub_2std)
-            stats_clima[sub.name][7] = np.nanmin(climadmsub_2std)
-            stats_clima[sub.name][8] = np.nanmax(climadmsub_2std)
-            stats_clima[sub.name][9] = np.nanmean(climadstd)
-            stats_clima[sub.name][10] = np.nanmin(climadstd)
-            stats_clima[sub.name][11] = np.nanmax(climadstd)
+            stats_clima[isub,0] = np.nanmean(climadmean)
+            stats_clima[isub,1] = np.nanmin(climadmean)
+            stats_clima[isub,2] = np.nanmax(climadmean)
+            stats_clima[isub,3] = np.nanmean(climadmadd_2std)
+            stats_clima[isub,4] = np.nanmin(climadmadd_2std)
+            stats_clima[isub,5] = np.nanmax(climadmadd_2std)
+            stats_clima[isub,6] = np.nanmean(climadmsub_2std)
+            stats_clima[isub,7] = np.nanmin(climadmsub_2std)
+            stats_clima[isub,8] = np.nanmax(climadmsub_2std)
+            stats_clima[isub,9] = np.nanmean(climadstd)
+            stats_clima[isub,10] = np.nanmin(climadstd)
+            stats_clima[isub,11] = np.nanmax(climadstd)
 
 
+    ncOUT = NC.netcdf_file(filestatsclim,'w')
+    ncOUT.createDimension('subbasin',nsub)
+    ncOUT.createDimension('stattype',12)
 
-    fid = open(filestatsclim,'wb')
-    pickle.dump(stats_clima,fid)
-    fid.close()
+    setattr(ncOUT,'sublist',subnames)
+
+    ncvar = ncOUT.createVariable('SUBstatistics','f',('subbasin','stattype'))
+    ncvar[:] = stats_clima
+
+    ncOUT.close()
+
 
     print 'Done statistics with file ' + strday + ' of 365 ' 
     print '   ---------------------------------------------------   '

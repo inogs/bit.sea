@@ -92,7 +92,7 @@ for iTime,filename in enumerate(TL_orig.filelist):
         break
     if args.statsdir is not None:
         for masktype in ['ORIG','CHECK']:
-            filestats = STATSDIR + 'stats_stats' + date8 + masktype + '.nc'
+            filestats = STATSDIR + os.path.basename(filename)[:-3] + '_stats' + masktype + '.nc'
             if (not os.path.exists(filestats)):
                 somecheck = True
                 break
@@ -127,7 +127,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + '/CHECKED/' + os.path.basename(filename)
     rejfile = CHECKDIR + '/REJECTED/' + os.path.basename(filename)
     exit_condition = os.path.exists(outfile) and os.path.exists(rejfile) and (not reset)
-    exit_condmask = np.zeros(3,dtype=bool)
+    exit_condmask = np.zeros(2,dtype=bool)
     iDate = TL_orig.Timelist[iTime] 
     date8 = iDate.strftime('%Y%m%d')
     if exit_condition:

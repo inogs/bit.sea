@@ -111,7 +111,7 @@ for ii in range(365):
         climadmean = DAILY_REF_MEAN[masksub_M[sub.name]]
         climadmean[climadmean<0] = np.nan
         climadstd = DAILY_REF_STD[masksub_M[sub.name]]
-        climadstd[climadmean<0] = np.nan
+        climadstd[np.isnan(climadmean)] = np.nan
 
         climadmadd_2std = climadmean + 2*climadstd
         climadmsub_2std = climadmean - 2*climadstd

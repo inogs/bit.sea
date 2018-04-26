@@ -40,7 +40,7 @@ def argument():
     parser.add_argument(   '--avesatdir', '-s',
                                 type = str,
                                 required = True,
-                                help = ''' Dir with sat dates'''
+                                help = ''' Dir with ave sat dates'''
 
                                 )
 

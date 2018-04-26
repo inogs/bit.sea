@@ -198,7 +198,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
                 climadmean = DAILY_REF_MEAN[masksubday[sub.name][masktype]]
                 climadmean[climadmean<0] = np.nan
                 climadstd = DAILY_REF_STD[masksubday[sub.name][masktype]]
-                climadstd[climadmean<0] = np.nan
+                climadstd[np.isnan(climadmean)] = np.nan
 
                 climadmadd_2std = climadmean + 2*climadstd
                 climadmsub_2std = climadmean - 2*climadstd

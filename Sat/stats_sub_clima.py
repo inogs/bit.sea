@@ -55,7 +55,7 @@ STATSDIR  = addsep(args.statsdir)
 
 maskSat = getattr(masks,args.mesh)
 
-reset = False
+reset = True
 
 somestats = False
 for ii in range(365):
@@ -69,7 +69,7 @@ if somestats or reset:
     print('Read climatology')
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
 
-    filemaskmed = SUBMASKDIR + 'maskmed_1km.npy'
+    filemaskmed = SUBMASKDIR + 'maskmed_1kmOpen.npy'
     maskmed_1km = np.load(filemaskmed)
 
     masksub_M = {}
@@ -78,7 +78,7 @@ if somestats or reset:
     for sub in V2.P:
         nsub += 1
         subnames += sub.name + ', '
-        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + '.npy'
+        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'Open.npy'
         masksub = np.load(filemasksub)
         masksub_M[sub.name] = np.zeros((maskSat.jpj,maskSat.jpi),dtype=bool)
         masksub_M[sub.name][maskmed_1km] = masksub
@@ -92,7 +92,7 @@ else:
 
 for ii in range(365):
     strday = "%03d" %(ii+1)
-    filestatsclim = STATSDIR + 'statsday' + strday + '_clim.nc'
+    filestatsclim = STATSDIR + 'statsday' + strday + '_climOpen.nc'
     exit_condition = os.path.exists(filestatsclim)
 
     if (exit_condition) and (reset==False):
@@ -104,7 +104,7 @@ for ii in range(365):
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    
     
-    stats_clima = np.zeros((nsub,12))
+    stats_clima = np.zeros((nsub,13))
     stats_clima[:,:] = np.nan
     for isub,sub in enumerate(V2.P):
 
@@ -130,11 +130,12 @@ for ii in range(365):
             stats_clima[isub,9] = np.nanmean(climadstd)
             stats_clima[isub,10] = np.nanmin(climadstd)
             stats_clima[isub,11] = np.nanmax(climadstd)
+            stats_clima[isub,12] = np.nanstd(climadmean)
 
 
     ncOUT = NC.netcdf_file(filestatsclim,'w')
     ncOUT.createDimension('subbasin',nsub)
-    ncOUT.createDimension('stattype',12)
+    ncOUT.createDimension('stattype',13)
 
     setattr(ncOUT,'sublist',subnames)
 

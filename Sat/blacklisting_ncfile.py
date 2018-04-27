@@ -147,8 +147,8 @@ for iDAdate,ddDA in enumerate(TL_flag.Timelist):
         NflagDA = indlonflag.shape[0]
         maskDA_satmesh = np.zeros((maskSat.jpj,maskSat.jpi),dtype=int)
         for iiDA in range(NflagDA):
-            maskDA_satmesh[I_START[indlonflag[iiDA]]:I_END[indlonflag[iiDA]],
-                           J_START[indlatflag[iiDA]]:J_END[indlatflag[iiDA]]] = 1
+            maskDA_satmesh[J_START[indlonflag[iiDA]]:J_END[indlonflag[iiDA]],
+                           I_START[indlatflag[iiDA]]:I_END[indlatflag[iiDA]]] = 1
 
     else:
         print(date8DA + ' Not existing flagDA file: ' + fileDA)

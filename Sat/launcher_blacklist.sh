@@ -14,6 +14,13 @@ DIR_CLIMA1km=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/
 # echo python sat_indsub.py -o $DIR_SUBMASK -c $FILEClima -m SAT1km_mesh
 
 # --------------------------------
+## Creation of climatology statistics for the Mediterranean subbasins
+# To be executed once and for all (once for each climatology)
+# OUT_STATSCLIM=$annaDIR/STATS_CLIM/
+# mkdir $OUT_STATSCLIM
+# echo python stats_sub_clima.py -c $FILEClima -m SAT1km_mesh  -s $DIR_SUBMASK -w $OUT_STATSCLIM
+
+# --------------------------------
 ## Check of sat files
 
 OUT_STATS=$DIR_CHECK_1km/STATISTICS

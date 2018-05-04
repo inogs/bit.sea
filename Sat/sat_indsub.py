@@ -43,6 +43,13 @@ def argument():
                                 help = ''' File of the model mesh '''
                                 )
 
+    parser.add_argument(   '--masktype', '-t',
+                                type = str,
+                                required = True,
+                                choices = ['Open','All'],
+                                help = ''' If Open or All mask '''
+                                )
+
     return parser.parse_args()
 
 args = argument()
@@ -50,6 +57,7 @@ args = argument()
 
 OUTDIR  = addsep(args.outdir)
 CLIM_FILE = args.climfile
+masktype = args.masktype
 Maskfile = args.modelmeshfile
 
 maskSat = getattr(masks,args.mesh)
@@ -57,7 +65,6 @@ maskMod = Mask(Maskfile)
 
 
 readClimatology = True
-readClimatology = False
 if readClimatology:
     print '--- Read climatology'
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
@@ -65,6 +72,8 @@ if readClimatology:
     mask365 = np.zeros_like(MEAN)
     mask365[MEAN>0] = 1
     maskmed_1km = (np.sum(mask365,0))>0
+    if masktype=='Open':
+        masksatOpen = np.zeros_like(maskmed_1km)
 
     # Indexes for interpolation
     print '--- Indexes for interpolation '
@@ -77,24 +86,23 @@ if readClimatology:
 
 
 # Considering coastal areas
-maskmodel200 = maskMod.mask_at_level(200)
-maskmodel0 = maskMod.mask_at_level(0)
-maskmodelcoast = maskmodel0.copy()
-maskmodelcoast[maskmodel200] = False
 
-indlonCoast,indlatCoast = np.nonzero(maskmodelcoast)
-Ncoast = indlonCoast.shape[0]
-for iip in range(Ncoast):
-    maskmed_1km[J_START[indlonCoast[iip]]:J_END[indlonCoast[iip]],
-                I_START[indlatCoast[iip]]:I_END[indlatCoast[iip]]] = False
+if masktype=='Open':
+    maskmodel200 = maskMod.mask_at_level(200)
+    indlonOpen,indlatOpen = np.nonzero(maskmodel200)
+    Nopen = indlonOpen.shape[0]
+    for iip in range(Nopen):
+        masksatOpen[J_START[indlonOpen[iip]]:J_END[indlonOpen[iip]],
+                    I_START[indlatOpen[iip]]:I_END[indlatOpen[iip]]] = True
     
+    maskmed_1km[masksatOpen==False] = False
 
 
-filename = OUTDIR + 'maskmed_1kmOpen.npy'
+filename = OUTDIR + 'maskmed_1km' + masktype + '.npy'
 print(filename)
 np.save(filename,maskmed_1km)
 
-# Extracting points with observations and open sea
+# Extracting points with observations and in the mask (open or all)
 indlon = range(maskSat.jpi)
 indlat = range(maskSat.jpj)
 indlonM,indlatM = np.meshgrid(indlon,indlat)
@@ -109,23 +117,20 @@ numP = Lat_masked.shape[0]
 
 print('   Cycle on sub')
 for sub in V2.Pred:
-    if sub.name in ['lev1','lev2','lev3','lev4']:
-        masksub = np.zeros(numP,dtype=bool)
-        print(sub.name)
-        for iip in range(numP):
-            lonp = Lon_masked[iip]
-            latp = Lat_masked[iip]
-            # indlonp = indlon_masked[iip]
-            # indlatp = indlat_masked[iip]
-            if sub.is_inside(lonp,latp):
-                masksub[iip] = True
+    masksub = np.zeros(numP,dtype=bool)
+    print(sub.name)
+    for iip in range(numP):
+        lonp = Lon_masked[iip]
+        latp = Lat_masked[iip]
+        if sub.is_inside(lonp,latp):
+            masksub[iip] = True
 
-        Np_sub = np.sum(masksub)
-        print('     ... Np ' + np.str(Np_sub))
+    Np_sub = np.sum(masksub)
+    print('     ... Np ' + np.str(Np_sub))
 
-        filename = OUTDIR + 'masksub.' + sub.name + 'Open.npy'
-        print(filename)
-        np.save(filename,masksub)
+    filename = OUTDIR + 'masksub.' + sub.name + masktype + '.npy'
+    print(filename)
+    np.save(filename,masksub)
 
 
 masksub = np.zeros(numP,dtype=bool)
@@ -134,7 +139,7 @@ Np_sub = np.sum(masksub)
 print('med')
 print('     ... Np ' + np.str(Np_sub))
 
-filename = OUTDIR + 'masksub.medOpen.npy'
+filename = OUTDIR + 'masksub.med' + masktype + '.npy'
 print(filename)
 np.save(filename,masksub)
 

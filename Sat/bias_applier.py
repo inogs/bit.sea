@@ -4,13 +4,16 @@ import os
 import Sat.SatManager as Sat
 from postproc.masks import V4mesh
 
-Bias_monthly_file="/pico/scratch/userexternal/ateruzzi/SATELLITE/CCI16_1km/biasMonthPoint.npy"
-INPUTDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/DT/WEEKLY/"
-OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CORRECTED/"
-CHECKDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CHECK/"
+Bias_monthly_file="/marconi/home/userexternal/ateruzzi/SATBIAS_CCI_MULTI/biasMonthPoint.npy"
+INPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/WEEKLY_16/"
+# INPUTDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/DT/WEEKLY/"
+# OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CORRECTED/"
+# CHECKDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CHECK/"
+OUTPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/SAT_CORRECTED/"
+CHECKDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/SAT_CHECK/"
 threshold = 0.01
 
-TI = TimeInterval("20160101","20170101","%Y%m%d")
+TI = TimeInterval("20170101","20180101","%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", prefix="", dateformat="%Y%m%d")
 
 
@@ -28,7 +31,7 @@ BIAS[ii]=0.0 # null correction on no-data points
 
 for iFrame, filename in enumerate(TL.filelist):
     outfile=OUTPUTDIR + os.path.basename(filename)
-    Sat_orig = Sat.readfromfile(filename,var="lchlm")
+    Sat_orig = Sat.readfromfile(filename,var="CHL")
     goods = Sat_orig > 0
     index_month = TL.Timelist[iFrame].month -1
     print outfile, index_month

@@ -9,27 +9,26 @@ def argument():
     parser.add_argument(   '--inputdir', '-i',
                                 type = str,
                                 required = True,
-                                help = ''' E.g. dir with files on 1km mesh'''
-
+                                help = ''' E.g. dir with files on 1km mesh (ORIG)'''
                                 )
 
     parser.add_argument(   '--outputdir', '-o',
                                 type = str,
                                 required = True,
-                                help = ''' E.g. dir with files on 1/24 mesh'''
-
+                                help = ''' E.g. dir with files on 1/24 mesh (interpolated)'''
                                 )
 
     parser.add_argument(   '--outmesh', '-m',
                                 type = str,
                                 required = True,
                                 choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
-                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
+                                help = ''' Name of the mesh of sat ORIG.'''
                                 )
+
     parser.add_argument(   '--maskfile', '-M',
                                 type = str,
                                 required = True,
-                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
+                                help = ''' Name of the mesh of model and used to dump checked data.'''
                                 )
 
     return parser.parse_args()

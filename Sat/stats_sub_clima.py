@@ -35,6 +35,14 @@ def argument():
 
                                 )
 
+    parser.add_argument(   '--masktype', '-t',
+                                type = str,
+                                required = True,
+                                choices = ['Open','All'],
+                                help = ''' Type of mask (Open or All)'''
+
+                                )
+
     return parser.parse_args()
 
 
@@ -52,6 +60,7 @@ import SatManager as Sat
 SUBMASKDIR  = addsep(args.submaskdir)
 CLIM_FILE = args.climfile
 STATSDIR  = addsep(args.statsdir)
+masktype = args.masktype
 
 maskSat = getattr(masks,args.mesh)
 
@@ -60,25 +69,26 @@ reset = True
 somestats = False
 for ii in range(365):
     strday = "%03d" %(ii+1)
-    climstatsfile = STATSDIR + 'statsday' + strday + '_clim.nc'
+    climstatsfile = STATSDIR + 'statsday' + strday + '_clim' + masktype + '.nc'
     if (not os.path.exists(climstatsfile)):
         somestats = True
         break
 
 if somestats or reset:
-    print('Read climatology')
+    print('Read climatology and mask for subbasins')
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
 
-    filemaskmed = SUBMASKDIR + 'maskmed_1kmOpen.npy'
+    filemaskmed = SUBMASKDIR + 'maskmed_1km' + masktype + '.npy'
     maskmed_1km = np.load(filemaskmed)
 
     masksub_M = {}
     nsub = 0
     subnames = ''
     for sub in V2.P:
+        print sub.name
         nsub += 1
         subnames += sub.name + ', '
-        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'Open.npy'
+        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + masktype + '.npy'
         masksub = np.load(filemasksub)
         masksub_M[sub.name] = np.zeros((maskSat.jpj,maskSat.jpi),dtype=bool)
         masksub_M[sub.name][maskmed_1km] = masksub
@@ -92,7 +102,7 @@ else:
 
 for ii in range(365):
     strday = "%03d" %(ii+1)
-    filestatsclim = STATSDIR + 'statsday' + strday + '_climOpen.nc'
+    filestatsclim = STATSDIR + 'statsday' + strday + '_clim' + masktype + '.nc'
     exit_condition = os.path.exists(filestatsclim)
 
     if (exit_condition) and (reset==False):

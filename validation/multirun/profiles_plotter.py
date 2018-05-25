@@ -8,6 +8,9 @@ import pylab as pl
 from basins import V2
 from commons.mask import Mask
 from timeseries.plot import read_pickle_file
+import os
+
+BFMv5_dict={'Ac':'ALK'}
 
 try:
     from mpi4py import MPI
@@ -30,6 +33,11 @@ class plot_container():
 
     def load(self, varname):
         filename=self.path + varname + ".pkl"
+        if varname in BFMv5_dict.keys():
+            bfmv5_filename = self.path + BFMv5_dict[varname] + ".pkl"
+            if (~os.path.exists(filename) & os.path.exists(bfmv5_filename)):
+                filename=bfmv5_filename
+
         data, TL = read_pickle_file(filename)
         self.timelist=TL.Timelist
         self.values=data
@@ -121,6 +129,8 @@ PATH3 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_06/wrkdir/POSTPROC/output
 PATH4 = '/marconi_scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/'
 PATH5 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/CFR_PREVIOUS_RUNS/RA16_COAST/STAT_PROFILES/"
 PATH6 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/CFR_PREVIOUS_RUNS/HC16/STAT_PROFILES/"
+PATH7 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_07/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
+PATH8 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_08/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 
 Mask_4=Mask("/marconi_work/OGS_dev_0/DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
 Mask16=Mask("/marconi_work/OGS_dev_0/DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
@@ -135,10 +145,13 @@ P3 = plot_container('HC16_4_bfmv5_ogs', "k.-" , PATH3, Mask_4)
 P4 = plot_container('TRANS24'         , "m"   , PATH4, Mask24)
 P5 = plot_container('RA16'            , "y"   , PATH5, Mask16)
 P6 = plot_container('HC16'            , "c"   , PATH6, Mask16)
+P7 = plot_container('HC16_4_bfmv2_1999', "r"  , PATH7, Mask_4)
+P8 = plot_container('HC16_4_bfmv5_1999', "g"  , PATH8, Mask_4)
 
-PLOT_LIST=[P1,P2,P3,P4,P5,P6 ]
+PLOT_LIST=[P6,P7,P8] #[P1,P2,P3,P4,P5,P6 ]
 
 VARLIST=["N1p", "N3n", "O2o", "P_l", "P_c", "DIC"]
+VARLIST=["Ac", "B1c", "Z_c", "P_p", "P_n", "N5s","CO2airflux"] #,"ppn"]
 
 ##################################################################
 

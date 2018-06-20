@@ -4,6 +4,7 @@
 # Edit the USER SETTINS section below before launch.
 
 
+import numpy as np
 import pylab as pl
 from basins import V2
 from commons.mask import Mask

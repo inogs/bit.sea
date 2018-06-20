@@ -5,33 +5,30 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-from instruments.lovbio_float import FloatSelector
-
+#from instruments import instruments
+from instruments import lovbio_float
+from static.Massimili_reader import MassimiliReader
 from instruments.matchup_manager import Matchup_Manager
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins.region import Rectangle
+from commons.Timelist import TimeInterval, TimeList
+import basins.V2 as OGS
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
-
-INPUTDIR='/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/MODEL/AVE_FREQ_1/'
-
+INPUTDIR="/pico/scratch/userexternal/lmariott/FDA_all2015_newstd_3days/wrkdir/MODEL/AVE_FREQ_1/"
+aggregatedir="/pico/scratch/userexternal/lmariott/FDA_all2015_newstd_3days/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
 # output directory, where aveScan.py will be run.
+BASEDIR='/pico/scratch/userexternal/gbolzon0/MASSIMILI/FDA_all2015_newstd_3days/PROFILATORE/'
 
-BASEDIR='/pico/scratch/userexternal/lfeudale/validation/eas_v12/eas_v19_3/PROFILATORE/'
+DATESTART = '20150101-00:00:00'
+DATE__END = '20160101-00:00:00'
+
+T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc", filtervar="N1p")
 
 
-DATESTART = '20150101'
-DATE__END = '20161227'
-
-T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
-
-ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
-
+N = MassimiliReader()
+ALL_PROFILES = N.Selector(None, T_INT, OGS.med) #lovbio_float.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)
 
 vardescriptorfile="VarDescriptorB.xml"
-
 #This previous part will be imported in matchups setup.
 
 # The following part, the profiler, is executed once and for all.
@@ -42,7 +39,7 @@ if __name__ == '__main__':
 
 
     profilerscript = BASEDIR + 'jobProfiler.sh'
-    aggregatedir="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
+
     M.writefiles_for_profiling(vardescriptorfile, profilerscript, aggregatedir=aggregatedir) # preparation of data for aveScan
 
     M.dumpModelProfiles(profilerscript) # sequential launch of aveScan

@@ -56,7 +56,9 @@ class plot_container():
         iCoast=1 # open sea
         for iax, ax in enumerate(axes[:-1]):
             idepth = self.mask.getDepthIndex(LEVELS[iax])
-            ax.plot(self.timelist,self.values[:,iSub,iCoast, idepth,0],self.plotargs, label=self.name)
+            y = self.values[:,iSub,iCoast, idepth,0]
+            if ~np.isnan(y).all():
+                ax.plot(self.timelist,y,self.plotargs, label=self.name)
         ax = axes[-1] # the profile
         ax.plot(self.values[:,iSub,iCoast,:,0].mean(axis=0), self.mask.zlevels, self.plotargs, label=self.name )
         

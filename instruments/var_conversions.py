@@ -50,3 +50,5 @@ ISPRAVARS = {'N1p': 'orthophosphates', \
 MASSIMILIVARS = {'N1p': 'phosphate', \
              'N3n': 'nitrate', \
              'P_l': 'CHL'}
+
+FLOAT_OPT_VARS = {"P_l": "chl"}

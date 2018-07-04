@@ -58,7 +58,7 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         cmap=pl.get_cmap(colormap,ncolors)
         im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
     else:
-        im = ax.imshow(map_dict['data'])
+        im = ax.imshow(map_dict['data'], cmap=cmap)
     #Set color bar
     im.set_clim(clim[0], clim[1])
     cbar_ticks_list = np.linspace(clim[0], clim[1], cbar_ticks).tolist()

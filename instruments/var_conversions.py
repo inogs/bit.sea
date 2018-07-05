@@ -51,4 +51,8 @@ MASSIMILIVARS = {'N1p': 'phosphate', \
              'N3n': 'nitrate', \
              'P_l': 'CHL'}
 
-FLOAT_OPT_VARS = {"P_l": "chl"}
+FLOAT_OPT_VARS = {"P_l": "chl",
+                  "Ed_380": "Ed_380",
+                  "Ed_412": "Ed_412",
+                  "Ed_490": "Ed_490",
+                  }

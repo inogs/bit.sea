@@ -210,4 +210,3 @@ for wmo in wmo_list:
         fig.savefig(OUTFILE)
 	plt.close(fig)
     import sys
-    sys.exit()

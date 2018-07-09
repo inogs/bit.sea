@@ -154,7 +154,7 @@ class TimeList():
         if (days > 364 ) & (days < 367): 
             return "yearly"
         if (abs (int(days) -days)) < 0.1:
-             return "days=%d" %days
+            return "days=%d" %days
         if days == 10:
             return "10days"
         if (days>1) & (days<7):
@@ -519,6 +519,22 @@ class TimeList():
         return LIST
 
     def couple_with(self,datetimelist):
+        '''
+        Performs the association between two timelists:
+
+        - a regular one, usual result of model
+        - an irregular one, as provided from measurements
+
+        Input:
+        * datetimelist * a list of datetime objects, usually the irregular times of profiles objects
+
+        Returns:
+        * Coupled_List * a list of tuples (datetime object, list_of_indices)
+        where
+        - the datetime object is an element of self.Timelist (model regular times) concerned by datetimelist
+        - list_of_indices is a list of integers such that :
+            datetimelist[list_of_indeces] belong to the datetime object corresponding timeinterval
+        '''
         Coupled_List=[]
         for ir, req in enumerate(self.getOwnList()):
             LIST_of_IND=[]
@@ -558,6 +574,12 @@ class TimeList():
 
 
 if __name__ == '__main__':
+    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=17")
+    TTL     = TimeList(Days17)
+    MyReqList = TTL.getMonthlist()
+    for req in MyReqList:
+        ii,weights = TTL.select(req)
+
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
     TL     = TimeList(Min15)
     Hourly_req=requestors.Hourly_req(2018,3,5,12,delta_hours=2)

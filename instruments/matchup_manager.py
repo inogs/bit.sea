@@ -144,6 +144,7 @@ class Matchup_Manager():
             if profile in [self.PROFILE_LIST[k] for k in INTERESTED_Indices]:
                 break
         else:
+            raise ValueError("No model profile corresponds to %s. Please check time interval in your profiler." % ( profile.ID(), ) )
             return None
         return Model_time
 

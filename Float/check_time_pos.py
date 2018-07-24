@@ -17,7 +17,11 @@ def argument():
                                 required = False,
                                 default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt",
                                 help = 'file used by Float_Selector')
-
+    parser.add_argument(   '--erase',"-e",
+                                dest = 'erase',
+                                default = "none",
+                                action = 'store_true',
+                                help = 'deletes original files')
     return parser.parse_args()
 
 args = argument()
@@ -25,6 +29,7 @@ args = argument()
 from instruments import lovbio_float
 import datetime
 import numpy as np
+import os
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -80,6 +85,11 @@ for iFile in range(nFiles):
 
 np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s")
 
+if args.erase:
+    for filename in REMOVING_LIST:
+        command = "rm -f  " + filename
+        print command
+        os.system(command)
 
 
     

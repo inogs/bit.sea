@@ -11,7 +11,7 @@ from utilities.ftp_utilities import list_files, download_file
 from utilities.files_and_dirs import ensure_dir
 
 
-ftp_url = 'cmems-oc.isac.cnr.it'
+ftp_url = 'nrt.cmems-du.eu'
 
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'

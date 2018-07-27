@@ -11,6 +11,7 @@ from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from basins.region import Rectangle
+import os
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 

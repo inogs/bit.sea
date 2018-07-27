@@ -1,5 +1,5 @@
 
-export MASKFILE=/pico/scratch/userexternal/lmariott/FDA_all2015_newstd_3days/wrkdir/MODEL/meshmask.nc
+export MASKFILE=/marconi_scratch/userexternal/ateruzzi/DA_FLOAT_SAT/RUN_FLOAT_2015_01/wrkdir/MODEL/meshmask.nc
 
 LOC=OUTPUT
 mkdir -p $LOC/Dens_N1p $LOC/Dens_N3n $LOC/Dens_chl $LOC/validation_tables/

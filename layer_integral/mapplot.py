@@ -49,13 +49,13 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         ax.set_position([0.08, 0.13, 0.78, 0.78])
     clim = map_dict['clim']
     actualpos = ax.get_position()
+    cmap=pl.get_cmap(colormap,ncolors)
 
     if not(mask is None):
         lon_min = mask.xlevels.min()
         lon_max = mask.xlevels.max()
         lat_min = mask.ylevels.min()
         lat_max = mask.ylevels.max()
-        cmap=pl.get_cmap(colormap,ncolors)
         im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
     else:
         im = ax.imshow(map_dict['data'], cmap=cmap)

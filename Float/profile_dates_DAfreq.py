@@ -4,14 +4,36 @@ from instruments.lovbio_float import FloatSelector
 from instruments.lovbio_float import get_wmo_list
 from instruments.lovbio_float import filter_by_wmo
 from instruments.var_conversions import LOVFLOATVARS
+import argparse
 import basins.OGS as OGS
 import commons.genUserDateList as DL
 import datetime
 import numpy as np
 
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    requires frequency of float DA
+    ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
-DAfreq = 1 # days
+    parser.add_argument(   '--dafreq',"-f",
+                                type = str,
+                                required = True,
+                                help = 'frequency for float DA')
+
+    parser.add_argument(   '--varda',"-v",
+                                type = str,
+                                required = True,
+                                help = 'variable (model name) for float DA')
+
+    return parser.parse_args()
+
+args = argument()
+
+
+
+DAfreq = np.int(args.dafreq) # days
+varMODEL = args.varda
 
 deltatimeDA = datetime.timedelta(DAfreq)
 
@@ -19,7 +41,7 @@ DATESTART = '20141231'
 DATEEND = '20160101'
 
 
-var = LOVFLOATVARS['P_l'] #'N3n' 'O2o'
+var = LOVFLOATVARS[varMODEL] #'N3n' 'O2o'
 
 read_adjusted = {
     LOVFLOATVARS['P_l']: True,

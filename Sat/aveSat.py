@@ -93,19 +93,19 @@ for req in TIME_reqs[rank::nranks]:
     outfile = req.string + suffix
     outpathfile = OUTDIR + outfile
 
+    ii, w = TLCheck.select(req)
+    nFiles = len(ii)
+
     if os.path.exists(outpathfile):
         outdates = DIRDATES + req.string + 'weekdates.txt'
         weekdates = np.loadtxt(outdates,dtype=str)
         nDates = len(weekdates)
     
-    ii, w = TLCheck.select(req)
-    nFiles = len(ii)
-
-    if nFiles>nDates:
-        print 'Not skipping ' + req.string
-    else:
-        conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
-        if conditionToSkip: continue
+        if nFiles>nDates:
+            print 'Not skipping ' + req.string
+        else:
+            conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
+            if conditionToSkip: continue
 
     print outfile
     dateweek = []

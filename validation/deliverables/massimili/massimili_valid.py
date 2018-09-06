@@ -17,15 +17,13 @@ def argument():
 args = argument()
 
 import numpy as np
-import os
-from profiler import *
+from profiler import MassimiliReader, Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
 from commons.mask import Mask
 import basins.V2 as OGS
 from instruments.var_conversions import MASSIMILIVARS as NUTRVARS
-from static.Massimili_reader import MassimiliReader
 from commons.utils import addsep
 from commons.layer import Layer
-from instruments.matchup_manager import Matchup_Manager
+
 from commons.utils import writetable
 
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)

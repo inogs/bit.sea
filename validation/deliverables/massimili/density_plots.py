@@ -36,14 +36,13 @@ args = argument()
 
 
 import os
-from profiler import *
+from profiler import Matchup_Manager, MassimiliReader, ALL_PROFILES,TL, BASEDIR,T_INT
 from commons.mask import Mask
 import basins.V2 as OGS
 from instruments.var_conversions import MASSIMILIVARS as NUTRVARS
-from static.Massimili_reader import MassimiliReader
 from commons.utils import addsep
 
-from instruments.matchup_manager import Matchup_Manager
+
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N=MassimiliReader()
 

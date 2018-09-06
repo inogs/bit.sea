@@ -101,3 +101,17 @@ def find_NITRICL(Profile,Pres):
             if (p >= 2):
 		return Pres[ip]
 
+def find_NITRICL_dz(Profile,Pres):
+#        for ip, p in enumerate(Profile):
+#         if ( Pres[ip] > 40 ):
+#            dn = np.diff(p)/np.diff(Pres)
+         dN = np.diff(Profile)/np.diff(Pres)
+         for ip, p in enumerate(dN):
+          if ( Pres[ip] > 40 ):
+            if (p >= 0.1):
+                return Pres[ip]
+
+def find_NITRICL_dz_max(Profile,Pres):
+         dN = np.diff(Profile)/np.diff(Pres)
+         ip = dN.argmax()
+         return Pres[ip]    

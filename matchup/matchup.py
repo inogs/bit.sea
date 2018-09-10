@@ -31,6 +31,15 @@ class ProfilesMatchup(matchup):
             self.Lengths = [len(Model)]
 
     def subset(self,layer):
+        '''
+        Subset using a layer
+
+        Argument:
+        *  layer * Layer object
+
+        Returns:
+        * P * ProfilesMatchup object, where is  layer.top <= P.Depth <= layer.bottom
+        '''
         if self.number() ==0:
             return self
         ii = (self.Depth <= layer.bottom) & (self.Depth >= layer.top)
@@ -40,6 +49,15 @@ class ProfilesMatchup(matchup):
         return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def limmaxref(self,value):
+        '''
+        Subset about Ref data
+
+        Argument:
+        *  value * float, maximum value for Ref
+
+        Returns:
+        * P * ProfilesMatchup object, where is P.Ref <= value
+        '''
         if self.number() ==0:
             return self
         ii = (self.Ref <= value)
@@ -49,6 +67,15 @@ class ProfilesMatchup(matchup):
         return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def limminmodel(self,value):
+        '''
+        Subset about Model data
+
+        Argument:
+        *  value * float, minimum value for Model
+
+        Returns:
+        * P * ProfilesMatchup object, where is P.Model >= value
+        '''
         if self.number() ==0:
             return self
         ii = (self.Model >= value)
@@ -58,6 +85,13 @@ class ProfilesMatchup(matchup):
         return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
 
     def extend(self,fm):
+        '''
+        Extends itself without returning anything.
+
+        Argument:
+        * fm * a ProfileMatchup or ProfilseMatchup object
+
+        '''
         lenfm = fm.Model.size
         fmLon,fmLat,fmTime = fm.localizationArrays()
 

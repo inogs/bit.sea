@@ -4,7 +4,7 @@ from basins.region import Rectangle
 from DatasetExtractor import DatasetExtractor
 
 
-class Maredat_hplc_reader():
+class Maredat_reader():
     
     
     
@@ -12,7 +12,7 @@ class Maredat_hplc_reader():
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Maredat"
+        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Maredat/Maredat.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     var= 'Chl_a';
     TI = TimeInterval('2000','2001','%Y')
     Reg= Rectangle(0,20,30,46)
-    N = Maredat_hplc_reader()
+    N = Maredat_reader()
     ProfileLIST = N.Selector('Chl_a', TI, Reg)
     
     

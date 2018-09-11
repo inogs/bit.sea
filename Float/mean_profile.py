@@ -3,18 +3,24 @@ from commons.Timelist import TimeList, TimeInterval
 from basins import V2 as OGS
 import numpy as np
 
-DATESTART = '20150101-00:00:00'
-DATE__END = '20150201-00:00:00'
 
-TI = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
-z= np.arange(0,200,10)
+z= np.arange(0,150,10)
 N = Float_opt_reader()
 nLev = len(z)
 var='chl'
-ProfileList = N.Selector('chl',TI,OGS.ion)
 
 
 def mean_profile(ProfileList, var, depth):
+    '''
+    Calculates the mean profile of Profilelist
+    Arguments:
+    * ProfileList * a list of Profile Objects
+    * var         * string, the var name
+    * depth       * numpy array, the depth of the output
+
+    Returns:
+    * MEAN * numpy array corresponding to depth where profiles of measurements are interpolated
+    '''
     nProfiles = len(ProfileList) 
     nLev = len(z)
     
@@ -32,23 +38,30 @@ def mean_profile(ProfileList, var, depth):
     return MEAN
 
 
+if __name__=="__main__":
+    TI = TimeInterval("20130501","20140501", '%Y%m%d')
+    INPUTDIR="/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_16/wrkdir/MODEL/AVE_FREQ_2/"
+    TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", filtervar="N1p")
+    nFrames = TL.nTimes
+    REQS=TL.getOwnList()
+    HOV_MATRIX = np.zeros((nFrames,nLev), np.float32)*np.nan
 
-TI = TimeInterval("20130101","20160101", '%Y%m%d')
-INPUTDIR="/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_16/wrkdir/MODEL/AVE_FREQ_2/"
-TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", filtervar="N1p")
-nFrames = TL.nTimes
-REQS=TL.getOwnList()
-HOV_MATRIX = np.zeros((nFrames,nLev), np.float32)*np.nan
+    for iFrame in range(nFrames):
+        req=REQS[iFrame]
+        print req
+        ProfileList = N.Selector(var, req.time_interval, OGS.ion)
+        print len(ProfileList), "profiles"
+        HOV_MATRIX[iFrame,:] = mean_profile(ProfileList, var, z)
 
-for iFrame in range(nFrames):
-    req=REQS[iFrame]
-    print req
-    ProfileList = N.Selector(var, req.time_interval, OGS.ion)
-    HOV_MATRIX[iFrame,:] = mean_profile(ProfileList, var, z)
 
-import pylab as pl
-fig, ax = pl.subplots()
-quadmesh = ax.pcolormesh(TL.Timelist, z, HOV_MATRIX,shading='gouraud')
+
+    import pylab as pl
+    import numpy.ma as ma
+    Zm = ma.masked_where(np.isnan(HOV_MATRIX),HOV_MATRIX)
+
+    fig, ax = pl.subplots()
+    #xs,ys = np.meshgrid(TL.Timelist, z)
+    quadmesh = ax.pcolormesh(TL.Timelist, z, Zm.T, shading='flat')
 
 
 

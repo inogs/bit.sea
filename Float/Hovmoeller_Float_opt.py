@@ -11,22 +11,28 @@ nLev = len(z)
 var='chl'
 
 
+def get_Hovmoeller(z, TL, region, Reader_Object):
+
+    nFrames = TL.nTimes
+    REQS=TL.getOwnList()
+    HOV_MATRIX = np.zeros((nFrames,nLev), np.float32)*np.nan
+
+    for iFrame in range(nFrames):
+        req=REQS[iFrame]
+        print req
+        ProfileList = Reader_Object.Selector(var, req.time_interval, region)
+        print len(ProfileList), "profiles"
+        HOV_MATRIX[iFrame,:] = mean_profile(ProfileList, var, z)
+    return HOV_MATRIX
 
 
 TI = TimeInterval("20130501","20140501", '%Y%m%d')
 INPUTDIR="/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_16/wrkdir/MODEL/AVE_FREQ_2/"
 TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", filtervar="N1p")
-nFrames = TL.nTimes
-REQS=TL.getOwnList()
-HOV_MATRIX = np.zeros((nFrames,nLev), np.float32)*np.nan
 
-for iFrame in range(nFrames):
-    req=REQS[iFrame]
-    print req
-    ProfileList = N.Selector(var, req.time_interval, OGS.ion)
-    print len(ProfileList), "profiles"
-    HOV_MATRIX[iFrame,:] = mean_profile(ProfileList, var, z)
 
+
+HOV_MATRIX = get_Hovmoeller(z, TL, OGS.ion, N)
 
 
 import pylab as pl

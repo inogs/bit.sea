@@ -36,7 +36,7 @@ TL = TimeList(monthly)
 
 
 
-HOV_MATRIX = get_Hovmoeller(z, TL, OGS.ion, N)
+HOV_MATRIX = get_Hovmoeller(z, var, TL, OGS.ion, N)
 
 
 import pylab as pl

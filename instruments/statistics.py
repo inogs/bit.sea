@@ -11,7 +11,7 @@ def mean_profile(ProfileList, var, depth):
     * MEAN * numpy array corresponding to depth where profiles of measurements are interpolated
     '''
     nProfiles = len(ProfileList) 
-    nLev = len(z)
+    nLev = len(depth)
     
     M = np.zeros((nProfiles, nLev), np.float32)*np.nan
     MEAN = np.zeros((nLev,),np.float32) * np.nan

@@ -199,6 +199,18 @@ class Mask(object):
         Returns a 2d array of integers
         '''
         return self._mask.sum(axis=0)
+    def bathymetry(self):
+        '''
+        Calculates the bathymetry used by the model 
+        It does not not takes in account e3t
+
+        Returns:
+        * bathy * a 2d numpy array of floats
+        '''
+        Cells = self.bathymetry_in_cells()
+        zlevels =np.concatenate((np.array([0]) , TheMask.zlevels))
+        bathy = zlevels[Cells]
+        return bathy
 
     def cut_at_level(self,index):
         '''

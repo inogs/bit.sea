@@ -208,7 +208,7 @@ class Mask(object):
         * bathy * a 2d numpy array of floats
         '''
         Cells = self.bathymetry_in_cells()
-        zlevels =np.concatenate((np.array([0]) , TheMask.zlevels))
+        zlevels =np.concatenate((np.array([0]) , self.zlevels))
         bathy = zlevels[Cells]
         return bathy
 

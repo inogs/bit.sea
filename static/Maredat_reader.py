@@ -24,7 +24,7 @@ class Maredat_reader():
 
         var can be one of these:
          - Chl_a
-         - Tot_Chl_a
+         - tot_Chl_a
 
 
          Cruisename can be one of these
@@ -46,14 +46,14 @@ class Maredat_reader():
 
         can be one of these:
          - Chl_a
-         - Tot_Chl_a
+         - tot_Chl_a
 
 
          if var is None, no selection is done about variable
          '''
         if var is None:
             Profilelist=list()
-            for myvar in ['Chl_a','Tot_Chl_a']:
+            for myvar in ['Chl_a','tot_Chl_a']:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
                     if not p in Profilelist: Profilelist.append(p)

@@ -22,6 +22,7 @@ def mean_profile(ProfileList, var, depth):
     for iLev in range(nLev):
         level= M[:,iLev]
         good = ~np.isnan(level)
-        if good.sum() > 2:
+        if good.sum() > 0:
             MEAN[iLev] = level[good].mean()
     return MEAN
+

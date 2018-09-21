@@ -260,10 +260,23 @@ class Mask(object):
         x = X[:-1,0]
         y = X[:-1,1]
         return x,y
+    def is_regular(self):
+        '''
+        Returns True if a mesh is regular, False if is not.
+        Regular means that (xlevels, ylevels) can be obtained by np.meshgrid(xlevels[k,:], ylevels[:,k])
+        '''
+        x1d_0 = self._xlevels[0,:]
+        y1d_0 = self._ylevels[:,0]
+        X2D,Y2D = np.meshgrid(x1d_0, y1d_0)
+        dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
+        regular = dist == 0
+        return regular
 
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
-    TheMask = Mask('/pico/scratch/userexternal/ateruzzi/DA_COAST_15/wrkdir/MODEL/meshmask.nc')
+    TheMask = Mask('/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_843_S.nc')
+    print TheMask.is_regular()
+
     lon = 18.1398
     lat = 37.9585
     i, j = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2)

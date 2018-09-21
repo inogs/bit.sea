@@ -46,38 +46,48 @@ class SubMask(Mask):
         # Build the prism mask
         prism = np.zeros_like(self._mask)
         jpk,jpj,jpi = self.shape
-        if isinstance(basin.region, Rectangle): #faster algorithm for rectangle
-            rect = basin.region
-            ii=(self._xlevels>=rect.lonmin) & (self._xlevels <=rect.lonmax) & (self._ylevels>=rect.latmin) & (self._ylevels <=rect.latmax)
-            for jk in range(jpk):
-                prism[jk,:,:] = ii
-        else: # algorithm for generic basin
-            if hasattr(basin.region,'border_longitudes'): #optimized
-                sbmask = np.zeros((jpj,jpi),np.bool)
-                lonmin=min(basin.region.border_longitudes) -0.1
-                lonmax=max(basin.region.border_longitudes) +0.1
-                latmin=min(basin.region.border_latitudes)  -0.1
-                latmax=max(basin.region.border_latitudes)  +0.1
 
-                lonmin_ind = np.abs(self._xlevels[0,:]-lonmin).argmin()
-                lonmax_ind = np.abs(self._xlevels[0,:]-lonmax).argmin()
-                latmin_ind = np.abs(self._ylevels[:,0]-latmin).argmin()
-                latmax_ind = np.abs(self._ylevels[:,0]-latmax).argmin()
+        if maskobject.is_regular():
+            if isinstance(basin.region, Rectangle): #faster algorithm for rectangle
+                rect = basin.region
+                sbmask=(self._xlevels>=rect.lonmin) & (self._xlevels <=rect.lonmax) & (self._ylevels>=rect.latmin) & (self._ylevels <=rect.latmax)
+            else: # algorithm for generic basin
+                if  hasattr(basin.region,'border_longitudes'): #optimized
+                    sbmask = np.zeros((jpj,jpi),np.bool)
+                    lonmin=min(basin.region.border_longitudes) -0.1
+                    lonmax=max(basin.region.border_longitudes) +0.1
+                    latmin=min(basin.region.border_latitudes)  -0.1
+                    latmax=max(basin.region.border_latitudes)  +0.1
 
-                for x in range(lonmin_ind,lonmax_ind):
-                    for y in range(latmin_ind,latmax_ind):
-                        lon,lat = maskobject.convert_i_j_to_lon_lat(x,y)
-                        sbmask[y,x] = basin.is_inside(lon,lat)
-                for jk in range(jpk):
-                    prism[jk,:,:] = sbmask
-            else:# original
-                for x in range(prism.shape[2]):
-                    for y in range(prism.shape[1]):
-                        lon,lat = maskobject.convert_i_j_to_lon_lat(x,y)
-                        prism[:,y,x] = basin.is_inside(lon,lat)
+                    lonmin_ind = np.abs(self._xlevels[0,:]-lonmin).argmin()
+                    lonmax_ind = np.abs(self._xlevels[0,:]-lonmax).argmin()
+                    latmin_ind = np.abs(self._ylevels[:,0]-latmin).argmin()
+                    latmax_ind = np.abs(self._ylevels[:,0]-latmax).argmin()
+
+                    for x in range(lonmin_ind,lonmax_ind):
+                        for y in range(latmin_ind,latmax_ind):
+                            lon,lat = maskobject.convert_i_j_to_lon_lat(x,y)
+                            sbmask[y,x] = basin.is_inside(lon,lat)
+                else:
+                    sbmask=self.standard_method(maskobject,basin)
+
         # submask = original mask * prism mask
+        else:
+            sbmask=self.standard_method(maskobject,basin)
 
+        for jk in range(jpk):
+            prism[jk,:,:] = sbmask
         self._mask = self._mask * prism
+
+    def standard_method(self, maskobject, basin):
+        _,jpj,jpi = self.shape
+        sbmask = np.zeros((jpj,jpi),np.bool)
+        for i in range(jpi):
+            for j in range(jpj):
+                lon,lat = maskobject.convert_i_j_to_lon_lat(i,j)
+                sbmask[j,i] = basin.is_inside(lon,lat)
+        return sbmask
+
 
     def save_as_netcdf(self, filename, descr=None, maskvarname='mask'):
         """Saves the submask data to a NetCDF file.
@@ -211,16 +221,21 @@ class SubMask(Mask):
 if __name__ == "__main__":
     # submask.nc generator using no-repetition technique
     # each cell can belong to an only subbasin
-    from commons.mask import Mask
-    TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+
+    TheMask=Mask('/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_872.nc')
     from basins import V2
-    from commons.submask import SubMask
-    import numpy as np
 
     already_assigned=np.zeros(TheMask.shape,dtype=np.bool)
 
     for sub in V2.Pred.basin_list:
         S=SubMask(sub,maskobject=TheMask)
+#         print sub.name
+#         fig,ax = mapplot({'data':S.mask[0,:,:], 'clim':[0,1]}, mask=TheMask)
+#         ax.set_xlim([-9, 36])
+#         ax.set_ylim([30, 46])        
+#         outfile=sub.name + ".png"
+#         fig.savefig(outfile)
+#         continue
         S.mask[already_assigned] = False
         S.save_as_netcdf('submask.nc',maskvarname=sub.name)
         already_assigned[S.mask] = True

@@ -11,7 +11,11 @@ from commons.mask import Mask
 from timeseries.plot import read_pickle_file
 import os
 
-BFMv5_dict={'Ac':'ALK', 'ppn': 'netPPYc', 'ppg':'ruPPYc'}
+BFMv5_dict={     'Ac':'ALK',
+                'ppn': 'netPPYc',
+                'ppg':'ruPPYc',
+                'ppb':'ruPBAc',
+      'CaCO3flux_dic':'rcalCARc' }
 
 try:
     from mpi4py import MPI

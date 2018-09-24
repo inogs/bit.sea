@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Interpolates from 1km mesh to output mesh.
+    Interpolates from a fine mesh to a coarser output mesh.
     Works in parallel
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -17,18 +17,22 @@ def argument():
                                 required = True,
                                 help = ''' E.g. dir with files on 1/24 mesh (interpolated)'''
                                 )
-
+    parser.add_argument(   '--inmesh',
+                                type = str,
+                                required = True,
+                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24','Mesh4'],
+                                help = ''' Name of the mesh of the input sat file'''
+                                )
     parser.add_argument(   '--outmesh', '-m',
                                 type = str,
                                 required = True,
                                 choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24','Mesh4'],
-                                help = ''' Name of the mesh of sat ORIG.'''
+                                help = ''' Name of the mesh of the output sat files'''
                                 )
-
     parser.add_argument(   '--maskfile', '-M',
                                 type = str,
                                 required = True,
-                                help = ''' Name of the mesh of model and used to dump checked data.'''
+                                help = ''' Path of the meshmask corresponding to output sat files'''
                                 )
 
     return parser.parse_args()
@@ -45,7 +49,7 @@ from postproc import masks
 from commons.utils import addsep
 import os
 maskOut = getattr(masks,args.outmesh)
-
+maskIn  = getattr(masks,args.inmesh)
 
 
 try:
@@ -64,11 +68,11 @@ TheMask = Mask(args.maskfile)
 x = maskOut.lon
 y = maskOut.lat
 
-x1km = Sat.OneKmMesh.lon
-y1km = Sat.OneKmMesh.lat
+xOrig = maskIn.lon
+yOrig = maskIn.lat
 
-I_START, I_END = interp2d.array_of_indices_for_slicing(x, x1km)
-J_START, J_END = interp2d.array_of_indices_for_slicing(y, y1km)
+I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
+J_START, J_END = interp2d.array_of_indices_for_slicing(y, xOrig)
 
 INPUTDIR=addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outputdir)

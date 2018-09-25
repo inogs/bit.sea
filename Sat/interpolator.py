@@ -72,7 +72,7 @@ xOrig = maskIn.lon
 yOrig = maskIn.lat
 
 I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
-J_START, J_END = interp2d.array_of_indices_for_slicing(y, xOrig)
+J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
 
 INPUTDIR=addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outputdir)

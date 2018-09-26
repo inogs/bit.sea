@@ -31,7 +31,7 @@ Mesh24.lon = np.linspace(-8.875,36.291668,1085,endpoint=True)
 Mesh24.lat = np.linspace(30.1875,45.979168,380,endpoint=True)
 
 Mesh4 = mesh(182,65)
-Mesh4.lon = np.linspace(-8.75  ,36.25  , 182,endpoint=True)
+Mesh4.lon = np.linspace(-8.75  ,36.5  , 182,endpoint=True)
 Mesh4.lat = np.linspace(30.1875,46.1875,  65,endpoint=True)
 
 #approx values, because they have irregulare spacing

@@ -3,7 +3,11 @@ import scipy.io.netcdf as NC
 import numpy as np
 import netCDF4
 
-
+def mean(array):
+    return array.mean()
+def logmean(array):
+    LOGmean= np.log(array).mean()
+    return np.exp(LOGmean)
 
 NativeMesh = masks.SatOrigMesh
 OneKmMesh  = masks.SAT1km_mesh

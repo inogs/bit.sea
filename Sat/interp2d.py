@@ -1,4 +1,5 @@
 import numpy as np
+from Sat import SatManager as Sat
 
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
@@ -7,7 +8,7 @@ def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
             MinIndex=i
             break
     for i in range(MinIndex,n):
-        if array[i]> MaxValue:
+        if array[i]>= MaxValue:
             MaxIndex=i
             break
         MaxIndex = i
@@ -44,13 +45,25 @@ def array_of_indices_for_slicing(xcoarse, xfine):
     return I_START, I_END
 
 
-def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fillValue=-999.0):
+def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fillValue=-999.0, min_cov=0.0, ave_func=Sat.mean):
     '''
+    Interpolates data from a fine mesh to a coarser one.
     
+    Arguments:
+    * Mfine   * the 2d matrix to interpolate
+    * Maskout * mask object of Coarse mask, to get tmask
+    * I_START, I_END, J_START, J_END * array of integers defining box
+    * min_cov  * float, between 0 and 1, minimum of accepted coverage.
+    * ave_func * a function to get an average
+
+    Returns:
+    * OUT *  2d matrix interpolated on Maskout
+    *  NP *  Number of used points, 2d matrix of integers
     '''
-    jpk, jpj, jpi = Maskout.shape
+    _, jpj, jpi = Maskout.shape
     tmask = Maskout.mask_at_level(0)
     OUT = np.ones((jpj,jpi),np.float32)*fillValue
+    NP = np.ones((jpj,jpi),np.int32)
     
     for ji in range(jpi):
         istart = I_START[ji]
@@ -63,9 +76,13 @@ def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fi
             if tmask[jj,ji]:
                 localcell = Mfine[jstart:j_end, istart:i_end]
                 goods = localcell>0
+                nPoints = goods.sum()
+                NP[jj,ji] = nPoints
                 if np.any(goods):
-                    OUT[jj,ji] = localcell[goods].mean()
-    return OUT
+                    coverage = float(nPoints)/localcell.size
+                    if (coverage >= min_cov):
+                        OUT[jj,ji] = ave_func(localcell[goods])
+    return OUT, NP
 
 
 if __name__== "__main__":

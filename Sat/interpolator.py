@@ -48,6 +48,7 @@ from commons.mask import Mask
 from postproc import masks
 from commons.utils import addsep
 import os
+from commons import netcdf3
 maskOut = getattr(masks,args.outmesh)
 maskIn  = getattr(masks,args.inmesh)
 
@@ -96,7 +97,9 @@ for filename in TL.filelist[rank::nranks]:
     if exit_condition: 
         continue
     Mfine = Sat.readfromfile(filename)
-    Mout  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END)
+    Mout, usedPoints  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END, min_cov=0.0, ave_func=Sat.mean)
     Sat.dumpGenericNativefile(outfile, Mout, 'CHL', maskOut)
+    netcdf3.write_2d_file(usedPoints, 'Points', outfile, Mout)
 
     print "\tfile ", counter, " of ", MySize, " done by rank ", rank
+

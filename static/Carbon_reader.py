@@ -10,7 +10,7 @@ class CarbonReader(DatasetExtractor):
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys.nc"
+        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys_RIC.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
         # DATA ELIMINATION in order to not duplicate values with nutrients dataset
@@ -43,6 +43,10 @@ class CarbonReader(DatasetExtractor):
          - sigma_t
          - pH25_sws
          - pH25_T
+         - pCO2
+         - PHt_{T-Press-ins}
+         - PHsws_{Tins-0dB}
+         - DICric
 
          Cruisename can be one of these
             METEOR   METEOR51   METEOR95
@@ -85,6 +89,10 @@ class CarbonReader(DatasetExtractor):
          - sigma_t
          - pH25_sws
          - pH25_T
+         - pCO2
+         - PHt_{T-Press-ins}
+         - PHsws_{Tins-0dB}
+         - DICric
          '''
 
         if var is None:
@@ -103,7 +111,7 @@ if __name__ == '__main__':
     TI = TimeInterval('19900101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     C = CarbonReader()
-    ProfileLIST = C.Selector('nitrate', TI, Reg)
+    ProfileLIST = C.Selector('PHt_{T-Press-ins}', TI, Reg)
     p = ProfileLIST[0]
     a = p.read('nitrate')
     print a

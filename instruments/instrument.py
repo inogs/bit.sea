@@ -30,6 +30,9 @@ class ContainerProfile(Profile):
 
     def read(self,var,read_adjusted=True):
         '''
+        Here all arguments are unused. They are defined just to be compliant with other Profile objects
+        (such biofloats ) where arguments are meaningful.
+
         Return pres, profile, Qc
         Qc is a dummy np.array of 2
         '''

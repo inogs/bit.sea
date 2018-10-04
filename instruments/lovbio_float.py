@@ -347,7 +347,8 @@ def FloatSelector(var, T, region):
     Arguments:
        * var *    is a string indicating variable, 
                   if var is None, no selection is done about variable
-       * T   *    is a TimeInterval instance
+       * T   *    is a TimeInterval instance or a timerequestors.Clim_season instance
+                  or whatever object having a contains() method working as the TimeInteval one does.
        * region * is an instance of Region or its derived (Polygon, Basin, ...)
        
     Returns:

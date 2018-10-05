@@ -11,6 +11,12 @@ C=CarbonReader()
 
 def DatasetInfo(modelvarname):
     '''
+    1) Helps the user to navigate inside static dataset,
+    because some variables is in Nutrients one, some other
+    are in the Carbon one.
+    2) Defines the official name of variables to be used in deliverables
+       statistics.
+
     Argument:
     * modelvarname * string, like 'N1p'
     Returns:
@@ -26,7 +32,13 @@ def DatasetInfo(modelvarname):
     if modelvarname in ['O3c', 'DIC'] :
         var ='DIC'
         dataset = C
-    if modelvarname not in ['N1p','N3n','O2o','N5s','O3h', 'Ac','O3c', 'DIC' ]:
+    if modelvarname in ['pH', 'PH'] :
+        var='PHt_{T-Press-ins}'
+        dataset = C
+    if modelvarname == 'pCO2' :
+        var='pCO2'
+        dataset = C
+    if modelvarname not in ['N1p','N3n','O2o','N5s','O3h', 'Ac','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
         raise ValueError("variable not in static dataset ")
     return var, dataset
 

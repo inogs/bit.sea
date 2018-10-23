@@ -36,10 +36,11 @@ class Mask(object):
             else:
                 raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
             if dzvarname in dset.variables:
-                self._dz = np.array(dset.variables[dzvarname][0,:,0,0])
+                self.e3t =  np.array(dset.variables[dzvarname][0,:,:,:])
+                #self._dz = np.array(dset.variables[dzvarname][0,:,0,0])
             else:
                 if 'e3t_0' in dset.variables:
-                    self._dz = np.array(dset.variables['e3t_0'][0,:,0,0])
+                    self.e3t = np.array(dset.variables['e3t_0'][0,:,:,:])
                 else:
                     raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
@@ -56,9 +57,15 @@ class Mask(object):
                     self._xlevels = np.array(dset.variables[xlevelsmatvar][0,0,:,:])
             else:
                 raise ValueError("xlevelsmatvar '%s' not found" % (str(xlevelsmatvar),))
-            e1t = np.array(dset.variables['e1t'][0,0,:,:]).astype(np.float32)
-            e2t = np.array(dset.variables['e2t'][0,0,:,:]).astype(np.float32)
-            self._area = e1t*e2t
+            m = dset.variables['e1t']
+            if len(m.shape) == 4:
+                self.e1t = np.array(dset.variables['e1t'][0,0,:,:]).astype(np.float32)
+                self.e2t = np.array(dset.variables['e2t'][0,0,:,:]).astype(np.float32)
+            else:
+                self.e1t = np.array(dset.variables['e1t'][0,:,:]).astype(np.float32)
+                self.e2t = np.array(dset.variables['e2t'][0,:,:]).astype(np.float32)
+            self._area = self.e1t*self.e2t
+            self._dz = self.e3t[:,0,0]
         except:
             raise
 
@@ -199,7 +206,7 @@ class Mask(object):
         Returns a 2d array of integers
         '''
         return self._mask.sum(axis=0)
-    def bathymetry(self):
+    def rough_bathymetry(self):
         '''
         Calculates the bathymetry used by the model 
         It does not not takes in account e3t
@@ -211,6 +218,28 @@ class Mask(object):
         zlevels =np.concatenate((np.array([0]) , self.zlevels))
         bathy = zlevels[Cells]
         return bathy
+
+    def bathymetry(self):
+        '''
+        Calculates the bathymetry used by the model
+        Best evalutation, since it takes in account e3t.
+
+        Returns:
+        * bathy * a 2d numpy array of floats
+        '''
+        if (self.e3t.shape !=self.shape ) :
+            print "Warning: e3t is not provided as 3D array in maskfile: Bathymetry will be calculated as function of tmask and zlevels "
+            return self.rough_bathymetry()
+
+        cells_bathy = self.bathymetry_in_cells()
+        _,jpj,jpi = self.shape
+        Bathy = np.ones((jpj,jpi),np.float32)*1.e+20
+        for ji in range(jpi):
+            for jj in range(jpj):
+                max_lev=cells_bathy[jj,ji]
+                if max_lev > 0:
+                    Bathy[jj,ji] = self.e3t[:max_lev,jj,ji].sum()
+        return Bathy
 
     def cut_at_level(self,index):
         '''

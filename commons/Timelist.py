@@ -23,7 +23,7 @@ def computeTimeWindow(freqString,currentDate):
 
 class TimeList():
 
-    def __init__(self,datelist):
+    def __init__(self,datelist,forceFrequency=None):
         '''
         TimeList object is created by providing a list of datetime objects
         (At least 2).
@@ -38,12 +38,15 @@ class TimeList():
         self.filelist     = None
         self.filtervar    = None
         self.inputFrequency = None
-        if (nTimes > 1 ) :
-            self.inputFrequency= self.__searchFrequency()
-            self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
+        if forceFrequency is not None:
+            self.inputFrequency = forceFrequency
+        else:
+            if (nTimes > 1 ) :
+                self.inputFrequency= self.__searchFrequency(forceFrequency=forceFrequency)
+                self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",hour=12):
+    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",hour=12,forceFrequency=None):
         '''
         Generates a TimeList object by reading a directory
 
@@ -53,6 +56,20 @@ class TimeList():
          - The date of in the file name can be considered as centered in their period
         The generated datetime list has all the files concerning the period indicated in the timeinterval.
         Some of these files can have the centered date out of that period.
+
+        Arguments:
+        * timeinterval   * a TimeInterval object
+        * inputdir       * string, directory to where files are
+        * searchstring   * string, used to filter vars
+        * filtervar      * string, e.g. 'N1p'
+        * prefix         * string, the part of the filename before the date
+        * dateformat     * string
+        * hour           * integer
+        * forceFrequency * string, like 'daily','weekly','monthly'. The default is None.
+                           If set to None, the frequency is automatically calculated, else is forced to
+                           the string provided. This is useful when the timeseries has gaps and is not continue and automatic calculation
+                           can fail.
+
 
         Example:
 
@@ -93,7 +110,7 @@ class TimeList():
                 External_filelist.append(pathfile)
                 External_timelist.append(actualtime)
 
-        TimeListObj = TimeList(datetimelist)
+        TimeListObj = TimeList(datetimelist,forceFrequency=forceFrequency)
         filenamelist.sort()
         TimeListObj.timeinterval = timeinterval
         TimeListObj.inputdir     = inputdir

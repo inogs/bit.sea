@@ -42,7 +42,7 @@ class TimeList():
             self.inputFrequency = forceFrequency
         else:
             if (nTimes > 1 ) :
-                self.inputFrequency= self.__searchFrequency(forceFrequency=forceFrequency)
+                self.inputFrequency= self.__searchFrequency()
                 self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod

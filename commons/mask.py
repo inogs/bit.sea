@@ -117,18 +117,29 @@ class Mask(object):
             raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min_lon, max_lon))
         if lat > max_lat or lat < min_lat:
             raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min_lat, max_lat))
+
         #Longitude distances matrix
         d_lon = np.array(self._xlevels - lon)
         d_lon *= d_lon
         #Latitude distances matrix
         d_lat = np.array(self._ylevels - lat)
         d_lat *= d_lat
-        #Compute minimum indices
-        min_d_lon = d_lon.min()
-        min_d_lat = d_lat.min()
-        lon_indices = np.where(d_lon == min_d_lon)
-        lat_indices = np.where(d_lat == min_d_lat)
-        return lon_indices[1][0], lat_indices[0][0]
+
+        if self.is_regular():
+            #Compute minimum indices
+            min_d_lon = d_lon.min()
+            min_d_lat = d_lat.min()
+            lon_index = np.where(d_lon == min_d_lon)[1][0]
+            lat_index = np.where(d_lat == min_d_lat)[0][0]
+        else:
+            dist= d_lon + d_lat
+            indlat, indlon =np.where(dist==dist.min())
+            lon_index=indlon[0]
+            lat_index=indlat[0]
+
+        return lon_index, lat_index
+
+
 
     def convert_lon_lat_wetpoint_indices(self, lon, lat, maxradius=2):
         """Converts longitude and latitude to the nearest water point indices on the mask with maximum distance limit

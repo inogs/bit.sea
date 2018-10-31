@@ -141,6 +141,8 @@ for iSub, sub in enumerate(basV2.P):
 # Figures 4.19
 Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST, LayerList)
 DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
+pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, LayerList)
+PH__clim, PH__std = get_climatology('pH' , SUBLIST, LayerList)
 
 VARLIST=['pCO2','DIC','Ac','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
@@ -188,9 +190,15 @@ for iSub, sub in enumerate(basV2.P):
     Ac__clim_std =Ac__std[ iSub,:]
     Dic_clim_mean=DIC_clim[iSub,:]
     Dic_clim_std =DIC_std[ iSub,:]
+    pCO2clim_mean=pCO2clim[iSub,:]
+    pCO2clim_std =pCO2std[ iSub,:]
+    PH__clim_mean=PH__clim[iSub,:]
+    PH__clim_std =PH__std[ iSub,:]
     
+    figure_generator.clim_profile_plotter(z_clim,pCO2clim_mean,pCO2clim_std, axes[0], axes[4])
     figure_generator.clim_profile_plotter(z_clim,Dic_clim_mean,Dic_clim_std, axes[1], axes[5])
     figure_generator.clim_profile_plotter(z_clim,Ac__clim_mean,Ac__clim_std, axes[2], axes[6])
+    figure_generator.clim_profile_plotter(z_clim,PH__clim_mean,PH__clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
     print outfile

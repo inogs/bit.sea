@@ -59,6 +59,8 @@ class TimeList():
 
         Arguments:
         * timeinterval   * a TimeInterval object
+                           if it's None, no selection of time will be perfomed, 
+                           all files in that directory will be taken in account.
         * inputdir       * string, directory to where files are
         * searchstring   * string, used to filter vars
         * filtervar      * string, e.g. 'N1p'
@@ -79,12 +81,13 @@ class TimeList():
         TL = TimeList.fromfilenames(Time_int, INPUTDIR,"ave*nc",filtervar="N1p")
 
         For Sat data
-        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"*nc", prefix='',dateformat='%Y%m%d')
+        TL = TimeList.fromfilenames(None, INPUTDIR,"*nc", prefix='',dateformat='%Y%m%d')
 
         For physical forcings
-        TL = TimeList.fromfilenames(Time_int, INPUTDIR,"T*.nc",prefix='T',dateformat='%Y%m%d')
+        TL = TimeList.fromfilenames(None  , INPUTDIR,"T*.nc",prefix='T',dateformat='%Y%m%d')
         '''
-
+        if timeinterval is None:
+            timeinterval=TimeInterval("1900","2200","%Y")
         IOname = IOnames.filenamer(prefix,dateformat)
         if not os.path.exists(inputdir):
             raise NameError("Not existing directory " + inputdir)

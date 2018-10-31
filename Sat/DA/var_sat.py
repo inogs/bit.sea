@@ -19,13 +19,11 @@ for month in range(1,13):
     req = timerequestors.Clim_month(month)
     ii,w = TL.select(req)
     filelist=[TL.filelist[k] for k in ii if TL.Timelist[k].month==month] # we consider strictly the month
-    
+
     chl2DT =np.zeros((jpj, jpi), np.float32)
     chl2D2T=np.zeros((jpj, jpi), np.float32)
     NPoints=np.zeros((jpj, jpi), np.int32)
     
-    i=363
-    j=260
     for filename in filelist:
         A = SatManager.readfromfile(filename)
         bad = np.isnan(A) | (A==-999)
@@ -35,7 +33,6 @@ for month in range(1,13):
         chl2DT += A
         chl2D2T += A**2
         NPoints += app
-        if not bad[j,i] : print A[j,i]
 
     noPoints=NPoints==0
     NPoints[noPoints] = 1 # just to divide
@@ -47,7 +44,7 @@ for month in range(1,13):
     var2D[noPoints] = -999.0
 
     NPoints[noPoints] = -999 # just to save on file
-    
+
     outfile_var= "%svar2Dsat.CCI.F10.2.%02d.nc"  %( OUTPUTDIR, month)
     outfile__np=       "%snp.CCI.F10.2.%02d.nc"  %( OUTPUTDIR, month)
     outfile_png=   "%sdevstd.CCI.F10.2.%02d.png" %( OUTPUTDIR, month)
@@ -59,4 +56,3 @@ for month in range(1,13):
     ax.set_title(req.longname())
     fig.savefig(outfile_png)
 
-    

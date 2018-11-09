@@ -129,36 +129,30 @@ class figure_generator():
         
                     
 ##### USER SETTINGS #######################################
+LOC="/marconi_work/OGS_dev_0/"
 
-PATH1 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_04/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH2 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH3 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_06/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH4 = '/marconi_scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/'
-PATH5 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/CFR_PREVIOUS_RUNS/RA16_COAST/STAT_PROFILES/"
-PATH6 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/CFR_PREVIOUS_RUNS/HC16/STAT_PROFILES/"
-PATH7 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_07/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH8 = "/marconi_work/OGS_dev_0/DEGRADATION_4_70/TEST_08/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 
-Mask_4=Mask("/marconi_work/OGS_dev_0/DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
-Mask16=Mask("/marconi_work/OGS_dev_0/DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
-Mask24=Mask("/marconi_work/OGS_dev_0/DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
-OUTDIR="/marconi_work/OGS_dev_0/DEGRADATION_4_70/POSTPROC/IMG/"
+PATH6 = LOC + "DEGRADATION_4_70/CFR_PREVIOUS_RUNS/HC16/STAT_PROFILES/"
+PATH8 = LOC + "DEGRADATION_4_70/TEST_08/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
+PATH14= LOC + "DEGRADATION_4_70/TEST_14/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
+PATH16= LOC + "DEGRADATION_4_70/TEST_16/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
+PATH17= LOC + "DEGRADATION_4_70/TEST_17/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
+
+Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
+Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
+Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
+OUTDIR= LOC + "DEGRADATION_4_70/POSTPROC/IMG/"
 
 LEVELS=[0,50,100,150] #m
 
-P1 = plot_container('HC16_4_bfmv2'    , "g"   , PATH1, Mask_4)
-P2 = plot_container('HC16_4_bfmv5_st' , "r"   , PATH2, Mask_4)
-P3 = plot_container('HC16_4_bfmv5_ogs', "k.-" , PATH3, Mask_4)
-P4 = plot_container('TRANS24'         , "m"   , PATH4, Mask24)
-P5 = plot_container('RA16'            , "y"   , PATH5, Mask16)
-P6 = plot_container('HC16'            , "c"   , PATH6, Mask16)
-P7 = plot_container('HC16_4_bfmv2_1999', "r"  , PATH7, Mask_4)
-P8 = plot_container('HC16_4_bfmv5_1999', "g"  , PATH8, Mask_4)
+P14= plot_container('HC16_4_BFMv2', "r:"   ,PATH14, Mask_4)
+P16= plot_container('HC16_4_bfmv5', "g"  , PATH16, Mask_4)
+P17= plot_container('HC16_4_bfmv5_day_night', "k"  , PATH16, Mask_4)
 
-PLOT_LIST=[P6,P7,P8] #[P1,P2,P3,P4,P5,P6 ]
+PLOT_LIST=[P14,P16,P17]
 
-VARLIST=["N1p", "N3n", "O2o", "P_l", "P_c", "DIC"]
-VARLIST=["Ac", "B1c", "Z_c", "P_p", "P_n", "N5s","CO2airflux"] #,"ppn"]
+VARLIST=["Ac","N1p", "N3n", "O2o", "P_l", "P_c", "DIC", "ppn", "P_n", "P_p", 'pH', "pCO2", "ppg", "ppb", "resPBAc", "CaCO3flux_dic"]
+VARLIST_only_v5=['exPPYcR1', 'exPPYcR2','exPPYcR3','exPPYcR6',"resPPYc"]
 
 ##################################################################
 

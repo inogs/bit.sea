@@ -36,7 +36,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','DIC'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','DIC','netPPYc'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -108,6 +108,7 @@ clon,clat = coastline.get()
 TheMask=Mask(args.maskfile)
 
 CONVERSION_DICT={
+     'netPPYc' : 365./1000,
          'ppn' : 365./1000,
          'O2o' : 1,
          'N1p' : 1,

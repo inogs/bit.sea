@@ -67,6 +67,15 @@ class Clim_month():
     def longname(self):
         a = datetime.datetime(2000,self.month,1)
         return a.strftime("Clim_%b")
+    def contains(self,time):
+        '''
+        Argument:
+        * time * : a datetime object
+        Returns:
+           True if time is inside every time interval of the month
+        '''
+        montlhy_req=Monthly_req(time.year, self.month)
+        return montlhy_req.time_interval.contains(time)
          
 
 class Clim_day():

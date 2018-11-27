@@ -1,3 +1,6 @@
+# module load mpi4py/1.3.1--intelmpi--2017--binary
+# srun -N 1 -n 15 -A IscrB_MED21BIO_1 --time=30:00  --mem=50gb --partition=gll_usr_prod --pty bash
+
 # Generates images (in parallel) to compare different runs,
 # using STAT_PROFILES directories
 
@@ -16,6 +19,13 @@ BFMv5_dict={     'Ac':'ALK',
                 'ppg':'ruPPYc',
                 'ppb':'ruPBAc',
       'CaCO3flux_dic':'rcalCARc' }
+
+BFMv2_dict={    'ALK':'Ac',
+            'netPPYc': 'ppn' ,
+           'netPPYc2': 'ppn' ,
+             'ruPPYc': 'ppg',
+             'ruPBAc':'ppb',
+           'rcalCARc':'CaCO3flux_dic' }
 
 try:
     from mpi4py import MPI
@@ -42,7 +52,10 @@ class plot_container():
             bfmv5_filename = self.path + BFMv5_dict[varname] + ".pkl"
             if (~os.path.exists(filename) & os.path.exists(bfmv5_filename)):
                 filename=bfmv5_filename
-
+        if varname in BFMv2_dict.keys():
+            bfmv2_filename = self.path + BFMv2_dict[varname] + ".pkl"
+            if (~os.path.exists(filename) & os.path.exists(bfmv2_filename)):
+                filename=bfmv2_filename
         data, TL = read_pickle_file(filename)
         self.timelist=TL.Timelist
         self.values=data

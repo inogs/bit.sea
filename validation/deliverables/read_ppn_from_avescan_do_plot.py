@@ -147,7 +147,6 @@ pl.rc('ytick', labelsize=12)
 leg = pl.gca().get_legend()
 ltext  = leg.get_texts()
 pl.setp(ltext,fontsize=12)
-pl.show(block=False)
 nomefig= FIGDIR + "Plot_0_200vert_integ_ppn_offshore_annual_timeserie.png"
 fig1.savefig(nomefig, dpi=fig1.dpi)
 
@@ -179,7 +178,6 @@ pl.rc('ytick', labelsize=10)
 leg = pl.gca().get_legend()
 ltext  = leg.get_texts()
 pl.setp(ltext,fontsize=12)
-pl.show(block=False)
 
 nomefig= FIGDIR + "Plot_0_200vert_integ_ppn_offshore_monthly_climatol.png"
 fig1.savefig(nomefig, dpi=fig1.dpi)

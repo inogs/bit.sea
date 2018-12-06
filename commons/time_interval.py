@@ -54,6 +54,14 @@ class TimeInterval():
     
     def isInside(self,T2):
         raise NotImplementedError
+
+    def length(self):
+        '''
+        Returns lengths of time interval in seconds
+        '''
+        theWindow = self.end_time - self.start_time
+        res       = float( theWindow.days*86400 + theWindow.seconds ) 
+        return res
     
     @staticmethod
     def fromdatetimes(timestart,time_end):

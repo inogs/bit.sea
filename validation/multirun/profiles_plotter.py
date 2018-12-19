@@ -85,7 +85,7 @@ class figure_generator():
         self.LEFT_SIDE_AXES=[]
         self.ax_p=None
 
-    def gen_structure(self, var, subname):
+    def gen_structure(self, var, subname,LEVELS):
         '''
         Generates a figure structure
         Arguments :
@@ -113,6 +113,11 @@ class figure_generator():
         title = "%s %s" %(var, subname)
         ax_p.set_title(title)
         ax_p.set_ylim([0, 1000])
+        y_ticklabels=[0,200,400,600,800,1000]
+        y_ticklabels.extend(LEVELS)
+        Y_TICK_LABELS=np.unique(y_ticklabels)
+        ax_p.set_yticks(Y_TICK_LABELS)
+        ax_p.grid()        
         ax_p.invert_yaxis()
         self.ax_p = ax_p
         
@@ -179,7 +184,7 @@ for var in VARLIST[rank::nranks] :
         print outfile
 
         FigureGenerator=figure_generator()
-        fig, axes= FigureGenerator.gen_structure(var, sub.name)
+        fig, axes= FigureGenerator.gen_structure(var, sub.name,LEVELS)
         
         for p in PLOT_LIST: p.plot(axes, LEVELS, iSub)
         FigureGenerator.add_text(LEVELS)

@@ -65,7 +65,7 @@ class DatasetExtractor():
 
          For programmers : calculation of density should be moved in class constructor.
          '''
-        assert isinstance(T_int, (TimeInterval, timerequestors.Clim_season))
+        assert isinstance(T_int, (TimeInterval, timerequestors.Clim_season, timerequestors.Clim_month))
         ivar  = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:].copy()
         units = self.UNITS[ivar,:].tostring()

@@ -22,7 +22,27 @@ class CO2_socat_reader(DatasetExtractor):
          Returns a profile list
          '''
         return self.DataExtractor.cruiseSelector(var, Cruisename)
-    
+
+    def clim_month_selector(self,var,month,region):
+        '''
+        Specific case of Selector, but faster.
+        Works only for climatologic month
+        Returns: a list of values, depth is not taken in account
+
+        '''
+        ivar  = find_index(var, self.DataExtractor.VARIABLES)
+        ii=self.DataExtractor.DATA[1,:]==month
+        data=self.DataExtractor.DATA[:,ii]
+        _,nP=data.shape
+        values=[]
+        for i in range(nP):
+            lat     = data[ 3,i]
+            lon     = data[ 4,i]
+            if region.is_inside(lon, lat):
+                values.append(data[ivar,i])
+        return values
+
+
     def Selector(self,var,T_int, region):
         '''
         Returns a profile list by selecting for

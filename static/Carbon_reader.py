@@ -47,6 +47,7 @@ class CarbonReader(DatasetExtractor):
          - PHt_{T-Press-ins}
          - PHsws_{Tins-0dB}
          - DICric
+         - xCO2
 
          Cruisename can be one of these
             METEOR   METEOR51   METEOR95
@@ -93,11 +94,12 @@ class CarbonReader(DatasetExtractor):
          - PHt_{T-Press-ins}
          - PHsws_{Tins-0dB}
          - DICric
+         - xCO2
          '''
 
         if var is None:
             Profilelist = list()
-            for myvar in ['nitrate','phosphate','oxygen','silicate','DIC','ALK','temp','salinity','pH25_T']:
+            for myvar in ['nitrate','phosphate','oxygen','silicate','DIC','ALK','temp','salinity','pH25_T','xCO2','pCO2']:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
             return Profilelist
         return self.DataExtractor.selector(var, T_int, region)
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     TI = TimeInterval('19900101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     C = CarbonReader()
-    ProfileLIST = C.Selector('PHt_{T-Press-ins}', TI, Reg)
+    ProfileLIST = C.Selector('xCO2', TI, Reg)
     p = ProfileLIST[0]
     a = p.read('nitrate')
     print a

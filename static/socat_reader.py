@@ -26,12 +26,15 @@ class CO2_socat_reader(DatasetExtractor):
     def clim_month_selector(self,var,month,region):
         '''
         Specific case of Selector, but faster.
-        Works only for climatologic month
+        Works only for climatologic month, between 2010 and 2016
         Returns: a list of values, depth is not taken in account
 
         '''
         ivar  = find_index(var, self.DataExtractor.VARIABLES)
-        ii=self.DataExtractor.DATA[1,:]==month
+        month_bool=self.DataExtractor.DATA[1,:]==month
+        year=self.DataExtractor.DATA[0,:]
+        year_bool = (year>= 2010) &  (year<=2016)
+        ii = month_bool & year_bool
         data=self.DataExtractor.DATA[:,ii]
         _,nP=data.shape
         values=[]

@@ -127,6 +127,11 @@ class DatasetExtractor():
         depth   =   depth[Selected]
         dataset = dataset[Selected]
         
+        if var == "pCO2":
+            Ptot= 1 + depth/10  # approximation for total pressure in atmosphere:
+                                #! press atm + press water column (in atmosphere)
+            values= values /  ( np.exp( ( 1-Ptot) *0.001366 ) )
+
         return self.profileGenerator(Time, Lon, Lat, values, depth, dataset)
     
     def cruiseSelector(self, var,Cruisename):

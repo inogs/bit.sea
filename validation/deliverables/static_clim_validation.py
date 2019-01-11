@@ -89,7 +89,10 @@ def Layers_Mean(Pres,Values,LayerList):
             MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
 
-VARLIST=['N1p','N3n','O2o','Ac','DIC']
+# BFMv2:
+#VARLIST=['N1p','N3n','O2o','Ac','DIC','pH']
+# BFMv5:
+VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','pCO2']
 SUBlist = basV2.Pred.basin_list
 nSub = len(SUBlist)
 nLayers = len(LayerList)
@@ -97,13 +100,18 @@ METRICvar = {'N1p':'PHO',
              'N3n':'NIT',
              'O2o':'DO',
              'Ac':'ALK',
-             'DIC':'DIC'}
+             'ALK':'ALK',
+             'DIC':'DIC',
+             'pH':'pH_t',
+            'pCO2':'pCO2'}
 
 
 
 rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
+column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
 for ivar, var in enumerate(VARLIST):
+#  if (ivar == 5) :
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
@@ -116,23 +124,34 @@ for ivar, var in enumerate(VARLIST):
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
-    np.save(OUTDIR + var + "ref_clim", CLIM_REF_static)
-    np.save(OUTDIR + var + "mod_clim", CLIM_MODEL)
+    np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
+    np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
+    STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
         refsubs = CLIM_REF_static[:,ilayer]
         modsubs =      CLIM_MODEL[:,ilayer]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
         good = ~bad
+
         m = matchup(modsubs[good], refsubs[good])
         STATS[ilayer,0] = m.bias()
         STATS[ilayer,1] = m.RMSE()
         STATS[ilayer,2] = m.correlation()
+ 
+        STATS_STD[ilayer,0] = m.bias()
+        STATS_STD[ilayer,1] = m.RMSE()
+        STATS_STD[ilayer,2] = m.correlation()
+        STATS_STD[ilayer,3] = np.mean(modsubs[good])
+        STATS_STD[ilayer,4] = np.mean(refsubs[good])
+        STATS_STD[ilayer,5] = np.std(modsubs[good])
+        STATS_STD[ilayer,6] = np.std(refsubs[good])
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM.txt", STATS,rows_names,column_names)
+    writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM_STD.txt", STATS_STD,rows_names,column_names_STD)
 
-# N1p e N3n in table 4.5
-# O2o in table 4.9
-# Alk, dic in table 4.12
+# N1p e N3n in table 4.6
+# O2o in table 4.10
+# Alk, dic, pH, pCO2 in table 4.13
 
 
 
@@ -179,6 +198,6 @@ for var in VARLIST:
 #    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
     writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", STATS, rows_names, ['bias','rmse','corr'])
 
-# Table 4.6 Correlazione N1p, N3n per certi subbasins
-# Table 4.10 Correlazione O2o per certi subbasins
-# Table 4.13 Bias,Rms corr per V2.Pred subs
+# Table 4.7 Correlazione N1p, N3n per certi subbasins
+# Table 4.11 Correlazione O2o per certi subbasins
+# Table 4.14 Bias,Rms corr per V2.Pred subs ALK, DIC, pH, pCO2

@@ -79,7 +79,8 @@ outfile  = args.outfile
 Timestart="20141205"
 Time__end="20500901"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-dateformat ="%Y%m%d"
+#dateformat ="%Y%m%d"
+dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
 suffix = os.path.basename(sat_TL.filelist[0])[8:]

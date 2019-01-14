@@ -140,11 +140,13 @@ for iSub, sub in enumerate(basV2.P):
 
 # Figures 4.19
 Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST, LayerList)
+#Ac__clim, Ac__std = get_climatology('ALK' , SUBLIST, LayerList)
 DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, LayerList)
 PH__clim, PH__std = get_climatology('pH' , SUBLIST, LayerList)
 
 VARLIST=['pCO2','DIC','Ac','pH']
+VARLIST=['pCO2','DIC','ALK','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
 timeseries_DICT={}
 for var in VARLIST:
@@ -172,7 +174,8 @@ for iSub, sub in enumerate(basV2.P):
         color = '0.4'
         figure_generator.profile_plotter(z,MEAN['pCO2'],color, axes[0], None,   label)
         figure_generator.profile_plotter(z,MEAN['DIC' ],color, axes[1], axes[5],label)
-        figure_generator.profile_plotter(z,MEAN['Ac'  ],color, axes[2], axes[6],label)
+#        figure_generator.profile_plotter(z,MEAN['Ac'  ],color, axes[2], axes[6],label)
+        figure_generator.profile_plotter(z,MEAN['ALK' ],color, axes[2], axes[6],label)
         figure_generator.profile_plotter(z,MEAN['pH'  ],color, axes[3], axes[7],label)            
         MEAN = np.zeros((jpk,), dtype=var_dype )
 
@@ -183,7 +186,8 @@ for iSub, sub in enumerate(basV2.P):
         MEAN[var] = mean_profile    
     figure_generator.profile_plotter(z,MEAN['pCO2'],'k', axes[0], None,   label)
     figure_generator.profile_plotter(z,MEAN['DIC' ],'k', axes[1], axes[5],label)
-    figure_generator.profile_plotter(z,MEAN['Ac'  ],'k', axes[2], axes[6],label)
+#    figure_generator.profile_plotter(z,MEAN['Ac'  ],'k', axes[2], axes[6],label)
+    figure_generator.profile_plotter(z,MEAN['ALK'  ],'k', axes[2], axes[6],label)
     figure_generator.profile_plotter(z,MEAN['pH'  ],'k', axes[3], axes[7],label) 
     
     Ac__clim_mean=Ac__clim[iSub,:]

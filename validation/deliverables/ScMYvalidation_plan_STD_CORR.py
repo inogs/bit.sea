@@ -77,13 +77,20 @@ REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
 
-Timestart="20141205"
-Time__end="20500901"
-Time__end="20180102"
+#Timestart="20141205"
+#Time__end="20500901"
+#Time__end="20180102"
+Timestart="20170103"
+Time__end="20180101"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-dateformat ="%Y%m%d"
+print TI
+#dateformat ="%Y%m%d"
+dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
+print sat_TL.Timelist  
+print " " 
+print model_TL.Timelist
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 

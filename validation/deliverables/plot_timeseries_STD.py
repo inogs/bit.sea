@@ -45,7 +45,8 @@ fid = open(args.open_sea_file)
 LIST = pickle.load(fid)
 fid.close()
 #TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
-TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD = LIST
+#TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD = LIST
+TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR = LIST
 
 #fid = open(args.coast_file)
 #LIST = pickle.load(fid)

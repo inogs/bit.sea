@@ -2,12 +2,15 @@
 
 # QUID REANALYSIS
 # SECTION 4?:
-export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
-SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
+#export MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
+export MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc
+#SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/MONTHLY_V4/
+SAT_MONTHLY_DIR=/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST/TIMESER_SATMONTHLY_RACOAST/
 
 #INPUTDIR=/pico/scratch/userexternal/gbolzon0/RA_CARBO/RA_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
-INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
-INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+#INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/MODEL/AVE_FREQ_2/
+#INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/RA_COAST/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+INPUT_AGGR_DIR=/gpfs/scratch/userexternal/ateruzzi/RA_COAST_P_l/
 
 mkdir -p fig4.2  table4.3  Fig4.1  Fig4.6 Fig4.5 Fig4.4 Fig4.7 Fig4.8 Fig4.9 Fig4.10 Fig4.11 Fig4.12
 mkdir -p table4.3 table4.4 table4.5
@@ -27,7 +30,7 @@ python MYvalidation_statics.py -m $MASKFILE -o export_data_ScMYValidation_plan_s
 python reader_statics.py -o ./table4.3 # phosphate nitrate o2
 
 
-python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean -l chl_layerlist
+python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -m $MASKFILE  -o Fig4.1/ -v P_l -t mean -l Plotlist_bio.xml -s 19990101 -e 20171231
 python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
 python averager_and_plot_map.py -i $INPUTDIR -m $MASKFILE -o Fig4.6/ -v N1p -t mean  -l nut_layerlist
@@ -103,8 +106,8 @@ python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 8 -v pCO2 -t mean -M $MA
 python seasonal_plot_map.py -i $INPUTDIR -o Fig4.17/ -m 11 -v pCO2 -t mean -M $MASKFILE
 
 
---------------------------------------------------
-QUID ANALYSIS AND FORECAST
+#--------------------------------------------------
+#QUID ANALYSIS AND FORECAST
 Figure IV.5.
 Figure IV.6
 /pico/home/userexternal/gcossari/bit.sea/calibration_bioFloat.py

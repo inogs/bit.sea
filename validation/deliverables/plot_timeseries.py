@@ -70,7 +70,9 @@ for isub,sub in enumerate(OGS.P):
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30)
+    pl.setp(xlabels, rotation=30, fontsize=9)
+    ylabels = ax.get_yticklabels()
+    pl.setp(ylabels,fontsize=10)
     #ax.tick_params(direction='left', pad=2)
     #fig.show()
     outfilename=args.outdir+"/"+'chl' + sub.name + ".png"

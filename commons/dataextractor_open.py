@@ -78,7 +78,7 @@ class DataExtractor(object):
                         for k in range(nOpen):
                             i=I[k]
                             j=J[k]
-                            self.__values[0,j,i]=self.__values[0,j,i-1]
+                            self.__values[j,i]=self.__values[j,i-1]
                         self.__values[~mask.mask[0,:,:]] = 1.e+20
 
                     self.__shape = self.__values.shape

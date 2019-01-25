@@ -19,6 +19,7 @@ class read_descriptor():
         MONTHLY_NATIVE_NODES=NODE[0].getElementsByTagName("var")
         for n in MONTHLY_NATIVE_NODES:
             self.AGGR_VARS.append(str(n.attributes['name'].value))
+            
   
         
         self.SOME_VARS=set()    
@@ -42,16 +43,17 @@ class read_descriptor():
         for n in NATIVE_NODES:
             self.vars2D.add(str(n.attributes['name'].value))
         
-        self.AGGREGATE_DICT={}
+        self.AGGREGATE_VARS=[]
+        self.AGGR_FORMULAS=[]        
         AGGVARNODES=xmldoc.getElementsByTagName("vars_for_All_Statistics")[0].getElementsByTagName("aggregate")[0].getElementsByTagName("aggvar")
         for NODE in AGGVARNODES:
             aggvar=str(NODE.attributes['name'].value)
-            
-            N=NODE.getElementsByTagName("var")
-            L=[]
-            for n in N:
-                L.append( str(n.attributes['name'].value))
-            self.AGGREGATE_DICT[aggvar]=L
+            self.AGGR_FORMULAS.append(str(NODE.attributes['formula'].value))       
+#             N=NODE.getElementsByTagName("var")
+#             L=[]
+#             for n in N:
+#                 L.append( str(n.attributes['name'].value))
+            self.AGGREGATE_VARS.append(aggvar)
 
     def printStatus(self):
         print len(self.NATIVE_VARS), "native vars"

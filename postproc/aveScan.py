@@ -581,12 +581,12 @@ for ip in PROCESSES[rank::nranks]:
     avefile =aveLIST[ifile]
     dim     = var_dim[ivar]
     print "rank %03d scans %s on %s" %(rank,var,os.path.basename(avefile))
-    
-    
-    datestr=os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]
+
+    F = GB_lib.filename_manager(avefile)
+    datestr=F.datestr# os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]
     if doStatistics:
         ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
-    F = GB_lib.filename_manager(avefile)
+
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
 
     if var_dim [ivar] == '3D':
@@ -614,7 +614,8 @@ if isParallel : comm.Barrier()
 if rank == 0: print "RICOSTRUZIONE FILES"
 
 for avefile in aveLIST[rank::nranks]:
-    datestr = os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]    
+    F = GB_lib.filename_manager(avefile)
+    datestr=F.datestr #os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]
 
     if doPointProfiles: ncOUT_Pprofiles = create_ave_pp_header(datestr)
     if doStatistics:    ncOUT__profiles,ncOUT_integrals = create_ave_headers(datestr)

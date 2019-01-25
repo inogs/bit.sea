@@ -43,15 +43,19 @@ import matplotlib
 from mhelpers.pgmean import PLGaussianMean
 from profiler import *
 from instruments.matchup_manager import Matchup_Manager
-
+import matplotlib.dates as mdates
 
 from commons.mask import Mask
 from timeseries.plot import *
 meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
+import numpy.ma as ma
 
 TheMask=Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
+
+font_s =  15 
+label_s = 15
 
 def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
     if (fig is None) or (ax is None):
@@ -108,36 +112,47 @@ meanObj11 = PLGaussianMean(11,1.0)
 Profilelist_1=bio_float.FloatSelector(None,TI1,OGS.med)
 wmo_list=bio_float.get_wmo_list(Profilelist_1)
 
+print wmo_list
+
 for j in range(0,len(wmo_list)):
-#    if (j==4): 
+#    if (j==0): 
       list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo_list[j])
       nP = len(list_float_track)
       Lon = np.zeros((nP,), np.float64)
       Lat = np.zeros((nP,), np.float64)
       NewPres_5m=np.linspace(0,300,61)
       depths=NewPres_5m
-      plotmat = np.zeros([len(depths), len(list_float_track)])
-      plotmat_model = np.zeros([len(depths), len(list_float_track)])
 
       for ivar, var_mod in enumerate(VARLIST):
 #       if (ivar==0):
+        plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
+        plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
 	timelabel_list = list()
         var = LOVFLOATVARS[var_mod]
         adj=Adj[ivar]
         
 	for ip, p in enumerate(list_float_track):
+#         if ( ip == 91 ):
 	    Lon[ip] = p.lon
 	    Lat[ip] = p.lat
 	    Pres,Prof,Qc=p.read(var,read_adjusted=adj)
 	    ii = Pres<=300 ;
-	    if len(Prof[ii])>0 :
+# Deve avere almeno 5 records:
+	    if len(Prof[ii])>5 :
 		NewProf_5m = np.interp(NewPres_5m,Pres[ii],Prof[ii])
 		plotmat[:,ip]=NewProf_5m
+# FILTRAGGIO per CHLA e N3n dato dai valori troppo alti registrato in superficie:
+                if (var_mod=="P_l"):
+                   if (plotmat[0,ip] > 0.45):
+                      plotmat[:,ip] = np.nan
+                if (var_mod=="N3n"): 
+                   if (plotmat[0,ip] > 2):
+                      plotmat[:,ip] = np.nan
 	    timelabel_list.append(p.time)
 
 	    # PLOT FOR THE MODEL
 	    TM=MM.modeltime(p)
-	    FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
+	    FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
 	    M = readModelProfile(FILENAME,var_mod,p.ID())
 	    M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
 	    plotmat_model[:,ip] = M_newDepth
@@ -171,67 +186,80 @@ for j in range(0,len(wmo_list)):
 	ax4 = plt.subplot2grid((3, 3), (2, 0), colspan=3)
 
 	xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
+        plotmat_m=ma.masked_invalid(plotmat)
 	if (var_mod == 'P_l'):
-                quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=0.40,cmap="jet")# default is 'flat'
+                quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
 	if (var_mod == 'O2o'):
-		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=200,vmax=250,cmap="jet")# default is 'flat'
+		quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=200,vmax=250) #,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
-		quadmesh = ax3.pcolormesh(xs, ys, plotmat,shading='flat',vmin=0.00,vmax=4,cmap="jet")# default is 'flat'
+                print len(xs)
+                print len(ys)
+                print plotmat_m.shape
+		quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
 	#Inform matplotlib that the x axis is made by dates
 	ax3.set_xlim([T_start2num,T_end2num])
-	ax3.xaxis_date()
+#	ax3.xaxis_date()
+        ax3.set_xticklabels([])
 	ax3.invert_yaxis()
-	ax3.set_title("FLOAT " + p.name() + ": " + plotvarname[ivar], color = 'b')
-	ax3.set_ylabel("depth $[m]$",color = 'k')
+#	ax3.set_title("FLOAT " + p.name() + ": " + plotvarname[ivar], color = 'b')
+	ax3.set_ylabel("depth $[m]$",color = 'k', fontsize=font_s)
 	fig.set_size_inches(15,10)
-	fig.set_dpi(300)
+#	fig.set_dpi(300)
 
 	###ax = axs[2]
 	xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
+        plotmat_model_m=ma.masked_invalid(plotmat_model)
         if (var_mod == 'P_l'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40,cmap="jet")# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
         if (var_mod == 'O2o'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=200,vmax=250,cmap="jet")# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=200,vmax=250) #,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
-                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4,cmap="jet")# default is 'flat'
+                quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
 	ax4.set_xlim([T_start2num,T_end2num])
 	ax4.xaxis_date()
 	ax4.invert_yaxis()
-	ax4.set_title("BFM model: " + plotvarname[ivar], color = 'b')
-	ax4.set_ylabel("depth $[m]$",color = 'k')
+#	ax4.set_title("BFM model: " + plotvarname[ivar], color = 'b')
+	ax4.set_ylabel("depth $[m]$",color = 'k',fontsize=font_s)
+        ax4.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter("%Y%m")) #("%b%y"))
+        for tick in ax4.get_xticklabels():
+            tick.set_rotation(45)
+        
+        ax1.tick_params(axis = 'both', which = 'major', labelsize = label_s)
+        ax2.tick_params(axis = 'both', which = 'major', labelsize = label_s)
+        ax3.tick_params(axis = 'both', which = 'major', labelsize = label_s)
+        ax4.tick_params(axis = 'both', which = 'major', labelsize = label_s)
 
 	colorbar_bottom= ax4.get_position().ymin
 	colorbar_extent= ax3.get_position().ymax - colorbar_bottom
 
   #      cbaxes = fig.add_axes([0.95, 0.01, 0.02, 0.95]) 
 	cbaxes = fig.add_axes([0.93, colorbar_bottom , 0.02, colorbar_extent])
-	fig.colorbar(quadmesh, cax = cbaxes, )  
+	cbar=fig.colorbar(quadmesh, cax = cbaxes, )  
+	ticklabs = cbar.ax.get_yticklabels()
+	cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
 
 
 	c_lon,c_lat=coastline.get()
 
 	ax1.plot(c_lon,c_lat,'k')
 	ax1.plot(Lon,Lat,'r.')
-	ax1.set_title("TRAJECTORY of FLOAT " + p.name() + " - " + var_mod, color = 'r')
+	ax1.set_title("TRAJECTORY of FLOAT " + p.name() + " - " + var_mod, color = 'r', fontsize=font_s)
 	ind_max_sup=plotmat[0,:].argmax()
-  #      print Lon[ind_max_sup],Lat[ind_max_sup]
-#	ax1.plot(Lon[ind_max_sup],Lat[ind_max_sup],'g.')
         ax1.plot(Lon[0],Lat[0],'bo')
 	ax1.plot(Lon[0],Lat[0],'bx')
-	ax1.set_xlim([-10,36])
-	ax1.set_ylabel("LAT",color = 'k')
-	ax1.set_xlabel("LON",color = 'k')
-
+	ax1.set_xlim([-5.5,36])
+#	ax1.set_ylabel("LAT",color = 'k',fontsize=font_s)
+#	ax1.set_xlabel("LON",color = 'k')
 	extent=4 #degrees
 	ipp = len(list_float_track)
 	ax2.plot(c_lon,c_lat,'k')
 	ax2.plot(Lon,Lat,'ro')
 #	ax2.plot(Lon[ind_max_sup],Lat[ind_max_sup],'go')
 	ax2.plot(Lon[0],Lat[0],'bo')
-	ax2.plot(Lon[0],Lat[0],'bx',markersize=12)
+	ax2.plot(Lon[0],Lat[0],'bx',markersize=font_s)
 	ax2.set_xlim([np.min(Lon[:ipp]) -extent/2, np.max(Lon[:ipp]) +extent/2])
 	ax2.set_ylim([np.min(Lat[:ipp]) -extent/2, np.max(Lat[:ipp]) +extent/2])
-
 
 	fig.savefig(''.join([OUTDIR,'Hov_Float+TRANS_',p.name(),'_',var_mod,'.png']))
 	pl.close(fig)

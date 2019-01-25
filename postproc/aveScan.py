@@ -81,6 +81,7 @@ def argument():
 args = argument()
 
 import scipy.io.netcdf as NC
+import netCDF4 as NC4
 from commons.dataextractor import DataExtractor
 import glob
 import os
@@ -204,7 +205,9 @@ def CoreStatistics_noSort(Conc,Weight):
     Weighted_Mean   = Mass/Weight_sum
     Weighted_Std    = ((Conc - Weighted_Mean)**2*Weight).sum()/Weight_sum      
     Statistics[0]   = Weighted_Mean
-    Statistics[1]   = np.sqrt(Weighted_Std) 
+    Statistics[1]   = np.sqrt(Weighted_Std)
+    Statistics[2]   = Conc.min()
+    Statistics[8]   = Conc.max()
     return Statistics
 
 def Population_Statistics(averages, stds, Weight):
@@ -262,15 +265,20 @@ def ProfilesStats(Mask, flagSort):
 
      
 
-def Vol_Integrals(Mask):
-    
+def Vol_Integrals(Mask, flagSort=True):
+
     Statistics   = np.zeros((ndepth,nstat),np.float32)    
      
-    
-    for idepth in range(len(DEPTHlist)):
-        depth = DEPTHlist[idepth]
-        mask  = Mask & DEPTH[depth]        
-        Statistics[idepth,:] = CoreStatistics(VAR[mask],Volume[mask]) 
+    if flagSort:
+        for idepth in range(len(DEPTHlist)):
+            depth = DEPTHlist[idepth]
+            mask  = Mask & DEPTH[depth]
+            Statistics[idepth,:] = CoreStatistics(VAR[mask],Volume[mask])
+    else:
+        for idepth in range(len(DEPTHlist)):
+            depth = DEPTHlist[idepth]
+            mask  = Mask & DEPTH[depth]
+            Statistics[idepth,:] = CoreStatistics_noSort(VAR[mask],Volume[mask])
 
     return Statistics
 
@@ -356,8 +364,8 @@ def getAllStatistics(var,objfileP,objfileI):
             
             coast = COASTNESS_LIST[icoast]
             smask = m & COASTNESS[coast]
-            PROFILES [isub,icoast,:,:] = ProfilesStats(smask, flagSort=True)                    
-            INTEGRALS[isub,icoast,:,:] = Vol_Integrals(smask)
+            PROFILES [isub,icoast,:,:] = ProfilesStats(smask, flagSort=True)
+            INTEGRALS[isub,icoast,:,:] = Vol_Integrals(smask, flagSort=True)
         
         
     
@@ -450,10 +458,10 @@ def create_ave_headers(datestr):
     ave_integrals = OUTPUT_DIR_INT + IOnames.Output.prefix + datestr + IOnames.Output.suffix + ".vol_integrals.nc" 
 
     if os.path.exists(ave__profiles):
-        ncOUT__profiles=NC.netcdf_file(ave__profiles,'a')
+        ncOUT__profiles=NC4.Dataset(ave__profiles,'a')
         print "appending in ", ave__profiles
     else:
-        ncOUT__profiles = NC.netcdf_file(ave__profiles,"w")
+        ncOUT__profiles = NC4.Dataset(ave__profiles,'w')
         ncOUT__profiles.createDimension("sub"       ,len(SUBlist))
         ncOUT__profiles.createDimension("coast"     ,ncoast)
         ncOUT__profiles.createDimension("z"         ,jpk )
@@ -463,10 +471,10 @@ def create_ave_headers(datestr):
         setattr(ncOUT__profiles,"stat__list"  , StatDescr)
 
     if os.path.exists(ave_integrals):
-        ncOUT_integrals=NC.netcdf_file(ave_integrals,'a')
+        ncOUT_integrals=NC4.Dataset(ave_integrals,'a')
         print "appending in ", ave_integrals
-    else:      
-        ncOUT_integrals = NC.netcdf_file(ave_integrals,"w")    
+    else:
+        ncOUT_integrals=NC4.Dataset(ave_integrals,'w')
         ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
         ncOUT_integrals.createDimension("coast"     ,ncoast)
         ncOUT_integrals.createDimension("depth"     ,ndepth)
@@ -525,7 +533,7 @@ for i in DEPTHlist         : DepthDescr +=str(i) + ", "
 
 RD = read_descriptor.read_descriptor(args.descriptor)
 NATIVE_VARS    = RD.NATIVE_VARS
-AGGREGATE_DICT = RD.AGGREGATE_DICT 
+AGGREGATE_VARS = RD.AGGREGATE_VARS
 SOME_VARS      = RD.SOME_VARS
 
 OUTPUT_DIR_INT  = BASEDIR + 'INTEGRALS/'
@@ -550,7 +558,7 @@ aveLIST.sort()
 
 VARLIST=[]
 VARLIST.extend(NATIVE_VARS)
-VARLIST.extend(AGGREGATE_DICT.keys())
+VARLIST.extend(AGGREGATE_VARS)
 VARLIST.extend(SOME_VARS)
 var_dim =['3D']*len(VARLIST)
 VARLIST.extend(RD.vars2D)
@@ -619,11 +627,19 @@ for avefile in aveLIST[rank::nranks]:
         
         if doStatistics: 
             ncIN__profiles = NC.netcdf_file(tmp__profiles,"r")
-            ncIN_integrals = NC.netcdf_file(tmp_integrals,"r")                
-            ncvar    = ncOUT__profiles.createVariable(var  ,'f',('sub','coast','z'    ,'stat'))    
+            ncIN_integrals = NC.netcdf_file(tmp_integrals,"r")
+            if var in ncOUT__profiles.variables.keys(): #existing variable
+                ncvar=ncOUT__profiles.variables[var]
+            else:
+                ncvar    = ncOUT__profiles.createVariable(var  ,'f',('sub','coast','z'    ,'stat'))
+
             ncvar[:] = ncIN__profiles.variables[var].data.copy()
-            if var_dim[ivar] == '3D':  
-                ncvar    = ncOUT_integrals.createVariable(var, 'f', ('sub','coast','depth','stat'))
+
+            if var_dim[ivar] == '3D':
+                if var in ncOUT_integrals.variables.keys(): #existing variable
+                    ncvar = ncOUT_integrals.variables[var]
+                else:
+                    ncvar    = ncOUT_integrals.createVariable(var, 'f', ('sub','coast','depth','stat'))
                 ncvar[:] = ncIN_integrals.variables[var].data.copy()
             ncIN__profiles.close()
             ncIN_integrals.close()
@@ -646,7 +662,7 @@ if rank==0 : print "RICOSTRUZIONE FINITA"
 if isParallel: comm.Barrier() 
 
 var = 'ppn'
-if var not in NATIVE_VARS.union(SOME_VARS) or not doStatistics : sys.exit()
+if var not in VARLIST or not doStatistics : sys.exit()
 
 for avefile in aveLIST[rank::nranks]:
     print avefile

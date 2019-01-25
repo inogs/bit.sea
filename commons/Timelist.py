@@ -63,7 +63,8 @@ class TimeList():
                            all files in that directory will be taken in account.
         * inputdir       * string, directory to where files are
         * searchstring   * string, used to filter vars
-        * filtervar      * string, e.g. 'N1p'
+        * filtervar      * string, e.g. 'N1p', used for filter a filelist
+                           a file is vaild if the filename string contains filtervar
         * prefix         * string, the part of the filename before the date
         * dateformat     * string
         * hour           * integer
@@ -96,7 +97,8 @@ class TimeList():
         filelist_ALL = glob.glob(inputdir + searchstring)
         if not filtervar is None:
             filename, file_extension = os.path.splitext(filelist_ALL[0])
-            filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
+            #filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
+            filelist_ALL=[f for f in filelist_ALL if filtervar in os.path.basename(f) ]
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]

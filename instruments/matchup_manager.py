@@ -71,14 +71,17 @@ class Matchup_Manager():
                     INTERESTED_PROFILES.append(p)
             #INTERESTED_PROFILES = list(set([self.PROFILE_LIST[k] for k in t[1]])) #t[1]
 
-
+            if self.TL.filtervar is None:
+                filtervarline=""
+            else:
+                filtervarline= ' -f '  + self.TL.filtervar
             outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
             self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \
                 ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d*")  + \
                 ' -i '  + self.AVE_INPUT_DIR  +  \
                 ' -a '  + aggregatedir       +  \
-                ' -f '  + self.TL.filtervar  +  \
+                filtervarline                +  \
                 ' -t '  + TMPSDIR  + \
                 ' -o '  + self.profilingDir  + \
                 ' -d '  + vardescriptor      + \

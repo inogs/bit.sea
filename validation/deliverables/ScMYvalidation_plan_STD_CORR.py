@@ -84,8 +84,8 @@ Timestart="20170103"
 Time__end="20180101"
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 print TI
-#dateformat ="%Y%m%d"
-dateformat ="%Y%m_d"
+dateformat ="%Y%m%d"
+#dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
 print sat_TL.Timelist  

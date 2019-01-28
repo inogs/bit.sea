@@ -8,7 +8,7 @@ VARSAT_INCR=/pico/scratch/userexternal/gbolzon0/EOF-python/SUMMER_INCREASED50_10
 
 
 
-python varSat.py -i $SAT_DIR_10 - o $VARSATDIR -m Mesh24
+python varSat.py -i $SAT_DIR_10 -o $VARSATDIR -m Mesh24
 
 python increaseSummerSatVar.py -i $VARSATDIR -o $VARSAT_INCR -m $MASKFILE
 
@@ -18,3 +18,7 @@ SATDIR_WEEKLY=/pico/scratch/userexternal/gbolzon0/EOF-python/ORIG_INPUTS/CCI1km_
   VAR_ERR_DIR=/pico/scratch/userexternal/gbolzon0/EOF-python/VarErr/
 
 python varErr.py -i $MODELDIR -s $SATDIR_WEEKLY -o $VAR_ERR_DIR -m Mesh24
+
+   VAR_MOD_DIR=/pico/scratch/userexternal/gbolzon0/EOF-python/VarMod/
+
+python varMod.py -i $VAR_ERR_DIR -s $VARSATDIR -o $VAR_MOD_DIR -m $MASKFILE

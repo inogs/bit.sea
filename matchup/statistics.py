@@ -198,7 +198,7 @@ class matchup(object):
         
         fig, ax = plt.subplots()
         plt.title('%s Density plot of %s and %s\nNumber of considered matchups: %s' % (sub, modelname, refname, self.number()))
-        cmap = 'spectral_r'
+        cmap = 'Spectral_r'
         axis_min = min(self.Ref.min(),self.Model.min())
         axis_max = max(self.Ref.max(),self.Model.max())
         extent = [axis_min, axis_max, axis_min, axis_max]
@@ -280,5 +280,6 @@ if __name__ == "__main__" :
     M = matchup(y,x)
     fig, ax = M.densityplot2(modelname='s1',refname='s2',units='Kg/m3')
     fig.show()
-    
+
+ 
     

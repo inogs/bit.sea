@@ -85,7 +85,7 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     fig, ax = pl.subplots(figsize=(16,4))
     ax2 = ax.twinx()
 
-    ax2.bar(times,numb1,width=7, color='0.5', alpha=0.3, align='center')
+    ax2.bar(times,numb1,width=7, color='0.5', alpha=0.3, align='center',edgecolor="black", linewidth=3)
     ax2.set_ylabel(' n. of BGC-Argo floats', fontsize=20)
     ax2.set_ylim([0,numb1.max() +2])
 #    ax2.set_yticklabels(ax2.yaxis.get_major_ticks(),fontsize=16)

@@ -9,7 +9,7 @@ mask_200= TheMask.mask_at_level(200)
 INPUTDIR="/pico/scratch/userexternal/gbolzon0/EOF-python/VARSAT/"
 OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/EOF-python/SUMMER_INCREASED50_100/"
 
-incr = [4,16,16,16,16,4];
+incr = [4,16,16,16,16,4];  # April- September
 incrCoast = [1,4,4,4,4,1];
 
 for imonth, month in enumerate(range(4,10)) : # April- September

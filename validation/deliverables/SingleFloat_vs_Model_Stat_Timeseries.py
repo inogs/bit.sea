@@ -85,10 +85,10 @@ for wmo in wmo_list:
 #                for k, kk in enumerate(GM.Ref): 
 #                    if (kk<=0.011): 
 #                       GM.Ref[k]=np.nan
-                if (GM.Ref[0]>0.44): GM.Ref[:]=np.nan
+                if (GM.Ref[0]>2): continue
 #                if (GM.Ref[0]
             if (var_mod == "P_l"):
-                if (GM.Ref[0]>0.45): GM.Ref[:]=np.nan
+                if (GM.Ref[0]>0.45): continue
 
             gm200 = GM.subset(layer)
             nLevels = gm200.number()

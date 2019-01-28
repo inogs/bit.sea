@@ -50,12 +50,13 @@ OUTPUTDIR = args.outdir
 
 
 
-TI = TimeInterval('20140101','20170101',"%Y%m%d") # VALID FOR REANALYSIS RUN
+TI = TimeInterval('20160101','20170101',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m")
 
 
-MY_YEAR = TimeInterval('20140101','20170101',"%Y%m%d") 
+MY_YEAR = TimeInterval('20160101','20170101',"%Y%m%d") 
 req_label='Ave:2014-2016'
+req_label='Ave:2017'
 
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)

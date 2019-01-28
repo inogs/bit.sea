@@ -363,7 +363,7 @@ class MapBuilder(object):
             integral = (v * dzm * lmask).sum(axis=0)
             #Build height matrix (2D)
             height = (dzm * lmask).sum(axis=0)
-            indexmask = [height > 0]
+            indexmask = height > 0
             #Build output matrix (2D)
             output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
             output[indexmask] = integral[indexmask]

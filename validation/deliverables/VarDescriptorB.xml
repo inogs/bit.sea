@@ -9,13 +9,7 @@
 </native>
 
 <aggregate>
-<aggvar name="P_l">
-<var name="P1l"></var>
-<var name="P2l"></var>
-<var name="P3l"></var>
-<var name="P4l"></var>
-</aggvar>
-
+<aggvar name="P_l" formula="P_l = P1l + P2l + P3l + P4l" > </aggvar>
 </aggregate>
 </vars_for_All_Statistics>
 

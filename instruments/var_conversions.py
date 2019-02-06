@@ -2,6 +2,7 @@ FLOATVARS={'O2o':'DOXY', \
            'N3n':'NITRATE',  \
            'P_l':'CHLA', \
            'P_i':'CHLA', \
+           'Chla':'CHLA', \
            'vosaline':'PSAL', \
            'votemper':'TEMP' }   
 #DOXY:units = "micromole/kg" ;
@@ -11,6 +12,7 @@ FLOATVARS={'O2o':'DOXY', \
 LOVFLOATVARS={'O2o':'DOXY', \
               'N3n':'SR_NO3',  \
               'P_l':'CHLA', \
+              'Chla':'CHLA', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
               'votemper':'TEMP' }

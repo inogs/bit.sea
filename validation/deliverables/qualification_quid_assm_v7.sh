@@ -74,7 +74,10 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 # ---------- executed elsewhere
 # python ricostruzione_Integrals.py -i /pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_2/1x1/INTEGRALS/ -o 1x1/
 # ----------------------------
-
+DIR_MOD_1x1=/galileo/home/userexternal/lfeudale/matlab_MAP_1x1/2019/
+DIR_CLI_1x1=/galileo/home/userexternal/lfeudale/matlab_MAP_1x1/MAP1x1/
+DIR_OUT=.
+python readMAP1x1_8layer_do_CFR_carbsys.py -i $DIR_MOD_1x1 -c $DIR_CLI_1x1 -o $DIR_OUT
 
 #### PH-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN in Fig4.20
 # OLD FIGURE:

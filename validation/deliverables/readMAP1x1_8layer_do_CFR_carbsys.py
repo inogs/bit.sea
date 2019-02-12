@@ -56,7 +56,12 @@ outdir = addsep(args.outdir)
 
 D=NC.Dataset(Maskfile,"r")  
 mask=np.array(D.variables['tmask'])
-
+ 
+mask=NC4.readfile(Maskfile,"tmask")
+bmask=mask.astype(bool) 
+kk=(mask==0)
+nmask=mask.astype("float32")
+nmask[kk]=np.nan
 
 LAYERLIST=[Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000), Layer(1000,2000)]
 LAYERnames=["0-30","30-60","60-100","100-150","150-300","300-600","600-1000","1000-2000"]
@@ -124,8 +129,10 @@ for ivar,VARname in enumerate(VARLIST):
     for zlev in range(nLayers):
         print LAYERLIST[zlev]
         MOD[ij]=np.nan
-        MOD_Y=np.nanmean(MOD[:,zlev,:,xs:],axis=0) # STARTING FROM -6 lon instead of -8
-        CLI_Y=CLI[0,0,zlev,:,xs:]                  # STARTING FROM -6 lon instead of -8
+#        MOD_Y=np.nanmean(MOD[:,zlev,:,xs:],axis=0) # STARTING FROM -6 lon instead of -8
+#        CLI_Y=CLI[0,0,zlev,:,xs:]                  # STARTING FROM -6 lon instead of -8
+        MOD_Y=np.nanmean(MOD[:,zlev,:,xs:]*nmask[zlev,:,xs:],axis=0) # STARTING FROM -6 lon instead of -8
+        CLI_Y=CLI[0,0,zlev,:,xs:]*nmask[zlev,:,xs:]                  # STARTING FROM -6 lon instead of -8
 #        DIF=np.nanmean(MOD[:,zlev,:,:],axis=0)-CLI[0,0,zlev,:,:]
         DIF=MOD_Y-CLI_Y
         fig , ax = pl.subplots(3,1,figsize=(10,15),dpi=150,facecolor='w',edgecolor='k')

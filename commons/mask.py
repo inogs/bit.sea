@@ -27,12 +27,16 @@ class Mask(object):
                     dims = dset.dimensions
                     self._shape = (dims['z'].size, dims['y'].size, dims['x'].size)
             if zlevelsvar in dset.variables:
-                z = dset.variables[zlevelsvar]
+                if zlevelsvar == "nav_lev":
+                    z = dset.variables[zlevelsvar]
+                else:
+                    z = dset.variables[zlevelsvar][0,:,0,0]
+                self._zlevels = np.array(z)
+
                 if len(z.shape) != 1:
                     raise ValueError("zlevelsvar must have only one dimension")
                 if not z.shape[0] in self._shape:
                     raise ValueError("cannot match %s lenght with any of %s dimensions" % (zlevelsvar, maskvarname))
-                self._zlevels = np.array(dset.variables[zlevelsvar])
             else:
                 raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
             if dzvarname in dset.variables:
@@ -207,9 +211,21 @@ class Mask(object):
         '''
         Returns a 2d map of logicals, for the depth (m) provided as argument.
         as a slice of the tmask.
+
+       When z is not a point in the discretization, jk_m is selected as the
+        point immediately before. This depth level should not be included in
+        the mask:
+
+        (jk_m-1)   FFFFFFFFFFFFFFFF
+        (jk_m  )   FFFFFFFFFFFFFFFF
+        z----------------------
+        (jk_m +1)  TTTTTTTTTTTTTTTT
+        (jk_m +2)  TTTTTTTTTTTTTTTT
         '''
+        if z<self.zlevels[0]: return self.mask[0,:,:].copy()
+
         jk_m = self.getDepthIndex(z)
-        level_mask = self.mask[jk_m,:,:].copy()
+        level_mask = self.mask[jk_m+1,:,:].copy()
         return level_mask
 
     def bathymetry_in_cells(self):
@@ -314,7 +330,8 @@ class Mask(object):
 
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
-    TheMask = Mask('/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_843_S.nc')
+    filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
+    TheMask = Mask(filename,zlevelsvar='gdepw')
     print TheMask.is_regular()
 
     lon = 18.1398

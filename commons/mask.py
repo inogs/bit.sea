@@ -48,17 +48,13 @@ class Mask(object):
                 else:
                     raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
             if ylevelsmatvar in dset.variables:
-                if ylevelsmatvar =='nav_lat':
-                    self._ylevels = np.array(dset.variables[ylevelsmatvar])
-                if ylevelsmatvar =='gphit':
-                    self._ylevels = np.array(dset.variables[ylevelsmatvar][0,0,:,:])
+                if ylevelsmatvar =='nav_lat': self._ylevels = np.array(dset.variables[ylevelsmatvar])
+                if ylevelsmatvar in ['gphit','gphif','gphiu','gphiv']: self._ylevels = np.array(dset.variables[ylevelsmatvar][0,0,:,:])
             else:
                 raise ValueError("ylevelsmatvar '%s' not found" % (str(ylevelsmatvar),))
             if xlevelsmatvar in dset.variables:
-                if xlevelsmatvar=='nav_lon':
-                    self._xlevels = np.array(dset.variables[xlevelsmatvar])
-                if xlevelsmatvar=='glamt':
-                    self._xlevels = np.array(dset.variables[xlevelsmatvar][0,0,:,:])
+                if xlevelsmatvar=='nav_lon': self._xlevels = np.array(dset.variables[xlevelsmatvar])
+                if xlevelsmatvar in ['glamt','glamf','glamu', 'glamv']: self._xlevels = np.array(dset.variables[xlevelsmatvar][0,0,:,:])
             else:
                 raise ValueError("xlevelsmatvar '%s' not found" % (str(xlevelsmatvar),))
             m = dset.variables['e1t']
@@ -212,7 +208,7 @@ class Mask(object):
         Returns a 2d map of logicals, for the depth (m) provided as argument.
         as a slice of the tmask.
 
-       When z is not a point in the discretization, jk_m is selected as the
+        When z is not a point in the discretization, jk_m is selected as the
         point immediately before. This depth level should not be included in
         the mask:
 
@@ -331,7 +327,7 @@ class Mask(object):
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
     filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
-    TheMask = Mask(filename,zlevelsvar='gdepw')
+    TheMask = Mask(filename,zlevelsvar='gdepw', xlevelsmatvar='glamf')
     print TheMask.is_regular()
 
     lon = 18.1398

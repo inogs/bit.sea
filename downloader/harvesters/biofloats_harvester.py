@@ -253,17 +253,12 @@ class BioFloatsHarvester(HarvesterInterface):
         # In the following list I will store the name of the
         # files that will be downloaded or updated
         downloaded = []
-
-        # Read the wmo file line by line (exclude the first one because
-        # it does not contain data)
-        with open(wmo_file, 'r') as wmo_info:
-            wmo_list = [l.split() for l in wmo_info.readlines()[1:]]
-        # Put its content in a dictionary
+        A=self.wmo_file_reader()
+        wmo_list = A['wmo']
+        nFloats=A.size
         wmo_status = dict()
-        for l in wmo_list:
-            name = l[1]
-            status = l[-1]
-            wmo_status[name] = status
+        for l in range(nFloats):
+            wmo_status[A[l]['wmo']] = A[l]['status']
 
         # Delete, if present, the XML files with all the floats
         xml_file = join(xml_path, self.__class__.__name__ + '.xml')
@@ -287,7 +282,7 @@ class BioFloatsHarvester(HarvesterInterface):
         connection.cwd('ifremer/argo/dac/coriolis')
 
         # Download data for every active float
-        for f in wmo_status:
+        for f in wmo_list:
 
             # Update the xml with the current status of the float
             f_in_xml = root.findall('wmo_' + str(f))

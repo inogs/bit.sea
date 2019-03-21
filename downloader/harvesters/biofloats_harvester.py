@@ -26,7 +26,7 @@ xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
 class BioFloatsHarvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files whose name
-    start with "MR" from the ftp server ftp.ifremer.fr. This harvester
+    start with "MR" or "MD" from the ftp server ftp.ifremer.fr. This harvester
     need a file (called wmo_file) that reports the status of the biological
     floats. The position of that file is set in the global variable "wmo_file".
     Moreover, the harvester will save the information of the previous file
@@ -57,12 +57,12 @@ class BioFloatsHarvester(HarvesterInterface):
         # files that will be downloaded or updated
         downloaded = []
         A = self.wmo_file_reader()
-        lines_active_floats=np.where(A['status']=='A')[0]
-        lines_dead__floats =np.where(A['status']=='D')[0]
+        #lines_active_floats=np.where(A['status']=='A')[0]
+        #lines_dead__floats =np.where(A['status']=='D')[0]
 
         # Read the wmo file line by line (exclude the first one because
         # it does not contain data)
-        wmo_list = A['wmo']
+        #wmo_list = A['wmo']
         nFloats=A.size
 
         # Put its content in a dictionary
@@ -116,8 +116,8 @@ class BioFloatsHarvester(HarvesterInterface):
             try:
                 connection.cwd(f)
             except:
-                log.info('No directory associated with file ' + str(f) +
-                         '. This file will be skipped!')
+                log.info('No directory associated with wmo ' + str(f) +
+                         '. This wmo will be skipped!')
                 continue
 
             _, float_dirs, _ = list_files(connection)
@@ -129,7 +129,7 @@ class BioFloatsHarvester(HarvesterInterface):
                 min_len = len(f) + 2
                 to_be_downloaded = [ff for ff in float_files
                                     if len(ff)>min_len
-                                    and ff[:min_len]=='MR'+f]
+                                    and ff[:min_len] in ['MR'+f,'MD'+f ]]
                 if len(to_be_downloaded) > 0:
                     download_for_f = []
                     # Copy all file in a local dir with the same name
@@ -186,8 +186,8 @@ class BioFloatsHarvester(HarvesterInterface):
                 try:
                     connection.cwd(f)
                 except:
-                    log.info('No directory associated with file ' + str(f) +
-                             '. This file will be skipped!')
+                    log.info('No directory associated with wmo ' + str(f) +
+                             '. This wmo will be skipped!')
                     continue
 
                 _, float_dirs, _ = list_files(connection)
@@ -199,7 +199,7 @@ class BioFloatsHarvester(HarvesterInterface):
                     min_len = len(f) + 2
                     to_be_downloaded = [ff for ff in float_files
                                         if len(ff)>min_len
-                                        and ff[:min_len]=='MR'+f]
+                                        and ff[:min_len] in ['MR'+f,'MD'+f]]
                     if len(to_be_downloaded) > 0:
                         # Copy all file in a local dir with the same name
                         # skipping the one that we already have
@@ -237,7 +237,7 @@ class BioFloatsHarvester(HarvesterInterface):
     def rebuild(self, db_path, log, skip_if_present=False):
         """
         For every float in the file wmo, download every data file related to
-        that float that starts with 'MR'. Then create a xml file with the
+        that float that starts with 'MR' or 'MD'. Then create a xml file with the
         data read from the wmo file.
 
         Args:
@@ -296,8 +296,8 @@ class BioFloatsHarvester(HarvesterInterface):
             try:
                 connection.cwd(f)
             except:
-                log.info('No directory associated with file ' + str(f) +
-                         '. This file will be skipped!')
+                log.info('No directory associated with wmo ' + str(f) +
+                         '. This wmo will be skipped!')
                 continue
 
             _, float_dirs, _ = list_files(connection)
@@ -309,7 +309,7 @@ class BioFloatsHarvester(HarvesterInterface):
                 min_len = len(f) + 2
                 to_be_downloaded = [ff for ff in float_files
                                     if len(ff)>min_len
-                                    and ff[:min_len]=='MR'+f]
+                                    and ff[:min_len] in ['MR'+f, 'MD'+f]]
                 if len(to_be_downloaded) > 0:
                     download_for_f = []
                     # Copy all file in a local dir with the same name

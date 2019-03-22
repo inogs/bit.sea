@@ -2,6 +2,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 import os
+from commons.utils import addsep
 import pylab as pl
 
 from instrument import Instrument, Profile
@@ -315,7 +316,9 @@ def FloatSelector(var, T, region):
               ('time','S17'),
               ('parameters','S200')] )
 
-    FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
+    GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
+    ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
+    FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_BIO/Float_Index.txt"
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size
@@ -348,7 +351,10 @@ def get_wmo_list(Profilelist):
       Returns:
          a list of wmo strings
     '''
-    raise NotImplementedError
+    wmo_set=set()
+    for p in Profilelist:
+        wmo_set.add(p._my_float.wmo)
+    return list(wmo_set)
 
 def filter_by_wmo(Profilelist,wmo):
     '''
@@ -362,7 +368,8 @@ def filter_by_wmo(Profilelist,wmo):
       Returns:
         a list of Profile Objects
     '''
-    raise NotImplementedError
+
+    return [p for p in Profilelist if p._my_float.wmo == wmo]
 
 
 

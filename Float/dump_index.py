@@ -63,7 +63,7 @@ def file_header_content(filename,VARLIST, avail_params=None):
     return s
 
 LOC=addsep(args.coriolis) #"/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
-FloatIndexer=LOC + "Float_Index.txt"
+FloatIndexer=LOC + "Float_Index.0.txt"
 DIRLIST=os.listdir(LOC)
 
 
@@ -79,6 +79,9 @@ for DIR in DIRLIST:
 F = file(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
+
+import sys
+sys.exit()
 
 CORIOLIS_LINES=LINES[:]
 #VARLIST=['DOXY','NO3','CHLA',  'PRES','PSAL','TEMP']

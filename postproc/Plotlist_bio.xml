@@ -151,7 +151,7 @@
 </plots>
 
 <!--  ALK -->
-<plots var="Ac" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
+<plots var="ALK" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
 <depth top= "0000" bottom="0010"  clim="[2350,2730]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[2350,2730]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[2350,2730]"> </depth>

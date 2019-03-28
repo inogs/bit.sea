@@ -26,7 +26,7 @@ def argument():
 
 args = argument()
 
-from instruments import lovbio_float
+from instruments import bio_float as lovbio_float
 import datetime
 import numpy as np
 import os

@@ -71,7 +71,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
             dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
             ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
             setattr(ncvar,'fillValue'    ,fillValue)
-            setattr(ncvar,'missing_value',fillValue)
+            #setattr(ncvar,'missing_value',fillValue)
     else:
         ncOUT = NC.Dataset(outfile,'w')
         
@@ -82,7 +82,6 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
         ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
         setattr(ncvar,'fillValue'    ,fillValue)
-        setattr(ncvar,'missing_value',fillValue)
 
     ncvar[:] = M3d
     ncOUT.close()

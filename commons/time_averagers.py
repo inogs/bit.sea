@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.io.netcdf as NC
 import netcdf3
 from dataextractor import DataExtractor
 
@@ -37,10 +36,9 @@ def TimeAverager2D(Filelist,weights,varname,mask):
     MSUM=np.zeros((jpj,jpi),np.float32)
     for t in range(n):
         filename=Filelist[t]
-        #De      = DataExtractor(TheMask,filename,varname)
-        #M = De.values
+        De      = DataExtractor(mask,filename,varname,dimvar=2)
+        M = De.values
 
-        M = netcdf3.read_2d_file(filename, varname)
         MSUM += M*weights[t]
     averaged = MSUM/weights.sum()
     return averaged

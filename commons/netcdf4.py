@@ -151,3 +151,15 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     setattr(ncOUT,'longitude_min',-6.0)
     setattr(ncOUT,'longitude_max',37.0)
     ncOUT.close()
+
+
+def dimfile(filename, varname):
+    dset = NC.Dataset(filename)
+    var_obj=dset.variables[varname]
+    ndims=len(var_obj.dimensions)
+    if 'time' in var_obj.dimensions:
+        truedims =ndims-1
+    else:
+        truedims=ndims
+    dset.close()
+    return truedims

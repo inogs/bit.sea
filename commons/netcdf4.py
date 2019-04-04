@@ -1,3 +1,4 @@
+from __future__ import print_function
 import netCDF4 as NC
 import os
 import numpy as np
@@ -63,7 +64,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
 
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
-        print "appending ", varname, " in ", outfile
+        print("appending ", varname, " in ", outfile)
         variable_exist= ncOUT.variables.has_key(varname)
         if variable_exist:
             ncvar=ncOUT.variables[varname]
@@ -106,7 +107,7 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
 
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
-        print "appending ", varname, " in ", outfile
+        print("appending ", varname, " in ", outfile)
         variable_exist= ncOUT.variables.has_key(varname)
         if variable_exist:
             ncvar2d=ncOUT.variables[varname]

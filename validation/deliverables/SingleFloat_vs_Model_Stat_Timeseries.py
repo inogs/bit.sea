@@ -57,6 +57,25 @@ iz10 = TheMask.getDepthIndex(10.8)
 iz10 = 9
 iz10 = TheMask.getDepthIndex(50)
 
+class matchup_senza_obs():
+    def __init__(self, p, model_varname, max_depth=200):
+        '''
+        Fake matchup object. It works only with model data.
+        '''
+        Model_time = M.modeltime(p)
+        Modelfile =  M.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
+        ModelProfile = M.readModelProfile(Modelfile, model_varname, p.ID())
+        seaPoints = ~np.isnan(ModelProfile)
+        ii =TheMask.zlevels[seaPoints] < max_depth
+        self.Depth = TheMask.zlevels[seaPoints][ii]
+        self.Model = ModelProfile[seaPoints][ii]
+        self.Ref   = np.zeros_like(self.Model)*np.nan
+
+    def number(self):
+        return len(self.Model)
+    def correlation(self):
+        return np.nan
+
 
 for wmo in wmo_list:
 #  if (wmo=="6901771"):
@@ -78,19 +97,23 @@ for wmo in wmo_list:
             p=list_float_track[itime]
             if p.available_params.find(var)<0 : continue
             Pres,Profile,Qc=p.read(var,read_adjusted=adj)
-            if len(Pres) < 10 : continue
-            GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
+            #if len(Pres) < 10 : continue
+            try:
+                GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
             # Filter out the N3n spike in surface:
-            if (var_mod == "N3n"):
-#                for k, kk in enumerate(GM.Ref): 
-#                    if (kk<=0.011): 
-#                       GM.Ref[k]=np.nan
-                if (GM.Ref[0]>2): continue
-#                if (GM.Ref[0]
-            if (var_mod == "P_l"):
-                if (GM.Ref[0]>0.45): continue
+                if (var_mod == "N3n"):
+    #                for k, kk in enumerate(GM.Ref):
+    #                    if (kk<=0.011):
+    #                       GM.Ref[k]=np.nan
+                    if (GM.Ref[0]>2): continue
+    #                if (GM.Ref[0]
+                if (var_mod == "P_l"):
+                    if (GM.Ref[0]>0.45): continue
 
-            gm200 = GM.subset(layer)
+                gm200 = GM.subset(layer)
+            except:
+                gm200=matchup_senza_obs(p, var_mod)
+
             nLevels = gm200.number()
             izmax = min(nLevels,iz200)
  

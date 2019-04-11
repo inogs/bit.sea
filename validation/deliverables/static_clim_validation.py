@@ -162,13 +162,19 @@ for bottom in PresDOWN:
     LayerList_2.append(Layer(top, bottom))
     top = bottom
 nLayers = len(LayerList_2)
-
+LayerList_3=LayerList_2[:7]
+print "LayerList_3 = ", LayerList_3
+nLayers3 = len(LayerList_3)
 
 
 rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
 
 for var in VARLIST:
+    if ( var == "pCO2" ): # Integral only up to 200m. It works because pCO2 is the last var of the VARLIST 
+       LayerList_2 = LayerList_3
+       nLayers = nLayers3
+
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"

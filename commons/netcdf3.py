@@ -1,3 +1,4 @@
+from __future__ import print_function
 import scipy.io.netcdf as NC
 import os
 
@@ -89,7 +90,7 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20):
 
     if os.path.exists(outfile):
         ncOUT=NC.netcdf_file(outfile,'a')
-        print "appending ", varname, " in ", outfile
+        print("appending ", varname, " in ", outfile)
     else:
         ncOUT = NC.netcdf_file(outfile,'w')
         jpk, jpj, jpi= mask.shape
@@ -150,7 +151,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20):
 
     if os.path.exists(outfile):
         ncOUT=NC.netcdf_file(outfile,'a')
-        print "appending ", varname, " in ", outfile
+        print("appending ", varname, " in ", outfile)
     else:
         ncOUT = NC.netcdf_file(outfile,'w')
         jpk, jpj, jpi= mask.shape

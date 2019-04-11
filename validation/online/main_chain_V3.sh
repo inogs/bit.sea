@@ -7,6 +7,35 @@
 #PBS -A OGS_dev_0
 
 # cd $PBS_O_WORKDIR
+
+
+MASKFILE=/gpfs/work/OGS18_PRACE_P_0/OPEN_BOUNDARY/meshmask.nc
+ARCHIVE_DIR=/gpfs/work/OGS_prod_0/OPA/V5C/devel/archive
+  ZIPPED_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/DAILY_gz
+UNZIPPED_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/DAILY
+ MONTHLY_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/MONTHLY_AVE
+MONTHLY_PROD=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/MONTHLY_PROD
+
+mkdir -p $ZIPPED_DIR $UNZIPPED_DIR $MONTHLY_DIR $MONTHLY_PROD
+POSTPROC_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/postproc/
+python archive_monthly_extractor.py -a $ARCHIVE_DIR -o $ZIPPED_DIR
+mpirun -np 20 python $POSTPROC_DIR/archive/uncompress.py -i $ZIPPED_DIR -o $UNZIPPED_DIR -l *gz
+
+
+mpirun -np 10 python monthly_averager.py -i $UNZIPPED_DIR -o $MONTHLY_DIR -m $MASKFILE
+
+
+basename $( ls $MONTHLY_DIR/ave*N1p.nc ) |  cut -c 5-12 > timelist.txt
+
+RUNDATE=20190410
+mpirun -np 1 python ${POSTPROC_DIR}/prodotti/prodotti_copernicus.py -i $MONTHLY_DIR -o $MONTHLY_PROD -t timelist.txt -d an -m $MASKFILE --tr monthly -b $RUNDATE
+
+
+
+
+
+
+
 if [ 1 == 0 ]; then
 module purge
 module load profile/advanced

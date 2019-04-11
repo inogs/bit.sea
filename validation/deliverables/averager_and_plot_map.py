@@ -129,7 +129,7 @@ TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
 
 #TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="." + var)
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
+TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="."+var)
 if TL.inputFrequency is None:
     TL.inputFrequency='monthly'
     print "inputFrequency forced to monthly because of selection of single time"

@@ -63,7 +63,7 @@ def file_header_content(filename,VARLIST, avail_params=None):
     return s
 
 LOC=addsep(args.coriolis) #"/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
-FloatIndexer=LOC + "Float_Index.txt"
+FloatIndexer=LOC + "Float_Index.0.txt"
 DIRLIST=os.listdir(LOC)
 
 
@@ -71,6 +71,7 @@ LINES=[]
 for DIR in DIRLIST:
     dirpath=LOC + DIR
     filenames = glob.glob(dirpath + "/*nc")
+    filenames.sort()
     for filename in filenames:
         if filename[-4:]!='D.nc':
             line=file_header_content(filename,VARLIST,avail_params=None)
@@ -111,6 +112,7 @@ for DIR in DIRLIST:
     dirpath=LOC + DIR
     sensors = get_sensor_list(wmo,CORIOLIS_LINES)
     filenames = glob.glob(dirpath + "/*nc")
+    filenames.sort()
     for filename in filenames:
         line=file_header_content(filename,VARLIST,avail_params=sensors.replace('NITRATE','SR_NO3'))
         if line is not None: LINES.append(line+"\n")

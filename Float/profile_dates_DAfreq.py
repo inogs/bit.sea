@@ -37,7 +37,7 @@ varMODEL = args.varda
 
 deltatimeDA = datetime.timedelta(DAfreq)
 
-DATESTART = '20141231'
+DATESTART = '20150102'
 DATEEND = '20160101'
 
 
@@ -45,6 +45,7 @@ var = LOVFLOATVARS[varMODEL] #'N3n' 'O2o'
 
 read_adjusted = {
     LOVFLOATVARS['P_l']: True,
+    LOVFLOATVARS['N3n']: True,
 }
 
 
@@ -78,5 +79,5 @@ for dateref in TL[1:]:
         NnoDAdates += 1
 
 
-np.savetxt('daTimes_floatfreq' + np.str(DAfreq),DAfloatdates,fmt='%s')
+np.savetxt('daTimes_floatfreq' + np.str(DAfreq) + '_' + varMODEL ,DAfloatdates,fmt='%s')
 

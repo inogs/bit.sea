@@ -553,7 +553,7 @@ if rank==0 :
     
 aveLIST = glob.glob(INPUT_AVEDIR + args.avelist)
 if not filtervar is None:
-    aveLIST=[f for f in aveLIST if filtervar in f ]
+    aveLIST=[f for f in aveLIST if filtervar in os.path.basename(f) ]
 aveLIST.sort()
 
 VARLIST=[]

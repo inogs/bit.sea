@@ -7,9 +7,18 @@
 #PBS -A OGS_dev_0
 
 # cd $PBS_O_WORKDIR
-
-
 MASKFILE=/gpfs/work/OGS18_PRACE_P_0/OPEN_BOUNDARY/meshmask.nc
+
+V4DIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES
+V5DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_09/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES
+IMGDIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/IMG
+mkdir -p $IMGDIR
+mpirun -np 12 python profiles_plotter.py -V4 $V4DIR -V5 $V5DIR -m $MASKFILE -o $IMGDIR
+
+
+
+
+
 ARCHIVE_DIR=/gpfs/work/OGS_prod_0/OPA/V5C/devel/archive
   ZIPPED_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/DAILY_gz
 UNZIPPED_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/MONTHLY_PRODUCTS/DAILY

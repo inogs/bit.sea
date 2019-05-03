@@ -65,6 +65,7 @@ class BioFloat(Instrument):
         cycle = os.path.basename(filename).rsplit("_")[2]
         self.cycle = int(cycle)
 
+
     def __eq__(self,other):
         if isinstance(other, BioFloat):
             if (self.filename  == other.filename):
@@ -371,6 +372,7 @@ def FloatSelector(var, T, region):
     GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
     ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
     FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
+    is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size
@@ -382,6 +384,8 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+        if not is_default_V4C :
+            filename = ONLINE_REPO + "FLOAT_LOVBIO/" + filename
 
         if var is None :
             VarCondition = True
@@ -461,11 +465,10 @@ if __name__ == '__main__':
     print len(PROFILE_LIST)
     print len(remove_bad_sensors(PROFILE_LIST,var))
 
-    import sys
-    sys.exit()
+
 
     for ip, p in enumerate(PROFILE_LIST):
-	continue
+        continue
         F = p._my_float
         Pres,V, Qc = F.read(var, read_adjusted=False)
         ii =~np.isnan(V)
@@ -473,7 +476,7 @@ if __name__ == '__main__':
         if len(V)> 0:
             print V.max(), V.min()
             if V.min() < -976:
-                 break
+                break
 
 
     for p in PROFILE_LIST[:1]:

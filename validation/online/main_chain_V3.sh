@@ -11,10 +11,20 @@ MASKFILE=/gpfs/work/OGS18_PRACE_P_0/OPEN_BOUNDARY/meshmask.nc
 
 V4DIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES
 V5DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_09/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES
+
+TARFILE=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_09/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES.tar
+BASEDIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/
+  V5DIR=$BASEDIR/STAT_PROFILES
+cd $BASEDIR
+tar -xf $TARFILE -C $BASEDIR
+python archive_aveScan_extractor.py -d $RUNDATE -a /gpfs/work/OGS_prod_0/OPA/V5C/prod/archive/ -o $V5DIR
+mpirun -np 15 python compact_profiles -i $V5DIR -o $V5DIR
+
+
+
 IMGDIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/IMG
 mkdir -p $IMGDIR
 mpirun -np 12 python profiles_plotter.py -V4 $V4DIR -V5 $V5DIR -m $MASKFILE -o $IMGDIR
-
 
 
 

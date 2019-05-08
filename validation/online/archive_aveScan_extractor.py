@@ -28,11 +28,11 @@ from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
 end__time=args.date
-LOC = "/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/STAT_PROFILES/" #addsep(args.outdir)
+OUTDIR = addsep(args.outdir)
 archive_dir= "/gpfs/work/OGS_prod_0/OPA/V5C/prod/archive/" #args.arcdir
 
 TI=TimeInterval("20190305",end__time,'%Y%m%d')
 
 
 T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/STATISTICS/STAT_PROFILES/',glob_pattern="ave*nc")
-T_bio.extract_analysis(LOC, command="cp $INFILE $OUTFILE", remove_ext=False)
+T_bio.extract_analysis(OUTDIR, command="cp $INFILE $OUTFILE", remove_ext=False)

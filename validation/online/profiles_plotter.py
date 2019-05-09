@@ -26,12 +26,19 @@ def argument():
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 required = False,
                                 help = ''' Path of maskfile''')
-
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--plotlistfile', '-l',
+                                type = str,
+                                required = True,
+                                help = "Plotlist_bio.xml")
+    parser.add_argument(   '--date', '-d',
+                                type = str,
+                                required = True,
+                                help = "20190204")
 
     return parser.parse_args()
 
@@ -52,6 +59,8 @@ from commons.time_interval import TimeInterval
 from commons import timerequestors
 from commons.utils import addsep
 from commons import season
+from xml.dom import minidom
+
 Season_obj=season.season()
 
 BFMv5_dict={     'Ac':'ALK',
@@ -60,12 +69,6 @@ BFMv5_dict={     'Ac':'ALK',
                 'ppb':'ruPBAc',
       'CaCO3flux_dic':'rcalCARc' }
 
-BFMv2_dict={    'ALK':'Ac',
-            'netPPYc': 'ppn' ,
-           'netPPYc2': 'ppn' ,
-             'ruPPYc': 'ppg',
-             'ruPBAc':'ppb',
-           'rcalCARc':'CaCO3flux_dic' }
 
 try:
     from mpi4py import MPI
@@ -79,6 +82,17 @@ except:
     isParallel = False
 
 
+xmldoc = minidom.parse(args.plotlistfile)
+
+def from_xml(var,attribute):
+    '''
+    Arguments:
+    * var       * string
+    * attribute * string, can be 'units', 'plotunits', 'name','longname'
+    '''
+    for p in xmldoc.getElementsByTagName("plots"):
+        if str(p.getAttribute("var"))==var:
+            return str(p.getAttribute(attribute))
 
 
 
@@ -95,13 +109,14 @@ class plot_container():
             bfmv5_filename = self.path + BFMv5_dict[varname] + ".pkl"
             if (~os.path.exists(filename) & os.path.exists(bfmv5_filename)):
                 filename=bfmv5_filename
-        if varname in BFMv2_dict.keys():
-            bfmv2_filename = self.path + BFMv2_dict[varname] + ".pkl"
-            if (~os.path.exists(filename) & os.path.exists(bfmv2_filename)):
-                filename=bfmv2_filename
-        data, TL = read_pickle_file(filename)
-        self.timelist=TL
-        self.values=data
+        if os.path.exists(filename):
+            data, TL = read_pickle_file(filename)
+            self.timelist=TL
+            self.values=data
+        else:
+            print filename + "not found."
+            self.timelist=None
+            self.values=None
         #              tim| sub basin|   coast| depth|  stat|
         
 
@@ -114,6 +129,7 @@ class plot_container():
         * iSub      * integer, index of subbasin in STAT_PROFILES
         Returns : nothing
         '''
+        if self.values is None : return
         iCoast=1 # open sea
         for iax, ax in enumerate(axes[:-1]):
             idepth = self.mask.getDepthIndex(LEVELS[iax])
@@ -167,10 +183,12 @@ class figure_generator():
         ax3 = fig.add_subplot(425)
         ax4 = fig.add_subplot(427)
 
-
+        units=from_xml(var, "units")
         
         self.LEFT_SIDE_AXES=[ax1, ax2, ax3, ax4]
         for iax, ax in enumerate(self.LEFT_SIDE_AXES):
+            ax.set_ylabel(units)
+            ax.grid(axis='y')
             ax.set_xlim(TI.start_time, TI.end_time)
             if iax<len(self.LEFT_SIDE_AXES)-1:
                 ax.set_xticks([])
@@ -178,12 +196,17 @@ class figure_generator():
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
         xlabels = ax.get_xticklabels()
         pl.setp(xlabels, rotation=30)
-        
+
+        ax1.set_title('Timeseries')
+
         ax_p = fig.add_subplot(122)
-        title = "%s %s" %(var, subname)
+        title = "%s %s" %(from_xml(var,"longname"), subname)
         ax_p.set_title(title)
-        ax_p.set_ylim([0, 600])
-        y_ticklabels=[0,200,400,600]
+        ax_p.set_xlabel(units)
+        ax_p.yaxis.labelpad=-10  # to move units near to axes
+        ax_p.set_ylabel('depth (m)')
+        ax_p.set_ylim([0, 500])
+        y_ticklabels=[0,200,300,400,500]
         y_ticklabels.extend(LEVELS)
         Y_TICK_LABELS=np.unique(y_ticklabels)
         ax_p.set_yticks(Y_TICK_LABELS)
@@ -210,11 +233,11 @@ class figure_generator():
             Bottom, Top =ax.get_ylim()
             title="depth = %dm" %LEVELS[iax]
             x=Left + (Right-Left)*0.03
-            y=Top - (Top-Bottom)*0.05
-            ax.text(x, y, title,fontsize=10,ha='left',va='top')
+            y=Top #+ (Top-Bottom)*0.05
+            ax.text(x, y, title,fontsize=10,ha='left',va='bottom')
     def add_legend(self):
         self.ax_p.legend()
-        self.LEFT_SIDE_AXES[0].legend()
+        self.LEFT_SIDE_AXES[0].legend(bbox_to_anchor = (1, 1.33))
         
                     
 
@@ -230,9 +253,9 @@ P4= plot_container('V4', "b"   ,PATHV4, TheMask)
 P5= plot_container('V5', "r"   ,PATHV5, TheMask)
 PLOT_LIST=[P4, P5]
 
-VARLIST=["N1p", "N3n", "O2o", "P_l", "P_c", "N4n", "N5s", "DIC", "Ac",  "ppn",  'pH', "pCO2", "CO2airflux"]
+VARLIST=["N1p", "N3n", "O2o", "P_l", "P_c", "N4n", "N5s", "DIC", "Ac",  "ppn",  'pH', "pCO2", "CO2airflux", "O3c"]
 
-dateend=datetime.strptime("20190415",'%Y%m%d')
+dateend=datetime.strptime(args.date,'%Y%m%d')
 Graphic_DeltaT = relativedelta(months=18)
 datestart = dateend -Graphic_DeltaT
 TI =TimeInterval.fromdatetimes(datestart, dateend)
@@ -261,5 +284,4 @@ for var in VARLIST[rank::nranks] :
 
         fig.savefig(outfile)
         pl.close(fig)
-
 

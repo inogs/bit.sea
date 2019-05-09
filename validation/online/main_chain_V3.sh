@@ -7,6 +7,7 @@
 #PBS -A OGS_dev_0
 
 # cd $PBS_O_WORKDIR
+RUNDATE=20190506
 MASKFILE=/gpfs/work/OGS18_PRACE_P_0/OPEN_BOUNDARY/meshmask.nc
 
 V4DIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES
@@ -24,7 +25,7 @@ mpirun -np 15 python compact_profiles -i $V5DIR -o $V5DIR
 
 IMGDIR=/gpfs/scratch/userexternal/gbolzon0/TRANSITION_24/wrkdir/POSTPROC/IMG
 mkdir -p $IMGDIR
-mpirun -np 12 python profiles_plotter.py -V4 $V4DIR -V5 $V5DIR -m $MASKFILE -o $IMGDIR
+mpirun -np 12 python profiles_plotter.py -V4 $V4DIR -V5 $V5DIR -m $MASKFILE -o $IMGDIR -d $RUNDATE -l ../deliverables/Plotlist_bio.xml
 
 
 

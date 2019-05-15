@@ -55,9 +55,9 @@ from basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()
-    ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
-    ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=' RAN')
-    ax.plot(TIMES,model_coast[:,isub],':k',label=' RAN_coast')
+    ax.plot(TIMES[:],SAT___MEAN[:,isub],'og',label=' SAT')
+    ax.plot(TIMES[:],MODEL_MEAN[:,isub],'-k',label=' RAN')
+    ax.plot(TIMES[:],model_coast[:,isub],':k',label=' RAN_coast')
     ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()

@@ -63,6 +63,7 @@
 <depth top= "0150" bottom="0300" levplot="0150" clim="[0,0.4]"> </depth>
 <depth top= "0300" bottom="0600" levplot="0300" clim="[0,0.4]"> </depth>
 <depth top= "0600" bottom="1000" levplot="0600" clim="[0,0.4]"> </depth>
+<depth top= "0000" bottom="0200" levplot="0200" clim="[0,0.4]"> </depth>
 </plots>
 
 <!--  chl log -->
@@ -141,7 +142,7 @@
 </plots>
 
 <!--  ALK -->
-<plots var="Ac" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
+<plots var="ALK" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
 <depth top= "0000" bottom="0030" levplot="0000" clim="[2400,2750]"> </depth>
 <depth top= "0000" bottom="0060" levplot="0030" clim="[2400,2750]"> </depth>
 <depth top= "0060" bottom="0100" levplot="0060" clim="[2400,2750]"> </depth>
@@ -152,6 +153,10 @@
 <depth top= "1000" bottom="2000" levplot="1000" clim="[2400,2750]"> </depth>
 </plots>
 
+<!--  MLD -->
+<plots var="somxl010" units="m" plotunits="m" name="mld" longname="Mixed Layer Depth 0.01">
+<depth top= "0000" bottom="0020"  levplot="0000" clim="[0,50]"> </depth>
+</plots>
 
 </LayersMaps>
 

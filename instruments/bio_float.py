@@ -309,6 +309,8 @@ class BioFloat(Instrument):
         return None
 
 def profile_gen(lon,lat,float_time,filename,available_params):
+    if not is_default_V4C:
+        filename = ONLINE_REPO + "FLOAT_BIO/" + filename
     thefloat = BioFloat(lon,lat,float_time,filename,available_params)
     return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
 
@@ -334,8 +336,6 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        if not is_default_V4C:
-            filename = ONLINE_REPO + "FLOAT_BIO/" + filename
 
         if var is None :
             VarCondition = True

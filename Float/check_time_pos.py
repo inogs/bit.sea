@@ -26,13 +26,15 @@ def argument():
 
 args = argument()
 
-if args.inputfile.find("LOV")> -1:
+isLOV = args.inputfile.find("LOV")> -1
+if isLOV:
     from instruments import lovbio_float
 else:
     from instruments import bio_float as lovbio_float
 import datetime
 import numpy as np
 import os
+from commons.utils import addsep
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -45,6 +47,79 @@ mydtype= np.dtype([
 INDEX_FILE=np.loadtxt(args.inputfile,dtype=mydtype, delimiter=",",ndmin=1)
 nFiles=INDEX_FILE.size
 
+if isLOV:
+    ii=INDEX_FILE['file_name']=="6901770/output_lovbio090d_000_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 27.908068 
+    INDEX_FILE['lat'][ind] = 35.666267 
+    ii=INDEX_FILE['file_name']=="6901769/output_lovbio089d_000_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 10.838378
+    INDEX_FILE['lat'][ind] = 39.218622
+    ii=INDEX_FILE['file_name']=="6900807/output_gembio001b_000_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 31.297680 
+    INDEX_FILE['lat'][ind] = 43.496967 
+
+    ii=INDEX_FILE['file_name']=="6901511/output_lovbio035b_038_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 5.641963 
+    INDEX_FILE['lat'][ind] = 41.236117
+
+    ii=INDEX_FILE['file_name']=="6901861/output_ogsbio001b_000_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = -0.769862 
+    INDEX_FILE['lat'][ind] = 36.9156337#
+    ii=INDEX_FILE['file_name']=="6901766/output_lovbio085d_176_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 26.094515 
+    INDEX_FILE['lat'][ind] = 32.091758
+
+    ii=INDEX_FILE['file_name']=="6901773/output_lovbio093d_169_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 32.105873 
+    INDEX_FILE['lat'][ind] = 33.438398
+
+    ii=INDEX_FILE['file_name']=="6901860/output_ogsbio005b_000_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 19.77989 
+    INDEX_FILE['lat'][ind] = 38.695477
+
+    ii=INDEX_FILE['file_name']=="6901862/output_ogsbio003b_245_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 17.341422 
+    INDEX_FILE['lat'][ind] = 39.368507
+
+    ii=INDEX_FILE['file_name']=="6901864/output_ogsbio002b_180_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 4.978265 
+    INDEX_FILE['lat'][ind] = 40.277298
+    
+    # il 7900592 ha ogni tanto 41.887277,36.533803 e ogni tanto -41.880218,-36.541308
+#     for iFrame, f in enumerate(INDEX_FILE['file_name']): 
+#         if f.startswith("7900592/"):
+#             if INDEX_FILE['lon'][iFrame]< 0 :
+#                 INDEX_FILE['lon'][iFrame] = -INDEX_FILE['lon'][iFrame]
+#             if INDEX_FILE['lat'][iFrame]< 0 :
+#                 INDEX_FILE['lat'][iFrame] = -INDEX_FILE['lat'][iFrame]
+            
+    
+    REMOVING_LIST = []
+    REMOVING_LIST.append("6901772/output_lovbio092e_000_00.nc") #non mi fido di time, lat,lon
+    REMOVING_LIST.append("6902900/output_lovbio091e_000_00.nc")
+    
+    good=np.ones((nFiles,),np.bool)
+    for f in REMOVING_LIST:
+        ii=INDEX_FILE['file_name']=="6901772/output_lovbio092e_000_00.nc"
+        good[ii]=False
+    INDEX_FILE=INDEX_FILE[good]
+
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
+ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
+FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
+is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
+
+nFiles=INDEX_FILE.size
 PROFILE_LIST = []
 for iFile in range(nFiles):
     timestr          = INDEX_FILE['time'][iFile]
@@ -53,6 +128,9 @@ for iFile in range(nFiles):
     filename         = INDEX_FILE['file_name'][iFile]
     available_params = INDEX_FILE['parameters'][iFile]
     float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+    
+    if not is_default_V4C :
+        filename = ONLINE_REPO + "FLOAT_LOVBIO/" + filename    
     thefloat = lovbio_float.BioFloat(lon,lat,float_time,filename,available_params)
     PROFILE_LIST.append(lovbio_float.BioFloatProfile(float_time,lon,lat, thefloat,available_params))
     

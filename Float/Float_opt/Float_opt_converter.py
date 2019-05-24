@@ -187,6 +187,8 @@ for ip, p in enumerate(UNIQUE_PROFILES):
         ncOUT.createDimension(dimname, dimvalue)
     ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
     ncvar[:]=time
+    ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
+    ncvar[:]=0.0
     ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
     ncvar[:] = lon
     ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))

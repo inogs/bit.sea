@@ -162,7 +162,7 @@ class BioFloat(Instrument):
                   ('time','S17'),
                   ('parameters','S200')] )
 
-        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
+        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT/Float_Index.0.txt"
         INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
@@ -172,7 +172,7 @@ class BioFloat(Instrument):
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-            if filename == thefilename :
+            if filename.endswith(thefilename):
                 return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 
@@ -263,16 +263,22 @@ if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'PAR'
-    TI = TimeInterval('20140120','20170130','%Y%m%d')
+    var = 'TEMP'
+    TI = TimeInterval('20120101','20170130','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
+    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT/6901483/output_lovbio039b_040_00.nc"
+    F=BioFloat.from_file(filename)
+    import sys
+    sys.exit()
 
     print len(PROFILE_LIST)
 
     for p in PROFILE_LIST:
         Pres,V, Qc = p.read(var)
+        if Pres.min()>0:
+            print Pres.min()
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

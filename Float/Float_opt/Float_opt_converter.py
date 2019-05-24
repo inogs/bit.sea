@@ -140,11 +140,11 @@ for ip, p in enumerate(UNIQUE_PROFILES):
         if filename.find(p.name()) > -1:
             time= INDEX_FILE[ifile]['time'].replace("-","").replace(":","")
             lon = INDEX_FILE[ifile]['lon'].astype(np.float64)
-            lat = INDEX_FILE[ifile]['lon'].astype(np.float64)
+            lat = INDEX_FILE[ifile]['lat'].astype(np.float64)
             FileFound=True
             break
     else:
-        time = p.time.strftime("%Y%m%d%H%M%S")
+        time = p.time.strftime("%Y%m%d%120000")
         lon  = p.lon.astype(np.float64)
         lat  = p.lat.astype(np.float64)
         print "file %s non found" %(p.name())

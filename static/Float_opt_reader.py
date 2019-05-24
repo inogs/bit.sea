@@ -12,7 +12,7 @@ class Float_opt_reader():
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT/Float_opt_dataset.nc"
+        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT/First_approach/Float_opt_dataset.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
 

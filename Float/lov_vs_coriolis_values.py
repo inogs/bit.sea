@@ -17,7 +17,7 @@ for ip, pLov in enumerate(PROFILES_LOV[:1]):
         PresC, ValueC, QcC = pCor.read('CHLA',read_adjusted=False)
         fig,ax =pl.subplots()
         ax.plot(ValueL,PresL,'r', label="LOV")
-        ax.plot(ValueL,PresL,'b.', label="COR")
+        ax.plot(ValueC,PresC,'b.', label="COR")
         ax.invert_yaxis()
         ax.grid()
         ax.legend()

@@ -75,6 +75,19 @@ if isLOV:
     INDEX_FILE['lon'][ind] = 26.094515 
     INDEX_FILE['lat'][ind] = 32.091758
 
+    ii=INDEX_FILE['file_name']=="6901766/output_lovbio085d_185_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 27.132267
+    INDEX_FILE['lat'][ind] = 31.605190
+    INDEX_FILE['time'][ind] = "20171224-09:31:00"
+
+    ii=INDEX_FILE['file_name']=="6901766/output_lovbio085d_186_00.nc"
+    ind = np.nonzero(ii)[0][0]
+    INDEX_FILE['lon'][ind] = 27.163835
+    INDEX_FILE['lat'][ind] = 31.694962
+    INDEX_FILE['time'][ind] = "20171231-09:34:00"
+
+
     ii=INDEX_FILE['file_name']=="6901773/output_lovbio093d_169_00.nc"
     ind = np.nonzero(ii)[0][0]
     INDEX_FILE['lon'][ind] = 32.105873 
@@ -161,7 +174,7 @@ for wmo in WMOS:
 good = np.ones((nFiles),np.bool)
 LINES=[]
 for iFile in range(nFiles):
-    if INDEX_FILE['file_name'][iFile] in REMOVING_LIST: 
+    if ONLINE_REPO + "FLOAT_LOVBIO/" + INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
         good[iFile]=False
 
 np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s")

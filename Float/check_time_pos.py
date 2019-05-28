@@ -19,7 +19,7 @@ def argument():
                                 help = 'file used by Float_Selector')
     parser.add_argument(   '--erase',"-e",
                                 dest = 'erase',
-                                default = "none",
+                                default = False,
                                 action = 'store_true',
                                 help = 'deletes original files')
     return parser.parse_args()

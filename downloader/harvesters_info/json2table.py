@@ -36,7 +36,7 @@ A=json.load(fid)  # list of dicts
 fid.close()
 
 nFloats= len(A)
-FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
+FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_lov','S20'),('status','S1')]
 
 TABLE=np.ones((nFloats,),dtype=FLOAT_dtype)
 
@@ -50,7 +50,7 @@ for iFloat in range(nFloats):
     TABLE[iFloat]['wmo']     =str(D['wmo'])
     TABLE[iFloat]['id_type'] =int(D['id_type'])
     TABLE[iFloat]['type']    =str(D['type'])
-    TABLE[iFloat]['nome_fs'] =str(D['nome_fs'])
+    TABLE[iFloat]['nome_lov'] =str(D['nome_lov'])
     TABLE[iFloat]['status']=  str(D['status'])
       
 

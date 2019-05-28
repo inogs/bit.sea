@@ -63,6 +63,7 @@ class DataExtractor(object):
                     if dimvar==2:
                         if ndims == 2 : self.__values = np.array(dset.variables[v])
                         if ndims == 3 : self.__values = np.array(dset.variables[v])[0,:,:]
+                        if ndims == 4 : self.__values = np.array(dset.variables[v])[0,0,:,:]
                     self.__shape = self.__values.shape
                     
                     if 'missing_value' in dset.variables[v].ncattrs():

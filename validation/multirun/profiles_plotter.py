@@ -148,7 +148,7 @@ class figure_generator():
                     
 ##### USER SETTINGS #######################################
 LOC="/marconi_work/OGS_dev_0/"
-
+LOC = '/gpfs/scratch/userexternal/'
 
 PATH6 = LOC + "DEGRADATION_4_70/CFR_PREVIOUS_RUNS/HC16/STAT_PROFILES/"
 PATH8 = LOC + "DEGRADATION_4_70/TEST_08/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
@@ -156,20 +156,30 @@ PATH14= LOC + "DEGRADATION_4_70/TEST_14/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_P
 PATH16= LOC + "DEGRADATION_4_70/TEST_16/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 PATH17= LOC + "DEGRADATION_4_70/TEST_17/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 
-Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
-Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
-Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
-OUTDIR= LOC + "DEGRADATION_4_70/POSTPROC/IMG/"
+PATH_05 = LOC + '/gbolzon0/OPEN_BOUNDARY/TEST_05/' + \
+    'wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/'
+PATH_06 = LOC + '/ateruzzi/POSTPROC_TEST06/' + \
+    '/output/AVE_FREQ_2/STAT_PROFILES/'
+
+#Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
+#Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
+#Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
+Mask24=Mask(LOC + "/gbolzon0/OPEN_BOUNDARY/TEST_06/wrkdir/MODEL/meshmask.nc",loadtmask=False)
+OUTDIR= LOC + "ateruzzi/ELAB_DA12/CFR_TESTS/"
 
 LEVELS=[0,50,100,150] #m
 
-P14= plot_container('HC16_4_BFMv2', "r:"   ,PATH14, Mask_4)
-P16= plot_container('HC16_4_bfmv5', "g"  , PATH16, Mask_4)
-P17= plot_container('HC16_4_bfmv5_day_night', "k"  , PATH16, Mask_4)
+#P14= plot_container('HC16_4_BFMv2', "r:"   ,PATH14, Mask_4)
+#P16= plot_container('HC16_4_bfmv5', "g"  , PATH16, Mask_4)
+#P17= plot_container('HC16_4_bfmv5_day_night', "k"  , PATH16, Mask_4)
+P05= plot_container('TEST_05', "r"  , PATH_05, Mask24)
+P06= plot_container('TEST_06', "b"  , PATH_06, Mask24)
 
-PLOT_LIST=[P14,P16,P17]
+#PLOT_LIST=[P14,P16,P17]
+PLOT_LIST=[P05,P06]
 
 VARLIST=["Ac","N1p", "N3n", "O2o", "P_l", "P_c", "DIC", "ppn", "P_n", "P_p", 'pH', "pCO2", "ppg", "ppb", "resPBAc", "CaCO3flux_dic"]
+VARLIST=["P_l", "ppn"]
 VARLIST_only_v5=['exPPYcR1', 'exPPYcR2','exPPYcR3','exPPYcR6',"resPPYc"]
 
 ##################################################################

@@ -141,24 +141,12 @@ for ip, p in enumerate(UNIQUE_PROFILES):
             time= INDEX_FILE[ifile]['time'].replace("-","").replace(":","")
             lon = INDEX_FILE[ifile]['lon'].astype(np.float64)
             lat = INDEX_FILE[ifile]['lat'].astype(np.float64)
-            FileFound=True
             break
     else:
-        time = p.time.strftime("%Y%m%d%120000")
-        lon  = p.lon.astype(np.float64)
-        lat  = p.lat.astype(np.float64)
-        print "file %s non found" %(p.name())
-        if p.name().find("064c")>-1:wmo="000001"
-        if p.name().find("001i")>-1:wmo="000002"
-        if p.name().find("016d")>-1:wmo="000003"
-        FileFound=False
+        raise ValueError ( "file %s non found" %(p.name()) )
 
-    if not FileFound: 
-        wmodir = OUTDIR + wmo
-        outfile = OUTDIR + wmo + "/" + p.name() + ".nc"
-    else:
-        wmodir=OUTDIR + os.path.dirname(filename)
-        outfile=OUTDIR + filename
+    wmodir=OUTDIR + os.path.dirname(filename)
+    outfile=OUTDIR + filename
     os.system("mkdir -p " + wmodir)
     
 

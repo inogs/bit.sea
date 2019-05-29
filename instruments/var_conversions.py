@@ -4,7 +4,12 @@ FLOATVARS={'O2o':'DOXY', \
            'P_i':'CHLA', \
            'Chla':'CHLA', \
            'vosaline':'PSAL', \
-           'votemper':'TEMP' }   
+           'votemper':'TEMP',
+           'PAR':'DOWNWELLING_PAR',
+           'BBP700':'BBP700',
+           'BBP532':'BBP532',
+           'pH'    : 'PH_IN_SITU_TOTAL'   }
+ 
 #DOXY:units = "micromole/kg" ;
 #CHLA:units = "mg/m3" ;
 #NITRATE:units = "micromole/kg" ;
@@ -15,7 +20,11 @@ LOVFLOATVARS={'O2o':'DOXY', \
               'Chla':'CHLA', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
-              'votemper':'TEMP' }
+              'votemper':'TEMP',
+              'PAR':'PAR',
+              'BBP532':'BBP532',
+              'BBP700':'BBP700',
+               'pH'    : 'PH_IN_SITU_TOTAL'  }
 
 
 

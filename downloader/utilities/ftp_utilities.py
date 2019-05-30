@@ -160,9 +160,8 @@ def download_file(connection, f, path, log, perms=None,
             if skip_is_strange:
                 log.info('Skipping file ' + f + ' because'
                          ' it was already downloaded!')
-            else:
-                log.debug('Skipping file ' + f + ' because '
-                          'it was already downloaded')
+#            else:
+#                log.debug('Skipping file ' + f + ' because it was already downloaded')
             return False
 
     # Check if the file is readable

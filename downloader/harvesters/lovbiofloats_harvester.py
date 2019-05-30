@@ -27,6 +27,17 @@ auth = urllib2.HTTPBasicAuthHandler(manager)
 opener = urllib2.build_opener(auth)
 urllib2.install_opener(opener)
 
+wmo_default = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
+wmo_file=os.getenv("WMO_FILE")
+if wmo_file is None:
+    print("Env WMO_FILE is not defined. Taking the hardcoded wmo.txt")
+    wmo_file=wmo_default
+else:
+    print("Taking regularly " + wmo_file)
+
+
+xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
+print(wmo_file)
 
 class ErrorMessage(object):
     """A class to handle error messages"""
@@ -100,19 +111,6 @@ def download_file(url, f, path, log, perms=None,
     return True
 
 
-
-
-wmo_default = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
-wmo_file=os.getenv("WMO_FILE")
-if wmo_file is None:
-    print("Env WMO_FILE is not defined. Taking the hardcoded wmo.txt")
-    wmo_file=wmo_default
-else:
-    print("Taking regularly " + wmo_file) 
-    
-
-xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
-print(wmo_file)
 
 class LovBioFloatsHarvester(HarvesterInterface):
     """

@@ -19,8 +19,17 @@ import numpy as np
 ftp_url = 'ftp.ifremer.fr'
 
 relative_path = "FLOAT_BIO"
-wmo_file = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
+wmo_default = realpath(dirname(realpath(__file__)) + "/../harvesters_info/wmo.txt")
+wmo_file=os.getenv("WMO_FILE")
+if wmo_file is None:
+    print("Env WMO_FILE is not defined. Taking the hardcoded wmo.txt")
+    wmo_file=wmo_default
+else:
+    print("Taking regularly " + wmo_file)
+
+
 xml_path = realpath(dirname(realpath(__file__)) + '/../harvesters_xml')
+print(wmo_file)
 
 
 class BioFloatsHarvester(HarvesterInterface):

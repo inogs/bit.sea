@@ -110,7 +110,10 @@ class BioFloat(Instrument):
         varObj = ncObj.variables[var]
         fillvalue = varObj._FillValue
         M = varObj.data.copy()
-        M[M==fillvalue] = np.NaN;
+        if varObj.typecode()=='c':
+            M[M==fillvalue] = '0'
+        else:
+            M[M==fillvalue] = np.NaN;
         return M
 
     def __merge_profile_with_adjusted(self,profile, profile_adj):

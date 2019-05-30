@@ -74,6 +74,10 @@ class BioFloat(Instrument):
         wmo, cycle = os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
+        self.DATA_MODE = None
+        self.PARAMETER_DATA_MODE = None
+        self.PARAMETER = None
+        self.N_PARAM   = None
 
     def __eq__(self,other):
         if isinstance(other, BioFloat):
@@ -83,26 +87,31 @@ class BioFloat(Instrument):
                 return False
         else:
             return False
+    def load_basics(self):
+        ncIN = NC.netcdf_file(self.filename,'r')
+        self.N_PROF    = ncIN.dimensions['N_PROF']
+        self.N_PARAM   = ncIN.dimensions['N_PARAM']
+        self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
+        self.DATA_MODE = ncIN.variables['DATA_MODE'].data.copy()
+        self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
+        ncIN.close()
 
-    def __searchVariable_on_parameters(self, var):
+    def _searchVariable_on_parameters(self, var):
         '''
         returns index of profile on which variable has to be read,
         -1 if fails (PARAMETERS variable is blank)
 
         '''
+        if self.PARAMETER is None:
+            self.load_basics()
 
-        ncIN = NC.netcdf_file(self.filename,'r')
-        N_PROF    = ncIN.dimensions['N_PROF']
-        N_PARAM   = ncIN.dimensions['N_PARAM']
-        PARAMETER = ncIN.variables['PARAMETER'].data.copy()
-        ncIN.close()
 
-        if PARAMETER.tostring().rstrip() == '':
+        if self.PARAMETER.tostring().rstrip() == '':
             return -1
         else:
-            for iprof in range(N_PROF):
-                for iparam in range(N_PARAM):
-                    s = PARAMETER[iprof,0,iparam,:].tostring().rstrip()
+            for iprof in range(self.N_PROF):
+                for iparam in range(self.N_PARAM):
+                    s = self.PARAMETER[iprof,0,iparam,:].tostring().rstrip()
                     if s==var:
                         return iprof
 
@@ -139,14 +148,22 @@ class BioFloat(Instrument):
 
         return M_RES
 
-
+    def status_var(self,var):
+        '''
+        Argument: var, string
+        Returns: string, 'R', or 'A' (real or adjusted)
+        '''
+        if self.PARAMETER is None:
+            self.load_basics()
+        iProf = self._searchVariable_on_parameters(var);
+        return self.DATA_MODE[iProf]
 
     def read_very_raw(self,var):
         '''
         Reads data from file
         Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
         '''
-        iProf = self.__searchVariable_on_parameters(var); #print iProf
+        iProf = self._searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
 
         if iProf== -1 :
@@ -198,7 +215,7 @@ class BioFloat(Instrument):
         badPres    = (rawPres<=0) | nanPres
         goodQc     = (rawQc == '2' ) | (rawQc == '1' )
         badProfile = np.isnan(rawProfile)
-        bad = badPres | badProfile | (~goodQc )
+        bad = badPres | badProfile #| (~goodQc )
 
 
         Pres    =    rawPres[~bad]
@@ -293,15 +310,6 @@ class BioFloat(Instrument):
         '''
         Returns the single Bio_Float instance corresponding to filename
         '''
-        mydtype= np.dtype([
-                  ('file_name','S200'),
-                  ('lat',np.float32),
-                  ('lon',np.float32),
-                  ('time','S17'),
-                  ('parameters','S200')] )
-
-        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Index.txt"
-        INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
             timestr          = INDEX_FILE['time'][iFile]
@@ -310,7 +318,7 @@ class BioFloat(Instrument):
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-            if filename == thefilename :
+            if ONLINE_REPO + "FLOAT_BIO/" + thefilename == filename :
                 return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 
@@ -424,11 +432,23 @@ if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'NITRATE'
-    TI = TimeInterval('20150520','20150830','%Y%m%d')
+    var = 'CHLA'
+    TI = TimeInterval('20150520','20190830','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
+    for ip, p in enumerate(PROFILE_LIST):
+        F=p._my_float
+        F.load_basics()
+        if F.status_var('CHLA')=='R': print ip, 'R'
+
+#    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/6900807/MR6900807_225.nc"
+#    F=BioFloat.from_file(filename)
+#    F2=BioFloat.from_file("/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/6901765/MR6901765_001.nc")
+    import sys
+    sys.exit()
+
+
 
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)

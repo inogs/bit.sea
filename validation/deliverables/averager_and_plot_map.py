@@ -217,8 +217,8 @@ for il, layer in enumerate(PLOT.layerlist):
 #    netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,mask)
         netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
 
-    climlog=PLOTlog.climlist[il]
     if (var == 'P_l'):
+        climlog=PLOTlog.climlist[il]
         fig,ax = mapplotlog({'clim':climlog, 'data':integrated_masked, }, \
             fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
         ax.set_xlim([-5,36])

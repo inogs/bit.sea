@@ -10,6 +10,18 @@ from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
+mydtype= np.dtype([
+          ('file_name','S200'),
+          ('lat',np.float32),
+          ('lon',np.float32),
+          ('time','S17'),
+          ('parameters','S200')] )
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
+ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
+FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
+is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
+
+INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 
 class BioFloatProfile(Profile):
@@ -323,15 +335,6 @@ class BioFloat(Instrument):
         '''
         Returns the single Bio_Float instance corresponding to filename
         '''
-        mydtype= np.dtype([
-                  ('file_name','S200'),
-                  ('lat',np.float32),
-                  ('lon',np.float32),
-                  ('time','S17'),
-                  ('parameters','S200')] )
-
-        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/Float_Index.txt"
-        INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
             timestr          = INDEX_FILE['time'][iFile]
@@ -344,7 +347,11 @@ class BioFloat(Instrument):
                 return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 
-
+def profile_gen(lon,lat,float_time,filename,available_params):
+    if not is_default_V4C:
+        filename = ONLINE_REPO + "FLOAT_LOVBIO/" + filename
+    thefloat = BioFloat(lon,lat,float_time,filename,available_params)
+    return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
 def FloatSelector(var, T, region):
     '''
     Arguments:
@@ -363,18 +370,6 @@ def FloatSelector(var, T, region):
        export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/
     '''
 
-    mydtype= np.dtype([
-              ('file_name','S200'),
-              ('lat',np.float32),
-              ('lon',np.float32),
-              ('time','S17'),
-              ('parameters','S200')] )
-    GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
-    ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-    FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
-    is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
-
-    INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
@@ -450,6 +445,43 @@ def remove_bad_sensors(Profilelist,var):
         return [p for p in Profilelist if p.name() not in OUT_O2o]
 
     return Profilelist
+
+def from_coriolis_profile(coriolis_profile, verbose=True):
+    '''
+    Arguments:
+    * lov_profile * a lov profile objects
+    * verbose     * logical, used to print lov files that don't have a corresponding in coriolis
+
+    Returns:
+    *  p * a LOV BioFloatProfile object
+    '''
+    wmo = coriolis_profile._my_float.wmo
+    INDEXES=[]
+    for iFile, filename in enumerate(INDEX_FILE['file_name']):
+        if filename.startswith(wmo):
+            INDEXES.append(iFile)
+    A = INDEX_FILE[INDEXES]
+    nFiles = len(A)
+    DELTA_TIMES = np.zeros((nFiles,), np.float32)
+    for k in range(nFiles):
+        float_time =datetime.datetime.strptime(A['time'][k],'%Y%m%d-%H:%M:%S')
+        deltat = coriolis_profile.time - float_time
+        DELTA_TIMES[k] = deltat.total_seconds()
+    min_DeltaT = np.abs(DELTA_TIMES).min()
+    if min_DeltaT > 3600*3 :
+        if verbose: print "no LOV file corresponding to "  + coriolis_profile._my_float.filename
+        return None
+    F = (A['lon'] - coriolis_profile.lon)**2 + (A['lat'] - coriolis_profile.lat)**2 +  DELTA_TIMES**2
+    iFile = F.argmin()
+    timestr          = A['time'][iFile]
+    lon              = A['lon' ][iFile]
+    lat              = A['lat' ][iFile]
+    filename         = A['file_name'][iFile]
+    available_params = A['parameters'][iFile]
+    float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+    return profile_gen(lon, lat, float_time, filename, available_params)
+
+
 
 if __name__ == '__main__':
     from basins.region import Rectangle

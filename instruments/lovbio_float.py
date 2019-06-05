@@ -343,7 +343,7 @@ class BioFloat(Instrument):
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-            if filename == thefilename :
+            if ONLINE_REPO + "FLOAT_LOVBIO/" + thefilename == filename :
                 return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 

@@ -91,7 +91,7 @@ def synthesis_profile(pLov, pCor):
             print "few values in Coriolis: using LOV"
             return PresL, ValueL, QcL
         else:
-            print "few values in either dataset"
+            print "few values in either dataset for " + pLov._my_float.filename
             return None, None, None
     if has_drift(PresC, ValueC):
         print pCor._my_float.filename + " has drift"
@@ -113,17 +113,17 @@ def treating_coriolis(pCor):
     if pCor._my_float.status_var('CHLA')=='A':
         Pres,Value, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
-            print "few values in Coriolis"
+            print "few values in Coriolis for " + pCor._my_float.filename
             return None, None, None
 
-        CHL = superfloat_generator.quenching(pCor, Pres, Value, None)
+        CHL = quenching(pCor, Pres, Value, None)
         ii=(Pres >= 400) & (Pres <= 600)
         if ii.sum() > 0:
             shift = CHL[ii].mean()
             CHL = CHL - shift
         return Pres, CHL, Qc
     else:
-        print "R", pCor._my_float.filename
+        print "R -- not dumped ", pCor._my_float.filename
         return None, None, None
 
 if __name__=="__main__":

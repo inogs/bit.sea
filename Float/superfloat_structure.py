@@ -64,7 +64,7 @@ def dumpfile(outfile,p,Pres,chl_profile,Qc):
 
 
 for ip, pLov in enumerate(PROFILES_LOV[:1]):
-    pCor = bio_float.from_lov_profile(pLov)
+    pCor = bio_float.from_lov_profile(pLov, verbose=True)
     is_only_lov = pCor is None
     if is_only_lov:
         outfile = get_info(pLov,OUTDIR)
@@ -93,7 +93,7 @@ for ip, pCor in enumerate(PROFILES_COR):
     outfile = get_info(pCor, OUTDIR)
     if os.path.exists(outfile): continue
     os.system('mkdir -p ' + os.path.dirname(outfile))
-    Pres, CHL, Qc=treating_coriolis(pCor)
+    Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
     if Pres is None: continue # no data
     dumpfile(outfile, pCor, Pres, CHL, Qc)
     

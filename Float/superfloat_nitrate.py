@@ -8,7 +8,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 TI = TimeInterval('2012','2020','%Y')
 R = Rectangle(-6,36,30,46)
-#da rimuovere /gpfs/scratch/userexternal/gbolzon0/SuperFloat/7900592/MR7900592_071.nc
+
 
 PROFILES_LOV =lovbio_float.FloatSelector('SR_NO3', TI, R)
 OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
@@ -18,13 +18,9 @@ def get_info(p,outdir):
     return filename
 
 
-def dump_nitrate_file(outfile,pLov, mode='w'):
-    Pres, Value, Qc= pLov.read("SR_NO3", read_adjusted=True)
-    nP=len(Pres)
-    if nP<5 :
-        print "few values for " + pLov._my_float.filename
-        return
+def dump_nitrate_file(outfile, Pres, Value, Qc, mode='w',):
     
+    nP=len(Pres)
     ncOUT = NC.netcdf_file(outfile,mode)
     ncOUT.createDimension('nNITRATE', nP)
     ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
@@ -49,6 +45,14 @@ for ip, pLov in enumerate(PROFILES_LOV):
         outfile = get_info(pLov,OUTDIR)
     else:
         outfile = get_info(pCor,OUTDIR)
+
+    Pres, Value, Qc= pLov.read("SR_NO3", read_adjusted=True)
+    nP=len(Pres)
+    if nP<5 :
+        print "few values for " + pLov._my_float.filename
+        continue
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+
     if os.path.exists(outfile):
         if not exist_nitrate(outfile):
             dumpfile(outfile, pLov, mode='a')
@@ -58,5 +62,4 @@ for ip, pLov in enumerate(PROFILES_LOV):
     else:
         print outfile + " not found"
         dump_nitrate_file(outfile, pLov, mode='w')
-    
-        
+

@@ -63,7 +63,7 @@ def dumpfile(outfile,p,Pres,chl_profile,Qc):
     ncOUT.close()
 
 
-for ip, pLov in enumerate(PROFILES_LOV[:1]):
+for ip, pLov in enumerate(PROFILES_LOV[:]):
     pCor = bio_float.from_lov_profile(pLov, verbose=True)
     is_only_lov = pCor is None
     if is_only_lov:

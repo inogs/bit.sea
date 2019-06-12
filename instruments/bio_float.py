@@ -165,6 +165,7 @@ class BioFloat(Instrument):
         '''
         iProf = self._searchVariable_on_parameters(var); #print iProf
         ncIN=NC.netcdf_file(self.filename,'r')
+        PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
         if iProf== -1 :
             M = self.__merge_var_with_adjusted(ncIN, var)
@@ -176,12 +177,14 @@ class BioFloat(Instrument):
             iProf = N_MEAS.argmax()
             print "iprof new value", iProf
 
-
-        M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+        if ncIN.variables.has_key(var + "_ADJUSTED"):
+            M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+            QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
+        else:
+            M_ADJ   = np.zeros_like(PRES)*np.nan
+            QC      = np.zeros_like(PRES)*np.nan
         M       = self.__fillnan(ncIN, var )
-        #M      = self.__merge_var_with_adjusted(ncIN, var) # to have not only adjusted
-        PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
-        QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
+
         Profile     =     M[iProf,:]
         Profile_adj = M_ADJ[iProf,:]
         Pres        =  PRES[iProf,:]
@@ -264,6 +267,13 @@ class BioFloat(Instrument):
         pres = pres[ii]
         prof = prof[ii]
         qc   =   qc[ii]
+
+        if (var=='DOXY'):
+            #prof = self.convert_oxygen(pres, prof)
+            ii = (prof > 140) & (prof<280)
+            pres = pres[ii]
+            prof = prof[ii]
+            qc   =   qc[ii]
 
         if mean == None:
             if BioFloat.default_mean != None:

@@ -121,6 +121,8 @@ def treating_coriolis(pCor):
         if ii.sum() > 0:
             shift = CHL[ii].mean()
             CHL = CHL - shift
+        ii=CHL<=0
+        CHL[ii] = 0.005
         return Pres, CHL, Qc
     else:
         print "R -- not dumped ", pCor._my_float.filename

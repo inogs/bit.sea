@@ -77,7 +77,8 @@ for ip, pLov in enumerate(PROFILES_LOV[:]):
         Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
         profile_for_dump = pLov
     else:
-        Pres, Profile,Qc = superfloat_generator.synthesis_profile(pLov, pCor)
+        #Pres, Profile,Qc = superfloat_generator.synthesis_profile(pLov, pCor)
+        Pres, Profile,Qc = superfloat_generator.treating_coriolis(pCor)
         profile_for_dump = pCor
     
     if Pres is None: continue # no data
@@ -98,5 +99,5 @@ for ip, pCor in enumerate(PROFILES_COR):
     dumpfile(outfile, pCor, Pres, CHL, Qc)
     
     
-    
+# DRIFTS in 6900807 7900591
     

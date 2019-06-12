@@ -5,7 +5,7 @@ from basins.region import Rectangle
 from commons import calculated_depths
 import pylab as pl
 import numpy as np
-TI = TimeInterval('2015','2017','%Y')
+TI = TimeInterval('2012','2020','%Y')
 R = Rectangle(-6,36,30,46)
 
 def quenching(profile_obj, PresChl, Chl, chl_lov_zero):
@@ -21,7 +21,7 @@ def quenching(profile_obj, PresChl, Chl, chl_lov_zero):
     Quenched_Chl = Chl.copy()
     if profile_obj.time.month in range(1,13):
         PresT, Temp, _ = profile_obj.read('TEMP', read_adjusted=False)
-        mld = calculated_depths.mld(Temp, PresT, zref=0)
+        mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
         if mld > 200:mld=20
 
         ii=PresChl<=mld
@@ -128,10 +128,11 @@ def treating_coriolis(pCor):
         print "R -- not dumped ", pCor._my_float.filename
         return None, None, None
 
+
 if __name__=="__main__":
 
     PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
-
+    BAD_LIST=[]
     for ip, pLov in enumerate(PROFILES_LOV[:]):
         pCor=bio_float.from_lov_profile(pLov)
         if pCor is not None:
@@ -152,13 +153,13 @@ if __name__=="__main__":
 
             if len(ValueL)<  1:
                 print "no LOV data"
-                import sys
-                sys.exit()
+                continue
+
 
             if has_drift(PresC, ValueC):
                 print pCor._my_float.filename + " has drift"
                 continue
-            CHL = quenching(pCor, PresC, ValueC,ValueL[0])
+            CHL = quenching(pCor, PresC, ValueC,chl_lov_zero=None) #ValueL[0])
 
             ii=(PresC >= 400) & (PresC <= 600)
             if ii.sum() > 0:
@@ -167,6 +168,7 @@ if __name__=="__main__":
 
             if not are_identical(CHL, ValueL):
                 if not are_shifted(CHL, ValueL):
+                    BAD_LIST.append(ip)
                     print ip
                     fig,ax =pl.subplots()
                     ax.plot(ValueL,PresL,'r', label="LOV")
@@ -174,7 +176,8 @@ if __name__=="__main__":
                     ax.invert_yaxis()
                     ax.grid()
                     ax.legend()
-                    fig.show()
+                    #fig.show()
                     pl.savefig(pCor.ID()+ ".png")
+                    pl.close(fig)
                     #import sys
                     #sys.exit()

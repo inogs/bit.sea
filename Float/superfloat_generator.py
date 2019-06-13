@@ -1,12 +1,7 @@
-from instruments import bio_float
-from instruments import lovbio_float
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
 from commons import calculated_depths
-import pylab as pl
 import numpy as np
-TI = TimeInterval('2012','2020','%Y')
-R = Rectangle(-6,36,30,46)
+import scipy.io.netcdf as NC
+
 
 def quenching(profile_obj, PresChl, Chl, chl_lov_zero):
     '''
@@ -128,9 +123,26 @@ def treating_coriolis(pCor):
         print "R -- not dumped ", pCor._my_float.filename
         return None, None, None
 
+def exist_variable(variable, filename):
+    ncIN = NC.netcdf_file(filename,'r')
+    variables=ncIN.variables.keys()
+    ncIN.close()
+    return variable in variables
+
+class Metadata():
+    def __init__(self, origin, filename):
+        self.origin = origin
+        self.filename = filename
+
 
 if __name__=="__main__":
-
+    from instruments import bio_float
+    from instruments import lovbio_float
+    from commons.time_interval import TimeInterval
+    from basins.region import Rectangle
+    import pylab as pl
+    TI = TimeInterval('2012','2020','%Y')
+    R = Rectangle(-6,36,30,46)
     PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
     BAD_LIST=[]
     for ip, pLov in enumerate(PROFILES_LOV[:]):

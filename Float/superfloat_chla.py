@@ -6,11 +6,8 @@ import superfloat_generator
 import os,sys
 import scipy.io.netcdf as NC
 import numpy as np
-TI = TimeInterval('2012','2020','%Y')
-R = Rectangle(-6,36,30,46)
 
-PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
-OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
+
 
 def get_info(p,outdir):
     wmo=p._my_float.wmo
@@ -80,50 +77,64 @@ def is_only_lov(pCor):
     if pCor is None: return True
     return not superfloat_generator.exist_variable('CHLA', pCor._my_float.filename)
 
-for ip, pLov in enumerate(PROFILES_LOV[:]):
-    pCor = bio_float.from_lov_profile(pLov, verbose=True)
-    is_only_LOV = is_only_lov(pCor)
-    if is_only_lov:
-        outfile = get_info(pLov,OUTDIR)
-    else:
-        outfile = get_info(pCor,OUTDIR)
-    if os.path.exists(outfile): continue
-    os.system('mkdir -p ' + os.path.dirname(outfile))
-    
-    if is_only_lov:
-        Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
-        profile_for_data = pLov
-        if pCor is None:
-            profile_for_pos= pLov
+
+TI = TimeInterval('2012','2020','%Y')
+R = Rectangle(-6,36,30,46)
+
+PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
+wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
+
+OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
+
+for wmo in wmo_list:
+    Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
+    for ip, pLov in enumerate(Profilelist):
+        pCor = bio_float.from_lov_profile(pLov, verbose=True)
+        is_only_LOV = is_only_lov(pCor)
+        if is_only_lov:
+            outfile = get_info(pLov,OUTDIR)
         else:
-            profile_for_pos= pCor
-        metadata = superfloat_generator.Metadata('lov', pLov._my_float.filename)
+            outfile = get_info(pCor,OUTDIR)
+        if os.path.exists(outfile): continue
+        os.system('mkdir -p ' + os.path.dirname(outfile))
 
-    else:
-        #Pres, Profile,Qc = superfloat_generator.synthesis_profile(pLov, pCor)
-        Pres, Profile,Qc = superfloat_generator.treating_coriolis(pCor)
-        profile_for_data = pCor
-        profile_for_pos  = pCor
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+        if is_only_lov:
+            Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
+            profile_for_data = pLov
+            if pCor is None:
+                profile_for_pos= pLov
+            else:
+                profile_for_pos= pCor
+            metadata = superfloat_generator.Metadata('lov', pLov._my_float.filename)
+
+        else:
+            #Pres, Profile,Qc = superfloat_generator.synthesis_profile(pLov, pCor)
+            Pres, Profile,Qc = superfloat_generator.treating_coriolis(pCor)
+            profile_for_data = pCor
+            profile_for_pos  = pCor
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
 
 
-    if Pres is None: continue # no data
+        if Pres is None: continue # no data
 
-    dumpfile(outfile, profile_for_pos, profile_for_data, Pres, Profile, Qc, metadata)
+        dumpfile(outfile, profile_for_pos, profile_for_data, Pres, Profile, Qc, metadata)
 
 
-print "Profiles only Coriolis"
+print "**************** Profiles only Coriolis *******************"
 # Deve gestire i profili only_coriolis
 PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
+wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
-for ip, pCor in enumerate(PROFILES_COR):
-    outfile = get_info(pCor, OUTDIR)
-    if os.path.exists(outfile): continue
-    os.system('mkdir -p ' + os.path.dirname(outfile))
-    Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
-    metadata = Metadata('Coriolis', pCor._my_float.filename)
-    if Pres is None: continue # no data
-    dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
+for wmo in wmo_list:
+    Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
+    for ip, pCor in enumerate(Profilelist):
+        outfile = get_info(pCor, OUTDIR)
+        if os.path.exists(outfile): continue
+        os.system('mkdir -p ' + os.path.dirname(outfile))
+        Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
+        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+        if Pres is None: continue # no data
+        dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
 
 
 # DRIFTS in 6900807 7900591

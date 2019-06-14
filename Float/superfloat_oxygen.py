@@ -7,8 +7,6 @@ import os,sys
 import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
-TI = TimeInterval('2012','2020','%Y')
-R = Rectangle(-6,36,30,46)
 
 def remove_bad_sensors(Profilelist,var):
     '''
@@ -107,9 +105,9 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncOUT.close()
 
 
-
+TI = TimeInterval('2012','2020','%Y')
+R = Rectangle(-6,36,30,46)
 force_writing_oxygen=True
-
 
 PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
 PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
@@ -123,7 +121,8 @@ def get_outfile(p,outdir):
     filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
     return filename
 
-for wmo in wmo_list[45:]:
+for wmo in wmo_list:
+    print wmo
     Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
         Pres, Value, Qc = pCor.read('DOXY',read_adjusted=False)

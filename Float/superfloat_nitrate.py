@@ -83,7 +83,8 @@ OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO
 
 force_writing_nitrate=True
 
-for wmo in wmo_list:
+for wmo in wmo_list: # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
+    #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
     Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
     for ip, pLov in enumerate(Profilelist):
         pCor = bio_float.from_lov_profile(pLov, verbose=True)

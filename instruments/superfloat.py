@@ -12,7 +12,7 @@ mydtype= np.dtype([
           ('lon',np.float32),
           ('time','S17'),
           ('parameters','S200')] )
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + "SuperFloat/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
@@ -39,11 +39,12 @@ class BioFloatProfile(Profile):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
-        Takes var as string
-              read_adjusted as logical
+        Arguments:
+        * var *  string
+
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var, mean=self.mean)
+        return self._my_float.read(var)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -64,10 +65,10 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        istart=filename.index("/",filename.index('SuperFloat'))
+        istart=filename.index("/",filename.index('SuperFloat/'))
         iend  =filename.index("/",istart+1)
         self.wmo = filename[istart+1:iend]
-        cycle = os.path.basename(filename).rsplit("_")[2]
+        cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
         self.cycle = int(cycle)
 
 
@@ -94,7 +95,20 @@ class BioFloat(Instrument):
         ncIN.close()
 
         return Pres, Profile, Qc
-
+    def origin(self,var):
+        '''
+        Arguments:
+        * var * string
+        Returns:
+        a tuple of two strings:
+           * origin      * string, "lov" or "Coriolis"
+           * file_origin * string , path of the source file
+        '''
+        ncIN=NC.netcdf_file(self.filename,'r')
+        origin=ncIN.variables[var].origin
+        file_origin=ncIN.variables[var].file_origin
+        ncIN.close()
+        return origin, file_origin
 
 
     def basicplot(self,Pres,profile):
@@ -227,14 +241,12 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT/6901483/output_lovbio039b_040_00.nc"
+    filename="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/6901483/MR6901483_058.nc"
     F=BioFloat.from_file(filename)
-    import sys
-    sys.exit()
 
     print len(PROFILE_LIST)
 
-    for p in PROFILE_LIST:
+    for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
         if Pres.min()>0:
             print Pres.min()

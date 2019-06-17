@@ -1,8 +1,37 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Creates superfloat files of chla.
+    Reads from Coriolis and LOV datasets.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--datestart','-s',
+                                type = str,
+                                required = True,
+                                help = '''date in "%Y%m%d" format, e.g .20120101  ''')
+    parser.add_argument(   '--dateend','-e',
+                                type = str,
+                                required = True,
+                                help = '''date in "%Y%m%d" format , e.g 20200101 ''')
+    parser.add_argument(   '--outdir','-o',
+                                type = str,
+                                required = True,
+                                default = "/gpfs/scratch/userexternal/gbolzon0/SuperFloat/",
+                                help = 'path of the Superfloat dataset ')
+
+    return parser.parse_args()
+
+args = argument()
+
+
+
 from instruments import bio_float
 from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
+from commons.utils import addsep
 import os,sys
 import scipy.io.netcdf as NC
 import numpy as np
@@ -18,7 +47,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
-    print "dumping " + outfile
+    print "dumping chla on " + outfile
     ncOUT = NC.netcdf_file(outfile,"w")
     ncOUT.createDimension("DATETIME",14)
     ncOUT.createDimension("NPROF", 1)
@@ -78,20 +107,22 @@ def is_only_lov(pCor):
     return not superfloat_generator.exist_variable('CHLA', pCor._my_float.filename)
 
 
-TI = TimeInterval('2012','2020','%Y')
+OUTDIR = addsep(args.outdir)
+TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
 
 PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
 wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
 
-OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
+
 
 for wmo in wmo_list:
+    print wmo
     Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
     for ip, pLov in enumerate(Profilelist):
         pCor = bio_float.from_lov_profile(pLov, verbose=True)
         is_only_LOV = is_only_lov(pCor)
-        if is_only_lov:
+        if is_only_LOV:
             outfile = get_info(pLov,OUTDIR)
         else:
             outfile = get_info(pCor,OUTDIR)

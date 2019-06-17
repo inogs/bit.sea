@@ -1,8 +1,35 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Creates superfloat files of chla.
+    Reads from LOV dataset.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--datestart','-s',
+                                type = str,
+                                required = True,
+                                help = '''date in yyyymmdd format, e.g .20120101  ''')
+    parser.add_argument(   '--dateend','-e',
+                                type = str,
+                                required = True,
+                                help = '''date in yyyymmdd format , e.g 20200101 ''')
+    parser.add_argument(   '--outdir','-o',
+                                type = str,
+                                required = True,
+                                default = "/gpfs/scratch/userexternal/gbolzon0/SuperFloat/",
+                                help = 'path of the Superfloat dataset ')
+
+    return parser.parse_args()
+
+args = argument()
+
 from instruments import bio_float
 from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
+from commons.utils import addsep
 import os,sys
 import scipy.io.netcdf as NC
 import numpy as np
@@ -57,7 +84,7 @@ def dump_nitrate_file(outfile, p_pos, p, Pres, Value, Qc, metadata,mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-
+    print "dumping nitrate on " + outfile
     ncOUT.createDimension('nNITRATE', nP)
     ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
     ncvar[:]=Pres
@@ -72,18 +99,19 @@ def dump_nitrate_file(outfile, p_pos, p, Pres, Value, Qc, metadata,mode='w'):
     ncOUT.close()
 
 
-TI = TimeInterval('2012','2020','%Y')
+OUTDIR = addsep(args.outdir)
+TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
 
 
 PROFILES_LOV =lovbio_float.FloatSelector('SR_NO3', TI, R)
 wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
 
-OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
+force_writing_nitrate=False
 
-force_writing_nitrate=True
-
-for wmo in wmo_list: # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
+for wmo in wmo_list:
+    print wmo
+     # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
     #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
     Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
     for ip, pLov in enumerate(Profilelist):

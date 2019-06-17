@@ -1,8 +1,35 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Creates superfloat files of dissolved oxygen.
+    Reads from Coriolis.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--datestart','-s',
+                                type = str,
+                                required = True,
+                                help = '''date in "%Y%m%d" format, e.g .20120101  ''')
+    parser.add_argument(   '--dateend','-e',
+                                type = str,
+                                required = True,
+                                help = '''date in "%Y%m%d" format , e.g 20200101 ''')
+    parser.add_argument(   '--outdir','-o',
+                                type = str,
+                                required = True,
+                                default = "/gpfs/scratch/userexternal/gbolzon0/SuperFloat/",
+                                help = 'path of the Superfloat dataset ')
+
+    return parser.parse_args()
+
+args = argument()
+
 from instruments import bio_float
 from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
+from commons.utils import addsep
 import os,sys
 import scipy.io.netcdf as NC
 import numpy as np
@@ -90,7 +117,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
     
-
+    print "dumping oxygen on " + outfile
     ncOUT.createDimension('nDOXY', nP)
     ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
     ncvar[:]=Pres
@@ -105,9 +132,10 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncOUT.close()
 
 
-TI = TimeInterval('2012','2020','%Y')
+OUTDIR = addsep(args.outdir)
+TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_oxygen=True
+force_writing_oxygen=False
 
 PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
 PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
@@ -115,7 +143,6 @@ PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
 
 
-OUTDIR="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/" #os.getenv("ONLINE_REPO")
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)

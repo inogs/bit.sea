@@ -590,14 +590,14 @@ for ip in PROCESSES[rank::nranks]:
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
     
     if 'RST' in os.path.basename(filename):
-        var = 'TRN' + var 
+        vartoread = 'TRN' + var 
         print 'RST'
 
     if var_dim [ivar] == '3D':
-        VAR  = DataExtractor(TheMask,filename,var,dimvar=3).values
+        VAR  = DataExtractor(TheMask,filename,vartoread,dimvar=3).values
     else:
         VAR        = np.zeros((jpk,jpj,jpi),np.float32)
-        VAR[0,:,:] = DataExtractor(TheMask,filename,var,dimvar=2).values
+        VAR[0,:,:] = DataExtractor(TheMask,filename,vartoread,dimvar=2).values
     
     if doStatistics:
         if var_dim [ivar] == '3D':

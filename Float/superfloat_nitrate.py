@@ -43,7 +43,10 @@ def get_outfile(p,outdir):
 def dump_nitrate_file(outfile, p_pos, p, Pres, Value, Qc, metadata,mode='w'):
     
     nP=len(Pres)
-    ncOUT = NC.netcdf_file(outfile,mode)
+    if mode=='a':
+        command = "cp %s %s.tmp" %(outfile,outfile)
+        os.system(command)
+    ncOUT = NC.netcdf_file(outfile + ".tmp",mode)
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
@@ -85,19 +88,21 @@ def dump_nitrate_file(outfile, p_pos, p, Pres, Value, Qc, metadata,mode='w'):
         ncvar[:]=QcS
 
     print "dumping nitrate on " + outfile
-    ncOUT.createDimension('nNITRATE', nP)
+    nitrate_already_existing="nNITRATE" in ncOUT.dimensions.keys()
+    if not nitrate_already_existing: ncOUT.createDimension('nNITRATE', nP)
     ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("NITRATE", 'f', ('nNITRATE',))
     ncvar[:]=Value
-    setattr(ncvar, 'origin'     , metadata.origin)
-    setattr(ncvar, 'file_origin', metadata.filename)
-    setattr(ncvar, 'variable'   , 'SR_NO3_ADJUSTED')
-    setattr(ncvar, 'units'      , "mmol/m3")
+    if not nitrate_already_existing:
+        setattr(ncvar, 'origin'     , metadata.origin)
+        setattr(ncvar, 'file_origin', metadata.filename)
+        setattr(ncvar, 'variable'   , 'SR_NO3_ADJUSTED')
+        setattr(ncvar, 'units'      , "mmol/m3")
     ncvar=ncOUT.createVariable("NITRATE_QC", 'f', ('nNITRATE',))
     ncvar[:]=Qc
     ncOUT.close()
-
+    os.system("mv " + outfile + ".tmp " + outfile)
 
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')

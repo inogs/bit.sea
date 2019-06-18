@@ -157,6 +157,7 @@ PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
 wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 for wmo in wmo_list:
+    print wmo
     Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
         outfile = get_info(pCor, OUTDIR)

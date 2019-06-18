@@ -588,6 +588,10 @@ for ip in PROCESSES[rank::nranks]:
         ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
 
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
+    
+    if 'RST' in os.path.basename(filename):
+        var = 'TRN' + var 
+        print 'RST'
 
     if var_dim [ivar] == '3D':
         VAR  = DataExtractor(TheMask,filename,var,dimvar=3).values

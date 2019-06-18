@@ -35,7 +35,6 @@ import datetime
 import numpy as np
 import os
 from commons.utils import addsep
-from dateutil.relativedelta import relativedelta
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -108,13 +107,7 @@ if isLOV:
     ind = np.nonzero(ii)[0][0]
     INDEX_FILE['lon'][ind] = 4.978265 
     INDEX_FILE['lat'][ind] = 40.277298
-    
-    for ind, filename in enumerate(INDEX_FILE['file_name']):
-        if filename[:7]=="6902902":
-            timestr=INDEX_FILE['time'][ind]
-            old_time_obj=datetime.datetime.strptime(timestr,"%Y%m%d-%H:%M:%S")
-            new_time_obj=old_time_obj + relativedelta(days=1)
-            INDEX_FILE['time'][ind] = new_time_obj.strftime("%Y%m%d-%H:%M:%S")
+
 
     # il 7900592 ha ogni tanto 41.887277,36.533803 e ogni tanto -41.880218,-36.541308
 #     for iFrame, f in enumerate(INDEX_FILE['file_name']): 

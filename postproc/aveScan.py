@@ -591,7 +591,8 @@ for ip in PROCESSES[rank::nranks]:
     
     if 'RST' in os.path.basename(filename):
         vartoread = 'TRN' + var 
-        print 'RST'
+    else:
+        vartoread = var
 
     if var_dim [ivar] == '3D':
         VAR  = DataExtractor(TheMask,filename,vartoread,dimvar=3).values

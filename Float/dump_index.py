@@ -1,20 +1,30 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Creates Float_Index.txt files.
+    Creates Float_Index.0.txt files.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
-    parser.add_argument(   '--coriolis',
+    parser.add_argument(   '--inputdir','-i',
                                 type = str,
                                 required = False,
                                 default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/",
-                                help = 'directory of coriolis dataset')
-    parser.add_argument(   '--lov',
+                                help = 'directory of dataset')
+    parser.add_argument(   '--input_float_indexer','-f',
                                 type = str,
                                 required = False,
-                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_LOVBIO/",
-                                help = 'directory of lov dataset ')
+                                default = "",
+                                help = 'float indexer corrected file, like Float_Indexer.txt')
+    parser.add_argument(   '--output_float_indexer','-o',
+                                type = str,
+                                required = False,
+                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Indexer.0.txt",
+                                help = 'float indexer rough file')
+    parser.add_argument(   '--type','-t',
+                                type = str,
+                                required = False,
+                                default = "",
+                                choices = ['lov','coriolis','Float_opt','superfloat'])
 
     return parser.parse_args()
 
@@ -30,12 +40,30 @@ from commons.utils import addsep
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
 #e.g. lines as 
-#/Users/gbolzon/Documents/OGS/COPERNICUS/bit.sea/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEM
+#6901765/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEMP
+mydtype= np.dtype([
+          ('file_name','S200'),
+          ('lat',np.float64),
+          ('lon',np.float64),
+          ('time','S17'),
+          ('parameters','S200')] )
 
+if os.path.exists(args.input_float_indexer):
+    INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
+    FILELIST=INDEX_FILE['file_name'].tolist()
+else:
+    FILELIST=[]
+is_provided_indexer = len(FILELIST) >0
 
-VARLIST_COR=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
-VARLIST_LOV=['DOXY','SR_NO3', 'CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR'            ,'CDOM','DOWNWELLING_IRRADIANCE_380','DOWNWELLING_IRRADIANCE_412','DOWNWELLING_IRRADIANCE_490']
-VARLIST_OPT=['PRES','PSAL','TEMP','PAR','CHLA', 'Ed_380','Ed_412','Ed_490']
+if args.type=="coriolis":
+    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
+if args.type=="lov":
+    VARLIST=['DOXY','SR_NO3_ADJUSTED', 'CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR'            ,'CDOM','DOWNWELLING_IRRADIANCE_380','DOWNWELLING_IRRADIANCE_412','DOWNWELLING_IRRADIANCE_490']
+if args.type=='Float_opt':
+    VARLIST=['PRES','PSAL','TEMP','PAR','CHLA', 'Ed_380','Ed_412','Ed_490']
+if args.type=="Superfloat":
+    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
+
 
 def file_header_content(filename,VARLIST, avail_params=None):
     '''
@@ -66,64 +94,44 @@ def file_header_content(filename,VARLIST, avail_params=None):
     else:
         s=s+" " + avail_params
     return s
-
-if True:
-    LOC=addsep(args.coriolis) #"/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/"
-    FloatIndexer=LOC + "Float_Index.0.txt"
-    DIRLIST=os.listdir(LOC)
-
-
-    LINES=[]
-    for DIR in DIRLIST:
-        dirpath=LOC + DIR
-        filenames = glob.glob(dirpath + "/*nc")
-        filenames.sort()
-        for filename in filenames:
-            if filename[-4:]!='D.nc':
-                line=file_header_content(filename,VARLIST_COR,avail_params=None)
-                if line is not None: LINES.append(line+"\n")
-
-    F = file(FloatIndexer,'w')
-    F.writelines(LINES)
-    F.close()
-
-    CORIOLIS_LINES=LINES[:]
-
-if True:
-    LOC=addsep(args.lov)
-    FloatIndexer=LOC + "Float_Index.0.txt"
-    DIRLIST=os.listdir(LOC)
+def get_sensor_list(wmo,LINES):
+    for line in LINES:
+        if wmo in line:
+            d=StringIO(line)
+            A=np.loadtxt(d,dtype=mydtype,delimiter=',')
+            return str(A['parameters'])
+    else:
+        print wmo + " not in CORIOLIS"
+        return 'DOXY NITRATE CHLA PRES PSAL TEMP'
 
 
-    def get_sensor_list(wmo,LINES):
-        mydtype= np.dtype([
-                  ('file_name','S200'),
-                  ('lat',np.float32),
-                  ('lon',np.float32),
-                  ('time','S17'),
-                  ('parameters','S200')] )
-        for line in LINES:
-            if wmo in line:
-                d=StringIO(line)
-                A=np.loadtxt(d,dtype=mydtype,delimiter=',')
-                return str(A['parameters'])
-        else:
-            print wmo + " not in CORIOLIS"
-            return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+LOC=addsep(args.inputdir)
+FloatIndexer=args.output_float_indexer
+DIRLIST=os.listdir(LOC)
+HERE=os.getcwd()
+os.chdir(LOC)
+
+LINES=[]
+for DIR in DIRLIST:
+    dirpath=DIR
+    filenames = glob.glob(dirpath + "/*nc")
+    filenames.sort()
+    for filename in filenames:
+        if filename[-4:]!='D.nc':
+            if filename in FILELIST:
+                ind=FILELIST.index(filename)
+                line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
+                LINES.append(line+"\n")
+            else:
+                line=file_header_content(filename,VARLIST,avail_params=None)
+                if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
+                if line is not None:
+                    LINES.append(line+"\n")
+                    if is_provided_indexer: print "added " + line
 
 
+F = file(FloatIndexer,'w')
+F.writelines(LINES)
+F.close()
+os.chdir(HERE)
 
-    LINES=[]
-    for DIR in DIRLIST:
-        wmo = DIR
-        dirpath=LOC + DIR
-        #sensors = get_sensor_list(wmo,CORIOLIS_LINES)
-        filenames = glob.glob(dirpath + "/*nc")
-        filenames.sort()
-        for filename in filenames:
-            line=file_header_content(filename,VARLIST_LOV,avail_params=None) #sensors.replace('NITRATE','SR_NO3'))
-            if line is not None: LINES.append(line+"\n")
-
-    F = file(FloatIndexer,'w')
-    F.writelines(LINES)
-    F.close()

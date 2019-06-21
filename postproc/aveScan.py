@@ -589,10 +589,10 @@ for ip in PROCESSES[rank::nranks]:
 
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
     
-    if 'RST' in os.path.basename(filename):
+    vartoread = var
+
+    if ('RST' in os.path.basename(filename)) and (not('before' in os.path.basename(filename))):
         vartoread = 'TRN' + var 
-    else:
-        vartoread = var
 
     if var_dim [ivar] == '3D':
         VAR  = DataExtractor(TheMask,filename,vartoread,dimvar=3).values

@@ -1,7 +1,11 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Creates Float_Index.0.txt files.
+    Executed usually just after float download, creates Float_Index.0.txt file,
+    the Database of floats, opening NetCDF files to take
+    * lon,lat,time, parameters *
+    If there is an operational Float_Indexer.txt of infos previously stored, dump_index.py
+    takes them and opens only the just downloaded files.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 

@@ -9,11 +9,11 @@ def argument():
     parser.add_argument(   '--datestart','-s',
                                 type = str,
                                 required = True,
-                                help = '''date in "%Y%m%d" format, e.g .20120101  ''')
+                                help = '''date in yyyymmdd format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
                                 required = True,
-                                help = '''date in "%Y%m%d" format , e.g 20200101 ''')
+                                help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
                                 required = True,
@@ -30,7 +30,7 @@ from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
 from commons.utils import addsep
-import os,sys
+import os
 import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw

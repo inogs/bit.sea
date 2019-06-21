@@ -35,12 +35,14 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var, read_adjusted=True):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
         Arguments:
         * var *  string
+        * read_adjusted * IS NOT USED, but we leave it here because there is a lot of calls using it
+                          Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
@@ -230,6 +232,30 @@ def filter_by_wmo(Profilelist,wmo):
     '''
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
+def remove_bad_sensors(Profilelist,var):
+    '''
+
+    Subsetter, filtering out bad sensors for that var.
+    At the moment that method does not do anything, because bad sensors have been already removed
+    by superfloat generators.
+
+    In case of new expert evaluation, if we decide to remove another bad sensor,
+    we can add here the part of code to have quickly the desired result.
+    Then, the procedure to avoid bad sensors in superfloat dataset is
+    - adding bad float in superfloat_${var}.py remove_bad_sensor()
+    - remove files from SUPERFLOAT DATASET
+    - launch dump_index.py without Float_Indexer.txt input
+
+
+     Arguments:
+      * Profilelist * list of Profile objects
+      * var         * string
+
+      Returns:
+        a list of Profile Objects
+    '''
+
+    return Profilelist
 
 
 if __name__ == '__main__':

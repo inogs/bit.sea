@@ -46,7 +46,7 @@ from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from instruments.matchup_manager import Matchup_Manager
 import basins.OGS as OGS
-from instruments import lovbio_float as bio_float
+from instruments import superfloat as bio_float
 from commons.mask import Mask
 from commons.utils import addsep
 from datetime import timedelta

@@ -107,13 +107,16 @@ class TimeList():
         for pathfile in filelist_ALL:
             filename   = os.path.basename(pathfile)
             datestr     = filename[IOname.date_startpos:IOname.date_endpos]
-            actualtime = datetime.datetime.strptime(datestr,IOname.dateformat)
-            if timeinterval.contains(actualtime) :
-                filenamelist.append(pathfile)
-                datetimelist.append(actualtime)
-            else:
-                External_filelist.append(pathfile)
-                External_timelist.append(actualtime)
+            try:
+                actualtime = datetime.datetime.strptime(datestr,IOname.dateformat)
+                if timeinterval.contains(actualtime) :
+                    filenamelist.append(pathfile)
+                    datetimelist.append(actualtime)
+                else:
+                    External_filelist.append(pathfile)
+                    External_timelist.append(actualtime)
+            except:
+                print "Warning: " + datestr + " does not exist!"
 
         TimeListObj = TimeList(datetimelist,forceFrequency=forceFrequency)
         filenamelist.sort()

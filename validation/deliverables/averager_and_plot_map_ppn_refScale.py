@@ -74,7 +74,7 @@ from commons.layer import Layer
 from layer_integral.mapbuilder import MapBuilder, Plot
 #from layer_integral.mapplot import mapplot,pl
 # X ppn:
-from mapplot_ppn import mapplot,pl
+# from mapplot_ppn import mapplot,pl
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
 from layer_integral import coastline
@@ -173,8 +173,12 @@ for il, layer in enumerate(PLOT.layerlist):
 
 # X ppn:
     fig,ax = pl.subplots()
+    fig.set_size_inches(10.0, 10.0*16/42)
+    ax.set_position([0.08, 0.13, 0.78, 0.78])
     levels = [0, 25, 50, 75, 100, 125, 150, 175, 200, 300, 400, 500]
-    colors = ['navy','blue','royalblue','deepskyblue','aqua','lawngreen','greenyellow','gold','orange','red','maroon']
+    # colors = ['navy','blue','royalblue','deepskyblue','aqua','lawngreen','greenyellow','gold','orange','red','maroon']
+    colors = ['midnightblue','indigo','blue','royalblue','deepskyblue','aqua','greenyellow','gold','orange','red','maroon']
+    # New corlors more similar to Lazzari et al. (2012)
 
     CS=ax.contourf(TheMask.xlevels, TheMask.ylevels,integrated_masked,levels,colors=colors)
     cbar=fig.colorbar(CS,ticks=levels)

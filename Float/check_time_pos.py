@@ -107,7 +107,8 @@ if isLOV:
     ind = np.nonzero(ii)[0][0]
     INDEX_FILE['lon'][ind] = 4.978265 
     INDEX_FILE['lat'][ind] = 40.277298
-    
+
+
     # il 7900592 ha ogni tanto 41.887277,36.533803 e ogni tanto -41.880218,-36.541308
 #     for iFrame, f in enumerate(INDEX_FILE['file_name']): 
 #         if f.startswith("7900592/"):

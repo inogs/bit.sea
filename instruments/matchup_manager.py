@@ -4,7 +4,6 @@ import scipy.io.netcdf as NC
 import numpy as np
 import matchup.matchup
 import pylab as pl
-import seawater as sw
 import all_instruments
 import postproc
 
@@ -157,6 +156,8 @@ class Matchup_Manager():
         a model varname
         For BioFloats reference_var(p,'O2o') returns 'DOXY'
         '''
+        if isinstance(p, all_instruments.superfloat.BioFloatProfile):
+            return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.lovbio_float.BioFloatProfile):
@@ -208,7 +209,10 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
+            if isinstance(p, all_instruments.superfloat.BioFloatProfile):
+                Pres, Profile, Qc = p.read(ref_varname)
+            else:
+                Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
 
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
@@ -255,7 +259,6 @@ class Matchup_Manager():
         zlevels_out=np.arange(0,401,5)
         MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline']
         plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
-        read_adjusted = [True,False,True,False,False]
         mapgraph = [3,4,5,1,2]
 
         for p in Profilelist:
@@ -273,25 +276,12 @@ class Matchup_Manager():
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
 
 
-            #density calculator on zlevels_out
             model_varname = 'votemper'
             ref_varname = self.reference_var(p, model_varname)
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
-            seaPoints = ~np.isnan(ModelProfile)
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
                 print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
                 continue
-            Pres, temp, Qc = p.read(ref_varname,read_adjusted[3])
-            Temp_out = np.interp(zlevels_out,Pres,temp).astype(np.float32)
-
-            model_varname = 'vosaline'
-            ref_varname = self.reference_var(p, model_varname)
-            Pres, sal, Qc = p.read(ref_varname,read_adjusted[4])
-            sal_out = np.interp(zlevels_out,sal,temp).astype(np.float32)
-            density = sw.dens(sal_out,Temp_out,zlevels_out)
-            #end density calculator
-
-            correction = [1,1000./density,1,1,1]
 
             filename = outdir+"/"+Model_time.strftime('%Y%m%d') +"_"+p.name()
             ncOUT, model_handlers, float_handlers =ncwriter(filename+".nc", zlevels_out,p)
@@ -304,15 +294,15 @@ class Matchup_Manager():
                 if ref_varname not in VARLIST: continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
                 seaPoints = ~np.isnan(ModelProfile)
-                Pres, Profile, Qc = p.read(ref_varname,read_adjusted[i])
+                Pres, Profile, Qc = p.read(ref_varname)
                 if len(Pres) == 0:
-                    Pres, Profile, Qc = p.read(ref_varname,not read_adjusted[i])
+                    Pres, Profile, Qc = p.read(ref_varname)
 
                 print model_varname, len(Profile)
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
-                #float_on_common_grid = float_on_common_grid*correction[i]
+
 
                 Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
 

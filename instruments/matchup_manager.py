@@ -6,7 +6,6 @@ import matchup.matchup
 import pylab as pl
 import all_instruments
 import postproc
-from aetypes import IsKeyword
 
 
 class Matchup_Manager():
@@ -157,6 +156,8 @@ class Matchup_Manager():
         a model varname
         For BioFloats reference_var(p,'O2o') returns 'DOXY'
         '''
+        if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
+            return all_instruments.FLOAT_OPT_VARS[var]
         if isinstance(p, all_instruments.superfloat.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):

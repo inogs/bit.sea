@@ -6,7 +6,7 @@ import mooring
 from static.Carbon_reader import CarbonReader
 from static.Nutrients_reader import NutrientsReader
 
-from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS
+from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS, FLOAT_OPT_VARS
 
 def Selector(var,T,region):
     '''

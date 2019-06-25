@@ -17,7 +17,7 @@ def argument():
     parser.add_argument(   '--outdir','-o',
                                 type = str,
                                 required = True,
-                                default = "/gpfs/scratch/userexternal/gbolzon0/SuperFloat/",
+                                default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
 
     return parser.parse_args()

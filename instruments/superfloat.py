@@ -14,7 +14,7 @@ mydtype= np.dtype([
           ('parameters','S200')] )
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "SuperFloat/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + "SUPERFLOAT/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
@@ -67,7 +67,7 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        istart=filename.index("/",filename.index('SuperFloat/'))
+        istart=filename.index("/",filename.index('SUPERFLOAT/'))
         iend  =filename.index("/",istart+1)
         self.wmo = filename[istart+1:iend]
         cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
@@ -179,7 +179,7 @@ def FloatSelector(var, T, region):
        In order to work on dataset different from the cineca DRES archive
        /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/
        remember to define the environment variable ONLINE_REPO
-       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/
+       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/ SUPERFLOAT/
     '''
 
     nFiles=INDEX_FILE.size
@@ -191,7 +191,7 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + "SuperFloat/" + filename
+        filename = ONLINE_REPO + "SUPERFLOAT/" + filename
 
         if var is None :
             VarCondition = True
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/6901483/MR6901483_058.nc"
+    filename="/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/6901483/MR6901483_058.nc"
     F=BioFloat.from_file(filename)
 
     print len(PROFILE_LIST)

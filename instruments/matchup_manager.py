@@ -6,6 +6,7 @@ import matchup.matchup
 import pylab as pl
 import all_instruments
 import postproc
+from aetypes import IsKeyword
 
 
 class Matchup_Manager():
@@ -209,7 +210,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            if isinstance(p, all_instruments.superfloat.BioFloatProfile):
+            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile)):
                 Pres, Profile, Qc = p.read(ref_varname)
             else:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)

@@ -11,7 +11,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot,mapplot_medeaf,mapplot_nocolor
+from mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
 import datetime
 import pylab as pl
 
@@ -102,14 +102,13 @@ class MapBuilder(object):
         sfondo = pl.imread(filename)
         return sfondo
         
-    def plot_maps_data(self, coastline_lon=None, coastline_lat=None, maptype=0, background_img=None,nranks=1, rank=0):
+    def plot_maps_data(self, basemap_obj, maptype=0, background_img=None,nranks=1, rank=0):
         '''
         Parallel generator of a large set of images.
         Manages ave.date17.var.nc and ave.date17.phys.nc
 
         Arguments : 
-          * coastline_lon *  1-D array 
-          * coastline_lat *  1-D array
+          * basemap_obj *  a Basemap object
           * map_type      *  integer, flag used to choose a plot method in mapplot module
                 = 0, the default, to call mapplot.mapplot()
                 = 1, to call mapplot.mapplot_onlycolor()
@@ -158,9 +157,12 @@ class MapBuilder(object):
                 if maptype == 1:
                     dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
                     mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
-                    fig, ax = mapplot_medeaf(mapdict, fig=None, ax=None, mask=self._mask, ncolors=24,background_img=background_img)
-                    fig.savefig(outfile + ".png",dpi=86)
+                    fig, ax = mapplot_medeaf_V5C(mapdict, basemap_obj, self._mask, fig=None, ax=None , ncolors=24, logo=background_img)
+                    fig.savefig(outfile + ".png",dpi=200)
+                    import sys
+                    sys.exit()
                     pl.close(fig)
+
                 if maptype == 2:
                     fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
                     fig.canvas.print_figure(outfile + ".svg")

@@ -156,6 +156,8 @@ class Matchup_Manager():
         a model varname
         For BioFloats reference_var(p,'O2o') returns 'DOXY'
         '''
+        if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
+            return all_instruments.FLOAT_OPT_VARS[var]
         if isinstance(p, all_instruments.superfloat.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):
@@ -209,7 +211,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            if isinstance(p, all_instruments.superfloat.BioFloatProfile):
+            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile)):
                 Pres, Profile, Qc = p.read(ref_varname)
             else:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)

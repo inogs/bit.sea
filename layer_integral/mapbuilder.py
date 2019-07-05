@@ -159,8 +159,6 @@ class MapBuilder(object):
                     mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
                     fig, ax = mapplot_medeaf_V5C(mapdict, basemap_obj, self._mask, fig=None, ax=None , ncolors=24, logo=background_img)
                     fig.savefig(outfile + ".png",dpi=200)
-                    import sys
-                    sys.exit()
                     pl.close(fig)
 
                 if maptype == 2:

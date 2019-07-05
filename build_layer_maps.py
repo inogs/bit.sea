@@ -112,5 +112,4 @@ mb = MapBuilder(plotlistfile, TL, TheMask, outputdir)
 
 logo=mb.read_background(args.logo)
 mb.plot_maps_data(mapobj,background_img=logo, maptype=1, nranks=nranks, rank=rank)
-#mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
 

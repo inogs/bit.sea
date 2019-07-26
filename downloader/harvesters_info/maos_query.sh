@@ -56,11 +56,23 @@
 # 136    Provor NUT CTS4
 # 137    Arvor-L
 
+TOT=
 for TYPE in 44 49 52 57 58 59 62 64 74 80 82 88 127 129 131 132 133 135 136 137; do
 
+OUT=`curl "http://maos.inogs.it/api/api.php?key=ogs112211&sql=SELECT%20tbl_float.id_float,%20tbl_float.wmo,%20tbl_float.id_type,%20tbl_type.type,%20tbl_float.nome_lov,%20tbl_float.status%20FROM%20tbl_float%20INNER%20JOIN%20tbl_type%20ON%20tbl_float.id_type%20=%20tbl_type.id_type%20WHERE%20((tbl_float.id_type)=${TYPE})%20ORDER%20BY%20tbl_float.wmo;" `
 
-curl "http://maos.inogs.it/api/api.php?key=ogs112211&sql=SELECT%20tbl_float.id_float,%20tbl_float.wmo,%20tbl_float.id_type,%20tbl_type.type,%20tbl_float.nome_lov,%20tbl_float.status%20FROM%20tbl_float%20INNER%20JOIN%20tbl_type%20ON%20tbl_float.id_type%20=%20tbl_type.id_type%20WHERE%20((tbl_float.id_type)=${TYPE})%20ORDER%20BY%20tbl_float.wmo;"
+# with no data, OUT can be "false" or "no data"
+# with data OUT starts with [{"id_float"
+# Here a concatenation of good is performed
 
-done | sed -e "s/\]\[/,/g" 
+if [[ ${OUT:3:2} == id ]] ; then
+    TOT=${TOT}${OUT}
+else
+   echo No data in type $TYPE >&2
+fi
+done
+
+
+echo $TOT | sed -e "s/\]\[/,/g"
 
 # multiple calls of curl generate a stdout with some "][", which needed to be replaced by a ","

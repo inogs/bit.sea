@@ -23,7 +23,7 @@ def argument():
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+                                default = "/marconi/home/usera07ogs/a07ogs00/OPA/V3C/etc/static-data/MED24_125/meshmask.nc",
                                 required = False,
                                 help = ''' Path of maskfile''')
 
@@ -43,7 +43,7 @@ from commons.utils import addsep
 import numpy as np
 import Sat.SatManager as Sat
 import matchup.matchup as matchup
-from commons import netcdf3
+from commons.dataextractor import DataExtractor
 from commons.mask import Mask
 from commons.submask import SubMask
 from basins import V2 as OGS
@@ -89,17 +89,19 @@ COASTNESS['open_sea']  =  mask200_2D;
 #COASTNESS['everywhere'] = True;
 
 satfile = glob.glob(REF_DIR+date+"*")[0]
-modfile = MODELDIR + "ave." + date + "-12:00:00.nc" 
+modfile = MODELDIR + "ave." + date + "-12:00:00.P_l.nc" 
 
-Model = netcdf3.read_3d_file(modfile, 'P_l')[0,:,:]
+De = DataExtractor(TheMask,filename=modfile,varname='P_l')
+Model = De.values[0,:,:]
 try:
-    Sat16 = Sat.readfromfile(satfile,'lchlm') # weekly
+#    Sat24 = Sat.readfromfile(satfile,'lchlm') # weekly
+    Sat24 = Sat.readfromfile(satfile,'CHL') # weekly
 except:
-    Sat16 = Sat.convertinV4format(Sat.readfromfile(satfile, 'CHL'))  # daily
+    Sat24 = Sat.convertinV4format(Sat.readfromfile(satfile, 'CHL'))  # daily
 
-cloudsLand = np.isnan(Sat16)
-Sat16[cloudsLand] = -999.0
-cloudsLand = Sat16==-999.0; 
+cloudsLand = np.isnan(Sat24)
+Sat24[cloudsLand] = -999.0
+cloudsLand = Sat24==-999.0; 
 modelLand  = Model > 1.0e+19
 nodata     = cloudsLand | modelLand
 
@@ -117,7 +119,7 @@ for icoast, coast in enumerate(COASTNESS_LIST):
 
     for isub, sub in enumerate(OGS.P):
         selection = SUB[sub.name] & (~nodata) & COASTNESS[coast]
-        M = matchup.matchup(Model[selection], Sat16[selection])
+        M = matchup.matchup(Model[selection], Sat24[selection])
         VALID_POINTS[isub,icoast] = M.number()
         if M.number() > 0 :
             BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast]  = M.RMSE()
@@ -127,7 +129,7 @@ for icoast, coast in enumerate(COASTNESS_LIST):
             MODEL_MEAN[isub,icoast] = weighted_mean( M.Model,weight)
             SAT___MEAN[isub,icoast] = weighted_mean( M.Ref,  weight)
         
-            Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
+            Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat24[selection])) #add matchup based on logarithm
             BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[isub,icoast]  = Mlog.RMSE()
             BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[isub,icoast] = Mlog.bias()
         else:

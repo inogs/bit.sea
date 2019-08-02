@@ -21,10 +21,6 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'wrkdir/2/POSTPROC/AVE_FREQ_1/online_validation')
-    parser.add_argument(   '--previous_archive','-p',
-                                type = str,
-                                required = True,
-                                help = 'previous chain archive directory, taken from static-data')
 
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
@@ -52,28 +48,20 @@ from basins import V2 as OGS
 Graphic_DeltaT = relativedelta(months=18)
 datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
 timestart = datestart.strftime("%Y%m%d")
-#TI_V1 = TimeInterval(timestart,'20160607','%Y%m%d')
-#TI_V2 = TimeInterval('20160412', args.date,'%Y%m%d')
-TI_V2 = TimeInterval(timestart,'20171107','%Y%m%d')
-TI_V3 = TimeInterval('20171010', args.date,'%Y%m%d')
+
+
+TI_V3 = TimeInterval('20190405', args.date,'%Y%m%d')
 ARCHIVE_DIR      = addsep(args.archivedir) #"/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/V2-dev"
-ARCHIVE_PREV     = addsep(args.previous_archive)   #r"/gpfs/work/IscrC_MYMEDBIO/COPERNICUS/V4"
 VALID_WRKDIR     = addsep(args.validation_dir)
 OUTFIG_DIR       = addsep(args.outdir) # "/pico/home/userexternal/gcossari/COPERNICUS/CATENA/FIG_VALIDATION_ONLINE"
 
-#F0v1    = timelistcontainer(TI_V1,ARCHIVE_PREV,'f0', postfix_dir="")
-#F1v1    = timelistcontainer(TI_V1,ARCHIVE_PREV,'f1', postfix_dir="")
-#F2v1    = timelistcontainer(TI_V1,ARCHIVE_PREV,'f2', postfix_dir="")
-print TI_V2
 print TI_V3
-print ARCHIVE_PREV
-F0v2    = timelistcontainer(TI_V2,ARCHIVE_PREV,'f0', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
-F1v2    = timelistcontainer(TI_V2,ARCHIVE_PREV,'f1', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
-F2v2    = timelistcontainer(TI_V2,ARCHIVE_PREV,'f2', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
 
-F0v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f0', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
-F1v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f1', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
-F2v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f2', postfix_dir="POSTPROC/AVE_FREQ_1/validation/Sat/")
+postfix="POSTPROC/AVE_FREQ_1/validation/Sat/"
+postfix=""
+F0v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f0', postfix_dir=postfix)
+F1v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f1', postfix_dir=postfix)
+F2v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'f2', postfix_dir=postfix)
 
 F0v3.append_dir(VALID_WRKDIR)
 F1v3.append_dir(VALID_WRKDIR)
@@ -87,10 +75,6 @@ for sub in OGS.P:
     #matplotlib.rc('xtick', labelsize=12)
     fig, (ax1, ax2, ax3) = pl.subplots(3, sharex=True, figsize=(15,10)) 
     # BIAS
-    # v2 
-    times, f0v2 = F0v2.plotdata(F0v2.bias, sub.name, coast); ax1.plot(times,f0v2,'-b')
-    times, f1v2 = F1v2.plotdata(F1v2.bias, sub.name, coast); ax1.plot(times,f1v2,'--b')
-    times, f2v2 = F2v2.plotdata(F2v2.bias, sub.name, coast); ax1.plot(times,f2v2,':b')
     # v3  
     times, f0= F0v3.plotdata(F0v3.bias, sub.name,coast) ; ax1.plot(times,f0,'-k' ,label='1$^{st}$ day of forecast (misfit DA d+7)')
     times, f1= F1v3.plotdata(F1v3.bias, sub.name,coast);  ax1.plot(times,f1,'--k',label='2$^{nd}$ day of forecast')  
@@ -105,9 +89,6 @@ for sub in OGS.P:
     ax1.grid(True)
     
     #RMS
-    times, f0v2 = F0v2.plotdata(F0v2.rmse, sub.name, coast) ; ax2.plot(times,f0v2,'-b',label='V2')
-    times, f1v2 = F1v2.plotdata(F1v2.rmse, sub.name, coast) ; ax2.plot(times,f1v2,'--b')
-    times, f2v2 = F2v2.plotdata(F2v2.rmse, sub.name, coast) ; ax2.plot(times,f2v2,':b')
     # fv3  
     times, f0= F0v3.plotdata(F0v3.rmse, sub.name,coast) ; ax2.plot(times,f0,'-k',label='V3') 
     times, f1= F1v3.plotdata(F1v3.rmse, sub.name,coast) ; ax2.plot(times,f1,'--k') 
@@ -120,9 +101,6 @@ for sub in OGS.P:
 
 
     # n. of valid points
-    times, f0v2 = F0v2.plotdata(F0v2.number, sub.name, coast) ; ax3.plot(times,f0v2,'-b')
-    times, f1v2 = F1v2.plotdata(F1v2.number, sub.name, coast) ; ax3.plot(times,f1v2,'--b')
-    times, f2v2 = F2v2.plotdata(F2v2.number, sub.name, coast) ; ax3.plot(times,f2v2,':b')
     # v3  
     times, f0= F0v3.plotdata(F0v3.number, sub.name,coast)     ; ax3.plot(times,f0,'-k') 
     times, f1= F1v3.plotdata(F1v3.number, sub.name,coast)     ; ax3.plot(times,f1,'--k')

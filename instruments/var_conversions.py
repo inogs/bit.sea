@@ -52,7 +52,10 @@ CARBONVARS={'O2o':'oxygen', \
 NUTRVARS={'O2o':'oxygen', \
              'N3n':'nitrate',  \
              'N1p':'phosphate', \
+             'N4n':'ammonium', \
+             'P_l': 'chlorophyll',\
              'N5s':'silicate'}
+
 
 ISPRAVARS = {'N1p': 'orthophosphates', \
              'N3n': 'nitrate', \

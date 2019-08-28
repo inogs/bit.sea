@@ -38,13 +38,13 @@ import scipy.io.netcdf as NC
 from layer_integral import coastline
 import glob,os
 import datetime
-from instruments import lovbio_float as bio_float
+from instruments import superfloat as bio_float
 from basins.region import Rectangle
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
 
-VARLIST = ['P_i','O2o','N3n','votemper','vosaline']
+VARLIST = ['P_l','O2o','N3n','votemper','vosaline']
 
 
 def figure_generator(p):

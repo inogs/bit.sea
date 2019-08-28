@@ -2,7 +2,7 @@
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
 from __future__ import print_function
 
-import sys
+import sys,os
 
 from ftplib import FTP
 from os.path import join, exists, realpath, dirname

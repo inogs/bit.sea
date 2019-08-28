@@ -41,11 +41,11 @@ def argument():
                                 required = False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
-    parser.add_argument(   '--background', '-b',
+    parser.add_argument(   '--logo', '-l',
                                 type = str,
                                 required = False,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/etc/static-data/POSTPROC/background_medeaf.png",
-                                help = 'Path to mask file')
+                                default = "/galileo/home/userexternal/gbolzon0/LogoEchoOGS4.png",
+                                help = 'logo file')
     return parser.parse_args()
 
 args = argument()
@@ -56,9 +56,9 @@ import sys
 from commons.utils import is_valid_path, nan_compare
 import numpy as np
 from glob import glob
-from layer_integral import coastline
 from commons.Timelist import TimeInterval, TimeList
 from commons.mask import Mask
+from mpl_toolkits.basemap import Basemap
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD
@@ -90,28 +90,26 @@ inputdir     = is_valid_path(args.inputdir,True)
 outputdir    = is_valid_path(args.outputdir,True)
 file_pattern = args.pattern
 
-try:
-    c_lon, c_lat=coastline.get()
-    # Elimination of some parts of the coastline,
-    # in order to leave more space for text, if needed
-    ii = nan_compare(c_lat, ">", 40.0) & nan_compare(c_lon,"<", 0.0) # atlantic coast
-    jj = nan_compare(c_lat, ">", 42.0) & nan_compare(c_lon, ">", 26 ) # black sea
-    c_lon[ii | jj] = np.NaN
-    c_lat[ii | jj] = np.NaN
-    ii = nan_compare(c_lon, "<", -6) | nan_compare(c_lon, ">", 36)# out of box
-    c_lon[ii] = np.NaN
-    c_lat[ii] = np.NaN
+xlim=[-6.5,36.5]
+ylim=[30,46]
+xC=(xlim[0]+xlim[1])/2
+yC=(ylim[0]+ylim[1])/2
+ 
+mapobj = Basemap(projection='merc',lat_0=xC,lon_0=yC,\
+                                  llcrnrlon = xlim[0], \
+                                  llcrnrlat = ylim[0], \
+                                  urcrnrlon = xlim[1], \
+                                  urcrnrlat = ylim[1], \
+                                  area_thresh=None, \
+                                  resolution='i')
 
-except:
-    c_lon=None
-    c_lat=None
+
 
 TI = TimeInterval("1950","2050","%Y")
 TL = TimeList.fromfilenames(TI, inputdir, file_pattern )
 TheMask = Mask(maskfile)
 mb = MapBuilder(plotlistfile, TL, TheMask, outputdir)
-#mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat)
-background=mb.read_background(args.background)
-mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,background_img=background, maptype=1, nranks=nranks, rank=rank)
-#mb.plot_maps_data(coastline_lon=c_lon, coastline_lat=c_lat,maptype=2)
+
+logo=mb.read_background(args.logo)
+mb.plot_maps_data(mapobj,background_img=logo, maptype=1, nranks=nranks, rank=rank)
 

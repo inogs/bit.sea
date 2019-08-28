@@ -14,7 +14,7 @@ mydtype= np.dtype([
           ('parameters','S200')] )
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "SuperFloat/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + "SUPERFLOAT/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
@@ -35,12 +35,14 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var, read_adjusted=True):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
         Arguments:
         * var *  string
+        * read_adjusted * IS NOT USED, but we leave it here because there is a lot of calls using it
+                          Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
@@ -65,7 +67,7 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        istart=filename.index("/",filename.index('SuperFloat/'))
+        istart=filename.index("/",filename.index('SUPERFLOAT/'))
         iend  =filename.index("/",istart+1)
         self.wmo = filename[istart+1:iend]
         cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
@@ -177,7 +179,7 @@ def FloatSelector(var, T, region):
        In order to work on dataset different from the cineca DRES archive
        /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/
        remember to define the environment variable ONLINE_REPO
-       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/
+       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/ SUPERFLOAT/
     '''
 
     nFiles=INDEX_FILE.size
@@ -189,7 +191,7 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + "SuperFloat/" + filename
+        filename = ONLINE_REPO + "SUPERFLOAT/" + filename
 
         if var is None :
             VarCondition = True
@@ -230,6 +232,30 @@ def filter_by_wmo(Profilelist,wmo):
     '''
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
+def remove_bad_sensors(Profilelist,var):
+    '''
+
+    Subsetter, filtering out bad sensors for that var.
+    At the moment that method does not do anything, because bad sensors have been already removed
+    by superfloat generators.
+
+    In case of new expert evaluation, if we decide to remove another bad sensor,
+    we can add here the part of code to have quickly the desired result.
+    Then, the procedure to avoid bad sensors in superfloat dataset is
+    - adding bad float in superfloat_${var}.py remove_bad_sensor()
+    - remove files from SUPERFLOAT DATASET
+    - launch dump_index.py without Float_Indexer.txt input
+
+
+     Arguments:
+      * Profilelist * list of Profile objects
+      * var         * string
+
+      Returns:
+        a list of Profile Objects
+    '''
+
+    return Profilelist
 
 
 if __name__ == '__main__':
@@ -241,7 +267,7 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gpfs/scratch/userexternal/gbolzon0/SuperFloat/6901483/MR6901483_058.nc"
+    filename="/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/6901483/MR6901483_058.nc"
     F=BioFloat.from_file(filename)
 
     print len(PROFILE_LIST)

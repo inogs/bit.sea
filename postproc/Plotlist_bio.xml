@@ -4,7 +4,7 @@
 <LayersMaps>
 
 <!--  N1p -->
-<plots var="N1p" units="mmolP/m3" plotunits="mmolP m$^{-3}$"  name="PO4" longname='Phosphate' >
+<plots var="N1p" units="mmolP/m3" plotunits="mmol m$^{-3}$"  name="PO4" longname='Phosphate' >
 <depth top= "0000" bottom="0010"  clim="[0,0.15]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,0.15]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,0.15]"> </depth>
@@ -20,7 +20,7 @@
 </plots>
 
 <!--  N3n -->
-<plots var="N3n" units="mmolN/m3" plotunits="mmolN m$^{-3}$" name="NO3" longname='Nitrate'>
+<plots var="N3n" units="mmolN/m3" plotunits="mmol m$^{-3}$" name="NO3" longname='Nitrate'>
 <depth top= "0000" bottom="0010"  clim="[0,5]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,5]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,5]"> </depth>
@@ -36,7 +36,7 @@
 </plots>
 
 <!--  O2o -->
-<plots var="O2o" units="mmolO/m3" plotunits="mmolO m$^{-3}$" name="O2" longname="Oxygen">
+<plots var="O2o" units="mmolO/m3" plotunits="mmol m$^{-3}$" name="O2" longname="Oxygen">
 <depth top= "0000" bottom="0010"  clim="[180,260]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[180,260]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[180,260]"> </depth>
@@ -70,7 +70,7 @@
 
 
 <!--  Pi -->
-<plots var="P_l" units="mgCHLa/m3" plotunits="mgCHLa m$^{-3}$" name="Chla" longname="Chlorophyll" >
+<plots var="P_l" units="mgCHLa/m3" plotunits="mg m$^{-3}$" name="Chla" longname="Chlorophyll" >
 <depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
 <depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
 <depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>

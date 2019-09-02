@@ -84,7 +84,7 @@ def ncwriter(filenc,zlevels_out,profileobj):
 
     model_handlers=[]
     float_handlers=[]
-    for model_varname in ['P_i','O2o','N3n','votemper','vosaline']:
+    for model_varname in ['P_l','O2o','N3n','votemper','vosaline']:
         name_var = model_varname+"_model"
         m_array = f.createVariable(name_var, 'f', ('levels',))
         setattr(m_array, 'missing_value', 1.e+20)

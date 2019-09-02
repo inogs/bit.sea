@@ -274,7 +274,7 @@ class Matchup_Manager():
                     print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
                     continue
             VARLIST = p._my_float.available_params.strip().rsplit(" ")
-            VARLIST.remove('PRES')
+            if "PRES" in VARLIST: VARLIST.remove('PRES')
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
 
 

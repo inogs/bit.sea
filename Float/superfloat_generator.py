@@ -44,9 +44,9 @@ def quenching(profile_obj, PresChl, Chl, chl_lov_zero):
             Quenched_Chl[:nLev] = quench_value
     return Quenched_Chl
 
-def are_identical(chl1, chl2):
+def are_identical(chl1, chl2, threshold=0.05):
     diff = chl1 - chl2
-    if np.abs(diff).max()< 0.05:
+    if np.abs(diff).max()< threshold:
         return True
     else:
         return False
@@ -141,8 +141,57 @@ if __name__=="__main__":
     from commons.time_interval import TimeInterval
     from basins.region import Rectangle
     import pylab as pl
+    import sys
     TI = TimeInterval('2012','2020','%Y')
     R = Rectangle(-6,36,30,46)
+
+    PROFILES_LOV =lovbio_float.FloatSelector('BBP700', TI, R)
+    for ip, pLov in enumerate(PROFILES_LOV[:]):
+        pCor=bio_float.from_lov_profile(pLov)
+        if pCor is not None:
+            PresL, ValueL, QcL = pLov.read('BBP700',read_adjusted=False)
+            if 'BBP700' in pCor.available_params:
+                PresC, ValueC, QcC = pCor.read('BBP700',read_adjusted=False)
+                if len(ValueC)==len(ValueL):
+                    if not are_identical(ValueC, ValueL, threshold=1.e-3):
+                        print "different", ip
+                        fig,ax =pl.subplots()
+                        ax.plot(ValueL,PresL,'r', label="LOV")
+                        ax.plot(ValueC  , PresC,'b.-', label="COR")
+                        ax.invert_yaxis()
+                        ax.grid()
+                        ax.legend()
+                        fig.show()
+                        sys.exit()
+                        if are_shifted(ValueC, ValueL):
+                            pass
+                        sys.exit()
+                else:
+                    print "different lengths", ip, len(ValueC), len(ValueL)
+
+
+    sys.exit()
+
+
+    PROFILES_LOV =lovbio_float.FloatSelector('PAR', TI, R)
+    for ip, pLov in enumerate(PROFILES_LOV[:1000]):
+        pCor=bio_float.from_lov_profile(pLov)
+        if pCor is not None:
+            PresL, ValueL, QcL = pLov.read('PAR',read_adjusted=False)
+            if 'DOWNWELLING_PAR' in pCor.available_params:
+                PresC, ValueC, QcC = pCor.read('DOWNWELLING_PAR',read_adjusted=False)
+                if not are_identical(ValueC, ValueL, 10):
+                    print "different", ip
+                    fig,ax =pl.subplots()
+                    ax.plot(ValueL,PresL,'r', label="LOV")
+                    ax.plot(ValueC  , PresC,'b.-', label="COR")
+                    ax.invert_yaxis()
+                    ax.grid()
+                    ax.legend()
+                    fig.show()
+                    # sys.exit()
+
+    sys.exit()
     PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
     BAD_LIST=[]
     for ip, pLov in enumerate(PROFILES_LOV[:]):

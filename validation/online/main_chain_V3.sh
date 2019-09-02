@@ -149,7 +149,7 @@ if [ 1 == 0 ]; then
 f0_name=${ONLINE_VALIDATION_DIR}/Validation_f0_${PREVIOUS_TUE_RUNDIR}_on_weekly_Sat.${STARTTIME_s}.nc
 opa_prex_or_die "python SatValidation_24.py -d ${STARTTIME_s} -f $TMP_DIR_PREV -s ${SAT_WEEKLY_DIR} -o $f0_name -m $MASKFILE" # MISFIT
 
-for fc_day in 1 2; do
+for fc_day in 0 1 2; do
    DAY=$(date -d "$STARTTIME_s + $fc_day days"  +%Y%m%d )
    f_name=${ONLINE_VALIDATION_DIR}/Validation_f${fc_day}_${PREVIOUS_TUE_RUNDIR}_on_daily_Sat.${DAY}.nc
    opa_prex_or_die "python SatValidation_24.py  -d $DAY -f $TMP_DIR_PREV -s ${SAT_DAILY_DIR} -o ${f_name}  -m $MASKFILE"     # ERROR

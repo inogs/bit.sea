@@ -58,6 +58,10 @@ NnoDAdates = 0
 for dateref in TL[1:]:
     datefreq = timerequestors.Interval_req(dateref.year,dateref.month,dateref.day, \
                         days=DAfreq)
+    dateend = datefreq.time_interval.end_time - datetime.timedelta(days=1)
+    datefreq.time_interval.end_time = datetime.datetime(dateend.year, \
+                                                        dateend.month, \
+                                                        dateend.day, 23, 59)
     PROFILESdateref = FloatSelector(var,datefreq.time_interval,OGS.med)
 
     Goodlist = []

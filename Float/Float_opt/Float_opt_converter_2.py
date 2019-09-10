@@ -26,7 +26,7 @@ def argument():
     parser.add_argument(   '--lovFloatIndex', '-f',
                                 type = str,
                                 required = False,
-                                default = '/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_LOVBIO/Float_Index.txt',#'/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/ORIG/Float_Index.0.txt',
+                                default = '/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/Float_Index.txt',#'/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/ORIG/Float_Index.0.txt',
                                 help = 'Operational directory')    
 
     return parser.parse_args()
@@ -113,11 +113,11 @@ def Same_Profilelist(p, VARLIST, CHL_PL, ED380_PL, ED412_PL, ED490_PL, PAR_PL):
         Profilelist.append(PAR_PL[ind])
     return Profilelist
 
-INPUTDIR = '../ORIG/' #addsep(args.inputdir) #"/Users/gbolzon/Downloads/BIO-ARGO-QC-DATA/"
+INPUTDIR = '/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/ORIG/'
 FloatIndexer=args.lovFloatIndex #r"/Users/gbolzon/Downloads/Float_Index.txt"
-OUTDIR = '../NCFILES/'#addsep(args.outputdir)#"/Users/gbolzon/Downloads/Float_OPT/DATASET/"
+OUTDIR = '/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/NCFILES/'
 
-if False:#True:
+if False:
     filename=INPUTDIR + "QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD.txt"  #"CHL_red.txt"
     P_chl = get_Profiles(filename, "CHL", QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD_type)
     
@@ -137,22 +137,16 @@ INDEX_FILE=np.loadtxt(FloatIndexer,dtype=FloatIndex_type, delimiter=",",ndmin=1)
 
 UNIQUE_PROFILES=P_chl[:]#P_TEM[:]
 
-WMO_set = set()
 for ip, p in enumerate(UNIQUE_PROFILES):
     for ifile, filename in enumerate(INDEX_FILE['file_name']):
-        if filename.find(p.name()) > -1:
+        if (filename.find(p.name()) > -1) & (p.time.strftime("%Y%m%d")==INDEX_FILE[ifile]['time'][:8] ) :
             time= INDEX_FILE[ifile]['time'].replace("-","").replace(":","")
             lon = INDEX_FILE[ifile]['lon'].astype(np.float64)
             lat = INDEX_FILE[ifile]['lat'].astype(np.float64)
             break
     else:
-        #raise ValueError ( "file %s not found" %(p.name()) )
-        #print "file %s not found" %(p.name())
-        time = p.time
-        lon  = p.lon
-        lat  = p.lat
-        WMO_set.add(p.name())
-        
+        raise ValueError ( "file %s not found" %(p.name()) )
+
     wmodir=OUTDIR + os.path.dirname(filename)
     outfile=OUTDIR + filename
     os.system("mkdir -p " + wmodir)
@@ -175,6 +169,7 @@ for ip, p in enumerate(UNIQUE_PROFILES):
         V.append((Pres,Profile,Qc))
 
 # NetCDF generation
+    print outfile
     ncOUT = NC.netcdf_file(outfile,"w")
     ncOUT.createDimension("DATETIME",14)
     ncOUT.createDimension("NPROF", 1)

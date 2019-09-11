@@ -117,7 +117,7 @@ for isub, sub in enumerate(OGS.P):
     ax1.set_ylabel('BIAS mg/m$^3$', fontsize=14)
 
 
-    ax1.legend(bbox_to_anchor=(0.85,1), bbox_transform=pl.gcf().transFigure, fontsize = 11)
+    ax1.legend(bbox_to_anchor=(1.005,.95), loc="lower right" , fontsize = 11)#bbox_transform=pl.gcf().transFigure,
     ax1.xaxis.set_major_locator(mdates.MonthLocator())
     ax1.grid(True)
     

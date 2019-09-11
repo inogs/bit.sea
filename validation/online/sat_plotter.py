@@ -4,6 +4,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates time series png files for mdeeaf web site.
     Each file has 3 subplots: bias, rms and number of points.
+    Only the daily matchup sat/model is taken in account
     The time window is 18 months.
     See https://matplotlib.org/3.1.0/gallery/color/named_colors.html for colors
     ''', formatter_class=argparse.RawTextHelpFormatter)
@@ -14,14 +15,10 @@ def argument():
                                 required = True,
                                 help = 'start date in yyyymmdd format')
 
-    parser.add_argument(   '--archivedir','-a',
+    parser.add_argument(   '--inputdir','-i',
                                 type = str,
                                 required = True,
-                                help = 'chain archive directory')
-    parser.add_argument(   '--validation_dir','-v',
-                                type = str,
-                                required = True,
-                                help = 'wrkdir/2/POSTPROC/AVE_FREQ_1/online_validation')
+                                help = 'input directory with all the Validation_*nc, operationally inpdir/SAT_VALIDATION/')
 
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
@@ -70,20 +67,16 @@ timestart = datestart.strftime("%Y%m%d")
 
 
 TI = TimeInterval('20190405', args.date,'%Y%m%d')
-ARCHIVE_DIR      = addsep(args.archivedir)
-VALID_WRKDIR     = addsep(args.validation_dir)
+INPUT_DIR        = addsep(args.inputdir)
 OUTFIG_DIR       = addsep(args.outdir)
 
 
 
 prefix="Validation_f0_20190723_on_daily_Sat."
-F0 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f0_*on_daily_Sat*', prefix=prefix)
-F1 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f1_*on_daily_Sat*', prefix=prefix)
-F2 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f2_*on_daily_Sat*', prefix=prefix)
+F0 = timelistcontainer(TI,INPUT_DIR, 'Validation_f0_*on_daily_Sat*', prefix=prefix)
+F1 = timelistcontainer(TI,INPUT_DIR, 'Validation_f1_*on_daily_Sat*', prefix=prefix)
+F2 = timelistcontainer(TI,INPUT_DIR, 'Validation_f2_*on_daily_Sat*', prefix=prefix)
 
-F0.append_dir(VALID_WRKDIR)
-F1.append_dir(VALID_WRKDIR)
-F1.append_dir(VALID_WRKDIR)
 
 EAN_BIAS_s = [0.02, -0.01, -0.01, -0.01, -0.01, 0.005, -0.02, -0.01, -0.01, 0.005, 0.005, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005]
 EAN_RMSD_w = [0.18, 0.07, 0.05, 0.10, 0.05, 0.04, 0.03, 0.04, 0.03, 0.02, 0.01, 0.03, 0.02, 0.02, 0.01, 0.02, 0.06 ]

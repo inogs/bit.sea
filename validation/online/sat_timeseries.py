@@ -1,4 +1,5 @@
 from commons.timeseries import TimeSeries
+from commons.Timelist import TimeList
 import glob
 import numpy as np
 import scipy.io.netcdf as NC
@@ -6,7 +7,36 @@ import datetime
 
 
 class timelistcontainer():
-    def __init__(self,Ti,ARCHIVE_DIR,search_type,postfix_dir=""):
+    def __init__(self,Ti,ARCHIVE_DIR,searchstring,prefix="Validation_f1_20190507_on_daily_Sat"):
+        '''
+        timelistcontainer is a reader class for files
+        produced by SatValidation, in operational chain or similar sequential runs
+        Arguments:
+        * Ti * a TimeInterval
+        * ARCHIVE_DIR * string indicating path of the chain archive directory e.g. /pico/home/usera07ogs/a07ogs00/OPA/V2C/archive/
+        * search_type * string, having one of these values: f0, f1, f2, a0, a1, a2
+        * postfix_dir * string to pass to TimeSeries objects
+        '''
+
+
+        self.timelist=[]
+        self.filelist=[]
+        self.bias = None
+        self.number=None
+        self.rmse  =None
+        self.model =None
+        self.sat  = None
+        self.rmselog = None
+        self.biaslog = None
+        self.search_type=searchstring
+        TL = TimeList.fromfilenames(Ti, ARCHIVE_DIR, searchstring, prefix=prefix, dateformat="%Y%m%d")
+
+        self.filelist = TL.filelist
+        self.nFrames = len(self.filelist)
+        self.read_basic_info(self.filelist[0])
+        self.readfiles()
+
+    def initold(self,Ti,ARCHIVE_DIR,search_type,postfix_dir=""):
         '''
         timelistcontainer is a reader class for files
         produced by SatValidation, in operational chain or similar sequential runs
@@ -112,7 +142,13 @@ class timelistcontainer():
     def plotdata(self,VAR, sub,coast):
         '''
         VAR must be a 3D field of this class, such as bias, number, ...
+        If the number of matchups is less than 50 - at 1/24 grid - the statistic won't be plotted
         '''
+
         isub = self.SUBLIST.index(sub)
         icoast= self.COASTLIST.index(coast)
-        return self.timelist, VAR[:,isub,icoast]
+        numb = self.number[:,isub, icoast]
+        ii  = numb < 50
+        y = VAR[:,isub,icoast]
+        y[ii] = np.nan
+        return self.timelist, y

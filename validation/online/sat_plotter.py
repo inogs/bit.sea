@@ -69,7 +69,7 @@ datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
 timestart = datestart.strftime("%Y%m%d")
 
 
-TI_V3 = TimeInterval('20190405', args.date,'%Y%m%d')
+TI = TimeInterval('20190405', args.date,'%Y%m%d')
 ARCHIVE_DIR      = addsep(args.archivedir)
 VALID_WRKDIR     = addsep(args.validation_dir)
 OUTFIG_DIR       = addsep(args.outdir)
@@ -77,13 +77,13 @@ OUTFIG_DIR       = addsep(args.outdir)
 
 
 prefix="Validation_f0_20190723_on_daily_Sat."
-F0v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'Validation_f0_*on_daily_Sat*', prefix=prefix)
-F1v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'Validation_f1_*on_daily_Sat*', prefix=prefix)
-F2v3 = timelistcontainer(TI_V3,ARCHIVE_DIR, 'Validation_f2_*on_daily_Sat*', prefix=prefix)
+F0 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f0_*on_daily_Sat*', prefix=prefix)
+F1 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f1_*on_daily_Sat*', prefix=prefix)
+F2 = timelistcontainer(TI,ARCHIVE_DIR, 'Validation_f2_*on_daily_Sat*', prefix=prefix)
 
-F0v3.append_dir(VALID_WRKDIR)
-F1v3.append_dir(VALID_WRKDIR)
-F1v3.append_dir(VALID_WRKDIR)
+F0.append_dir(VALID_WRKDIR)
+F1.append_dir(VALID_WRKDIR)
+F1.append_dir(VALID_WRKDIR)
 
 EAN_BIAS_s = [0.02, -0.01, -0.01, -0.01, -0.01, 0.005, -0.02, -0.01, -0.01, 0.005, 0.005, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005]
 EAN_RMSD_w = [0.18, 0.07, 0.05, 0.10, 0.05, 0.04, 0.03, 0.04, 0.03, 0.02, 0.01, 0.03, 0.02, 0.02, 0.01, 0.02, 0.06 ]
@@ -101,9 +101,9 @@ for isub, sub in enumerate(OGS.P):
     fig, (ax1, ax2, ax3) = pl.subplots(3, sharex=True, figsize=(15,10)) 
     # BIAS
 
-    times, f0= F0v3.plotdata(F0v3.bias, sub.name,coast) ; ax1.bar(times,f0, width=w, bottom=0, align="center", color="grey",      label='1$^{st}$ day of forecast')
-    times, f1= F1v3.plotdata(F1v3.bias, sub.name,coast);  ax1.bar(times,f1, width=w, bottom=0, align='center', color="skyblue",   label='2$^{nd}$ day of forecast')
-    times, f2= F2v3.plotdata(F2v3.bias, sub.name,coast);  ax1.bar(times,f2, width=w, bottom=0, align='center', color="limegreen", label='3$^{rd}$ day of forecast')
+    times, f0= F0.plotdata(F0.bias, sub.name,coast) ; ax1.bar(times,f0, width=w, bottom=0, align="center", color="grey",      label='1$^{st}$ day of forecast')
+    times, f1= F1.plotdata(F1.bias, sub.name,coast);  ax1.bar(times,f1, width=w, bottom=0, align='center', color="skyblue",   label='2$^{nd}$ day of forecast')
+    times, f2= F2.plotdata(F2.bias, sub.name,coast);  ax1.bar(times,f2, width=w, bottom=0, align='center', color="limegreen", label='3$^{rd}$ day of forecast')
     EAN_BIAS=np.zeros((len(times),nSub), dtype = np.float32)*np.nan
     for it, t in enumerate(times):
         if (( t.month <= 5 ) | ( t.month >= 10 )):
@@ -122,9 +122,9 @@ for isub, sub in enumerate(OGS.P):
     ax1.grid(True)
     
     #RMS
-    times, f0= F0v3.plotdata(F0v3.rmse, sub.name,coast) ; ax2.bar(times,f0, width=w, bottom=0, align="center", color="grey")
-    times, f1= F1v3.plotdata(F1v3.rmse, sub.name,coast) ; ax2.bar(times,f1, width=w, bottom=0, align='center', color="skyblue")
-    times, f2= F2v3.plotdata(F2v3.rmse, sub.name,coast) ; ax2.bar(times,f2, width=w, bottom=0, align='center', color="limegreen")
+    times, f0= F0.plotdata(F0.rmse, sub.name,coast) ; ax2.bar(times,f0, width=w, bottom=0, align="center", color="grey")
+    times, f1= F1.plotdata(F1.rmse, sub.name,coast) ; ax2.bar(times,f1, width=w, bottom=0, align='center', color="skyblue")
+    times, f2= F2.plotdata(F2.rmse, sub.name,coast) ; ax2.bar(times,f2, width=w, bottom=0, align='center', color="limegreen")
 
     EAN_RMSD=np.ndarray((len(times),nSub), dtype = np.float32)
     for it, t in enumerate(times):
@@ -141,9 +141,9 @@ for isub, sub in enumerate(OGS.P):
 
 
     # n. of valid points
-    times, f0= F0v3.plotdata(F0v3.number, sub.name,coast) ; ax3.bar(times,f0, width=w, bottom=0, align="center", color="grey")
-    times, f1= F1v3.plotdata(F1v3.number, sub.name,coast) ; ax3.bar(times,f1, width=w, bottom=0, align='center', color="skyblue")
-    times, f2= F2v3.plotdata(F2v3.number, sub.name,coast) ; ax3.bar(times,f2, width=w, bottom=0, align='center', color="limegreen")
+    times, f0= F0.plotdata(F0.number, sub.name,coast) ; ax3.bar(times,f0, width=w, bottom=0, align="center", color="grey")
+    times, f1= F1.plotdata(F1.number, sub.name,coast) ; ax3.bar(times,f1, width=w, bottom=0, align='center', color="skyblue")
+    times, f2= F2.plotdata(F2.number, sub.name,coast) ; ax3.bar(times,f2, width=w, bottom=0, align='center', color="limegreen")
     
 
     ax3.set_ylabel('# of points',fontsize=14)

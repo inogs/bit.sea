@@ -8,6 +8,10 @@
 <var name="P_l" ></var>
 <var name="votemper" ></var>
 <var name="vosaline" ></var>
+<var name="EIR" ></var>
+<var name="POC" ></var>
+<var name="P_c" ></var>
+<var name="pH" ></var>
 </native>
 
 <aggregate>

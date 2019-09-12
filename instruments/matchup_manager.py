@@ -259,8 +259,18 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,401,5)
-        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline']
-        plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
+        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+        plotvarname = [r'Chl $[mg/m^3]$',
+                       r'Oxy $[mmol/m^3]$',
+                       r'Nitr $[mmol/m^3]$',
+                       r'Temp $[^\circ C]$',
+                       'Sal',
+                       r'PAR $[/mu E/m^2 s]$',
+                       r'POC $[mg/m^3]$'
+                       r'P_c $[mg/m^3]$',
+                       'pH'
+                        ]
+
         mapgraph = [3,4,5,1,2]
 
         for p in Profilelist:
@@ -304,6 +314,12 @@ class Matchup_Manager():
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
+                if model_varname=='POC':
+                    float_on_common_grid = float_on_common_grid * 3.23 * 104  + 2.76
+                if model_varname == 'P_c':
+                     bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
+                     float_on_common_grid = 12128 * bbp470 + 0.59
+
 
 
                 Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)

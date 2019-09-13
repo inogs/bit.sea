@@ -5,8 +5,9 @@ FLOATVARS={'O2o':'DOXY', \
            'Chla':'CHLA', \
            'vosaline':'PSAL', \
            'votemper':'TEMP',
-           'PAR':'DOWNWELLING_PAR',
-           'BBP700':'BBP700',
+           'EIR':'DOWNWELLING_PAR',
+           'POC':'BBP700',
+           'P_c':'BBP700',
            'BBP532':'BBP532',
            'pH'    : 'PH_IN_SITU_TOTAL'   }
  
@@ -21,9 +22,10 @@ LOVFLOATVARS={'O2o':'DOXY', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
               'votemper':'TEMP',
-              'PAR':'PAR',
+              'EIR':'PAR',
               'BBP532':'BBP532',
-              'BBP700':'BBP700',
+              'POC':'BBP700',
+              'P_c':'BBP700',
                'pH'    : 'PH_IN_SITU_TOTAL'  }
 
 

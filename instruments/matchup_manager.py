@@ -158,6 +158,8 @@ class Matchup_Manager():
         '''
         if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
             return all_instruments.FLOAT_OPT_VARS[var]
+        if isinstance(p, all_instruments.optbio_float_2019.BioFloatProfile):
+            return all_instruments.FLOAT_OPT_VARS_2019[var]
         if isinstance(p, all_instruments.superfloat.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):

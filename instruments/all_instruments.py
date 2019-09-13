@@ -2,11 +2,12 @@ import bio_float
 import lovbio_float
 import superfloat
 import optbio_float
+import optbio_float_2019
 import mooring
 from static.Carbon_reader import CarbonReader
 from static.Nutrients_reader import NutrientsReader
 
-from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS, FLOAT_OPT_VARS
+from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS, FLOAT_OPT_VARS, FLOAT_OPT_VARS_2019
 
 def Selector(var,T,region):
     '''

@@ -26,15 +26,21 @@ def argument():
 
 args = argument()
 
-isLOV = args.inputfile.find("LOV")> -1
-if isLOV:
-    from instruments import lovbio_float
-else:
-    from instruments import bio_float as lovbio_float
+
 import datetime
 import numpy as np
 import os
 from commons.utils import addsep
+isLOV = False
+float_dataset=os.path.basename(os.path.dirname(args.inputfile))
+if float_dataset=="SUPERFLOAT":
+    from instruments import superfloat as lovbio_float
+if float_dataset == "FLOAT_LOVBIO":
+    isLOV = True
+    from instruments import lovbio_float
+if float_dataset == "FLOAT_BIO":
+    from instruments import bio_float as lovbio_float
+
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -130,7 +136,7 @@ if isLOV:
 
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_LOVBIO/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + float_dataset + "/Float_Index.txt"
 is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
 
 nFiles=INDEX_FILE.size
@@ -144,7 +150,7 @@ for iFile in range(nFiles):
     float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
     
     if not is_default_V4C :
-        filename = ONLINE_REPO + "FLOAT_LOVBIO/" + filename    
+        filename = ONLINE_REPO + float_dataset + "/" + filename
     thefloat = lovbio_float.BioFloat(lon,lat,float_time,filename,available_params)
     PROFILE_LIST.append(lovbio_float.BioFloatProfile(float_time,lon,lat, thefloat,available_params))
     
@@ -175,7 +181,7 @@ for wmo in WMOS:
 good = np.ones((nFiles),np.bool)
 LINES=[]
 for iFile in range(nFiles):
-    if ONLINE_REPO + "FLOAT_LOVBIO/" + INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
+    if ONLINE_REPO + float_dataset + INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
         good[iFile]=False
 
 np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s")

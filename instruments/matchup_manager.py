@@ -158,6 +158,8 @@ class Matchup_Manager():
         '''
         if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
             return all_instruments.FLOAT_OPT_VARS[var]
+        if isinstance(p, all_instruments.optbio_float_2019.BioFloatProfile):
+            return all_instruments.FLOAT_OPT_VARS_2019[var]
         if isinstance(p, all_instruments.superfloat.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):
@@ -211,7 +213,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile)):
+            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile)):
                 Pres, Profile, Qc = p.read(ref_varname)
             else:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)

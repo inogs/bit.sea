@@ -72,3 +72,10 @@ FLOAT_OPT_VARS = {"P_l": "chl",
                   "Ed_412": "Ed_412",
                   "Ed_490": "Ed_490",
                   }
+
+FLOAT_OPT_VARS_2019 = {"P_l": "CHL",
+                  "Ed_380": "IRR_380",
+                  "Ed_412": "IRR_412",
+                  "Ed_490": "IRR_490",
+                  "PAR"   : "PAR",
+                  }

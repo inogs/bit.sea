@@ -161,27 +161,29 @@ WMOS=lovbio_float.get_wmo_list(PROFILE_LIST)
 
 
 for wmo in WMOS:
-    
     Profile_list = lovbio_float.filter_by_wmo(PROFILE_LIST, wmo)
     #first=Profile_list[0]
     #d=datetime.datetime(firsrt.time)
-    
-    TIMELIST=[p.time for p in Profile_list]
-    nProfiles = len(Profile_list)
-    for ip in range(1,nProfiles):
-        if TIMELIST[ip] <= TIMELIST[ip-1]:
-            print "\nPROBLEM in ", wmo, ip
-            REMOVING_LIST.append(Profile_list[ip]._my_float.filename)
-            for k in range(-1,2):
-                IP = ip+k
-                if IP > nProfiles-1 : continue
-                print IP, Profile_list[IP]._my_float.filename, TIMELIST[IP]
+    for ntry in range(10):
+        TIMELIST=[p.time for p in Profile_list]
+        nProfiles = len(Profile_list)
+        for ip in range(1,nProfiles):
+            if TIMELIST[ip] <= TIMELIST[ip-1]:
+                print "\nPROBLEM in ", wmo, ip
+                REMOVING_LIST.append(Profile_list[ip]._my_float.filename)
+                Profile_list.remove(Profile_list[ip])
+                nProfiles = len(Profile_list)
+                for k in range(-1,2):
+                    IP = ip+k
+                    if IP > nProfiles-1 : continue
+                    print IP, Profile_list[IP]._my_float.filename, TIMELIST[IP]
+                break
 
 
 good = np.ones((nFiles),np.bool)
 LINES=[]
 for iFile in range(nFiles):
-    if ONLINE_REPO + float_dataset + INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
+    if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
         good[iFile]=False
 
 np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s")

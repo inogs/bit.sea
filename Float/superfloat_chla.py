@@ -130,7 +130,7 @@ for wmo in wmo_list:
         if os.path.exists(outfile): continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if is_only_lov:
+        if is_only_LOV:
             Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
             profile_for_data = pLov
             if pCor is None:

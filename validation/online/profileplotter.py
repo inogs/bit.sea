@@ -9,6 +9,7 @@ from layer_integral import coastline
 def figure_generator(p):
     ''' Generates a figure to plot the matchups related to a bioFloat cycle
     There are 6 axes: map, temperature, salinity, chl, oxygen and nitrate
+    plus 4 new axes related to PAR, P_c, POC, pH
 
     Arguments:
     * p * is a profile object
@@ -16,8 +17,8 @@ def figure_generator(p):
     Returns
     fig, axes (array of axes handlers)
     '''
-    fig, axs = pl.subplots(2,3, facecolor='w', edgecolor='k')
-    hsize=10
+    fig, axs = pl.subplots(2,5, facecolor='w', edgecolor='k')
+    hsize=16
     vsize=12
     fig.set_size_inches(hsize,vsize)
     #figtitle = " date="+p.time.strftime('%Y/%m/%d')+" float="+p.name()
@@ -50,7 +51,7 @@ def figure_generator(p):
         ax.locator_params(axis='x',nbins=4)
         ax.yaxis.grid()
 
-    for ax in [axs[2], axs[4], axs[5]]:
+    for ax in [axs[2], axs[3], axs[4], axs[6], axs[7], axs[8], axs[9]]:
         ax.set_yticklabels([])
 
     return fig,axs

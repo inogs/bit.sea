@@ -188,7 +188,7 @@ if __name__ == '__main__':
             message_text += "downloader script. Please, see the "
             message_text += "attached log!"
             write_mail("Downloader", recipients, "Something went wrong!!!",
-                   message_text, "Downloader.log", log.get_content())        
+                   message_text, LOG_FILE, log.get_content())
         exit(1)
     else:
         # Send the mail to the people in the report list
@@ -197,4 +197,4 @@ if __name__ == '__main__':
             message_text += "of the last execution of the downloader "
             message_text += "script"
             write_mail("Downloader", report_to, "Downloader report",
-                   message_text, "Downloader.log", log.get_content())
+                   message_text, LOG_FILE, log.get_content())

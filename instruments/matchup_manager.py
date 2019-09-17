@@ -266,7 +266,7 @@ class Matchup_Manager():
                        r'Oxy $[mmol/m^3]$',
                        r'Nitr $[mmol/m^3]$',
                        r'Temp $[^\circ C]$',
-                       'Sal',
+                       'Sal [psu]',
                        r'PAR $[\mu E/m^2 s]$',
                        r'POC $[mg/m^3]$',
                        'PhytoC $[mg/m^3]$',

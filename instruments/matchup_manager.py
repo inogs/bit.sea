@@ -267,9 +267,9 @@ class Matchup_Manager():
                        r'Nitr $[mmol/m^3]$',
                        r'Temp $[^\circ C]$',
                        'Sal',
-                       r'PAR $[/mu E/m^2 s]$',
-                       r'POC $[mg/m^3]$'
-                       r'P_c $[mg/m^3]$',
+                       r'PAR $[\mu E/m^2 s]$',
+                       r'POC $[mg/m^3]$',
+                       'PhytoC $[mg/m^3]$',
                        'pH'
                         ]
 
@@ -339,5 +339,6 @@ class Matchup_Manager():
             fig.savefig(pngfile)
             pl.close(fig)
             #add_metadata(pngfile, p)
+
 
         return

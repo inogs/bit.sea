@@ -44,7 +44,7 @@ archive_dir= args.arcdir
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 
 if args.type=='analysis':
-    for var in ['P_l','O2o','N3n','vosaline','votemper']:
+    for var in ['P_l','O2o','N3n','vosaline','votemper','EIR','P_c','pH','POC']:
         T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
         T_bio.extract_analysis( LOC + 'output/')
 #     T_phys= TimeSeries(TI, archive_dir,postfix_dir='OPAOPER_A/'          ,glob_pattern="*T.nc"   )
@@ -53,7 +53,7 @@ if args.type=='analysis':
 
 if args.type =='forecast':
 
-    for var in  ['P_l','O2o','N3n','vosaline','votemper']:
+    for var in ['P_l','O2o','N3n','vosaline','votemper','EIR','P_c','pH','POC']:
        T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
        T_bio.extract_simulation(LOC + 'output/')
        T_bio.extract_forecast(  LOC + 'output/')

@@ -186,7 +186,7 @@ dump_xml(xmlfile)
 
 
 zlevels_out=np.arange(0,401,5)
-mapgraph = [3,4,5,1,2]
+mapgraph = [5,6,7,1,2,8,9,3,4]
 
 plotvarname = [r'Chl  $[ mg/m^3]$',
                r'Oxy  $[ mmol/m^3]$',

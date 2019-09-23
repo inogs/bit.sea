@@ -11,19 +11,18 @@ def argument():
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    #parser.add_argument(   '--inputdir', '-i',
-    #                            type = str,
-    #                            required =False,
-    #                            default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
-    #                            help = ''' Input directory'''
-    #                            )
-
-    #parser.add_argument(   '--outputdir', '-o',
-    #                            type = str,
-    #                            required = True,
-    #                            default = '/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/FLOAT_OPT/',
-    #                            help = 'Operational directory')
-    parser.add_argument(   '--lovFloatIndex', '-f',
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required =False,
+                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
+                                help = ''' Input directory'''
+                                )
+    parser.add_argument(   '--outputdir', '-o',
+                                type = str,
+                                required = True,
+                                default = '/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/FLOAT_OPT/',
+                                help = 'Operational directory')
+    parser.add_argument(   '--FloatIndex', '-f',
                                 type = str,
                                 required = False,
                                 default = '/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/Float_Index.txt',#'/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/ORIG/Float_Index.0.txt',
@@ -91,11 +90,7 @@ def Same_Profilelist(p, VARLIST, CHL_PL, ED380_PL, ED412_PL, ED490_PL, PAR_PL):
     '''
 
     Profilelist=[]
-    #ind =SAL_PL.index(p)
-    #Profilelist.append(SAL_PL[ind])
-    #Profilelist.append(p)
-    ind = CHL_PL.index(p)
-    Profilelist.append(CHL_PL[ind])
+
     if "CHL" in VARLIST:
         ind = CHL_PL.index(p)
         Profilelist.append(CHL_PL[ind])
@@ -113,9 +108,9 @@ def Same_Profilelist(p, VARLIST, CHL_PL, ED380_PL, ED412_PL, ED490_PL, PAR_PL):
         Profilelist.append(PAR_PL[ind])
     return Profilelist
 
-INPUTDIR = '/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/ORIG/'
-FloatIndexer=args.lovFloatIndex #r"/Users/gbolzon/Downloads/Float_Index.txt"
-OUTDIR = '/galileo/home/userexternal/eterzic0/BGC-ARGO-DATA/NCFILES/'
+INPUTDIR = addsep(args.inputdir)
+FloatIndexer=args.FloatIndex
+OUTDIR = addsep(args.outputdir)
 
 if False:
     filename=INPUTDIR + "QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD.txt"  #"CHL_red.txt"
@@ -152,7 +147,7 @@ for ip, p in enumerate(UNIQUE_PROFILES):
     os.system("mkdir -p " + wmodir)
     
 
-    VARLIST=[]#'PSAL','TEMP','PAR']
+    VARLIST=[]
     if p in P_chl  : VARLIST.append('CHL')   
     if p in P_Ed380: VARLIST.append('IRR_380')
     if p in P_Ed412: VARLIST.append('IRR_412')
@@ -160,7 +155,7 @@ for ip, p in enumerate(UNIQUE_PROFILES):
     if p in P_PAR: VARLIST.append('PAR')
     
     
-    same_profile_objects = Same_Profilelist(p, VARLIST, P_chl,P_Ed380, P_Ed412, P_Ed490, P_PAR)#,# P_SAL)
+    same_profile_objects = Same_Profilelist(p, VARLIST, P_chl,P_Ed380, P_Ed412, P_Ed490, P_PAR)
     
     V=[]
     for ivar, var in enumerate(VARLIST):

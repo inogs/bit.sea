@@ -112,7 +112,7 @@ INPUTDIR = addsep(args.inputdir)
 FloatIndexer=args.FloatIndex
 OUTDIR = addsep(args.outputdir)
 
-if False:
+if True:
     filename=INPUTDIR + "QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD.txt"  #"CHL_red.txt"
     P_chl = get_Profiles(filename, "CHL", QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD_type)
     

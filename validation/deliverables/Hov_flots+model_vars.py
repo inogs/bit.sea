@@ -129,7 +129,7 @@ for j in range(0,len(wmo_list)):
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
         plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
 	timelabel_list = list()
-        var = LOVFLOATVARS[var_mod]
+        var = FLOATVARS[var_mod]
         adj=Adj[ivar]
         
 	for ip, p in enumerate(list_float_track):

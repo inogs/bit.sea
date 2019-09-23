@@ -71,7 +71,7 @@ A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 A_model = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 
 for ivar, var_mod in enumerate(VARLIST):
-    var = LOVFLOATVARS[var_mod]
+    var = FLOATVARS[var_mod]
     adj=Adj[ivar]
     for itime, Req in enumerate(MonthlyRequestors):
 	if Req.time_interval.end_time > TL.timeinterval.end_time : 

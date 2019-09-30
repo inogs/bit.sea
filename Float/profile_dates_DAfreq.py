@@ -26,6 +26,11 @@ def argument():
                                 required = True,
                                 help = 'variable (model name) for float DA')
 
+    parser.add_argument(   '--hourda',"-t",
+                                type = str,
+                                required = True,
+                                help = 'time during the day at which DA should be performed')
+
     return parser.parse_args()
 
 args = argument()
@@ -34,6 +39,7 @@ args = argument()
 
 DAfreq = np.int(args.dafreq) # days
 varMODEL = args.varda
+hourDA = np.int(args.hourda)
 
 deltatimeDA = datetime.timedelta(DAfreq)
 
@@ -77,11 +83,15 @@ for dateref in TL[1:]:
             break
     
     if (Goodlist!=[]):
-        print dateref
-        DAfloatdates.append(datetime.datetime.strftime(dateref,'%Y%m%d-%H:%M:%S'))
+        dateDA = datetime.datetime(dateref.year, \
+                dateref.month,dateref.day,hourDA,00)
+        print dateDA
+                                   
+        DAfloatdates.append(datetime.datetime.strftime(dateDA,'%Y%m%d-%H:%M:%S'))
     else:
         NnoDAdates += 1
 
-
-np.savetxt('daTimes_floatfreq' + np.str(DAfreq) + '_' + varMODEL ,DAfloatdates,fmt='%s')
+filename = 'daTimes_floatfreq' + np.str(DAfreq) + '_' + varMODEL
+print 'filename ' + filename
+np.savetxt(filename,DAfloatdates,fmt='%s')
 

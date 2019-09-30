@@ -39,7 +39,7 @@ from commons.utils import addsep
 import scipy.io.netcdf as NC
 from commons.utils import writetable
 from datetime import datetime
-from profilerHC_2017 import *
+from profiler_2015 import *
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -125,6 +125,8 @@ LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150
 VARLIST = ['P_l','N3n','O2o']
 VARLIST = ['Chla','N3n','O2o']
 VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen']
+VARLIST = ['P_l','N3n']
+VARLONGNAMES=['Chlorophyll','Nitrate']
 SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)

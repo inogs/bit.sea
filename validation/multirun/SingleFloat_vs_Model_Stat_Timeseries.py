@@ -30,7 +30,7 @@ from instruments.matchup_manager import Matchup_Manager
 from instruments.var_conversions import LOVFLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
-from profilerHC_2017 import ALL_PROFILES,TL,BASEDIR
+from profiler_2015 import ALL_PROFILES,TL,BASEDIR
 from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 import basins.V2 as OGS
@@ -40,10 +40,12 @@ TheMask=Mask(args.maskfile, loadtmask=False)
 layer=Layer(0,200)
 layer300=Layer(0,300)
 
-VARLIST = ['P_l','N3n','O2o']
 VARLIST = ['Chla','N3n','O2o']
+VARLIST = ['P_l','N3n','O2o']
+VARLIST = ['P_l','N3n']
 #VARLIST = ['N3n']
 Adj = [True,True,False]
+Adj = [True,True]
 nVar = len(VARLIST)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal', \

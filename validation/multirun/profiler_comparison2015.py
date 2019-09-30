@@ -14,28 +14,42 @@ from basins.region import Rectangle
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 
-RUN_REF ='DA_FloatNut/RUN_REF'
+RUN_REF ='DA_Float/RUN_REF'
 
-RUN_DA  ='DA_FloatNut/RUN_chl_N3nN1pupd'
-RUN_DA  ='DA_FloatNut/RUN_N3nN1p_chlfreq'
-RUN_DA  ='DA_FloatNut/RUN_chl_1day'
+RUN_DA  ='DA_Float/RUN_FLOAT_chl12'
+RUN_DA  ='DA_Float/RUN_FLOAT_chl_nupd'
 
-INPUTDIR ='/gpfs/scratch/userexternal/ateruzzi/' + RUN_REF + '/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/'
+INPUTDIR = '/gpfs/scratch/userexternal/ateruzzi/' + RUN_REF + \
+    '/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/'
+INPUTDIR = '/gpfs/scratch/userexternal/ateruzzi/' + RUN_DA + \
+    '/wrkdir/POSTPROC/output/DA__FREQ_1/TMP/'
 
 # output directory, where aveScan.py will be run.
 
 BASEDIR = {}
 
-BASEDIR[RUN_REF] = '/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/' + RUN_REF + '/PROFILATORE/'
-BASEDIR[RUN_DA] = '/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/' + RUN_DA + '/PROFILATORE/'
+BASEDIR[RUN_REF] = '/gpfs/scratch/userexternal/ateruzzi/' + \
+    'ELAB_DAFloat/VALID_float/' + \
+    RUN_REF + '/PROFILATORE/'
+BASEDIR[RUN_DA] = '/gpfs/scratch/userexternal/ateruzzi/' + \
+    'ELAB_DAFloat/VALID_float/' + \
+    RUN_DA + '/PROFILATORE/'
+
+BASEDIR['RSTaft'] = '/gpfs/scratch/userexternal/ateruzzi/' + \
+    'ELAB_DAFloat/VALID_float/' + \
+    RUN_DA + '/PROFILATORE_RSTaft/'
+BASEDIR['RSTbef'] = '/gpfs/scratch/userexternal/ateruzzi/' + \
+    'ELAB_DAFloat/VALID_float/' + \
+    RUN_DA + '/PROFILATORE_RSTbef/'
+
 
 
 #DATESTART = '20140101'
-DATESTART = '20150101'
-DATE__END = '20151231'
+DATESTART = '20150103'
+DATE__END = '20160101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"RSTb*.nc",filtervar="P_l",prefix='RSTbefore.')
 
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 

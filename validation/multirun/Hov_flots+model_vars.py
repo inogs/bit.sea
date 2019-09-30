@@ -47,7 +47,7 @@ from basins import OGS
 from validation.online.profileplotter import figure_generator, ncwriter #, add_metadata
 import matplotlib
 from mhelpers.pgmean import PLGaussianMean
-from profilerHC_2017 import *
+from profiler_2015 import *
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 
@@ -117,7 +117,10 @@ plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$'] #,r'T
 #mapgraph = [3,4,5,1,2]
 VARLIST = ['P_l','O2o','N3n']
 VARLIST = ['Chla','O2o','N3n']
+VARLIST = ['Chla','O2o','N3n']
 Adj = [True,False,True]
+VARLIST = ['P_l','N3n']
+Adj = [True,True] 
 nVar = len(VARLIST)
 
 meanObj11 = PLGaussianMean(11,1.0)

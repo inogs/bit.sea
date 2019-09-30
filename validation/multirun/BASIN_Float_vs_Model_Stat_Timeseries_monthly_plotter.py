@@ -59,7 +59,7 @@ from matchup.statistics import *
 from commons.utils import writetable
 from datetime import datetime
 from datetime import timedelta
-from profilerHC_2017 import *
+from profiler_2015 import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -117,6 +117,8 @@ OUTDIR = addsep(args.outdir)
 
 VARLIST      = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
+VARLIST      = ['P_l','N3n']
+VARLIST_NAME = ['Chlorophyll','Nitrate']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 

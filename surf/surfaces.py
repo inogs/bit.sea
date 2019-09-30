@@ -74,3 +74,49 @@ def DCM(chl,maskobj):
     out[~tmask] = 1.e+20
     return out
 
+def DCM2(chl,maskobj):
+    '''
+    Calculation of Deep Chlorophyll Maximum
+    Uses 1-st and 2-nd derivative to find the maximum
+    Returns the cchlorophyll concentration at DCM also
+
+    '''
+    _,jpj,jpi=maskobj.shape
+    tmask=maskobj.mask_at_level(0)
+    DEPTHS=maskobj.bathymetry_in_cells()
+    matrixDCM = np.ones((jpj,jpi),np.int)
+    matrixDCM[:,:] = np.nan
+    matrixCM = np.ones((jpj,jpi),np.int)
+    matrixCM[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                CM = np.nan
+                DCM = np.nan
+                profile_len = DEPTHS[jj,ji]
+                maskprof = chl[:profile_len,jj,ji]>0.1
+                profile = chl[:profile_len,jj,ji]
+                depths = moskobj.zlevels[:profile]
+                profile_filt = profile[maskprof]
+                depths_filt = depths[maskprof]
+                profile_rev = profile_filt[::-1]# from bottom
+                depths_rev = depths_filt[::-1]
+                d1 = np.diff(profile_rev,1)
+                d2 = np.diff(profile_rev,2)
+                # maskd1sign = np.sign(d1)>=0
+                # mindiff2=np.argmin(d2)
+                for iid, dd in range(d1):
+                    if (iid>0) and (dd<0) and(d2[iid-1]<0):
+                        max_cand = profile_rev[iid-1:iid+2]
+                        d_max_cand = depths_rev[iid-1:iid+2]
+                        indmax = np.argmax(max_cand)
+                        CM = max_cand[indmax]
+                        DCM = d_max_cand[indmax]
+                        matrixDCM[jj,ji] = DCM
+                        matrixCM[jj,ji] = CM
+                
+    
+    matrixDCM = [~tmask] = 1.e+20
+    matrixCM = [~tmask] = 1.e+20
+    return matrixDCM,matrixCM
+

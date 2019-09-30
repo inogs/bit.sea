@@ -8,10 +8,13 @@
 <var name="P_l" ></var>
 <var name="votemper" ></var>
 <var name="vosaline" ></var>
+<var name="EIR" ></var>
+<var name="pH" ></var>
 </native>
 
 <aggregate>
-
+<aggvar name="P_c" formula="P_c = P1c + P2c + P3c + P4c" > </aggvar>
+<aggvar name="POC" formula= "POC = P_c + R3c + B1c + Z4c" ></aggvar>
 </aggregate>
 </vars_for_All_Statistics>
 

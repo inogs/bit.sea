@@ -26,8 +26,8 @@ def argument():
 args = argument()
 
 from basins import V2 as OGS
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
+from instruments import superfloat as bio_float
+from instruments.var_conversions import FLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
@@ -72,8 +72,8 @@ for iFrame, req in enumerate(WEEKLY):
     for ivar, var in enumerate(VARLIST):
         print var
         for isub, sub in enumerate(OGS.NRT3):
-            Profilelist_raw = bio_float.FloatSelector(LOVFLOATVARS[var], req.time_interval, sub)
-	    Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,LOVFLOATVARS[var])
+            Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
+	    Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
             print "RAW " + np.str(len(Profilelist_raw))
             print sub.name, nProfiles

@@ -158,6 +158,8 @@ class Matchup_Manager():
         '''
         if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
             return all_instruments.FLOAT_OPT_VARS[var]
+        if isinstance(p, all_instruments.optbio_float_2019.BioFloatProfile):
+            return all_instruments.FLOAT_OPT_VARS_2019[var]
         if isinstance(p, all_instruments.superfloat.BioFloatProfile):
             return all_instruments.FLOATVARS[var]
         if isinstance(p, all_instruments.bio_float.BioFloatProfile):
@@ -211,7 +213,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname)
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile)):
+            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile)):
                 Pres, Profile, Qc = p.read(ref_varname)
             else:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
@@ -259,9 +261,20 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,401,5)
-        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline']
-        plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'Temp $[^\circ C]$','Sal']
-        mapgraph = [3,4,5,1,2]
+        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+        plotvarname = [r'Chl $[mg/m^3]$',
+                       r'Oxy $[mmol/m^3]$',
+                       r'Nitr $[mmol/m^3]$',
+                       r'Temp $[^\circ C]$',
+                       'Sal [psu]',
+                       r'PAR $[\mu E/m^2 s]$',
+                       r'POC $[mg/m^3]$',
+                       'PhytoC $[mg/m^3]$',
+                       'pH'
+                        ]
+
+
+        mapgraph = [5,6,7,1,2,8,9,3,4]
 
         for p in Profilelist:
             Model_time = self.modeltime(p)
@@ -304,6 +317,12 @@ class Matchup_Manager():
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
+                if model_varname=='POC':
+                    float_on_common_grid = float_on_common_grid * 3.23 * 104  + 2.76
+                if model_varname == 'P_c':
+                     bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
+                     float_on_common_grid = 12128 * bbp470 + 0.59
+
 
 
                 Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
@@ -320,5 +339,6 @@ class Matchup_Manager():
             fig.savefig(pngfile)
             pl.close(fig)
             #add_metadata(pngfile, p)
+
 
         return

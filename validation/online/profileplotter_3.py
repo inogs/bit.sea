@@ -44,7 +44,7 @@ from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
 
-VARLIST = ['P_l','O2o','N3n','votemper','vosaline']
+VARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
 
 
 def figure_generator(p):
@@ -57,8 +57,8 @@ def figure_generator(p):
     Returns
     fig, axes (array of axes handlers)
     '''
-    fig, axs = pl.subplots(2,3, facecolor='w', edgecolor='k')
-    hsize=10
+    fig, axs = pl.subplots(2,5, facecolor='w', edgecolor='k')
+    hsize=16
     vsize=12
     fig.set_size_inches(hsize,vsize)
     #figtitle = " date="+p.time.strftime('%Y/%m/%d')+" float="+p.name()
@@ -96,7 +96,7 @@ def figure_generator(p):
         ax.locator_params(axis='x',nbins=4)
         ax.yaxis.grid()
 
-    for ax in [axs[2], axs[4], axs[5]]:
+    for ax in [axs[2], axs[3], axs[4], axs[6], axs[7], axs[8], axs[9]]:
         ax.set_yticklabels([])
 
     return fig,axs
@@ -186,8 +186,19 @@ dump_xml(xmlfile)
 
 
 zlevels_out=np.arange(0,401,5)
-mapgraph = [3,4,5,1,2]
-plotvarname = [r'Chl [ mg/m$^3$]',r'Oxy [ mmol/m$^3$]',r'Nitr [ mmol/m$^3$]',r'Temp [ $^\circ$C]','Sal [psu]']
+mapgraph = [5,6,7,1,2,8,9,3,4]
+
+plotvarname = [r'Chl  $[ mg/m^3]$',
+               r'Oxy  $[ mmol/m^3]$',
+               r'Nitr $[ mmol/m^3]$',
+               r'Temp $[ ^\circ C]$',
+               'Sal [psu]',
+               r'PAR  $[ \mu E/m^2 s]$',
+               r'POC  $[ mg/m^3]$',
+               'PhytoC $[ mg/m^3]$',
+               'pH'
+                ]
+
 
 for filename in analysis_forecast_basenames:
     if filename in only_analyis_basenames:
@@ -221,5 +232,4 @@ for filename in analysis_forecast_basenames:
         pngfile = PREVIOUS_DIR + filename[:-3] +  ".png"
         command = "cp " + pngfile + " " + OUTDIR
         os.system(command)
-    
     

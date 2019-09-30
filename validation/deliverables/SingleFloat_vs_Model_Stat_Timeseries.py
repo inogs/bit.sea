@@ -25,9 +25,9 @@ args = argument()
 
 import numpy as np
 from commons.mask import Mask
-from instruments import lovbio_float as bio_float
+from instruments import superfloat as bio_float
 from instruments.matchup_manager import Matchup_Manager
-from instruments.var_conversions import LOVFLOATVARS
+from instruments.var_conversions import FLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
@@ -86,7 +86,7 @@ for wmo in wmo_list:
     A_model = np.zeros((nVar, nTime, nStat), np.float32 ) * np.nan
 
     for ivar, var_mod in enumerate(VARLIST):
-        var = LOVFLOATVARS[var_mod]
+        var = FLOATVARS[var_mod]
         adj=Adj[ivar]
         for itime in range(nTime):
             p=list_float_track[itime]

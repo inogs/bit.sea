@@ -31,8 +31,9 @@ from commons.Timelist import TimeList
 from basins.region import Region, Rectangle
 from layer_integral import coastline
 import instruments
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
+from instruments import superfloat as bio_float
+from instruments.var_conversions import FLOATVARS
+
 import scipy.io.netcdf as NC
 import numpy as np
 from commons.utils import addsep
@@ -128,7 +129,7 @@ for j in range(0,len(wmo_list)):
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
         plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
 	timelabel_list = list()
-        var = LOVFLOATVARS[var_mod]
+        var = FLOATVARS[var_mod]
         adj=Adj[ivar]
         
 	for ip, p in enumerate(list_float_track):

@@ -5,8 +5,9 @@ FLOATVARS={'O2o':'DOXY', \
            'Chla':'CHLA', \
            'vosaline':'PSAL', \
            'votemper':'TEMP',
-           'PAR':'DOWNWELLING_PAR',
-           'BBP700':'BBP700',
+           'EIR':'DOWNWELLING_PAR',
+           'POC':'BBP700',
+           'P_c':'BBP700',
            'BBP532':'BBP532',
            'pH'    : 'PH_IN_SITU_TOTAL'   }
  
@@ -21,9 +22,10 @@ LOVFLOATVARS={'O2o':'DOXY', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
               'votemper':'TEMP',
-              'PAR':'PAR',
+              'EIR':'PAR',
               'BBP532':'BBP532',
-              'BBP700':'BBP700',
+              'POC':'BBP700',
+              'P_c':'BBP700',
                'pH'    : 'PH_IN_SITU_TOTAL'  }
 
 
@@ -70,3 +72,11 @@ FLOAT_OPT_VARS = {"P_l": "chl",
                   "Ed_412": "Ed_412",
                   "Ed_490": "Ed_490",
                   }
+
+FLOAT_OPT_VARS_2019 = {"P_l": "CHL",
+                  "Ed_380": "IRR_380",
+                  "Ed_412": "IRR_412",
+                  "Ed_490": "IRR_490",
+                  "Ed_par": "PAR",
+                  }
+

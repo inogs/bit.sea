@@ -1,11 +1,26 @@
 from commons.timeseries import TimeSeries
+from commons.Timelist import TimeList
 import glob
 import numpy as np
 import scipy.io.netcdf as NC
 import datetime
 
 class timelistcontainer():
-    def __init__(self,Ti,ARCHIVE_DIR,postfix_dir=""):
+    def __init__(self,Ti, ARCHIVEDIR,searchstring,prefix="BioFloat_Weekly_validation_"):
+
+        self.timelist=[]
+        self.filelist=[]
+        self.bias = None
+        self.number=None
+        self.rmse  =None
+        TL = TimeList.fromfilenames(Ti, ARCHIVEDIR, searchstring, prefix=prefix, dateformat="%Y%m%d")
+        self.filelist = TL.filelist
+        self.nFrames = len(self.filelist)
+        self.read_basic_info(self.filelist[0])
+        self.readfiles()
+
+
+    def initold(self,Ti,ARCHIVE_DIR,postfix_dir=""):
         
         self.timelist=[]
         self.filelist=[]        
@@ -70,11 +85,11 @@ class timelistcontainer():
         number, bias, rmse= self.read_validation_file(filename)
         time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
 
-
         self.number = np.concatenate((self.number , number.reshape((1,self.nVAR, self.nSUB, self.nDEPTH))), axis=0)
         self.bias   = np.concatenate((self.bias   ,   bias.reshape((1,self.nVAR, self.nSUB, self.nDEPTH)) ), axis=0)
         self.rmse   = np.concatenate((self.rmse   ,   rmse.reshape((1,self.nVAR, self.nSUB, self.nDEPTH)) ), axis=0)
         self.timelist.append(time)
+        self.filelist.append(filename)
         self.nFrames = self.nFrames + 1
 
     def plotdata(self,VAR, var,sub,depth):

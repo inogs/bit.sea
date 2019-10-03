@@ -30,7 +30,7 @@ args = argument()
 
 import numpy as np
 from commons.mask import Mask
-from instruments import lovbio_float as bio_float
+from instruments import superfloat as bio_float
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates

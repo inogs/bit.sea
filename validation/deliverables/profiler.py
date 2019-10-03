@@ -5,7 +5,8 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-from instruments.lovbio_float import FloatSelector
+#from instruments.lovbio_float import FloatSelector
+from instruments.superfloat import FloatSelector
 
 from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval

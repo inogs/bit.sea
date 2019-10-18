@@ -318,10 +318,14 @@ class Matchup_Manager():
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
                 if model_varname=='POC':
-                    float_on_common_grid = float_on_common_grid * 3.23 * 104  + 2.76
+                    float_on_common_grid = float_on_common_grid *  52779.37 - 3.57 # Bellacicco 2019
                 if model_varname == 'P_c':
                      bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
                      float_on_common_grid = 12128 * bbp470 + 0.59
+                if model_varname == "PAR":
+                    sec = p.time.hours*3600 + p.time.min*60
+                    POSITIVE_VALUE = np.cos(2*np.pi*sec/86400. -np.pi )
+                    model_on_common_grid = np.max(0.001, np.pi*POSITIVE_VALUE  *     model_on_common_grid )
 
 
 

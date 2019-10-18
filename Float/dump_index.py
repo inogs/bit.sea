@@ -45,6 +45,8 @@ from commons.utils import addsep
 #dump_index.py prints the index float file 
 #e.g. lines as 
 #6901765/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEMP
+
+NOW=datetime.datetime.now()
 mydtype= np.dtype([
           ('file_name','S200'),
           ('lat',np.float64),
@@ -126,8 +128,15 @@ for DIR in DIRLIST:
         if filename[-4:]!='D.nc':
             if filename in FILELIST:
                 ind=FILELIST.index(filename)
-                line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
-                LINES.append(line+"\n")
+                timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
+                if timedist.days > 15:
+                    line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
+                    LINES.append(line+"\n")
+                else:
+                    line=file_header_content(filename,VARLIST,avail_params=None)
+                    if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
+                    if line is not None:
+                        LINES.append(line+"\n")
             else:
                 line=file_header_content(filename,VARLIST,avail_params=None)
                 if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')

@@ -1,5 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
+from __future__ import print_function
 import numpy as np
 import netCDF4
 
@@ -251,7 +252,7 @@ class Mask(object):
         * bathy * a 2d numpy array of floats
         '''
         if (self.e3t.shape !=self.shape ) :
-            print "Warning: e3t is not provided as 3D array in maskfile: Bathymetry will be calculated as function of tmask and zlevels "
+            print("Warning: e3t is not provided as 3D array in maskfile: Bathymetry will be calculated as function of tmask and zlevels ")
             return self.rough_bathymetry()
 
         cells_bathy = self.bathymetry_in_cells()
@@ -328,7 +329,7 @@ if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
     filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
     TheMask = Mask(filename,zlevelsvar='gdepw', xlevelsmatvar='glamf')
-    print TheMask.is_regular()
+    print(TheMask.is_regular())
 
     lon = 18.1398
     lat = 37.9585

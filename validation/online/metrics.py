@@ -56,13 +56,13 @@ def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
         return SI
 
 def find_WLB(Profile,Pres):  # Winter Layer Bloom (WLB)
-        MLD = np.nan
+        WLB = np.nan
         A = Profile
 	A_filtered=A[Pres<200]
 	D_filtered=Pres[Pres<200]
         for ip, p in enumerate(A_filtered):
             if (p <= A[0]*0.1): 
-                MLD  = D_filtered[ip]
+                WLB = D_filtered[ip]
                 Chl_min = A_filtered[ip]
 	        break
         return WLB

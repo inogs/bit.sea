@@ -39,7 +39,7 @@ from instruments import lovbio_float as bio_float
 from instruments.var_conversions import LOVFLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 
-from profilerHC_comparison2017 import *
+from profiler_comparison2015 import *
 
 from layer_integral import coastline
 from basins import OGS
@@ -103,10 +103,11 @@ reg1 = [OGS.med]
 reg_sn = ['med']
 
 max_depth = get_level300(TheMask)
-max_depthp = get_level300(TheMask_Phys)
+#max_depthp = get_level300(TheMask_Phys)
 layerStats = Layer(0,200)
 
 VARLIST = ['Chla','N3n','O2o']
+VARLIST = ['P_l','N3n']
 Adj = {
 	'P_l':  True,
 	'Chla': True,
@@ -187,7 +188,7 @@ for j,wmo in enumerate(wmo_list):
 
         ax1 = axs[0]
         plt.sca(ax1)
-        plt.title(wmo + ' RunDAphys - RunHCphys')
+        plt.title(wmo + ' Run ref - ' + RUN_DA)
 
         xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
         plotmat_diffmod_m = ma.masked_invalid(plotmat_model[RUN_DA]-plotmat_model[RUN_REF])
@@ -196,7 +197,7 @@ for j,wmo in enumerate(wmo_list):
                 shading='flat',vmin=-.1,vmax=.1,cmap="coolwarm")
         if (var_mod == 'N3n'):
 			quadmesh = ax1.pcolormesh(xs, ys, plotmat_diffmod_m, \
-				shading='flat',vmin=-.5,vmax=.5,cmap="coolwarm")
+				shading='flat',vmin=-1.,vmax=1.,cmap="coolwarm")
         if (var_mod == 'O2o'):
 			quadmesh = ax1.pcolormesh(xs, ys, plotmat_diffmod_m, \
 				shading='flat',vmin=-5,vmax=5,cmap="coolwarm")
@@ -260,7 +261,7 @@ for j,wmo in enumerate(wmo_list):
             plt.grid()
             plt.legend(loc='best')
 
-            ax3 = ax2.twin()
+            ax3 = ax2.twinx()
             for run in [RUN_REF,RUN_DA]:
                 model_10m,ref_10m = stats[run].plotdata(var_mod,'SurfVal')
                 ax3.plot(mpldates.date2num(timelabel_list),model_10m, \

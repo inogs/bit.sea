@@ -39,7 +39,7 @@ import datetime
 import scipy.io.netcdf as NC
 from commons.utils import addsep
 from basins.region import Rectangle
-from profilerHC_2017 import ALL_PROFILES, TL, BASEDIR
+from profiler_2015 import ALL_PROFILES, TL, BASEDIR
 
 
 TheMask  = Mask(args.maskfile)
@@ -50,6 +50,8 @@ LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150
 VARLIST = ['P_l','N3n','O2o']
 VARLIST = ['Chla','N3n','O2o']
 read_adjusted = [True,True,False]
+VARLIST = ['P_l','N3n']
+read_adjusted = [True,True]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)

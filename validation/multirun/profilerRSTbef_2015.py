@@ -6,7 +6,7 @@
 
 # When imported, this scripts only defines settings for matchup generation.
 from instruments.lovbio_float import FloatSelector
-
+from instruments.var_conversions import LOVFLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
@@ -15,26 +15,35 @@ from basins.region import Rectangle
 # ave files are supposed to have N3n, O2o and chl
 
 RUN='DA_Float/RUN_FLOAT_chl12'
+RUN='DA_Float/RUN_FLOAT_chl_nupd'
+RUN='DA_Float/RUN_FLOAT_chl_n'
 
-INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN +'/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/'
+INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN + \
+    '/wrkdir/POSTPROC/output/DA__FREQ_1/TMP/'
 
 # output directory, where aveScan.py will be run.
 
 
-BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/' + RUN + '/PROFILATORE/'
+BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/' \
+    + RUN + '/PROFILATORE_RSTbef/'
 
 
-#DATESTART = '20150101'
-DATESTART = '20150101'
+DATESTART = '20150103'
 DATE__END = '20160101'
 
-T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
+varmodel = 'P_l'
 
+T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"RSTbefore*.nc", \
+    prefix='RSTbefore.',filtervar=varmodel)
+
+ALL_PROFILES = FloatSelector(LOVFLOATVARS[varmodel],T_INT, Rectangle(-6,36,30,46))
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
 
-vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/bit.sea/validation/multirun/VarDescriptor_2015.xml"
+vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/" + \
+    "ELAB_DAFloat/VALID_float/bit.sea/validation/multirun/" + \
+    "VarDescriptorRSTaft_2015.xml"
 
 #This previous part will be imported in matchups setup.
 

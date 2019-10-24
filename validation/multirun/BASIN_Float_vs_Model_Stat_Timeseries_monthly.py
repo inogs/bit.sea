@@ -42,7 +42,7 @@ from instruments.matchup_manager import Matchup_Manager
 from instruments.var_conversions import LOVFLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
-from profilerHC_2017 import ALL_PROFILES,TL,BASEDIR
+from profiler_2015 import ALL_PROFILES,TL,BASEDIR
 from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
@@ -55,6 +55,8 @@ layer=Layer(0,200)
 VARLIST = ['P_l','N3n','O2o']
 VARLIST = ['Chla','N3n','O2o']
 Adj = [True,True,False]
+VARLIST = ['P_l','N3n']
+Adj = [True,True]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
@@ -116,8 +118,8 @@ for ivar, var_mod in enumerate(VARLIST):
 
 
 		if (VARLIST[ivar] == "N3n"):
-                    Flo[ip,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
-		    Mod[ip,4] = find_NITRICL(gm200.Model,gm200.Depth)
+                    Flo[ip,4],_ = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
+		    Mod[ip,4],_ = find_NITRICL(gm200.Model,gm200.Depth)
 
 
 	    for iStat, sStat in enumerate(METRICS):

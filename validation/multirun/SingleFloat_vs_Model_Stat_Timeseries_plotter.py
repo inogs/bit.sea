@@ -40,7 +40,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import basins.V2 as OGS
 from datetime import datetime
 from datetime import timedelta
-from profilerHC_2017 import *
+from profiler_2015 import *
 
 def fig_setup(wmo,Lon,Lat):
     from layer_integral import coastline
@@ -100,9 +100,10 @@ TheMask=Mask(args.maskfile)
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 
-VARLIST = ['P_l','N3n','O2o']
 VARLIST = ['Chla','N3n','O2o']
+VARLIST = ['P_l','N3n']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
+VARLIST_NAME = ['Chlorophyll','Nitrate']
 nVar = len(VARLIST)
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz']
 nStat = len(METRICS)

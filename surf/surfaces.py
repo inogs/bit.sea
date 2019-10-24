@@ -2,7 +2,7 @@ import numpy as np
 from commons.mask import Mask
 import sys
 def mld(temperature,maskobj):
-    ''' Calculation of Mixed Layer Depth based on temperature 
+    ''' Calculates of Mixed Layer Depth based on temperature 
     mld is defined as 
      '''
     jpk,jpj,jpi=maskobj.shape
@@ -28,7 +28,7 @@ def mld(temperature,maskobj):
 
 def dcm(chl,maskobj):
     '''
-    Rough calculation of Deep Chlorophyll Maximum '''
+    Rough calculates of Deep Chlorophyll Maximum '''
 
     jpk,jpj,jpi=maskobj.shape
     tmask   = maskobj.mask
@@ -44,7 +44,7 @@ def dcm(chl,maskobj):
 
 def DCM(chl,maskobj):
     '''
-    Improved calculation of Deep Chlorophyll Maximum
+    Improved calculates of Deep Chlorophyll Maximum
     Uses 2-nd derivative to find the first maximum, starting from bottom.
 
     '''
@@ -73,4 +73,158 @@ def DCM(chl,maskobj):
     out = maskobj.zlevels[matrix_2D]
     out[~tmask] = 1.e+20
     return out
+
+def DCM2(chl,maskobj):
+    '''
+    Calculates of Deep Chlorophyll Maximum
+    Uses 1-st and 2-nd derivative to find the maximum
+    Returns the cchlorophyll concentration at DCM also
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    indlev = maskobj.getDepthIndex(200)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixDCM = np.zeros((jpj,jpi))
+    matrixDCM[:,:] = np.nan
+    matrixCM = np.zeros((jpj,jpi))
+    matrixCM[:,:] = np.nan
+    matrixIDCM = np.zeros((jpj,jpi))
+    matrixIDCM[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = min(bathy_len,indlev+1)
+                maskprof = chl[:profile_len,jj,ji]>0.1
+                profile = chl[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                profile_filt = profile[maskprof]
+                depths_filt = depths[maskprof]
+                profile_rev = profile_filt[::-1]# from bottom
+                depths_rev = depths_filt[::-1]
+                d1 = np.diff(profile_rev,1)
+                d2 = np.diff(profile_rev,2)
+                for iid, dd in enumerate(d1):
+                    if (iid>0) and (dd<0) and (d2[iid-1]<0):
+                        max_cand = profile_rev[iid-1:iid+2]
+                        d_max_cand = depths_rev[iid-1:iid+2]
+                        indmax = np.argmax(max_cand)
+                        CM = max_cand[indmax]
+                        DCM = d_max_cand[indmax]
+                        matrixDCM[jj,ji] = DCM
+                        matrixCM[jj,ji] = CM
+                        matrixIDCM[jj,ji] = profile_len-(iid+indmax)
+                        break
+    
+    matrixDCM[~tmask] = np.nan
+    matrixCM[~tmask] = np.nan
+    matrixIDCM[~tmask] = np.nan
+    return matrixDCM,matrixCM,matrixIDCM
+
+def MWB(chl,maskobj):
+    '''
+    Calculates of Mixed Winter Bloom depth
+    Uses 1-st and 2-nd derivative to find the maximum
+    Returns the chlorophyll concentration at DCM also
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    indlev = maskobj.getDepthIndex(300)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixMWB = np.zeros((jpj,jpi))
+    matrixMWB[:,:] = np.nan
+    matrixIMWB = np.zeros((jpj,jpi))
+    matrixIMWB[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = min(bathy_len,indlev+1)
+                profile = chl[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                for iid, dd in enumerate(profile):
+                    if (dd<=profile[0]*.1):
+                        MWB = depths[iid]
+                        matrixMWB[jj,ji] = MWB
+                        matrixIMWB[jj,ji] = iid
+                        break
+                
+    
+    matrixMWB[~tmask] = np.nan
+    matrixIMWB[~tmask] = np.nan
+    return matrixMWB,matrixIMWB
+
+
+def NITRCL(nit,maskobj):
+    '''
+    Calculates of nitracline depth
+    based on criteria p>=2
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    # indlev = maskobj.getDepthIndex(0)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixNCL = np.zeros((jpj,jpi))
+    matrixNCL[:,:] = np.nan
+    matrixINCL = np.zeros((jpj,jpi))
+    matrixINCL[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = nit[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                for iid, dd in enumerate(profile):
+                    if (dd>=2) and (depths[iid]>30):
+                        NCL = depths[iid]
+                        matrixNCL[jj,ji] = NCL
+                        matrixINCL[jj,ji] = iid
+                        break
+                
+    
+    matrixNCL[~tmask] = np.nan
+    matrixINCL[~tmask] = np.nan
+    return matrixNCL,matrixINCL
+
+
+def NUTRCL_dz_max(nut,maskobj):
+    '''
+    Calculates of nitracline depth
+    based on criteria p>=2
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixNCL = np.zeros((jpj,jpi))
+    matrixNCL[:,:] = np.nan
+    matrixN = np.zeros((jpj,jpi))
+    matrixN[:,:] = np.nan
+    matrixINCL = np.zeros((jpj,jpi))
+    matrixINCL[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = nut[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                dN = np.diff(profile)/np.diff(depths)
+                dN[depths[:-1]<=30] = np.nan
+                iid = np.nanargmax(dN)
+                NCL = depths[iid]
+                NUT = profile[iid]
+                matrixNCL[jj,ji] = NCL
+                matrixN[jj,ji] = NUT
+                matrixINCL[jj,ji] = iid
+                    
+    
+    matrixNCL[~tmask] = np.nan
+    matrixN[~tmask] = np.nan
+    matrixINCL[~tmask] = np.nan
+    return matrixNCL,matrixN,matrixINCL
 

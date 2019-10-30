@@ -99,10 +99,10 @@ def figure_generator(Profilelist):
     ymax=max(Lat)+2
     xC=(xmin+xmax)/2
     yC=(ymin+ymax)/2
-    mapobj_zoom = Basemap(projection='merc',lat_0=xC,lon_0=xC,\
+    mapobj_zoom = Basemap(projection='merc',lat_0=yC,lon_0=xC,\
                                   llcrnrlon = xmin, \
-                                  llcrnrlat = xmax, \
-                                  urcrnrlon = ymin, \
+                                  llcrnrlat = ymin, \
+                                  urcrnrlon = xmax, \
                                   urcrnrlat = ymax, \
                                   area_thresh=None, \
                                   resolution='l')
@@ -118,6 +118,7 @@ def figure_generator(Profilelist):
 
     l,b,w,t=ax1.get_position().extents
     deltax=(1-b)/(mapobj_zoom.ymax/mapobj_zoom.xmax)
+    if deltax>0.4 : deltax=0.4
 
     ax2.plot(LonZ,LatZ,'r.',markersize=font_s2)
     ax2.plot(LonZ[0],LatZ[0],'bo',markersize=font_s2)

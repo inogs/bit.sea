@@ -95,7 +95,7 @@ bt=300
 NewPres_5m=np.linspace(0,300,121)
 depths=NewPres_5m
 
-for ivar, var_mod in enumerate(VARLIST):
+for var_mod in VARLIST:
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
@@ -105,6 +105,7 @@ for ivar, var_mod in enumerate(VARLIST):
         print OUTFILE
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
+
         ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8=axes
         nP = len(list_float_track)
         if nP <2 : continue
@@ -139,7 +140,8 @@ for ivar, var_mod in enumerate(VARLIST):
         print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
 
         title="FLOAT %s %s" %(p.name(), var)
-        ax1.set_title(title, fontsize=24)
+        ax1.set_title(title, fontsize=18, pad=30)
+
 
         xs,ys = np.meshgrid(mdates.date2num(timelabel_list), depths)
         plotmat_m=ma.masked_invalid(plotmat)     
@@ -254,7 +256,7 @@ for ivar, var_mod in enumerate(VARLIST):
         pl.setp(xlabels, rotation=30, fontsize=15)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
-        for ax in axes:ax.set_xlim([T_start2num,timelabel_list[-1]])
+        for ax in axes[2:]: ax.set_xlim([T_start2num,timelabel_list[-1]])
         ax5.xaxis.grid(True)
         ax6.xaxis.grid(True)
         ax7.xaxis.grid(True)

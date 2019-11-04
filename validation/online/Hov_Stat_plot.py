@@ -36,8 +36,8 @@ def argument():
 args = argument()
 
 
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import os,sys
 from commons.mask import Mask
 from commons.Timelist import TimeList, TimeInterval
@@ -82,7 +82,6 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz']
 nStat = len(METRICS)
-izmax = TheMask.getDepthIndex(200) 
 max_depth = get_level_depth(TheMask,300)
 
 T_start2num = mdates.date2num(TI.start_time)

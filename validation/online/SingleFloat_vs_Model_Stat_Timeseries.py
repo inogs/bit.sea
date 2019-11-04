@@ -78,7 +78,6 @@ for ivar, var_mod in enumerate(VARLIST):
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
-        if wmo != "6901866": continue
         OUTFILE = "%s%s_%s.nc" %(OUTDIR, var_mod, wmo )
         print OUTFILE
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)

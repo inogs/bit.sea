@@ -184,8 +184,11 @@ for var_mod in VARLIST:
         legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
         if ( var_mod == "P_l" ):
             ax6.set_ylabel('INTG 0-200 \n $[mg{\  } m^{-3}]$',fontsize=15)
-            ax5.set_ylabel('SURF & Chla MAX \n $[mg{\  } m^{-3}]$',fontsize=15)
+            ax5.set_ylabel('SURF\n $[mg{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,0.5)
+            xmax=ax5.get_xlim()[1]
+            ymean=np.mean(ax5.get_ylim())
+            ax5.text(xmax, ymean, "Chl Max", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
             ax6.set_ylim(0,0.22)
             model_dcm, ref_dcm =A.plotdata(var_mod,'DCM', only_good=False)
             model_mld, ref_mld =A.plotdata(var_mod,'z_01',only_good=False)
@@ -197,9 +200,11 @@ for var_mod in VARLIST:
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
             ax8.plot(times, ref_mld,'.r',label='WLB REF') # WINTER AYER BLOOM
             ax8.plot(times,model_mld,'r',label='WLB MOD')
-            ax8.set_ylabel('DCM/WLB $[m]$',fontsize=15)
+            ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
-         
+            xmax=ax8.get_xlim()[1]
+            ymean=np.mean(ax8.get_ylim())
+            ax8.text(xmax, ymean, "WLB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
 
 
         if ( var_mod == "O2o" ):
@@ -266,3 +271,5 @@ for var_mod in VARLIST:
 
         fig.savefig(OUTFILE)
         pl.close(fig)
+        import sys
+        sys.exit()

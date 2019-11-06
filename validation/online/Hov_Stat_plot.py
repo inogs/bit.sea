@@ -80,7 +80,7 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
 nStat = len(METRICS)
 max_depth = get_level_depth(TheMask,300)
 
@@ -184,11 +184,14 @@ for var_mod in VARLIST:
         legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
         if ( var_mod == "P_l" ):
             ax6.set_ylabel('INTG 0-200 \n $[mg{\  } m^{-3}]$',fontsize=15)
-            ax5.set_ylabel('SURF \n $[mg{\  } m^{-3}]$',fontsize=15)
+            ax5.set_ylabel('SURF & Chla MAX \n $[mg{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,0.5)
             ax6.set_ylim(0,0.22)
             model_dcm, ref_dcm =A.plotdata(var_mod,'DCM', only_good=False)
             model_mld, ref_mld =A.plotdata(var_mod,'z_01',only_good=False)
+            model_cm,  ref_cm  =A.plotdata(var,'CM',only_good=False)
+            ax5.plot(times,  ref_cm,'.r',label='CM REF')
+            ax5.plot(times,model_cm,'r',label='CM MOD')
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')

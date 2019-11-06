@@ -63,7 +63,7 @@ VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
 nVar = len(VARLIST)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -119,8 +119,8 @@ for ivar, var_mod in enumerate(VARLIST):
            # DCM/MWB
             if (var_mod == "P_l"):
                 if ( ( p.time.month >= 4. )  & ( p.time.month <= 10 )):
-                    A_float[itime,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
-                    A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
+                    A_float[itime,7], A_float[itime,2] = find_DCM(gm200.Ref  ,gm200.Depth) # CM, DCM
+                    A_model[itime,7], A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth) # CM, DCM
             
                 if (p.time.month in [1,2,3] ):
                     A_float[itime,3] = find_WLB(gm200.Ref  ,gm200.Depth) # WLB

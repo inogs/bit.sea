@@ -103,7 +103,7 @@ OUTDIR = addsep(args.outdir)
 VARLIST = ['P_l','N3n','O2o']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
 nVar = len(VARLIST)
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -143,7 +143,7 @@ for wmo in wmo_list:
             axes[5].plot(times,  surf_model,'b',label='MOD SURF')
 	    if ( var == "P_l" ):
 	        axes[2].set_ylabel('INT \n $[mg{\  } m^{-3}]$',fontsize=15)
-                axes[5].set_ylabel('SURF \n $[mg{\  } m^{-3}]$',fontsize=15)
+                axes[5].set_ylabel('SURF and Chla Max \n $[mg{\  } m^{-3}]$',fontsize=15)
                 axes[4].set_ylim(40,200)
 	    if ( var == "O2o" ):
                 axes[2].set_ylabel('INT \n $[mmol{\  } m^{-3}]$',fontsize=15)
@@ -180,6 +180,7 @@ for wmo in wmo_list:
         if (var == "P_l"): 
             model_dcm, ref_dcm =A.plotdata(var,'DCM')
 	    model_mld, ref_mld =A.plotdata(var,'z_01')
+            model_cm, ref_cm   =A.plotdata(var,'CM')
 #            if (model_mld > 150):
 #	       model_mld = np.nan
 
@@ -188,6 +189,8 @@ for wmo in wmo_list:
                 axes[4].plot(times,model_dcm,'b',label='DCM MOD')
                 axes[4].plot(times, ref_mld,'.r',label='MWB REF')
                 axes[4].plot(times,model_mld,'r',label='MWB MOD')
+                axes[5].plot(times,   ref_cm,'.r',label='CM REF')
+                axes[5].plot(times,model_cm,'r',label='CM MOD')
 #		axes[4].plot(times,np.ones_like(times)* np.nanmean(ref_dcm),'r',linewidth=3) 
 #		axes[4].plot(times,np.ones_like(times)* np.nanmean(model_dcm),'b',linewidth=3) #marker='.')
 

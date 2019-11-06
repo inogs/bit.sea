@@ -271,5 +271,4 @@ for var_mod in VARLIST:
 
         fig.savefig(OUTFILE)
         pl.close(fig)
-        import sys
-        sys.exit()
+

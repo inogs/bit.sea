@@ -118,7 +118,7 @@ def figure_generator(Profilelist):
 
     l,b,w,t=ax1.get_position().extents
     deltax=(1-b)/(mapobj_zoom.ymax/mapobj_zoom.xmax)
-    if deltax>0.4 : deltax=0.4
+    if deltax>0.27 : deltax=0.27
 
     ax2.plot(LonZ,LatZ,'r.',markersize=font_s2)
     ax2.plot(LonZ[0],LatZ[0],'bo',markersize=font_s2)

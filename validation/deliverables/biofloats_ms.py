@@ -73,7 +73,7 @@ for iFrame, req in enumerate(WEEKLY):
         print var
         for isub, sub in enumerate(OGS.NRT3):
             Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
-	    Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
+            Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
             print "RAW " + np.str(len(Profilelist_raw))
             print sub.name, nProfiles

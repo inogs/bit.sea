@@ -132,6 +132,9 @@ for wmo in wmo_list:
 
         if is_only_LOV:
             Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
+            if len(Pres)<5 :
+                print "few values in LOV for " + pLov._my_float.filename
+                continue
             profile_for_data = pLov
             if pCor is None:
                 profile_for_pos= pLov

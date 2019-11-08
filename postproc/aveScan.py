@@ -580,7 +580,6 @@ for ip in PROCESSES[rank::nranks]:
     var     = VARLIST[ivar]
     avefile =aveLIST[ifile]
     dim     = var_dim[ivar]
-    print "rank %03d scans %s on %s" %(rank,var,os.path.basename(avefile))
 
     F = GB_lib.filename_manager(avefile)
     datestr=F.datestr# os.path.basename(avefile)[IOnames.Input.date_startpos:IOnames.Input.date_endpos]
@@ -588,11 +587,11 @@ for ip in PROCESSES[rank::nranks]:
         ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
 
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
-    
+    print "rank %03d scans %s on %s" %(rank,var,os.path.basename(filename))
     vartoread = var
 
     if ('RST' in os.path.basename(filename)) and (not('before' in os.path.basename(filename))):
-        vartoread = 'TRN' + var 
+        vartoread = 'TRN' + var
 
     if var_dim [ivar] == '3D':
         VAR  = DataExtractor(TheMask,filename,vartoread,dimvar=3).values

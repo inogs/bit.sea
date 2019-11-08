@@ -103,19 +103,26 @@ python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20171101 -e 2017120
 # BIOFLOATS SECTION: Hovmoeller plots, wmo trajectories and statistics per basin
 # It is included the 2014 also.
 # Figures 4.4a
-mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8 
-OUTDIR=Fig4.4a
-python Hov_flots+model_vars.py -m $MASKFILE -o $OUTDIR
+#mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8 
+mkdir -p Fig4.4 Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8
+BASEDIR=/gpfs/work/OGS_prod_0/OPA/V5C/prod/inpdir/VALIDATION/FLOAT/PROFILATORE
+NCDIR=tmp_nc
+OUTDIR=Fig4.4
+echo python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
+python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
+echo python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR
+python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR
+#python Hov_flots+model_vars.py -m $MASKFILE -o $OUTDIR
 mv $OUTDIR/*N3n*.png Fig4.12
 mv $OUTDIR/*O2o*.png Fig4.15
 
 # Figures 4.4b
-NCDIR=tmp_nc
-OUTDIR=Fig4.4b
-python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
-python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR -m $MASKFILE
-mv $OUTDIR/N3n*.png Fig4.12
-mv $OUTDIR/O2o*.png Fig4.15
+#NCDIR=tmp_nc
+#OUTDIR=Fig4.4b
+#python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -o $NCDIR
+#python SingleFloat_vs_Model_Stat_Timeseries_plotter.py -i $NCDIR -o $OUTDIR -m $MASKFILE
+#mv $OUTDIR/N3n*.png Fig4.12
+#mv $OUTDIR/O2o*.png Fig4.15
 
 # Figures 4.6 and 4.13 + tables 4.4 and 4.8
 # CHL-PROF-D-CLASS4-PROF-CORR-BASIN

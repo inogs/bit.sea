@@ -115,7 +115,7 @@ class ProfilesMatchup(matchup):
         self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
         self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
-        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
+        np.array(self.name).tofile(directory + prefix + "name.txt" ,sep="\n",format="%s")
 
 
     def plot(self,fig=None,ax=None):
@@ -192,7 +192,7 @@ class FloatProfilesMatchup(ProfilesMatchup):
         self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
         self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
-        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
+        np.array(self.name).tofile(directory + prefix + "name.txt" ,sep="\n",format="%s")
         self.cycle.tofile(directory + prefix + "cycle.txt",sep="\n",format="%d")
 
 

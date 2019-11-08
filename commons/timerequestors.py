@@ -219,8 +219,12 @@ class Decadal_req():
 
         self.decad = decad
 
+        # Decades are defined to start at 0 up to 9 (e.g.,2010-2019)
+        # or start at 1 up to 10 (e.g., 2011-2020)
+        # anything else is considered a generic interval.
         q,r=divmod(decad, 10)
-        assert r in [0,1]
+        if not r in [0,1]:
+            raise ValueError("Input is not a decade. Are you trying to implement an interval?")
         t = TimeInterval()
         self.startyear = decad
         self.end__year = self.startyear+9

@@ -26,6 +26,10 @@ INPUTDIR_PPN=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/PO
 python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN per lo 0-200m
 python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral -m $MASKFILE -o Fig4.7bis -l Plotlist_bio_ppn20m.xml -s 20170101 -e 20180101
 
+INPUTDIR_PPN=/gpfs/scratch/userexternal/ateruzzi/PPN_TRANSITION2017/
+mkdir -p Fig4.7refScale
+python averager_and_plot_map_ppn_refScale.py -i $INPUTDIR_PPN  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20170101 -e 20180101
+
 python averager_and_plot_map.py -i $INPUTDIR        -v ALK   -t mean $COMMONS_PARAMS   # Ac-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN  --> not requested in the ScQP
 python averager_and_plot_map.py -i $INPUTDIR        -v DIC  -t mean $COMMONS_PARAMS   # DIC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> not requested in the ScQP
 cp LayerMaps/*P_l* Fig4.1/

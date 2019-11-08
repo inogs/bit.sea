@@ -25,12 +25,12 @@ class matchup(object):
         '''
         return np.median(self.Ref), np.median(self.Model)
 
-    def covariance(self):
+    def covariance(self,output_matrix=False):
         array = (self.Model - self.Model.mean())*(self.Ref - self.Ref.mean())
-        return array.mean()
+        return array.mean() if not output_matrix else array
 
-    def correlation(self):
-        return self.covariance()/(self.Model.std()* self.Ref.std())
+    def correlation(self,output_matrix=False):
+        return self.covariance(output_matrix=output_matrix)/(self.Model.std()* self.Ref.std())
 
     def bias(self):
         '''

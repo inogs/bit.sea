@@ -60,7 +60,6 @@ for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
-    ax.hold(True)
     ax.plot(TIMES,BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
     ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
@@ -81,6 +80,7 @@ for isub,sub in enumerate(OGS.P):
     #fig.show()
     outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
+    pl.close(fig)
 
 
 from commons.season import season
@@ -139,74 +139,3 @@ rows_names=[sub.name for sub in OGS.P.basin_list]
 column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum']
 writetable(outfiletable, mat, rows_names, column_names, fmt='%5.3f\t')
 
-import sys
-sys.exit()
-
-
-start_year=2017
-end___year=2017
-nyr=end___year-start_year+1
-RMS__sum=np.zeros((nyr,nSUB),np.float32)
-RMS__win=np.zeros((nyr,nSUB),np.float32)
-BIAS_sum=np.zeros((nyr,nSUB),np.float32)
-BIAS_win=np.zeros((nyr,nSUB),np.float32)
-RMSL_sum=np.zeros((nyr,nSUB),np.float32)
-RMSL_win=np.zeros((nyr,nSUB),np.float32)
-BIASLsum=np.zeros((nyr,nSUB),np.float32)
-BIASLwin=np.zeros((nyr,nSUB),np.float32)
-#
-# winter = JFMA
-# summer = JJAS
-#
-for i in range(start_year,end___year+1):
-    print i
-    n=i-start_year
-    w1=n*12
-    w2=w1+4
-    s1=w1+5
-    s2=s1+4
-    print w1,w2,s1,s2
-    RMS__win[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN[ w1:w2,:].mean(axis=0)
-    RMS__sum[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN[ s1:s2,:].mean(axis=0)
-    BIAS_win[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN[w1:w2,:].mean(axis=0)
-    BIAS_sum[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN[s1:s2,:].mean(axis=0)
-    RMSL_win[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ w1:w2,:].mean(axis=0)
-    RMSL_sum[n,:]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ s1:s2,:].mean(axis=0)
-    BIASLwin[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[w1:w2,:].mean(axis=0)
-    BIASLsum[n,:]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[s1:s2,:].mean(axis=0)
-
-mat = np.zeros((8,nSUB))
-
-mat[0,:] = RMS__win[:,:].mean(axis=0)
-mat[1,:] = RMS__sum[:,:].mean(axis=0)
-mat[2,:] = BIAS_win[:,:].mean(axis=0)
-mat[3,:] = BIAS_sum[:,:].mean(axis=0)
-mat[4,:] = RMSL_win[:,:].mean(axis=0)
-mat[5,:] = RMSL_sum[:,:].mean(axis=0)
-mat[6,:] = BIASLwin[:,:].mean(axis=0)
-mat[7,:] = BIASLsum[:,:].mean(axis=0)
-
-mat = mat.T
-print '-----------------------------------------'
-#TABELLA QUID IV.1
-lines=[]
-myformat = '%s ' + '%5.3g '*8 +"\n";
-for isub,sub in enumerate(OGS.P):
-    line = myformat %( sub.name, mat[isub,0], mat[isub,1], mat[isub,2],
-                       mat[isub,3], mat[isub,4], mat[isub,5],
-                       mat[isub,6],mat[isub,7])
-
-    lines.append(line)
-
-outfiletable = args.outdir+"/"+"table4.1.dat"
-file = open(outfiletable,"w")
-file.writelines(lines)
-file.close()
-# RMS__win[:,:].mean(axis=0)
-# print 'RMS_sum : ',RMS__sum[:,:].mean(axis=0)
-# print 'BIAS_win: ',BIAS_win[:,:].mean(axis=0)
-# print 'BIAS_sum: ',BIAS_sum[:,:].mean(axis=0)
-# print 'RMSLwin : ',RMSL_win[:,:].mean(axis=0)
-# print 'RMSLsum : ',RMSL_sum[:,:].mean(axis=0)
-# print 'BIASLwin: ',BIASLwin[:,:].mean(axis=0)
-# print 'BIASLsum: ',BIASLsum[:,:].mean(axis=0)

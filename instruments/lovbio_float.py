@@ -255,7 +255,7 @@ class BioFloat(Instrument):
             # New adjustement following Mignot et al. (2019)
             prof = prof * 1.04 + 0.46 
             ii = (prof < 0) & (pres < 50)
-            prof[ii] = 0.01
+            prof[ii] = 0.05
             ii = prof > 0
             pres = pres[ii]
             prof = prof[ii]

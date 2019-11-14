@@ -263,6 +263,13 @@ class BioFloat(Instrument):
         if pres.size ==0:
             return pres, prof, qc
 
+        good = (qc==1) | (qc ==2 ) | (qc==8)
+        pres = pres[good]
+        prof = prof[good]
+        qc   =   qc[good]
+        if pres.size ==0:
+            return pres, prof, qc
+
         ii = self.rarefy(pres, 2.0)
         pres = pres[ii]
         prof = prof[ii]
@@ -281,8 +288,7 @@ class BioFloat(Instrument):
             else:
                 return pres, prof, qc
         else:
-            return pres, mean.compute(prof, pres), mean.compute(qc,pres)
-
+            return pres, mean.compute(prof, pres), qc
     def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)

@@ -78,9 +78,6 @@ REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
 
-#Timestart="20141205"
-#Time__end="20500901"
-#Time__end="20180102"
 #Timestart="20170101"
 #Time__end="20180101"
 Timestart=DATESTART

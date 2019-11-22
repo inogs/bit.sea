@@ -53,6 +53,9 @@ import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import datetime
 import plotter
+from instruments import check
+Check_obj = check.check("", verboselevel=0)
+
 
 
 def get_level_depth(TheMask,lev):
@@ -91,8 +94,7 @@ plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$']
 VARLIST = ['P_l','O2o','N3n']
 nVar = len(VARLIST)
 bt=300
-NewPres_5m=np.linspace(0,300,121)
-depths=NewPres_5m
+depths=np.linspace(0,300,121)
 
 for var_mod in VARLIST:
     var = FLOATVARS[var_mod]
@@ -123,18 +125,17 @@ for var_mod in VARLIST:
             if ii.sum() < 2 :
                 timelabel_list.append(p.time)
                 continue
-            NewProf_5m = np.interp(NewPres_5m,Pres[ii],Prof[ii])
-            plotmat[:,ip]=NewProf_5m
+
             timelabel_list.append(p.time)
 
             try:
-                TM=M.modeltime(p)
-                FILENAME = BASEDIR + TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
-                Modelprofile = M.readModelProfile(FILENAME,var_mod,p.ID())
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths)
             except:
                 continue
-            M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],Modelprofile[:max_depth+1])
-            plotmat_model[:,ip] = M_newDepth
+
+            if GM.number()> 0:
+                plotmat_model[:,ip] = GM.Model
+                plotmat[      :,ip] = GM.Ref
 
         print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
 

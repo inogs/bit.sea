@@ -19,6 +19,7 @@ class ProfilesMatchup(matchup):
             self.Qc    = np.array([],np.float32)
             self.name  = []
             self.Lengths = []
+            self.CheckReports=[]
         else:
             self.Model = Model
             self.Ref   = Ref
@@ -105,6 +106,7 @@ class ProfilesMatchup(matchup):
         self.name.extend( [fm.instrument.name() for k in range(lenfm)] )
 
         self.Lengths.extend([ lenfm ])
+        self.CheckReports.append(fm.checkreport)
 
     def export(self,directory,prefix):
 
@@ -197,7 +199,7 @@ class FloatProfilesMatchup(ProfilesMatchup):
 
 
 class ProfileMatchup():
-    def __init__(self, Model, Ref, Depth, Qc, profileObj):
+    def __init__(self, Model, Ref, Depth, Qc, profileObj, checkreport=None):
         bads = np.isnan(Model)
         if bads.any() :
             print "Nans in model "
@@ -210,6 +212,7 @@ class ProfileMatchup():
         self.Depth = Depth
         self.Qc    = Qc
         self.instrument = profileObj
+        self.checkreport =checkreport
 
 
     def localizationArrays(self):

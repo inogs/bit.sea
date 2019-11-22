@@ -279,20 +279,26 @@ class Matchup_Manager():
                 Pres, Profile, Qc = p.read(ref_varname)
             else:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
-
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
+            CheckReport=None
             if checkobj is not None:
-                Pres, Profile, Qc, REJECT = checkobj.perform(model_varname, MODEL_ON_SPACE_OBS, Profile, Pres, p)
-
+                Pres, Profile, Qc, CheckReport = checkobj.perform(model_varname, Pres, Profile, Qc,MODEL_ON_SPACE_OBS, p)
 
             if interpolation_on_Float:
-                MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
+                if len(Pres)> 0:
+                    MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
+                else:
+                    MODEL_ON_SPACE_OBS=np.array([],np.float32)
 
-                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p, CheckReport)
             else:
-                OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
-                QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+                if len(Pres)>0 :
+                    OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
+                    QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
+                    Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p, CheckReport)
+                else:
+                    junk=np.array([],np.float32)
+                    Matchup = matchup.matchup.ProfileMatchup(junk,junk,junk,junk, p, CheckReport)
 
             Group_Matchup.extend(Matchup)
 

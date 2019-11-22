@@ -199,13 +199,15 @@ class FloatProfilesMatchup(ProfilesMatchup):
 
 
 class ProfileMatchup():
-    def __init__(self, Model, Ref, Depth, Qc, profileObj, checkreport=None):
+    def __init__(self, Model, Ref, Depth, Qc, profileObj, checkreport=None, accept_nans=False):
         bads = np.isnan(Model)
-        if bads.any() :
-            print "Nans in model "
-            Model = Model[~bads]
-            Ref   = Ref  [~bads]
-            Depth = Depth[~bads]
+        if not accept_nans:
+            if bads.any() :
+                print "matchup: Nans in model "
+                Model = Model[~bads]
+                Ref   = Ref  [~bads]
+                Depth = Depth[~bads]
+                Qc    = Qc[~bads]
 
         self.Model = Model
         self.Ref   = Ref

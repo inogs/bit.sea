@@ -1,5 +1,6 @@
 import numpy as np
 import netCDF4
+import os
 from commons.utils import addsep
 
 class checkreport():
@@ -16,7 +17,15 @@ class checkreport():
 
 class check():
     def __init__(self,OUTDIR, verboselevel=1):
-        self.outdir=addsep(OUTDIR)
+        '''
+        if verboselevel = 1, a NetCDF will be printed out
+        else, no files will be dumped
+        '''
+        if OUTDIR=="":
+            self.outdir=""
+        else:
+            self.outdir=addsep(OUTDIR)
+            os.system("mkdir -p " + OUTDIR)
         self.verboselevel=verboselevel
 
     def nitrate_check(self, model, ref, depth, p):
@@ -91,34 +100,36 @@ class check():
         flag1_array = (mydiff > 2)  & (DEPTH<=200)
         flag1 = flag1_array.sum() > 5
         # flag2 = flag2_array.sum() > 5
-           
+        nexcl = 0
     
         line=""
+        flag=np.nan
         if ( flag1) :#  |  flag2): 
             if flag1: flag=1
             # if flag2: flag=2
             # if (flag1  & flag2) : flag=3
             line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
-        
+            nexcl=nP
             FLAG = np.zeros((nP), np.int)
             FLAG[flag1_array] =1
             # FLAG[flag2_array] =2
-        
-            outncfile="%s%s_%s.nc"  %(OUTDIR + '/P_l.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
-            ncOUT = netCDF4.Dataset(outncfile,'w')
-            ncOUT.createDimension('depth',nP)
-        
-            ncvar = ncOUT.createVariable('model','f',('depth', ))
-            ncvar[:]=MODEL
-            ncvar = ncOUT.createVariable('float','f',('depth', ))
-            ncvar[:]=REF
-            ncvar = ncOUT.createVariable('flag' ,'i',('depth', ))
-            ncvar[:]=FLAG
-        
-            setattr(ncOUT, 'longitude', p.lon)
-            setattr(ncOUT, 'latitude' , p.lat)
-            ncOUT.close()
-        return line
+            if self.verboselevel ==1 :
+                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_l.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                ncOUT = netCDF4.Dataset(outncfile,'w')
+                ncOUT.createDimension('depth',nP)
+
+                ncvar = ncOUT.createVariable('model','f',('depth', ))
+                ncvar[:]=MODEL
+                ncvar = ncOUT.createVariable('float','f',('depth', ))
+                ncvar[:]=REF
+                ncvar = ncOUT.createVariable('flag' ,'i',('depth', ))
+                ncvar[:]=FLAG
+
+                setattr(ncOUT, 'longitude', p.lon)
+                setattr(ncOUT, 'latitude' , p.lat)
+                ncOUT.close()
+        CR = checkreport(line, nP,nexcl, flag, np.nan)
+        return CR
     def perform(self, varname, Pres, Value, Qc, Model, p):
         ''' Works of Ref profiles '''
         
@@ -142,18 +153,26 @@ class check():
                     Qc    = Qc[:indexexc+1]
 #            else:
 #                 GOOD_COUNTER[wmo] += 1
-#                 OBS_GOOD_COUNTER[wmo] += Prof.shape[0]        
+#                 OBS_GOOD_COUNTER[wmo] += Prof.shape[0]
+        if varname=='P_l' :
+            CR = self.chlorophyll_check(Model, Value, Pres, p)
+            if CR.line != '':
+                Pres  = np.array([],np.float32)
+                Value = np.array([],np.float32)
+                Qc    = np.array([],np.int)
+
         return Pres, Value, Qc, CR
 
 
 if __name__=="__main__":
     import superfloat
     OUTDIR="/gpfs/scratch/userexternal/gbolzon0/ateruzzi/NITRATE_CHECK/nitrate_profiles/"
-    A = check(OUTDIR,verboselevel=0)
+    A = check(OUTDIR,verboselevel=1)
     BF=superfloat.BioFloat.from_file('/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/SUPERFLOAT/6901764/MR6901764_114.nc')
     p = superfloat.BioFloatProfile(BF.time,BF.lon, BF.lat, BF, BF.available_params,None)
     Pres, Value,Qc = p.read('NITRATE')
     Model = Value-10.3
     Pres,Values,Qc,CR = A.perform("N3n", Pres, Value, Qc, Model, p)
+    #Pres,Values,Qc,CR = A.perform("P_l", Pres, Value, Qc, Model, p)
 
     

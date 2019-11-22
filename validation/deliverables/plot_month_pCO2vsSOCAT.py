@@ -6,7 +6,7 @@ import pylab as pl
 from basins import V2 as OGS
 
 socat=np.loadtxt("monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
-model=np.loadtxt("monthly_pCO2_TEST_05.txt",skiprows=1,usecols=range(1,13))
+model=np.loadtxt("monthly_2017_surf/monthly_pCO2.txt",skiprows=1,usecols=range(1,13))
 
 nSUB = len(OGS.P.basin_list)
 

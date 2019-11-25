@@ -44,6 +44,11 @@ def DatasetInfo(modelvarname):
         raise ValueError("variable not in static dataset ")
     return var, dataset
 
+def Internal_conversion(modelvarname):
+    if modelvarname in ['O3c', 'DIC'] : return "O3c"
+    if modelvarname in ['O3h', 'Ac', 'ALK'] : return "O3h"
+    return modelvarname
+
 
 def basin_expansion(sub, var):
     '''
@@ -60,7 +65,8 @@ def basin_expansion(sub, var):
     Returns:
     * search_sub * a sub object
     '''
-    assert var in ["N1p","N3n","N5s","O2o","O3c","O3h"]
+    #assert var in ["N1p","N3n","N5s","O2o","O3c","O3h"]
+    if var in ["pH", "PH", "pCO2"] : return sub
 
     if (sub.name == "swm1"):
         if var == "O2o":
@@ -114,6 +120,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
     CLIM    = np.zeros((nSub, nLayers), np.float32)*np.nan
     STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
     var, Dataset = DatasetInfo(modelvarname)
+    var_exp      = Internal_conversion(modelvarname)
     for isub, sub in enumerate(subbasinlist):
         Profilelist =Dataset.Selector(var, TI, sub)
         Pres  =np.zeros((0,),np.float32)
@@ -141,7 +148,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
             CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
 # 2 apply expansion following Valeria's table
         for isub, sub in enumerate(subbasinlist):
-            sub_search = basin_expansion(sub, modelvarname)
+            sub_search = basin_expansion(sub, var_exp)
             print isub, sub , sub_search
             INDEX_LIST=get_sub_indexes(sub_search)
             print INDEX_LIST

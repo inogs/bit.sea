@@ -51,7 +51,7 @@ def basin_expansion(sub, var):
     expand the research to nearest neighbours.
     The amount of available data depends on subbasin and var.
     This function follows the table provided by Valeria Di Biagio
-    and returns a suitable subbasin (with nearest neighbours) to guarantee a
+    and returns a suitable subbasin (based on nearest neighbours) to guarantee a
     minimum amount of data in research.
 
     Arguments:
@@ -129,6 +129,17 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
                 STD[isub, ilayer] = Values[ii].std()
 
     if basin_expand:
+# 1. elimination nans by interpolation
+        nLayers=len(LayerList)
+        Layer_center=np.zeros((nLayers,),np.float32)
+        for i,l in enumerate(LayerList): Layer_center[i] = (l.top + l.bottom)/2
+        for isub, sub in enumerate(subbasinlist):
+            y = CLIM[isub,:]
+            nans= np.isnan(y)
+            z_good = Layer_center[~nans]
+            y_good = y[~nans]
+            CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
+# 2 apply expansion following Valeria's table
         for isub, sub in enumerate(subbasinlist):
             sub_search = basin_expansion(sub, modelvarname)
             print isub, sub , sub_search
@@ -142,7 +153,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
 
 if __name__ == "__main__":
     from commons.layer import Layer
-    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list
     N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList, basin_expand=True)

@@ -266,20 +266,25 @@ if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'IRR_380'
+    var = 'IRR_490'
     TI = TimeInterval('20120101','20170130','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
     filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2019/6901861/MR6901861_051.nc"
     F=BioFloat.from_file(filename)
-    import sys
-    sys.exit()
 
-    print len(PROFILE_LIST)
 
-    for p in PROFILE_LIST:
+    for ip, p in enumerate(PROFILE_LIST):
         Pres,V, Qc = p.read(var)
+        ii=Pres>100
+        deriv_1 = np.diff(V[ii])
+        if (deriv_1>0).any():
+            print "First derivative > 0 at profile ", ip
+            import sys
+            sys.exit()
+
+
         if Pres.min()>0:
             print Pres.min()
 

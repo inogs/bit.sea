@@ -85,7 +85,7 @@ class NutrientsReader():
          '''
         if var is None:
             Profilelist=list()
-            for myvar in ['nitrate','phosphate','silicate','oxygen','nitrite','ammonium','chorophyll','total_chlorophyll']:
+            for myvar in ['nitrate','phosphate','silicate','oxygen','nitrite','ammonium','chlorophyll','total_chlorophyll']:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
                     if not p in Profilelist: Profilelist.append(p)
@@ -105,7 +105,19 @@ if __name__ == '__main__':
     Reg= Rectangle(0,20,30,46)
     N = NutrientsReader()
 
-    ProfileLIST = N.Selector('nitrate', TI, OGS.aeg)
+    ProfileLIST = N.Selector('phosphate', TI, OGS.adr2)
+    import pylab as pl
+    fig, ax = pl.subplots()
+
+    for p in ProfileLIST:
+        Pres, Value, Qc=p.read('phosphate')
+        ax.plot(Value,Pres,'b.')
+
+    if not ax.yaxis_inverted(): ax.invert_yaxis()
+    ax.set_ylim(-10,100)
+    ax.set_xlabel('phos')
+    ax.set_ylabel('depth')
+    fig.show()
     print len(ProfileLIST)
     
     

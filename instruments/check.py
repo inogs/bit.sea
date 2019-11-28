@@ -133,6 +133,7 @@ class check():
     def perform(self, varname, Pres, Value, Qc, Model, p):
         ''' Works of Ref profiles '''
         
+        CR=None
         if varname=='N3n' :
             CR = self.nitrate_check(Model, Value, Pres,  p)
             if CR.line != '':

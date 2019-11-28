@@ -16,10 +16,11 @@ For any issues please contact: [amiro(at)inogs(dot)it](mailto:amiro@inogs.it).
 Plot NETCDF data using CARTOPY. Example python snippets:
 
 ```python
+import MapPlotter as mp
+
 # Define class instance
 plotter = mp.MapPlotter(projection='PlateCarree')
 params  = plotter.defaultParams() # Create basic parameters dictionary
-
 
 # To plot already loaded fields
 plotter.plot(lon,lat,data,params=params)

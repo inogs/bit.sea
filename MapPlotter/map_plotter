@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+#
+# Plot NETCDF Data using CARTOPY
+#
+# Usage: map_plotter [-h] -f FILE -v VAR [-m MASK] [--lon LON] [--lat LAT]
+#                    [-t TIME] [-d DEPTH] [-c CONF] -o OUT [--dpi DPI]
+# 
+# Plot NetCDF data in beautiful 2D maps.
+# 
+# optional arguments:
+#   -h, --help               show this help message and exit
+#   -f FILE, --file FILE     NetCDF file path
+#   -v VAR, --var VAR        Variable to plot
+#   -m MASK, --mask MASK     Mask file
+#   --lon LON                Longitude variable name (default: glamt)
+#   --lat LAT                Latitude variable name (default: gphit)
+#   -t TIME, --time TIME     Time index for NetCDF (default: 0)
+#   -d DEPTH, --depth DEPTH  Depth index for NetCDF (default: 0)
+#   -c CONF, --conf CONF     Configuration file path
+#   -o OUT, --outfile OUT    Output file name
+#   --dpi DPI                Output file DPI (default: 300)
+#
+# Arnau Miro, OGS (2019)
+from __future__ import print_function
+
+import argparse, matplotlib
+matplotlib.use('Agg')
+import MapPlotter as mp
+
+if __name__ == '__main__':
+	# Define input arguments
+	argpar = argparse.ArgumentParser(prog="map_plotter", description="Plot NetCDF data in beautiful 2D maps.")
+	argpar.add_argument('-f','--file',type=str,help='NetCDF file path', required=True, dest='file')
+	argpar.add_argument('-v','--var',type=str,help='Variable to plot', required=True, dest='var')
+	argpar.add_argument('-m','--mask',type=str,help='Mask file', dest='mask')
+	argpar.add_argument('--lon',type=str,help='Longitude variable name (default: glamt)', dest='lon')
+	argpar.add_argument('--lat',type=str,help='Latitude variable name (default: gphit)', dest='lat')
+	argpar.add_argument('-t','--time',type=int,help='Time index for NetCDF (default: 0)', dest='time')
+	argpar.add_argument('-d','--depth',type=int,help='Depth index for NetCDF (default: 0)', dest='depth')
+	argpar.add_argument('-c','--conf',type=str,help='Configuration file path',dest='conf')
+	argpar.add_argument('-o','--outfile',type=str,help='Output file name', required=True, dest='out')
+	argpar.add_argument('--dpi',type=int,help='Output file DPI (default: 300)', dest='dpi')
+
+	# parse input arguments
+	args=argpar.parse_args()
+	if not args.lon:   args.lon   = 'glamt'
+	if not args.lat:   args.lat   = 'gphit'
+	if not args.time:  args.time  = 0
+	if not args.depth: args.depth = 0
+	if not args.dpi:   args.dpi   = 300
+
+	# Run
+	plotter = mp.MapPlotter(projection='PlateCarree')
+	params  = plotter.defaultParams() if not args.conf else plotter.loadParams(args.conf)
+
+	if not args.mask:
+		# Directly plot from NetCDF
+		plotter.plot_from_file(args.file,args.var,args.lon,args.lat,iTime=args.time,iDepth=args.depth,params=params)
+	else:
+		# Plot using NetCDF and meshmask
+		plotter.plot_from_file_and_mask(args.file,args.var,args.mask,iTime=args.time,iDepth=args.depth,masklon=args.lon,masklat=args.lat,params=params)
+
+	# Save figure
+	plotter.save(args.out,args.dpi)

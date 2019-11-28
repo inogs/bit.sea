@@ -1,0 +1,40 @@
+{
+	"fig": null,
+	"ax": null,
+	"size": [8, 6],
+	"dpi": 100,
+	"style": "ggplot",
+	"xlim": [-6, 37],
+	"ylim": [30, 46],
+	"max_div": 3,
+	"top_label": false,
+	"right_label": false,
+	"grdstyle": {
+					"size": null,
+					"weight": null,
+					"style": null
+				}, 
+	"grdargs": {
+					"linewidth": 0, 
+					"draw_labels": true
+				},
+	"features": ["coastline", "continents", "rivers", "image"],
+	"res": "50m",
+	"img": "https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73726/world.topo.bathy.200406.3x5400x2700.png",
+	"title": [],
+	"xlabel": [],
+	"ylabel": [],
+	"alpha": 1.0,
+	"cmap": "jet",
+	"ncol": 256,
+	"orientation": "horizontal",
+	"bounds": [-1e+30, 1e+30],
+	"numticks": 10,
+	"tick_format": "%.2f",
+	"tick_font": null,
+	"label": {
+				"style": null,
+				"weight": null,
+				"label": ""
+			 }	
+}

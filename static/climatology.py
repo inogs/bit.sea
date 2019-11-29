@@ -92,6 +92,16 @@ def basin_expansion(sub, var):
 
     return sub
 
+def QualityCheck(var,sub):
+    '''
+    returns True if expert evaluation tells to keep the data, False when it tells rejection
+    '''
+    if sub.name == 'adr1':
+        if var in ["O2o", "N3n"] : return False
+    if sub.name =="tyr1":
+        if var in ["O2o", "O3c", "O3h"]: return False
+    return True
+
 def get_sub_indexes(sub_search):
     '''
     Returns a list of indexes
@@ -109,7 +119,7 @@ def get_sub_indexes(sub_search):
 
 TI = TimeInterval("1997","2016","%Y")
 
-def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
+def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False):
     '''
     Returns 
     * CLIM * [nsub, nLayers] numpy array, a basic annual climatology
@@ -149,11 +159,16 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False):
 # 2 apply expansion following Valeria's table
         for isub, sub in enumerate(subbasinlist):
             sub_search = basin_expansion(sub, var_exp)
-            print isub, sub , sub_search
             INDEX_LIST=get_sub_indexes(sub_search)
             print INDEX_LIST
             CLIM[isub,:] = CLIM[INDEX_LIST,:].mean(axis=0)
             STD [isub,:] =  STD[INDEX_LIST,:].mean(axis=0) # brutto ...
+    if QC:
+        for isub, sub in enumerate(subbasinlist):
+            is_good = QualityCheck(var_exp, sub)
+            if not is_good:
+                CLIM[isub,:] = np.nan
+                STD [isub,:] = np.nan
 
     return CLIM, STD
 
@@ -163,4 +178,4 @@ if __name__ == "__main__":
     PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list
-    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList, basin_expand=True)
+    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList, basin_expand=True, QC=True)

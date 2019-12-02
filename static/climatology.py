@@ -155,7 +155,8 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
             nans= np.isnan(y)
             z_good = Layer_center[~nans]
             y_good = y[~nans]
-            CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
+            if len(y_good) > 0:
+                CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
 # 2 apply expansion following Valeria's table
         for isub, sub in enumerate(subbasinlist):
             sub_search = basin_expansion(sub, var_exp)
@@ -178,4 +179,4 @@ if __name__ == "__main__":
     PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list
-    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList, basin_expand=True, QC=True)
+    N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList, basin_expand=True, QC=True)

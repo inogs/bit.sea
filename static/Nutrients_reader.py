@@ -16,22 +16,29 @@ class NutrientsReader():
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
         self.DataExtractor = DatasetExtractor(self.filename)
 
-
         # QC  section ----------------
         M = self.DataExtractor
         nvars, nData=M.DATA.shape
         selected = np.ones((nData,),np.bool)
 
         dataset = self.DataExtractor.DATA[-1,:]
-        bad = dataset==26 # removing Barney
-
+        id_dataset= find_index('Barney',self.DataExtractor.CRUISES)
+        bad = dataset==(id_dataset+1)
         selected[bad] = False
+        id_dataset= find_index('BIOPT06',self.DataExtractor.CRUISES)
+        bad = dataset==(id_dataset+1)
+        selected[bad] = False
+
+        M.DATA = M.DATA[:,selected]
+
         iphos  = find_index('phosphate' , M.VARIABLES)
         phos   = M.DATA[iphos,:]
         depth  = M.DATA[ 5,:]
         bad =  (phos > 0.4) & (depth < 400. )
-        selected[bad] = False
-        self.DataExtractor.DATA = M.DATA[:,selected]
+        M.DATA[iphos, bad] = 1.e+20
+
+        self.DataExtractor.DATA = M.DATA
+
 
 
 
@@ -52,7 +59,7 @@ class NutrientsReader():
          - total_chlorophyll
 
          Cruisename can be one of these
-            06MT51/2  BIOPT06
+            06MT51/2
             CANARI
             DYFAMED
             DYFAMED/PAPADOC - 99
@@ -125,6 +132,7 @@ if __name__ == '__main__':
     Reg= Rectangle(0,20,30,46)
     N = NutrientsReader()
 
+
     ProfileLIST = N.Selector('phosphate', TI, OGS.adr2)
     import pylab as pl
     fig, ax = pl.subplots()
@@ -144,10 +152,10 @@ if __name__ == '__main__':
 
     from layer_integral import coastline
     c_lon,c_lat=coastline.get()
-    Cruisename='INTERREG'
+    Cruisename='BIOPT06'
 
 
-    ProfileLIST2 = N.CruiseSelector('phosphate', Cruisename)
+    ProfileLIST2 = N.CruiseSelector('nitrate', Cruisename)
     nP = len(ProfileLIST2)
     Lon = np.zeros((nP), np.float32) * np.nan
     Lat = np.zeros((nP), np.float32) * np.nan

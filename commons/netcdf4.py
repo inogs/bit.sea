@@ -7,7 +7,7 @@ def lon_dimension_name(ncObj):
     Argument:
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
-    for dimname in ['lon','longitude']:
+    for dimname in ['lon','longitude','x']:
         if ncObj.dimensions.has_key(dimname):
             break
     return dimname
@@ -17,7 +17,7 @@ def lat_dimension_name(ncObj):
     Argument:
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
-    for dimname in ['lat','latitude']:
+    for dimname in ['lat','latitude','y']:
         if ncObj.dimensions.has_key(dimname):
             break
     return dimname

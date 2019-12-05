@@ -40,15 +40,19 @@ import scipy.io.netcdf as NC
 from commons.utils import addsep
 from basins.region import Rectangle
 from profiler import ALL_PROFILES, TL, BASEDIR
-
+from instruments import check
+Check_obj_nitrate = check.check("", verboselevel=0)
+Check_obj_chl     = check.check("", verboselevel=0)
 
 TheMask  = Mask(args.maskfile)
+
 
 
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o']
 read_adjusted = [True,True,False]
+extrap = [True,False,True]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
@@ -56,9 +60,9 @@ nVar   = len(VARLIST)
 
 WEEKLY=TL.getWeeklyList(5)
 nFrames = len(WEEKLY)
-BIAS    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)
-RMSE    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)
-NPOINTS = np.zeros((nVar,nFrames, nSub,nDepth), np.int32)
+BIAS    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
+RMSE    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
+NPOINTS = np.zeros((nVar,nFrames, nSub,nDepth), np.int32)*np.nan
 
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -70,8 +74,14 @@ for iFrame, req in enumerate(WEEKLY):
     if req.time_interval.end_time   > TL.timeinterval.end_time   : req.time_interval.end_time   = TL.timeinterval.end_time
     print req.time_interval
     for ivar, var in enumerate(VARLIST):
+        if var == "N3n": Check_obj = Check_obj_nitrate
+        if var == "P_l": Check_obj = Check_obj_chl
+        if var == "O2o": Check_obj = None
         print var
+
         for isub, sub in enumerate(OGS.NRT3):
+#          if (isub == 0):
+            print sub.name
             Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
             Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
@@ -79,7 +89,10 @@ for iFrame, req in enumerate(WEEKLY):
             print sub.name, nProfiles
             Matchup_object_list=[]
             for ip in range(nProfiles):
-                floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar])
+#                floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar])
+#               Execute the check on FLOATS:
+#                floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar],checkobj=Check_obj)
+                floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
                 Matchup_object_list.append(floatmatchup)
     
             for ilayer, layer in enumerate(LAYERLIST):
@@ -87,7 +100,7 @@ for iFrame, req in enumerate(WEEKLY):
                 REF_LAYER_MEAN   = []
                 for floatmatchup in Matchup_object_list:
                     m_layer = floatmatchup.subset(layer)
-                    #print ilayer, m_layer.number()
+                    print ilayer, m_layer.number()
                     if m_layer.number() > 0:
                         REF_LAYER_MEAN.append(m_layer.Ref.mean())
                         MODEL_LAYER_MEAN.append(m_layer.Model.mean())
@@ -100,7 +113,8 @@ for iFrame, req in enumerate(WEEKLY):
 
 
 
-
+#import sys
+#sys.exit()
 ncOUT = NC.netcdf_file(args.outfile,'w') #manca l'array times
 ncOUT.createDimension('time', nFrames)
 ncOUT.createDimension('var', nVar)

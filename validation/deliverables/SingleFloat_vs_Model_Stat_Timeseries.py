@@ -2,8 +2,10 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Needs a profiler.py, already executed.
-
     Produces a file, containing timeseries for some statistics, for each wmo.
+    In the outputdir, two new directories will be created, in order to store the output of check.
+    - nitrate_check/
+    - chla_check/
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -38,16 +40,22 @@ from instruments.var_conversions import FLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
 from basins.region import Rectangle
-from metrics import *
+#from validation.online.metrics import *
+from metrics2 import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins import V2 as OGS
 import datetime
+from instruments import check
 
 
 
 
 BASEDIR = addsep(args.basedir)
 OUTDIR = addsep(args.outdir)
+Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
+Check_obj_chl     = check.check(OUTDIR + "chla_check/")
+
+
 TheMask=Mask(args.maskfile, loadtmask=False)
 
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
@@ -61,6 +69,7 @@ layer300=Layer(0,350)
 
 VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
+extrap = [True,False,True]
 nVar = len(VARLIST)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
@@ -75,6 +84,9 @@ iz10 = TheMask.getDepthIndex(10.8)+1
 
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
+    if var_mod == "N3n": Check_obj = Check_obj_nitrate
+    if var_mod == "P_l": Check_obj = Check_obj_chl
+    if var_mod == "O2o": Check_obj = None
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
@@ -92,12 +104,19 @@ for ivar, var_mod in enumerate(VARLIST):
             if p.available_params.find(var)<0 : continue
 
             Pres,Profile,Qc=p.read(var)
-            try:
-                GM = M.getMatchups([p], TheMask.zlevels, var_mod, interpolation_on_Float=False)
-            except:
-                print p.ID()  + " not found in " + BASEDIR
-                continue
 
+           # try:
+
+            GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
+
+           # except:
+           #     print p.ID()  + " not found in " + BASEDIR
+           #     continue
+
+
+            if GM.number() == 0 :
+                print p.ID() + " excluded"
+                continue
             gm200 = GM.subset(layer)
             gm300 = GM.subset(layer300)
  

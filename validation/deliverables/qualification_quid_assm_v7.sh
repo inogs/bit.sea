@@ -2,11 +2,12 @@
 
 # QUID REANALYSIS
 # SECTION 4:
-export MASKFILE=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/MODEL/meshmask.nc
+export MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/MODEL/meshmask.nc
+export ONLINE_REPO=/gpfs/scratch/userexternal/ateruzzi/REPO_ALL_FLOATS/ONLINE_V5C/
 
-         INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/MODEL/AVE_FREQ_2/ #_compressed/
-   INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
-STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES
+         INPUTDIR=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/MODEL/AVE_FREQ_2/ #compressed/
+   INPUT_AGGR_DIR=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+STAT_PROFILES_DIR=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/MONTHLY_24/
 
 OUTDIR=spaghettiplots
@@ -22,13 +23,14 @@ mkdir -p LayerMaps
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS      # Fig4.1 CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v N3n  -t mean $COMMONS_PARAMS      # Fig4.10 NIT-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
 python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PARAMS      # Fig4.9  PHOS-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-INPUTDIR_PPN=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
-python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN per lo 0-200m
-python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral -m $MASKFILE -o Fig4.7bis -l Plotlist_bio_ppn20m.xml -s 20170101 -e 20180101
+#INPUTDIR_PPN=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+#python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN per lo 0-200m
+#python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral -m $MASKFILE -o Fig4.7bis -l Plotlist_bio_ppn20m.xml -s 20170101 -e 20180101
 
-INPUTDIR_PPN=/gpfs/scratch/userexternal/ateruzzi/PPN_TRANSITION2017/
+#INPUTDIR_PPN=/gpfs/scratch/userexternal/ateruzzi/PPN_TRANSITION2017/
 mkdir -p Fig4.7refScale
-python averager_and_plot_map_ppn_refScale.py -i $INPUTDIR_PPN  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20170101 -e 20180101
+#python averager_and_plot_map_ppn_refScale.py -i $INPUTDIR_PPN  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20170101 -e 20180101
+python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20170101 -e 20180101
 
 python averager_and_plot_map.py -i $INPUTDIR        -v ALK   -t mean $COMMONS_PARAMS   # Ac-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN  --> not requested in the ScQP
 python averager_and_plot_map.py -i $INPUTDIR        -v DIC  -t mean $COMMONS_PARAMS   # DIC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> not requested in the ScQP
@@ -65,7 +67,7 @@ cp Fig4.3/offshore/table4.1.dat table4.1
 cp Fig4.3/coast/table4.1.dat    table4.2/table4.2.dat
 
 mkdir -p Fig4.8
-INTEGRALS_PPN=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/MONTHLY/PPN/INTEGRALS/PPN/
+INTEGRALS_PPN=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/output/PPN_MONTHLY/INTEGRALS/PPN/
 python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
 
 
@@ -105,7 +107,7 @@ python averager_and_plot_map.py $COMMONS_PARAMS  -v pCO2  -s 20171101 -e 2017120
 # Figures 4.4a
 #mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8 
 mkdir -p Fig4.4 Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8
-BASEDIR=/gpfs/work/OGS_prod_0/OPA/V5C/prod/inpdir/VALIDATION/FLOAT/PROFILATORE
+BASEDIR=/gpfs/scratch/userexternal/lfeudale/validation/TEST_02/PROFILATORE/
 NCDIR=tmp_nc
 OUTDIR=Fig4.4
 echo python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
@@ -130,6 +132,7 @@ mv $OUTDIR/*O2o*.png Fig4.15
 #  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
 
 OUTDIR=Fig4.6
+#mkdir -p $NCDIR/chla_check/ $NCDIR/nitrate_check/
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
 python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
 mv $OUTDIR/N3n*.png Fig4.13
@@ -174,7 +177,8 @@ cp $OUTFIGDIR/*O2o* Fig4.16
 STAT_PROFILES_MONTHLY_DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 # Figures 4.11 and 4.17 (previously named 4.19)
 mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.17
-python simulation_vs_clim.py -i $STAT_PROFILES_MONTHLY_DIR -o sim_vs_clim_profiles/ -s 20170101 -e 20180101 -m $MASKFILE
+#python simulation_vs_clim.py -i $STAT_PROFILES_MONTHLY_DIR -o sim_vs_clim_profiles/ -s 20170101 -e 20180101 -m $MASKFILE
+python simulation_vs_clim.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 20170101 -e 20180101 -m $MASKFILE
 cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11
 cp sim_vs_clim_profiles/Fig_4.17*png Fig4.17
 
@@ -210,13 +214,13 @@ cp $DIR/pH-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt   $DIR/pCO2-PROF-Y-CLASS4-CLIM-CORR
 # Compare pCO2 vs SOCAT dataset: 
 # Fig4.20  : PCO-SURF-M-CLASS4-CLIM-MEAN-BASIN
 # table4.15: PCO-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt 
-mkdir -p table4.15 Fig4.20
+mkdir -p table4.15 Fig4.20 Fig4.21
 # First generate climatology tables:
 python monthly_clim_socat_pCO2.py
 #python monthly_2017.py
 
 mkdir -p monthly_2017_surf/
-python monthly_2017 -i $STAT_PROFILES_DIR -o monthly_2017_surf/
+python monthly_2017.py -i $STAT_PROFILES_DIR -o monthly_2017_surf/
 
 python table_pCO2vsSOCAT.py -i monthly_2017_surf/
 mv pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt table4.15/.
@@ -230,7 +234,9 @@ mv pCO2_monthly_tseries_Fig4.20.png Fig4.20/.
 # generate new figure 4.21: comparison pCO2 and CO2ariflux vs REAN (CLIM)
 # Fig4.21: airseaCO2flux-SURF-M-CLASS4-CLIM-MEAN-BASIN
 
-REANDIR="/gpfs/scratch/userexternal/gbolzon0/REA/output/STAT_PROFILES/"
+#REANDIR="/gpfs/scratch/userexternal/gbolzon0/REA/output/STAT_PROFILES/"
+REANDIR=/gpfs/scratch/userexternal/lfeudale/REANALYSIS/STAT_PROFILES/
 #python plot_pCO2_CO2airflux_vs_REAN.py -r "/gpfs/scratch/userexternal/gbolzon0/REA/output/STAT_PROFILES/"
 python plot_pCO2_CO2airflux_vs_REAN.py -r $REANDIR -i $STAT_PROFILES_MONTHLY_DIR -o Fig4.21/
+python plot_pCO2_CO2airflux_vs_REAN.py -r $REANDIR -i $STAT_PROFILES_DIR -o Fig4.21/
 

@@ -99,7 +99,6 @@ bt=300
 depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
-  if ( var_mod == 'O2o' ):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)

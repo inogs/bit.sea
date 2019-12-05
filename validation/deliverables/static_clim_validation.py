@@ -94,7 +94,8 @@ def Layers_Mean(Pres,Values,LayerList):
 # BFMv5:
 VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','pCO2']
 SUBlist = basV2.Pred.basin_list
-nSub = len(SUBlist)
+SUBlist2 = basV2.Pred2.basin_list
+#nSub = len(SUBlist)
 nLayers = len(LayerList)
 METRICvar = {'N1p':'PHO',
              'N3n':'NIT',
@@ -115,9 +116,18 @@ for ivar, var in enumerate(VARLIST):
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
-    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList)
+#    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
+#    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True)
+#    else:
+#        CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList)
 
     
+#    if ( var == 'N1p' ): 
+#        SUBlist = basV2.Pred2.basin_list
+#        print len(SUBlist)
+#    else: SUBlist = basV2.Pred.basin_list
+    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True,QC=True)
+    nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
@@ -178,7 +188,11 @@ for var in VARLIST:
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
-    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2)
+#    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
+    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2, basin_expand=True,QC=True)
+#    else:
+#        CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2)
+
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)

@@ -66,9 +66,9 @@ TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
 SUBLIST = basV2.P.basin_list
 
 
-N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
-N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList)
-O2o_clim, O2o_std = get_climatology('O2o', SUBLIST, LayerList)
+N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList,basin_expand=True)
+N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList,basin_expand=True)
+O2o_clim, O2o_std = get_climatology('O2o', SUBLIST, LayerList,basin_expand=True)
 
 
 VARLIST=['P_l','N1p','N3n','O2o']

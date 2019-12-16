@@ -17,18 +17,18 @@ def general_quenching(profile_obj, Pres, Profile, Qc):
     mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
     print mld
     if mld < 80:
-        if PresC[0] <= mld+5:
-            ii = PresC <= mld + 5
+        if Pres[0] <= mld+5:
+            ii = Pres <= mld + 5
             descending_ordered = np.sort(ValueC[ii])[-1::-1]
             n_chosen = min(3, len(descending_ordered))
             if n_chosen==0: n_chosen = 1
             quench_value = descending_ordered[:n_chosen].mean()
-            ii = PresC < mld
+            ii = Pres < mld
             Profile[ii] = quench_value
 
-            if PresC[0] > 10. : # cutted profiles
+            if Pres[0] > 10. : # cutted profiles
                 creation_step = 5 #m
-                Top_Pressures= np.arange(0.5,PresC[0],creation_step)
+                Top_Pressures= np.arange(0.5,Pres[0],creation_step)
                 Top_Values   = np.ones_like(Top_Pressures)* quench_value
                 Top_QC       = np.ones_like(Top_Pressures)* 1
 

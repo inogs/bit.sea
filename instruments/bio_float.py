@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import os
 from commons.utils import addsep
-import pylab as pl
+import matplotlib.pyplot as pl
 
 from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean

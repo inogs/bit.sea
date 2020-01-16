@@ -182,7 +182,7 @@ if __name__=="__main__":
     from instruments import lovbio_float
     from commons.time_interval import TimeInterval
     from basins.region import Rectangle
-    import pylab as pl
+    import matplotlib.pyplot as pl
     import sys
     TI = TimeInterval('2012','2020','%Y')
     R = Rectangle(-6,36,30,46)

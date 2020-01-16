@@ -5,7 +5,7 @@ import numpy as np
 from profiler import *
 from basins.region import Rectangle
 from commons.layer import Layer
-import pylab as pl
+import matplotlib.pyplot as pl
 
 import os
 import scipy.io.netcdf as NC

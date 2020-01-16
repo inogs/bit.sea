@@ -8,7 +8,7 @@
 
 
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 from basins import V2
 from commons.mask import Mask
 from timeseries.plot import read_pickle_file

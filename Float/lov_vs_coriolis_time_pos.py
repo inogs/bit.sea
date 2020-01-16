@@ -26,7 +26,7 @@ for ip, p in enumerate(PROFILES_LOV):
             print "too much diff"
             
 
-import pylab as pl
+import matplotlib.pyplot as pl
 pl.close('all')
 fig,ax=pl.subplots()
 ax.plot(DIFF[:,0], 'r.', label='lon')

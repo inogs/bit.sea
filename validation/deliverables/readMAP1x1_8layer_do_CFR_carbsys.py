@@ -9,7 +9,7 @@ from commons.layer import Layer
 from commons.utils import writetable
 import netCDF4 as NC
 import commons.netcdf4 as NC4 
-import pylab as pl
+import matplotlib.pyplot as pl
 from layer_integral.mapplot import mapplot,pl
 from layer_integral import coastline
 

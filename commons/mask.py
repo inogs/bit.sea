@@ -296,7 +296,7 @@ class Mask(object):
         Returns:
         * x,y *  numpy 1d arrays, containing nans to separate the lines, in order to be easily plotted.
         '''
-        import pylab as pl 
+        import matplotlib.pyplot as pl 
         tmask= self.mask_at_level(depth).astype(np.float64)
 
         H = pl.contour(self.xlevels, self.ylevels, tmask, levels=[float(0.5)])

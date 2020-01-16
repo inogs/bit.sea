@@ -34,7 +34,7 @@ from timeseries.plot import read_pickle_file, read_basic_info
 from timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from basins import V2
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.utils import getcolor, addsep
 
 def weighted_mean(values,weights):

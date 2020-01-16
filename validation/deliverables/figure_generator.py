@@ -1,4 +1,4 @@
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy as np
 from layer_integral import coastline
 

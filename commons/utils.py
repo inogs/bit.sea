@@ -4,7 +4,7 @@ from __future__ import print_function
 import os,sys
 import numpy as np
 import re
-import pylab as pl
+import matplotlib.pyplot as pl
 """Helper functions"""
 
 def is_number(val):

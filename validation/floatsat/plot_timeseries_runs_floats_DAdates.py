@@ -1,6 +1,6 @@
 
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 import argparse
 #import pickle
 import matplotlib.dates as mdates

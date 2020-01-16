@@ -38,7 +38,7 @@ def argument():
 args = argument()
 
 import pickle
-import pylab as pl
+import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 import sys
 import numpy as np

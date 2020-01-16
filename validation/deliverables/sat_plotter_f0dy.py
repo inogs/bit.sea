@@ -45,7 +45,7 @@ from sat_timeseries import timelistcontainer
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
-import pylab as pl
+import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
 from datetime import datetime

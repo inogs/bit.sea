@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
 
     ProfileLIST = N.Selector('phosphate', TI, OGS.adr2)
-    import pylab as pl
+    import matplotlib.pyplot as pl
     fig, ax = pl.subplots()
 
     for ip, p in enumerate(ProfileLIST):

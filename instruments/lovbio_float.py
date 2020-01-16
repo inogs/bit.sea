@@ -2,7 +2,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 import os
-import pylab as pl
+import matplotlib.pyplot as pl
 import seawater as sw
 from commons.utils import addsep
 

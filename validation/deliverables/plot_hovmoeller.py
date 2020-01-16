@@ -38,7 +38,7 @@ from timeseries.plot import Hovmoeller_matrix, Hovmoeller_diagram
 from timeseries.plot import read_pickle_file, read_basic_info
 from basins import V2 as OGS
 from commons.mask import Mask
-import pylab as pl
+import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 from commons.utils import addsep
 

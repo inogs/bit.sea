@@ -15,7 +15,7 @@ P    = ComposedBasin('P',[frontal, samotra, lemnos, lw])
 
 if __name__ == "__main__":
 
-    import pylab as pl
+    import matplotlib.pyplot as pl
     fig,ax=pl.subplots()
     
     color=['b','r','g','c']

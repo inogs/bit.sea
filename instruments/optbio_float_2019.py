@@ -2,7 +2,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 import os
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.utils import addsep
 
 from instrument import Instrument, Profile

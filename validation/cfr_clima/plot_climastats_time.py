@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import pickle
-import pylab as plt
+import matplotlib.pyplot as plt
 #from Sat import SatManager as Sat
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList

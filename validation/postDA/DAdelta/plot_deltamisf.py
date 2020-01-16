@@ -1,5 +1,5 @@
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 
 from basins import V2 as OGS
 

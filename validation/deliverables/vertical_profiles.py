@@ -29,7 +29,7 @@ def argument():
 
 args = argument()
 
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.mask import Mask
 import os
 from profiler_RA import *

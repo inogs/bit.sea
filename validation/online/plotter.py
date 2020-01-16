@@ -1,6 +1,6 @@
 from basins.region import Rectangle
 from mpl_toolkits.basemap import Basemap
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy as np
 import matplotlib.dates as mdates
 xlim=[-6.5,36.5]

@@ -47,7 +47,7 @@ from instruments.var_conversions import FLOATVARS
 import numpy as np
 import numpy.ma as ma
 from commons.utils import addsep
-import pylab as pl
+import matplotlib.pyplot as pl
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader

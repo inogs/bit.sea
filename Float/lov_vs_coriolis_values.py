@@ -3,7 +3,7 @@ from instruments import bio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 
 TI = TimeInterval('2015','2016','%Y')
 R = Rectangle(-6,36,30,46)

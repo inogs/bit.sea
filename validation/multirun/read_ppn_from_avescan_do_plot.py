@@ -29,7 +29,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
-import pylab as pl
+import matplotlib.pyplot as pl
 import math, operator
 import glob
 from dateutil.relativedelta import relativedelta

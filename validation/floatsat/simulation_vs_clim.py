@@ -43,7 +43,7 @@ from timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from commons.mask import Mask
 from commons.submask import SubMask
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.utils import addsep
 IDrun='eas_11'
 OUTDIR=addsep(args.outdir)

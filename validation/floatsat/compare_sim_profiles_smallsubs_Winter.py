@@ -34,7 +34,7 @@ args = argument()
 
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 #from commons.layer import Layer
 import basins.V2 as OGS
 #from static.climatology import get_climatology
@@ -44,7 +44,7 @@ from commons.Timelist import TimeList
 from timeseries.plot import Hovmoeller_matrix
 from commons.mask import Mask
 from commons.submask import SubMask
-#import pylab as pl
+#import matplotlib.pyplot as pl
 from commons.utils import addsep
 from profileruns_Winter import runList,colorList
 

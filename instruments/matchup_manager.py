@@ -3,7 +3,7 @@ from instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
 import matchup.matchup
-import pylab as pl
+import matplotlib.pyplot as pl
 import all_instruments
 import postproc
 

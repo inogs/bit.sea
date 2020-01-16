@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib as plt
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
-import pylab as pl
+import matplotlib.pyplot as pl
 from basins import V2 as OGS
 
 socat=np.loadtxt("monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))

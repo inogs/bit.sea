@@ -39,7 +39,7 @@ TL = TimeList(monthly)
 HOV_MATRIX = get_Hovmoeller(z, var, TL, OGS.ion, N)
 
 
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy.ma as ma
 Zm = ma.masked_where(np.isnan(HOV_MATRIX),HOV_MATRIX)
 

@@ -1,0 +1,60 @@
+!------------------------------------------------------------
+! OceanVar namelist specification for multivariate and multiplatform
+!------------------------------------------------------------
+!------------------------------------------------------------
+!
+! Namelist biolst
+! ---
+!
+!          Biological assimilation set-up
+!
+!  chl_assim       - Chlorophyll assimilation
+!  chl_upnut       - Nutrient update based on chl assimilation chl_upnut
+!  nut             - Nutrient assimilation
+!  multiv          - Multivariate assimilation
+!  nphyto          - Number of phytoplankton species
+!  chl_dep         - Minimum depth for chlorophyll
+!  ncmp            - Number of phytoplankton components
+!  ApplyConditions - Apply conditions flag
+!  N3n             - N3n assimilation
+!  updateN1p       - N1p update based on N3n assimilation updateN1p
+!  O2o             - O2o assimilation
+!
+! ---
+&biolst
+ chl_assim = @@ASS_P_l@@
+ chl_upnut = @@ASS_P_lN3n@@
+    nut    = @@ASS_N3n@@
+    multiv = 0
+   nphyto  = 4
+   chl_dep = 0.0
+   ncmp    = 5
+ApplyConditions = .true.
+    N3n    = @@ASS_N3n@@
+    updateN1p = @@ASS_N3n@@
+    O2o    = 0
+/
+!------------------------------------------------------------
+!
+! Namelist parameters
+! ---
+!
+!          Parameters namelist
+!
+!  sat     - 1-assimilate satellite data
+!            0-no satellite assimilation
+!  argo    - 1-assimilate argo data
+!          - 0-no argo assimilation
+! uniformL - 1-non uniform radius
+!          - 0-uniform radius (rcf%L)
+! anisL    - 1-anisotropy
+!            0-isotropy
+!
+! ---
+&params
+ sat_obs  = @@SAT_OBS@@
+  argo    = @@ARGO@@
+ uniformL = @@ARGO@@
+  anisL   = 1
+/
+!------------------------------------------------------------

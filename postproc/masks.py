@@ -34,5 +34,8 @@ Mesh4 = mesh(182,65)
 Mesh4.lon = np.linspace(-8.75  ,36.5  , 182,endpoint=True)
 Mesh4.lat = np.linspace(30.1875,46.1875,  65,endpoint=True)
 
+MeshOCCCI = mesh(1008, 384)
+MeshOCCCI.lon = np.linspace(-5.97916650772095 , 35.9791679382324 , 1008,endpoint=True) #0.04166650772094993
+MeshOCCCI.lat = np.linspace(30.0208339691162, 45.9791679382324,  384,endpoint=True) #0.04166603088379972
 #approx values, because they have irregulare spacing
 #max error about 1.e-4 deg in longitude, 3.e-4 in latitude

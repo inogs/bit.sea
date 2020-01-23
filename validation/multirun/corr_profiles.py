@@ -24,6 +24,12 @@ def argument():
                                 required = True,
                                 help = "")
 
+    parser.add_argument(   '--depth', '-d',
+                                type = float,
+                                required = False,
+                                default = 200,
+                                help  = 'The level chosen to filter data' )
+
     return parser.parse_args()
 
 args = argument()
@@ -59,6 +65,7 @@ TheMask = Mask(args.maskfile)
 TheMask_phys = Mask(args.maskfilephys)
 
 OUTDIR = addsep(args.outdir)
+depth_lim = args.depth
 
 run = 'PHY_A'
 #run = "PHY_S"
@@ -93,6 +100,7 @@ def get_level300(TheMask):
     diff1 = 300 - TheMask.zlevels[i1]
     data = [(i0,diff0),(i1,diff1)]
     ix,datamin = min(data, key=lambda t: t[1])
+    return ix
 
 def get_level200(TheMask):
 
@@ -103,14 +111,24 @@ def get_level200(TheMask):
     diff1 = 200 - TheMask.zlevels[i1]
     data = [(i0,diff0),(i1,diff1)]
     ix,datamin = min(data, key=lambda t: t[1])
+    return ix
 
+def get_level_depth(TheMask,dd=200):
+
+    i0 = TheMask.getDepthIndex(dd)
+    i1 = i0 + 1
+
+    diff0 = dd - TheMask.zlevels[i0]
+    diff1 = dd - TheMask.zlevels[i1]
+    data = [(i0,diff0),(i1,diff1)]
+    ix,datamin = min(data, key=lambda t: t[1])
     return ix
 
 
 # max_depth = get_level300(TheMask)
 # max_depthp = get_level300(TheMask_phys)
-max_depth = get_level200(TheMask)
-max_depthp = get_level200(TheMask_phys)
+max_depth = get_level_depth(TheMask,dd=depth_lim)
+max_depthp = get_level_depth(TheMask_phys,dd=depth_lim)
 
 VARLIST_PHYS = ['votemper','vosaline']
 VARLIST_BGC = ['N3n','Chla']
@@ -136,25 +154,18 @@ wmo_list=bio_float.get_wmo_list(Profilelist_1)
 
 MM = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-
 print wmo_list
 
-# wmo_list_reduced = list()
-# for wmo in wmo_list:
-#     if wmo in ['6901653']:
-#         wmo_list_reduced.append(wmo)
-
-
 for j,wmo in enumerate(wmo_list):
-# for j,wmo in enumerate(wmo_list_reduced):
-# for j,wmo in enumerate([wmo_list[0]]):
     print(wmo)
 
     list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
     nP = len(list_float_track)
     Lon = np.zeros((nP,), np.float64)
     Lat = np.zeros((nP,), np.float64)
-    NewPres_5m=np.linspace(0,300,61)
+    nlev= depth_lim/5 + 1
+    NewPres_5m=np.linspace(0,depth_lim,nlev)
+#    NewPres_5m=np.linspace(0,300,61)
 #    NewPres_5m=np.linspace(0,200,41)
     nPnewpres = len(NewPres_5m)
 
@@ -266,12 +277,13 @@ for j,wmo in enumerate(wmo_list):
     LIST[2] = covnmod
     LIST[3] = RMSD
 
-    filename = OUTDIR + 'corrcov' + run + '_' + p.name() + '.pkl'
-    fid = open(filename,'wb')
-    pickle.dump(LIST,fid)
-    fid.close()
+    if p.available_params.find(FLOATVARS[var_mod])>0:
+      filename = OUTDIR + 'corrcov' + run + '_' + p.name() + '.pkl'
+      fid = open(filename,'wb')
+      pickle.dump(LIST,fid)
+      fid.close()
 
-    if dofloat==True:
+      if dofloat==True:
         LISTF = [ii for ii in range(3)]
         LISTF[0] = timelabel_list
         LISTF[1] = corrfloat

@@ -36,11 +36,11 @@ from commons.mask import Mask
 from commons.utils import addsep
 from metrics import *
 
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
+from instruments import superfloat as bio_float
+from instruments.var_conversions import FLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 
-from profiler_corr import *
+from profiler import *
 
 from layer_integral import coastline
 from basins import OGS
@@ -60,8 +60,8 @@ TheMask_phys = Mask(args.maskfilephys)
 
 OUTDIR = addsep(args.outdir)
 
-run = 'HC_2017_assw'
-run = "HC_2017_simdd"
+run = 'PHY_A'
+#run = "PHY_S"
 
 
 font_s =  15 
@@ -114,6 +114,7 @@ max_depthp = get_level200(TheMask_phys)
 
 VARLIST_PHYS = ['votemper','vosaline']
 VARLIST_BGC = ['N3n','Chla']
+VARLIST_BGC = ['N3n','P_l']
 Adj = {
 	'P_l':  True,
 	'Chla': True,
@@ -153,8 +154,8 @@ for j,wmo in enumerate(wmo_list):
     nP = len(list_float_track)
     Lon = np.zeros((nP,), np.float64)
     Lat = np.zeros((nP,), np.float64)
-    # NewPres_5m=np.linspace(0,300,61)
-    NewPres_5m=np.linspace(0,200,41)
+    NewPres_5m=np.linspace(0,300,61)
+#    NewPres_5m=np.linspace(0,200,41)
     nPnewpres = len(NewPres_5m)
 
     timelabel_list = list()
@@ -178,21 +179,25 @@ for j,wmo in enumerate(wmo_list):
         Lon[ip] = p.lon
         Lat[ip] = p.lat
 
-        timelabel_list.append(p.time)
-        for var_mod in ['N3n','Chla']:
+#        timelabel_list.append(p.time)
+#        for var_mod in ['N3n','Chla']:
+#        for var_mod in ['N3n','P_l']:
+        for var_mod in ['N3n']:
+            if p.available_params.find(FLOATVARS[var_mod])<0 : continue
+            timelabel_list.append(p.time)
             NewProf_5m = np.zeros(len(NewPres_5m))
             NewProf_5m[:] = np.nan
             # print p.time
             # print var_mod
-            var = LOVFLOATVARS[var_mod]
+            var = FLOATVARS[var_mod]
             adj=Adj[var_mod]
 
             # FLOAT
             Pres,Prof,Qc = p.read(var,read_adjusted=adj)
-            # ii = Pres<=300
-            ii = Pres<=200
+            ii = Pres<=300
+            # ii = Pres<=200
             # Deve avere almeno 5 records:
-            if len(Prof[ii])>5 :
+            if len(Prof[ii])>3 :
                 NewProf_5m = np.interp(NewPres_5m,Pres[ii],Prof[ii])
 
             # MODEL
@@ -209,7 +214,7 @@ for j,wmo in enumerate(wmo_list):
             if var_mod == 'N3n':
                 for ivarp, varp_mod in enumerate(VARLIST_PHYS):
         #     if (ivar==0):
-                    varp = LOVFLOATVARS[varp_mod]
+                    varp = FLOATVARS[varp_mod]
                     adj=Adj[varp_mod]
 
                     Presp,Profp,Qcp = p.read(varp,read_adjusted=adj)
@@ -221,7 +226,7 @@ for j,wmo in enumerate(wmo_list):
 
         # PLOT FOR THE MODEL
                     TMP = MM.modeltime(p)
-                    FILENAME = BASEDIR_PHYS + TMP.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
+                    FILENAME = BASEDIR + TMP.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
                     MP = readModelProfile(FILENAME,varp_mod,p.ID())
                     MP_newDepth[varp_mod]=np.interp(NewPres_5m,TheMask_phys.zlevels[:max_depthp+1],MP[:max_depthp+1])
 

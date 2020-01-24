@@ -51,6 +51,9 @@ for varfloat in LIStvarfloat:
         dateDAfloatvar[varfloat].append(line.rstrip())
     fid.close()
 
+# removing dates for only N3n because ogsmt crashes there
+dateDAfloatvar['N3n'] = [p for p in dateDAfloatvar['N3n'] if p in dateDAfloatvar['P_l']]
+
 dateDAfloat = []
 for varfloat in LIStvarfloat:
     dateDAfloat = list(set(dateDAfloat + dateDAfloatvar[varfloat]))

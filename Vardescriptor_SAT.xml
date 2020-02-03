@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<vars_for_All_Statistics description="point profiles, subbasin statistic profiles, volume integrals">
+
+<native>
+</native>
+
+<aggregate>
+</aggregate>
+</vars_for_All_Statistics>
+
+
+
+<var_for_Some_Statistics>
+</var_for_Some_Statistics>
+
+
+<toArchive>
+</toArchive>
+
+
+<var2D>
+<vars_for_All>
+<native>
+<var name="KD490" ></var>
+</native>
+</vars_for_All>
+</var2D>
+
+</root>
+

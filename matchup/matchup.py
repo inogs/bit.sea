@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as pl
+import pylab as pl
 from commons.layer import Layer
 from statistics import matchup
 
@@ -19,7 +19,6 @@ class ProfilesMatchup(matchup):
             self.Qc    = np.array([],np.float32)
             self.name  = []
             self.Lengths = []
-            self.CheckReports=[]
         else:
             self.Model = Model
             self.Ref   = Ref
@@ -95,7 +94,6 @@ class ProfilesMatchup(matchup):
         '''
         lenfm = fm.Model.size
         fmLon,fmLat,fmTime = fm.localizationArrays()
-
         self.Model = np.concatenate((self.Model, fm.Model))
         self.Ref   = np.concatenate((self.Ref,   fm.Ref))
         self.Depth = np.concatenate((self.Depth, fm.Depth))
@@ -106,7 +104,6 @@ class ProfilesMatchup(matchup):
         self.name.extend( [fm.instrument.name() for k in range(lenfm)] )
 
         self.Lengths.extend([ lenfm ])
-        self.CheckReports.append(fm.checkreport)
 
     def export(self,directory,prefix):
 
@@ -117,7 +114,7 @@ class ProfilesMatchup(matchup):
         self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
         self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
-        np.array(self.name).tofile(directory + prefix + "name.txt" ,sep="\n",format="%s")
+        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
 
 
     def plot(self,fig=None,ax=None):
@@ -194,27 +191,24 @@ class FloatProfilesMatchup(ProfilesMatchup):
         self.Depth.tofile(directory + prefix + "depth.txt",sep="\n",format="%10.5f")
         self.Time.tofile( directory + prefix + "time.txt" ,sep="\n",format="%10.5f")
         self.Qc.tofile(   directory + prefix + "Qc.txt"   ,sep="\n",format="%10.5f")
-        np.array(self.name).tofile(directory + prefix + "name.txt" ,sep="\n",format="%s")
+        self.name.tofile( directory + prefix + "name.txt" ,sep="\n",format="%d")
         self.cycle.tofile(directory + prefix + "cycle.txt",sep="\n",format="%d")
 
 
 class ProfileMatchup():
-    def __init__(self, Model, Ref, Depth, Qc, profileObj, checkreport=None, accept_nans=False):
+    def __init__(self, Model, Ref, Depth, Qc, profileObj):
         bads = np.isnan(Model)
-        if not accept_nans:
-            if bads.any() :
-                print "matchup: Nans in model "
-                Model = Model[~bads]
-                Ref   = Ref  [~bads]
-                Depth = Depth[~bads]
-                Qc    = Qc[~bads]
+        if bads.any() :
+            print "Nans in model "
+            Model = Model[~bads]
+            Ref   = Ref  [~bads]
+            Depth = Depth[~bads]
 
         self.Model = Model
         self.Ref   = Ref
         self.Depth = Depth
         self.Qc    = Qc
         self.instrument = profileObj
-        self.checkreport =checkreport
 
 
     def localizationArrays(self):

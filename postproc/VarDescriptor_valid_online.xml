@@ -3,18 +3,13 @@
 <vars_for_All_Statistics description="point profiles, subbasin statistic profiles, volume integrals">
 
 <native>
-<var name="N3n" ></var>
-<var name="O2o" ></var>
 <var name="P_l" ></var>
-<var name="votemper" ></var>
-<var name="vosaline" ></var>
-<var name="EIR" ></var>
-<var name="pH" ></var>
+<var name="Ed380f" ></var>
+<var name="Ed400f" ></var>
+<var name="Ed490f" ></var>
 </native>
 
 <aggregate>
-<aggvar name="P_c" formula="P_c = P1c + P2c + P3c + P4c" > </aggvar>
-<aggvar name="POC" formula= "POC = P_c + R3c + B1c + Z4c" ></aggvar>
 </aggregate>
 </vars_for_All_Statistics>
 

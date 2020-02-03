@@ -80,3 +80,9 @@ FLOAT_OPT_VARS_2019 = {"P_l": "CHL",
                   "Ed_par": "PAR",
                   }
 
+FLOAT_OPT_BIOPTIMOD = {"P_l": "CHL",
+                  "Ed380f": "IRR_380",
+                  "Ed412f": "IRR_412",
+                  "Ed490f": "IRR_490",
+                  "KD490": "IRR_490",
+               }

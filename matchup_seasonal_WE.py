@@ -53,7 +53,7 @@ SEAS_STR = ['WINTER', 'SPRING', 'SUMMER', 'AUTUMN']
 
 fig,axs = plt.subplots(2,2, gridspec_kw = {'wspace':0.25, 'hspace':0.25})
 fig.set_size_inches(12,9)
-PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST01/bit.sea/'
+PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST03/bit.sea/'
 SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
 for iseas in range(len(SEAS_STR)):  
     print('SEASON: ', SEAS_STR[iseas])
@@ -70,7 +70,7 @@ for iseas in range(len(SEAS_STR)):
     ax2 = plot_basin(iseas, axs, FLOAT_E, MODEL_E, 'dodgerblue', OGS.eas, SEAS_STR, 0.75, 0.35,sigma2, bias_val2, corr_coeff2, b2, a2, count2)
     
     plot_out = PATH + 'PLOTS/scatter_' + args.var + '_SEAS_WE.png'
-    fig.suptitle(SIM_NAME)
+    fig.suptitle(SIM_NAME + ' ' + varname)
     fig.savefig(plot_out, format='png',dpi=150)
 
     file_dir = PATH + 'STATS/'

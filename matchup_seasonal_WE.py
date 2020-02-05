@@ -33,7 +33,7 @@ args = argument()
 #args = 'Ed490f'  
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-maskfile    = 'meshmask.nc'
+maskfile    = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea.modified/meshmask.nc'
 ncIN=NC.netcdf_file(maskfile,"r")
 nav_lev = ncIN.variables['nav_lev'].data.copy()
 jpk = nav_lev.shape[0]
@@ -53,7 +53,8 @@ SEAS_STR = ['WINTER', 'SPRING', 'SUMMER', 'AUTUMN']
 
 fig,axs = plt.subplots(2,2, gridspec_kw = {'wspace':0.25, 'hspace':0.25})
 fig.set_size_inches(12,9)
-
+PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST03/bit.sea/'
+SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
 for iseas in range(len(SEAS_STR)):  
     print('SEASON: ', SEAS_STR[iseas])
     seasonobj = season.season()
@@ -68,10 +69,11 @@ for iseas in range(len(SEAS_STR)):
     ax1 = plot_basin(iseas, axs, FLOAT_W, MODEL_W, 'darkblue',   OGS.wes, SEAS_STR, 0.05, 0.95,sigma1, bias_val1, corr_coeff1, b1, a1, count1)
     ax2 = plot_basin(iseas, axs, FLOAT_E, MODEL_E, 'dodgerblue', OGS.eas, SEAS_STR, 0.75, 0.35,sigma2, bias_val2, corr_coeff2, b2, a2, count2)
     
-    plot_out = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea/PLOTS/scatter_' + args.var + '_SEAS_WE.png'
+    plot_out = PATH + 'PLOTS/scatter_' + args.var + '_SEAS_WE.png'
+    fig.suptitle(SIM_NAME + ' ' + varname)
     fig.savefig(plot_out, format='png',dpi=150)
 
-    file_dir = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea/STATS/'
+    file_dir = PATH + 'STATS/'
     file_out1 =  file_dir +  args.var + '_' + SEAS_STR[iseas] + '_WEST.stat'
     file_out2 =  file_dir +  args.var + '_' + SEAS_STR[iseas] + '_EAST.stat'
     f_out1    = writefile(file_out1, args.var, count1, sigma1, corr_coeff1, bias_val1, b1, a1, float_mean1, model_mean1)

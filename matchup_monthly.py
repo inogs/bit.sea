@@ -73,8 +73,8 @@ for i in range(len(argslist)):
 
     count, sigma, bias_val, corr_coeff, r, p, float_mean, model_mean = calc_statistics(np.array(FLOAT_mean), np.array(MODEL_mean))
 
-    file_dir = PATH + 'STATS/'
-    file_out =  file_dir +  args  + '_monthly.stat'
+    file_dir = 'STATS/'
+    file_out = file_dir +  args  + '_monthly.stat'
     
     f_out   = writefile(file_out, args, count, sigma, corr_coeff, bias_val, r, p, float_mean, model_mean)
 

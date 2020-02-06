@@ -80,7 +80,8 @@ def calc_statistics(FLOAT, MODEL):
 	b          = slope
 	float_mean = FLOAT.mean()
 	model_mean = MODEL.mean()
-	return count, sigma, corr_coeff, bias_val, b, a, float_mean, model_mean  
+	#return count, sigma, corr_coeff, bias_val, b, a, float_mean, model_mean
+	return count, sigma, bias_val, corr_coeff, r_value, p_value, float_mean, model_mean  
 
 
 def plot_basin(iseas, axs, FLOAT, MODEL, color, basin, titlestr, xpos, ypos, sigma, bias_val, corr_coeff,b,a,count):
@@ -111,11 +112,12 @@ def plot_basin(iseas, axs, FLOAT, MODEL, color, basin, titlestr, xpos, ypos, sig
     
     return axs
 
-def writefile(filestat, var_arg, count, sigma, corr_coeff, bias_val, b, a, float_mean, model_mean):
+def writefile(filestat, var_arg, count, sigma, corr_coeff, bias_val, r_value, p_value, float_mean, model_mean):
     fid = open(filestat,'wb')
     
-    fid.write("%s %.2f %.2f %.2f %.2f %.2f %s %.2f %.2f  \n" % (var_arg, sigma, bias_val, corr_coeff, b, a, str(count), float_mean, model_mean) )
+    fid.write("%s %.2f %.2f %.2f %.2f %.2f %s %.2f %.2f  \n" % (var_arg, sigma, bias_val, corr_coeff, r_value, p_value, float_mean, model_mean) )
 
     fid.close()
     return fid
+
 

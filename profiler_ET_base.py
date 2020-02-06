@@ -12,7 +12,7 @@ from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
-INPUTDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/REA_16_BC_GIB/TEST01/INPUT/"#"/gpfs/scratch/userexternal/plazzari/REA_16_T0/TEST_01/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
+INPUTDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/<DIR>/<SUBDIR>/INPUT/"#"/gpfs/scratch/userexternal/plazzari/REA_16_T0/TEST_01/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
 
 # output directory, where aveScan.py will be run.
 BASEDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/REA_16_BC_GIB/TEST01/PROFILATORE/"

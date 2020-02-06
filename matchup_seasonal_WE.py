@@ -33,6 +33,10 @@ args = argument()
 #args = 'Ed490f'  
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
+PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST03/bit.sea/'    #The only thing you need to modify from folder to folder
+
+SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
+
 maskfile    = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea.modified/meshmask.nc'
 ncIN=NC.netcdf_file(maskfile,"r")
 nav_lev = ncIN.variables['nav_lev'].data.copy()
@@ -53,8 +57,7 @@ SEAS_STR = ['WINTER', 'SPRING', 'SUMMER', 'AUTUMN']
 
 fig,axs = plt.subplots(2,2, gridspec_kw = {'wspace':0.25, 'hspace':0.25})
 fig.set_size_inches(12,9)
-PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST03/bit.sea/'
-SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
+
 for iseas in range(len(SEAS_STR)):  
     print('SEASON: ', SEAS_STR[iseas])
     seasonobj = season.season()

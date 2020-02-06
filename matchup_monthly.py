@@ -69,7 +69,7 @@ for i in range(len(argslist)):
     ax[i].tick_params(axis='both', which='major', labelsize=10)
 
     ax[0].legend(loc='upper center', fontsize=16)
-    ax[i].set_title(kdlist[i], fontsize=20)
+    ax[i].set_title(kdlist[i], fontsize=18)
 
 plot_out = 'PLOTS/scatter_MONTHLY.png'
 fig.savefig(plot_out, format='png',dpi=150)

@@ -30,11 +30,10 @@ def argument():
 
 
 args = argument()
-#args = 'Ed490f'  
+
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-PATH='/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_INIT/TEST03/bit.sea/'    #The only thing you need to modify from folder to folder
-
+PATH=os.getcwd()   
 SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
 
 maskfile    = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea.modified/meshmask.nc'

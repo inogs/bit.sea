@@ -10,7 +10,8 @@ import os,sys
 from profiler_ET import *
 import scipy.io.netcdf as NC
 
-
+PATH=os.getcwd()   
+SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/.../bit.sea/')
 
 maskfile    = '/galileo/home/userexternal/eterzic0/BIOPTIMOD/REA_16_T0/TEST01/wrkdir/bin/bit.sea.modified/meshmask.nc'
 ncIN=NC.netcdf_file(maskfile,"r")
@@ -79,6 +80,7 @@ for i in range(len(argslist)):
     f_out   = writefile(file_out, args, count, sigma, corr_coeff, bias_val, r, p, float_mean, model_mean)
 
 
+fig.suptitle(SIM_NAME)
 plot_out = 'PLOTS/scatter_MONTHLY.png'
 fig.savefig(plot_out, format='png',dpi=150)
 

@@ -75,13 +75,13 @@ for i in range(len(argslist)):
     count, sigma, bias_val, corr_coeff, r, p, float_mean, model_mean = calc_statistics(np.array(FLOAT_mean), np.array(MODEL_mean))
 
     file_dir = 'STATS/'
-    file_out = file_dir +  args  + '_monthly.stat'
+    file_out = file_dir +  args  + '_' + SIM_NAME.replace('/', '_') + '_monthly.stat'
     
     f_out   = writefile(file_out, args, count, sigma, corr_coeff, bias_val, r, p, float_mean, model_mean)
 
 
-fig.suptitle(SIM_NAME)
-plot_out = 'PLOTS/scatter_MONTHLY.png'
+fig.suptitle(SIM_NAME, fontsize=22)
+plot_out = 'PLOTS/' + SIM_NAME.replace('/', '_') + '_scatter_MONTHLY.png'
 fig.savefig(plot_out, format='png',dpi=150)
 
 print('Calculation successfully computed.')

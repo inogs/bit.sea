@@ -71,7 +71,7 @@ for i in range(len(argslist)):
     ax[0].legend(loc='upper center', fontsize=16)
     ax[i].set_title(kdlist[i], fontsize=18)
 
-    count, sigma, bias_val, corr_coeff, r, p, float_mean, model_mean = calc_statistics(FLOAT_mean, MODEL_mean)
+    count, sigma, bias_val, corr_coeff, r, p, float_mean, model_mean = calc_statistics(np.array(FLOAT_mean), np.array(MODEL_mean)
 
     file_dir = PATH + 'STATS/'
     file_out =  file_dir +  args  + '_monthly.stat'

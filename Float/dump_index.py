@@ -77,11 +77,18 @@ def file_header_content(filename,VARLIST, avail_params=None):
     '''
     it takes variable list
     '''
-    ncIN = NC.netcdf_file(filename,'r')
+    try:
+        ncIN = NC.netcdf_file(filename,'r')
+    except:
+        print "Not valid NetDCF file: " + filename
+        ncIN.close()
+        return
+
     lon=ncIN.variables['LONGITUDE'].data[0]
     lat=ncIN.variables['LATITUDE'].data[0]
     BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
     if BadPosition:
+        print "Bad position in file : " + filename
         ncIN.close()
         return
 

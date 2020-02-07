@@ -1,6 +1,7 @@
 from commons import calculated_depths
 import numpy as np
 import scipy.io.netcdf as NC
+import os
 
 
 def general_quenching(profile_obj, Pres, Profile, Qc):
@@ -164,6 +165,21 @@ def treating_coriolis(pCor):
     else:
         print "R -- not dumped ", pCor._my_float.filename
         return None, None, None
+
+def exist_valid(filename):
+    '''Returns true if file exists and is a valid NetCDF file'''
+    if not os.path.exists(filename):
+        return False
+    good = True
+    try:
+        ncIN = NC.netcdf_file(filename,'r')
+    except:
+        good = False
+    if good:
+        ncIN.close()
+        return True
+    else:
+        return False
 
 def exist_variable(variable, filename):
     ncIN = NC.netcdf_file(filename,'r')

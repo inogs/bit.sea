@@ -13,7 +13,7 @@ from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
 from mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
 import datetime
-import pylab as pl
+import matplotlib.pyplot as pl
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)

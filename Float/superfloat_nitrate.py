@@ -139,7 +139,7 @@ for wmo in wmo_list:
             continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if os.path.exists(outfile):
+        if superfloat_generator.exist_valid(outfile):
             if not superfloat_generator.exist_variable('NITRATE', outfile):
                 dump_nitrate_file(outfile, profile_for_position, pLov, Pres, Value, Qc, metatata,mode='a')
             else:

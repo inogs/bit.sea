@@ -36,7 +36,7 @@ from instruments.var_conversions import LOVFLOATVARS
 import scipy.io.netcdf as NC
 import numpy as np
 from commons.utils import addsep
-import pylab as pl
+import matplotlib.pyplot as pl
 from basins import OGS
 from validation.online.profileplotter import figure_generator, ncwriter #, add_metadata
 import matplotlib

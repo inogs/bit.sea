@@ -1,4 +1,4 @@
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy as np
 import matplotlib.patches as mpatches
 import scipy.io.netcdf as NC

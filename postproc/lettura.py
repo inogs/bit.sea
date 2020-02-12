@@ -1,7 +1,7 @@
 import scipy.io.netcdf as NC
 import numpy as np
 
-import pylab as pl
+import matplotlib.pyplot as pl
 
 M=NC.netcdf_file("ave.20071005-12:00:00.N1p.nc","r")
 N1p = M.variables['N1p'].data[0,:,:,:]

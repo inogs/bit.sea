@@ -173,7 +173,7 @@ for wmo in wmo_list:
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if os.path.exists(outfile):
+        if superfloat_generator.exist_valid(outfile):
             if not superfloat_generator.exist_variable('DOXY', outfile):
                 Pres, Value, Qc = read_doxy(pCor)
                 if Pres is not None: dump_oxygen_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')

@@ -12,7 +12,7 @@ from profilerRSTbef_2015 import *
 from mhelpers.pgmean import PLGaussianMean
 import matplotlib
 from basins import OGS
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.utils import addsep
 import numpy as np
 from instruments.var_conversions import LOVFLOATVARS

@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import pickle
-import pylab as plt
+import matplotlib.pyplot as plt
 import scipy.io.netcdf as NC
 from datetime import datetime, timedelta
 #from Sat import SatManager as Sat

@@ -41,7 +41,7 @@ StringMonth=['A','M','J','J14','A','S','O','N','D','J15','F','M','A','M','J']
 xlabelSI=   [ 0 , 0 , 0 , 0   ,0  , 0 , 0 , 0 , 0 , 0   , 0 , 0 , 1 , 1 ,1]
 ylabelSI=   [ 0 , 0 , 0 , 1   ,0  , 0 , 1 , 0 , 0 , 1   , 0 , 0 , 1 , 0 ,0]
 
-import pylab as pl
+import matplotlib.pyplot as pl
 
 for isub, sub in enumerate(SUBlist):
   fig1=pl.figure(num=None,dpi=300,facecolor='w',edgecolor='k')

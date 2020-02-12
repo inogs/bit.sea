@@ -9,7 +9,7 @@ from layer_integral.mapbuilder import MapBuilder
 from layer_integral.mapplot import *
 from commons.dataextractor import DataExtractor
 from commons.time_averagers import TimeAverager3D
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons import season
 
 

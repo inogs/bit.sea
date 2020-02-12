@@ -20,6 +20,7 @@ def argument():
 
 args = argument()
 
+from commons.utils import addsep
 INPUTDIR=addsep(args.inputdir)
 filemodel=INPUTDIR + "monthly_pCO2.txt"
 import numpy as np

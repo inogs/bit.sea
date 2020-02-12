@@ -15,6 +15,9 @@ def argument():
     The following step will be in 
     BASIN_Float_vs_Model_Stat_Timeseries_monthly.py
     and the results will be displayed in FIG.IV.6 and TABLE IV.3
+    In the outputdir, two new directories will be created, in order to store the output of check.
+    - nitrate_check/
+    - chla_check/
 
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
@@ -47,13 +50,17 @@ from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
 import commons.timerequestors as requestors
+from instruments import check
 
 OUTDIR = addsep(args.outdir)
+Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
+Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 TheMask=Mask(args.maskfile, loadtmask=False)
 layer=Layer(0,200)
 
 VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
+extrap = [True,False,True]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
@@ -73,6 +80,11 @@ A_model = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     adj=Adj[ivar]
+
+    if var_mod == "N3n": Check_obj = Check_obj_nitrate
+    if var_mod == "P_l": Check_obj = Check_obj_chl
+    if var_mod == "O2o": Check_obj = None
+
     for itime, Req in enumerate(MonthlyRequestors):
 	if Req.time_interval.end_time > TL.timeinterval.end_time : 
 	    Req.time_interval.end_time = TL.timeinterval.end_time
@@ -93,12 +105,19 @@ for ivar, var_mod in enumerate(VARLIST):
                 Pres,Profile,Qc=p.read(var,read_adjusted=adj)
 
 		if len(Pres) < 10 : continue
-		GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
+#		GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
+
+
+                if GM.number() == 0 :
+                    print p.ID() + " excluded"
+                    continue
+
 		gm200 = GM.subset(layer)
 		nLevels = gm200.number()
 		izmax = min(nLevels,iz200)
 
-		Flo[ip,0] = np.sum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
+		Flo[ip,0] = np.nansum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
 		Flo[ip,1] = gm200.correlation()
 		Flo[ip,5] = gm200.Ref[0] # Surf Value
 

@@ -6,7 +6,7 @@ import numpy as np
 import numpy.ma as ma
 import instruments
 import matplotlib.dates as mdates
-import pylab as pl
+import matplotlib.pyplot as pl
 import scipy.io.netcdf as NC
 
 from profiler_2015 import *

@@ -61,6 +61,7 @@ from basins import V2 as OGS
 from commons.layer import Layer
 from commons.utils import addsep
 import pickle
+from profiler import DATESTART, DATE__END
 
 def weighted_mean(Conc, Weight):
 
@@ -77,11 +78,10 @@ REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
 
-#Timestart="20141205"
-#Time__end="20500901"
-#Time__end="20180102"
-Timestart="20170103"
-Time__end="20180101"
+#Timestart="20170101"
+#Time__end="20180101"
+Timestart=DATESTART
+Time__end=DATE__END
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 print TI
 dateformat ="%Y%m%d"

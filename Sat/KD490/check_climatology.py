@@ -28,7 +28,7 @@ for julian in range(365):
 
 import sys
 sys.exit()
-import pylab as pl
+import matplotlib.pyplot as pl
 julian=0
 clim16=CLIM16[julian,:,start_i:]
 fig,ax = pl.subplots()

@@ -4,7 +4,7 @@ import sys
 import os
 import numpy as np
 import netCDF4
-import pylab as pl
+import matplotlib.pyplot as pl
 
 #Layer Object
 from layer import Layer

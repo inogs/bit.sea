@@ -2,7 +2,7 @@ import numpy as np
 from basins import V2 as OGS
 from commons.mask import Mask
 from commons.submask import SubMask
-import pylab as pl
+import matplotlib.pyplot as pl
 from layer_integral.mapplot import generic_mapplot_medeaf
 import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties

@@ -30,7 +30,7 @@ args = argument()
 from commons.time_interval import TimeInterval
 import matplotlib
 matplotlib.use('Agg')
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS

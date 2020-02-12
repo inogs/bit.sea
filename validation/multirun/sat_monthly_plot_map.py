@@ -35,7 +35,7 @@ from commons.layer import Layer
 from layer_integral.mapplot import mapplot
 import commons.timerequestors as requestors
 import Sat.SatManager as Sat
-import pylab as pl
+import matplotlib.pyplot as pl
 from layer_integral import coastline
 
 clon,clat = coastline.get()

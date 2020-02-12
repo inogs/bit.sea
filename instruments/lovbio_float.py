@@ -2,7 +2,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 import os
-import pylab as pl
+import matplotlib.pyplot as pl
 import seawater as sw
 from commons.utils import addsep
 
@@ -255,7 +255,7 @@ class BioFloat(Instrument):
             # New adjustement following Mignot et al. (2019)
             prof = prof * 1.04 + 0.46 
             ii = (prof < 0) & (pres < 50)
-            prof[ii] = 0.01
+            prof[ii] = 0.05
             ii = prof > 0
             pres = pres[ii]
             prof = prof[ii]

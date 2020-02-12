@@ -38,7 +38,7 @@ from basins import OGS
 import matplotlib.dates as mdates
 from mhelpers.pgmean import PLGaussianMean
 import numpy.ma as ma
-import pylab as pl
+import matplotlib.pyplot as pl
 from profiler_2015 import *
 from profiler_onlymodel import dep1,dep2
 from timeseries.plot import *

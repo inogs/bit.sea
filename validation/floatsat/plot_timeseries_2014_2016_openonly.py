@@ -4,7 +4,7 @@
 # Figure IV.2
 
 import pickle
-import pylab as pl
+import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 import sys
 import numpy as np
@@ -18,7 +18,7 @@ from commons.layer import Layer
 from timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from basins import V2
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.utils import getcolor, addsep
 #
 def argument():

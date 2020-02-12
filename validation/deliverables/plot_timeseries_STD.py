@@ -4,7 +4,7 @@
 # Figure IV.2
 
 import pickle
-import pylab as pl
+import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import sys

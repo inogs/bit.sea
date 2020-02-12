@@ -3,7 +3,7 @@ from commons.submask import SubMask
 from basins import V2 as OGS
 import pickle
 import datetime
-import pylab as plt
+import matplotlib.pyplot as plt
 
 
 RUNlist = ['RUN_TEST','TRANSITION']

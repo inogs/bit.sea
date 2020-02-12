@@ -4,7 +4,7 @@ from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 import scipy.io.netcdf as NC
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 from commons.mask import Mask
 from postproc import maskload   #read_Positions_for_Pointprofiles
 from instruments import matchup_manager #	readModelProfile

@@ -32,7 +32,7 @@ import matplotlib
 matplotlib.use('Agg')
 from biofloats_ms_timeseries import timelistcontainer
 from commons.time_interval import TimeInterval
-import pylab as pl
+import matplotlib.pyplot as pl
 import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS

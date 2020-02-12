@@ -81,7 +81,6 @@ def file_header_content(filename,VARLIST, avail_params=None):
         ncIN = NC.netcdf_file(filename,'r')
     except:
         print "Not valid NetDCF file: " + filename
-        ncIN.close()
         return
 
     lon=ncIN.variables['LONGITUDE'].data[0]

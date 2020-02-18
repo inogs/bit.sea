@@ -46,6 +46,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins import V2 as OGS
 import datetime
 from instruments import check
+from float_OXY_saturation import *
 
 
 
@@ -72,7 +73,7 @@ Adj = [True,True,False]
 extrap = [True,False,True]
 nVar = len(VARLIST)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -83,6 +84,7 @@ iz300 = TheMask.getDepthIndex(350)+1 # Max Index for depth 300m for Nitracl def
 iz10 = TheMask.getDepthIndex(10.8)+1
 
 for ivar, var_mod in enumerate(VARLIST):
+
     var = FLOATVARS[var_mod]
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
@@ -153,6 +155,10 @@ for ivar, var_mod in enumerate(VARLIST):
 
                 A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
                 A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
+
+            if (var_mod == "O2o"):
+                A_float[itime,8] = oxy_sat(p)
+
 
             A_float[itime,1] = gm200.correlation() # Correlation
             A_model[itime,1] = gm200.correlation() # Correlation

@@ -16,11 +16,10 @@ def general_quenching(profile_obj, Pres, Profile, Qc):
     '''
     PresT, Temp, _ = profile_obj.read('TEMP', read_adjusted=False)
     mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
-    print mld
     if mld < 80:
         if Pres[0] <= mld+5:
             ii = Pres <= mld + 5
-            descending_ordered = np.sort(ValueC[ii])[-1::-1]
+            descending_ordered = np.sort(Profile[ii])[-1::-1]
             n_chosen = min(3, len(descending_ordered))
             if n_chosen==0: n_chosen = 1
             quench_value = descending_ordered[:n_chosen].mean()

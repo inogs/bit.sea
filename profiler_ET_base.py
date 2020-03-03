@@ -26,7 +26,7 @@ TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="Ed380f")
 import basins.OGS as OGS
 ALL_PROFILES = optbio_float_2019.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)
 
-vardescriptorfile="/galileo/home/userexternal/eterzic0/BIOPTIMOD/DCM_VAL/INPUT/s<DIR>/<SUBDIR>/bit.sea/Vardescriptor_bioptimod.xml"
+vardescriptorfile="/galileo/home/userexternal/eterzic0/BIOPTIMOD/DCM_VAL/INPUT/<DIR>/<SUBDIR>/bit.sea/Vardescriptor_bioptimod.xml"
 #This previous part will be imported in matchups setup.
 
 # The following part, the profiler, is executed once and for all.

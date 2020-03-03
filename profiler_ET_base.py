@@ -21,7 +21,7 @@ DATESTART = '20120101-00:00:00'
 DATE__END = '20180101-00:00:00'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d-%H:%M:%S')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="Ed380f")
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="P_l")
 
 import basins.OGS as OGS
 ALL_PROFILES = optbio_float_2019.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)

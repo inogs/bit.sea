@@ -15,7 +15,7 @@ from commons.Timelist import TimeList
 INPUTDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/<DIR>/<SUBDIR>/INPUT/"#"/gpfs/scratch/userexternal/plazzari/REA_16_T0/TEST_01/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/"
 
 # output directory, where aveScan.py will be run.
-BASEDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/<DIR>/<SUBDIR>/PROFILATORE/"
+BASEDIR="/gpfs/scratch/userexternal/eterzic0/BIOPTIMOD/<DIR>/<SUBDIR>/PROFILATORE_DCM/"
 
 DATESTART = '20120101-00:00:00'
 DATE__END = '20180101-00:00:00'

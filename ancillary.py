@@ -54,21 +54,24 @@ def calc_DCM(varname, requestor, basin, TI, M, mydepth, var_arg):
 	    MODEL_CHL_DCM.append(CHL_DCM_model)
 	    FLOAT_CHL_DCM.append(CHL_DCM_float)
 
-	return np.array(FLOAT_DCM), np.array(MODEL_DCM), np.array(FLOAT_CHL_DCM), np.array(MODEL_CHL_DCM)
+	return np.array(FLOAT_DCM), np.array(MODEL_DCM), np.array(FLOAT_CHL_DCM), np.array(MODEL_CHL_DCM) 
 
 
-def calc_statistics(FLOAT, MODEL):
+def calc_statistics(MODEL, FLOAT):
+    ''' Computes all relevant statistics in one go '''
+    count      = number(MODEL)
+    Model_mean = np.nanmean(MODEL)
+    Ref_mean   = np.nanmean(FLOAT)
+    corr_coeff = correlation(MODEL, FLOAT ,output_matrix=False)
+    bias_val   = bias(MODEL,FLOAT)
+    sigma      = RMSE(MODEL,FLOAT)
+    # Compute the linear regression masking the NaNs
+    mask = ~np.isnan(MODEL) & ~np.isnan(FLOAT)
+    b, a, r_value, p_value, _ = stats.linregress(FLOAT[mask], MODEL[mask]) 
+    #a          = intercept
+    #b          = slope
+    return count, sigma, bias_val, corr_coeff, r_value, p_value, Ref_mean, Model_mean
 
-	count      = number(MODEL)
-	corr_coeff = correlation(MODEL, FLOAT,output_matrix=False)
-	bias_val   = bias(MODEL, FLOAT)
-	slope, intercept, r_value, p_value, std_err = stats.linregress(FLOAT,MODEL)
-	sigma      = RMSE(MODEL, FLOAT)
-	a          = intercept
-	b          = slope
-	float_mean = FLOAT.mean()
-	model_mean = MODEL.mean()
-	return count, sigma, bias_val, corr_coeff, r_value, p_value, float_mean, model_mean  
 
 
 def plot_basin(iseas, axs, FLOAT, MODEL, color, basin, titlestr, xpos, ypos, sigma, bias_val, corr_coeff,b,a,count):

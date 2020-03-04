@@ -28,7 +28,7 @@ def correlation(Model,Ref,output_matrix=False):
     cov = covariance(Model,Ref,output_matrix)
     Model_std = np.nanstd(Model)
     Ref_std   = np.nanstd(Ref)
-    return cov/(Model_std*Ref_d)
+    return cov/(Model_std*Ref_std)
 
 def bias(Model, Ref):
     return np.nanmean(Model - Ref)

@@ -10,14 +10,14 @@ def find_DCM(CHL, z):
 #	# Filter low values
 	CHL_filt = CHL[CHL>0.1]
 	z_filt   = z[CHL>0.1]
-	if (len(CHL_filt) == 0): return np.nan
+	if (len(CHL_filt) == 0): return np.nan, np.nan
 	# Find maximum
 	DCM_ind = np.argmax(CHL_filt)
-	DCM_z   = z_filt[DCM_ind]
+	DCM_z   = z_filt[  DCM_ind]
 	DCM_val = CHL_filt[DCM_ind]
 	# Match conditions
-	if DCM_z < 30. or DCM_z > 200.: return np.nan
-	#if DCM_val/CHL[0]< 1.5:      return np.nan
+	if DCM_z < 30. or DCM_z > 200.: return np.nan, np.nan
+	#if DCM_val/CHL[0]< 1.5:      return np.nan, np.nan
 	return DCM_z, DCM_val
 
 def calc_DCM(varname, requestor, basin, TI, M, mydepth, var_arg):
@@ -58,6 +58,7 @@ def calc_DCM(varname, requestor, basin, TI, M, mydepth, var_arg):
 
 
 def calc_statistics(FLOAT, MODEL):
+
 	count      = number(MODEL)
 	corr_coeff = correlation(MODEL, FLOAT,output_matrix=False)
 	bias_val   = bias(MODEL, FLOAT)

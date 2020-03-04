@@ -7,32 +7,36 @@ def number(Model):
     return len(Model)
 
 def variances(Model, Ref):
-    return Ref.std()**2, Model.std()**2
+    # Check numpy variance function so as not
+    # to do the **2 operation
+    return np.nanvar(Ref),np.nanvar(Model)
+    #return Ref.std()**2, Model.std()**2
 
 def medians(Model, Ref):
-    return np.median(Ref), np.median(Model)
+    return np.nanmedian(Ref), np.nanmedian(Model)
 
-def covariance(Model, Ref):
-    array = (Model - Model.mean())*(Ref - Ref.mean())
-    covariance = array.mean()
-    return covariance
+def covariance(Model,Ref,output_matrix=False):
+    # Means of Ref and Model taking into account that
+    # there might be NaN's inside
+    Model_mean = np.nanmean(Model)
+    Ref_mean   = np.nanmean(Ref)
+    cov_array  = (Model - Model_mean)*(Ref - Ref_mean)
+    return np.nanmean(cov_array) if not output_matrix else cov_array
 
-def covariance(Ref,Model,output_matrix=False):
-    array = (Model - Model.mean())*(Ref - Ref.mean())
-    return array.mean() if not output_matrix else array
-
-def correlation(Model, Ref,output_matrix=False):
-    array = (Model - Model.mean())*(Ref - Ref.mean())
-    cov = array.mean() if not output_matrix else array
-    return cov/(Model.std()*Ref.std())
+def correlation(Model,Ref,output_matrix=False):
+    # Use the covariance function to obtain the covariance
+    cov = covariance(Model,Ref,output_matrix)
+    Model_std = np.nanstd(Model)
+    Ref_std   = np.nanstd(Ref)
+    return cov/(Model_std*Ref_d)
 
 def bias(Model, Ref):
-    return (Model - Ref).mean()
+    return np.nanmean(Model - Ref)
 
 def MSE(Model, Ref):
     '''Mean Square Error'''
-    return ((Model - Ref)**2).mean()
+    return np.nanmean((Model - Ref)*(Model - Ref))
 
 def RMSE(Model, Ref):
     ''' Root mean Square Error'''
-    return np.sqrt(((Model - Ref)**2).mean())
+    return np.sqrt(MSE(Model,Ref))

@@ -6,35 +6,32 @@ from scipy.optimize import curve_fit
 from statistics import *
 
 
-def euphotic(Pres, Ed):
-    EUPH_model         = [x for x in range(len(Pres)) if Ed.Model[x]/Ed.Model[0] > 0.37]
-    EUPH_float         = [x for x in range(len(Pres)) if Ed.Ref[x]/Ed.Ref[0] > 0.37]
-    ind_model          = EUPH_model[-1]
-    ind_float          = EUPH_float[-1]
-    ind  = ind_float  if ind_float < ind_model else ind_model
-    EUPH = EUPH_float if ind_float < ind_model else EUPH_model
-    zeu                = Pres[ind]
-    Pres_Eu            = Pres[EUPH]
-    Ed_Eu_MODEL        = Ed.Model[EUPH]
-    Ed_Eu_FLOAT        = Ed.Ref[EUPH]
-    return zeu, Pres_Eu, Ed_Eu_MODEL, Ed_Eu_FLOAT
+def find_DCM(CHL, z):
+#	# Filter low values
+	CHL_filt = CHL[CHL>0.1]
+	z_filt   = z[CHL>0.1]
+	if (len(CHL_filt) == 0): return np.nan
+	# Find maximum
+	DCM_ind = np.argmax(CHL_filt)
+	DCM_z   = z_filt[DCM_ind]
+	DCM_val = CHL_filt[DCM_ind]
+	# Match conditions
+	if DCM_z < 30. or DCM_z > 200.: return np.nan
+	#if DCM_val/CHL[0]< 1.5:      return np.nan
+	return DCM_z, DCM_val
 
-
-def calc_KD(varname, requestor, basin, TI, M, mydepth, var_arg):
+def calc_DCM(varname, requestor, basin, TI, M, mydepth, var_arg):
 
 	Profilelist=optbio_float_2019.FloatSelector(varname,requestor, basin) # This is where you define the time requestor and the subbasin
 
-	MODEL = []
-	FLOAT = []
-
-	Kd_Model = 0.1
-	Kd_Float = 0.1
+	MODEL_DCM = []    ;   MODEL_CHL_DCM = []
+	FLOAT_DCM = []    ;   FLOAT_CHL_DCM = []
 
 	for p in Profilelist:
 	    profile_ID = p.ID()
 	    
 	    #phase 1. Read BGC-ARGO profiles
-	    Pres, Ed_float,  Qc = p.read(varname)  
+	    Pres, Chl_float,  Qc = p.read(varname)  
 	    Lon = p.lon
 	    Lat = p.lat
 	    timestr = p.time.strftime("%Y%m%d-%H:%M:%S")
@@ -44,31 +41,21 @@ def calc_KD(varname, requestor, basin, TI, M, mydepth, var_arg):
 	        continue
 	    
 	    #phase 2. Read model data - in theory you can use this also for float data
-	    Ed_matchup = M.getMatchups([p], mydepth, var_arg)
+	    Chl_matchup = M.getMatchups([p], mydepth, var_arg)
 
-	    #phase 3. Euphotic depth range calculation
-	    zmax, PresEu, Ed_MODEL, Ed_REF = euphotic(Pres, Ed_matchup)
+	    #phase 3. Calculate DCM depth and val
 
-	    
-	    #phase 4. Calculate Kd
-	    if len(PresEu) < 5: continue
-	    if PresEu[1] - PresEu[0] > 9. : continue
-	    if PresEu[4] > 15. : continue
+	    DCM_float, CHL_DCM_float = find_DCM(Chl_float, Pres) # Or Chl_matchup.Ref
+	    DCM_model, CHL_DCM_model = find_DCM(Chl_matchup.Model, Pres)
 
-	    func = lambda z, Kd: np.exp(-Kd*z)
+	    MODEL_DCM.append(DCM_model)
+	    FLOAT_DCM.append(DCM_float)
 
-	    poptM, pcovM = curve_fit(func, PresEu-PresEu[0], Ed_MODEL/Ed_MODEL[0], p0=Kd_Model)#,bounds=(0.001,0.005))
-	    poptF, pcovF = curve_fit(func, PresEu-PresEu[0], Ed_REF/Ed_REF[0],     p0=Kd_Float)#,bounds=(0.001,0.005))
+	    MODEL_CHL_DCM.append(CHL_DCM_model)
+	    FLOAT_CHL_DCM.append(CHL_DCM_float)
 
-	    Kd_Model = poptM[0]   ; Kd_Float = poptF[0]
+	return np.array(FLOAT_DCM), np.array(MODEL_DCM), np.array(FLOAT_CHL_DCM), np.array(MODEL_CHL_DCM)
 
-	    MODEL.append(Kd_Model)
-	    FLOAT.append(Kd_Float)
-
-	    if Kd_Model < 0.01:
-        	continue
-
-	return np.array(FLOAT), np.array(MODEL)
 
 def calc_statistics(FLOAT, MODEL):
 	count      = number(MODEL)

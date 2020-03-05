@@ -38,7 +38,7 @@ def argument():
     parser.add_argument(   '--timeaverage', '-t',
                                 type = str,
                                 required = True,
-                                choices = ['monthly','weekly_tuesday','weekly_friday'],
+                                choices = ['monthly','weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
     return parser.parse_args()
@@ -80,6 +80,8 @@ suffix = os.path.basename(TLCheck.filelist[0])[8:]
 if args.timeaverage == 'monthly'        : TIME_reqs=TLCheck.getMonthlist()
 if args.timeaverage == 'weekly_tuesday' : TIME_reqs=TLCheck.getWeeklyList(2)
 if args.timeaverage == 'weekly_friday'  : TIME_reqs=TLCheck.getWeeklyList(5)
+if args.timeaverage == 'weekly_monday'  : TIME_reqs=TLCheck.getWeeklyList(1)
+if args.timeaverage == 'weekly_thursday': TIME_reqs=TLCheck.getWeeklyList(4)
 
 jpi = maskSat.jpi
 jpj = maskSat.jpj

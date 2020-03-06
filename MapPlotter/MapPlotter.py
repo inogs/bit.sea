@@ -113,7 +113,9 @@ class MapPlotter():
 			'ylim'        : [-90,90],
 			'max_div'     : 4,
 			'top_label'   : False,
+			'bottom_label': True,
 			'right_label' : False,
+			'left_label'  : True,
 			'grdstyle'    : {},
 			'grdargs'     : {'draw_labels':True,'linewidth':0},
 			'features'    : ['coastline','continents','rivers','image'],
@@ -128,6 +130,7 @@ class MapPlotter():
 			# Colormap and colorbar
 			'cmap'        : 'coolwarm',
 			'ncol'        : 256, 
+			'draw_cbar'   : True,
 			'orientation' : 'horizontal',
 			'bounds'      : [-1e30, 1e30], # [min,max]
 			'numticks'    : 10,
@@ -204,7 +207,7 @@ class MapPlotter():
 		'''
 		return plt.axes(projection=self._projection)
 
-	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],top=False,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
+	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],top=False,bottom=True,left=True,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
 		'''
 		Create gridlines for the current axes.
 
@@ -227,14 +230,16 @@ class MapPlotter():
 			self._ax.set_ylim(ylim)
 			# Grid lines
 			gl = self._ax.gridlines(crs=self._projection,**gridlines_kwargs)
-			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],max_div))
-			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],max_div))
-			gl.xformatter    = LONGITUDE_FORMATTER
-			gl.yformatter    = LATITUDE_FORMATTER
-			gl.xlabels_top   = top
-			gl.xlabel_style  = style
-			gl.ylabels_right = right
-			gl.ylabel_style  = style
+			gl.xlocator       = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],max_div))
+			gl.ylocator       = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],max_div))
+			gl.xformatter     = LONGITUDE_FORMATTER
+			gl.yformatter     = LATITUDE_FORMATTER
+			gl.xlabels_top    = top
+			gl.xlabels_bottom = bottom
+			gl.xlabel_style   = style
+			gl.ylabels_left   = left
+			gl.ylabels_right  = right
+			gl.ylabel_style   = style
 		return gl
 
 	def setTitle(self,title,**kwargs):
@@ -398,7 +403,8 @@ class MapPlotter():
 			self._ax  = params['ax']
 
 		# Axes grid lines
-		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],top=params['top_label'],right=params['right_label'],
+		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],top=params['top_label'],
+			bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
 			max_div=params['max_div'],style=params['grdstyle'],gridlines_kwargs=params['grdargs'])
 
 		# Title and axis labels
@@ -469,13 +475,14 @@ class MapPlotter():
 					 		 )
 
 		# Colorbar
-		self.setColorbar(orientation=params['orientation'],
-						 extend=extend,
-						 numticks=params['numticks'],
-						 tick_format=params['tick_format'],
-						 tick_font=params['tick_font'],
-						 label=params['label']
-						)
+		if params['draw_cbar']:
+			self.setColorbar(orientation=params['orientation'],
+							 extend=extend,
+							 numticks=params['numticks'],
+							 tick_format=params['tick_format'],
+							 tick_font=params['tick_font'],
+							 label=params['label']
+							)
 
 		return self._fig
 

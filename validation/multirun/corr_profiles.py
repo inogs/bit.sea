@@ -24,6 +24,12 @@ def argument():
                                 required = True,
                                 help = "")
 
+    parser.add_argument(   '--depth', '-d',
+                                type = float,
+                                required = False,
+                                default = 200,
+                                help  = 'The level chosen to filter data' )
+
     return parser.parse_args()
 
 args = argument()
@@ -36,11 +42,11 @@ from commons.mask import Mask
 from commons.utils import addsep
 from metrics import *
 
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
+from instruments import superfloat as bio_float
+from instruments.var_conversions import FLOATVARS
 from instruments.matchup_manager import Matchup_Manager
 
-from profiler_corr import *
+from profiler import *
 
 from layer_integral import coastline
 from basins import OGS
@@ -59,9 +65,10 @@ TheMask = Mask(args.maskfile)
 TheMask_phys = Mask(args.maskfilephys)
 
 OUTDIR = addsep(args.outdir)
+depth_lim = args.depth
 
-run = 'HC_2017_assw'
-run = "HC_2017_simdd"
+run = 'PHY_A'
+#run = "PHY_S"
 
 
 font_s =  15 
@@ -93,6 +100,7 @@ def get_level300(TheMask):
     diff1 = 300 - TheMask.zlevels[i1]
     data = [(i0,diff0),(i1,diff1)]
     ix,datamin = min(data, key=lambda t: t[1])
+    return ix
 
 def get_level200(TheMask):
 
@@ -103,17 +111,28 @@ def get_level200(TheMask):
     diff1 = 200 - TheMask.zlevels[i1]
     data = [(i0,diff0),(i1,diff1)]
     ix,datamin = min(data, key=lambda t: t[1])
+    return ix
 
+def get_level_depth(TheMask,dd=200):
+
+    i0 = TheMask.getDepthIndex(dd)
+    i1 = i0 + 1
+
+    diff0 = dd - TheMask.zlevels[i0]
+    diff1 = dd - TheMask.zlevels[i1]
+    data = [(i0,diff0),(i1,diff1)]
+    ix,datamin = min(data, key=lambda t: t[1])
     return ix
 
 
 # max_depth = get_level300(TheMask)
 # max_depthp = get_level300(TheMask_phys)
-max_depth = get_level200(TheMask)
-max_depthp = get_level200(TheMask_phys)
+max_depth = get_level_depth(TheMask,dd=depth_lim)
+max_depthp = get_level_depth(TheMask_phys,dd=depth_lim)
 
 VARLIST_PHYS = ['votemper','vosaline']
 VARLIST_BGC = ['N3n','Chla']
+VARLIST_BGC = ['N3n','P_l']
 Adj = {
 	'P_l':  True,
 	'Chla': True,
@@ -135,26 +154,19 @@ wmo_list=bio_float.get_wmo_list(Profilelist_1)
 
 MM = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-
 print wmo_list
 
-# wmo_list_reduced = list()
-# for wmo in wmo_list:
-#     if wmo in ['6901653']:
-#         wmo_list_reduced.append(wmo)
-
-
 for j,wmo in enumerate(wmo_list):
-# for j,wmo in enumerate(wmo_list_reduced):
-# for j,wmo in enumerate([wmo_list[0]]):
     print(wmo)
 
     list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
     nP = len(list_float_track)
     Lon = np.zeros((nP,), np.float64)
     Lat = np.zeros((nP,), np.float64)
-    # NewPres_5m=np.linspace(0,300,61)
-    NewPres_5m=np.linspace(0,200,41)
+    nlev= depth_lim/5 + 1
+    NewPres_5m=np.linspace(0,depth_lim,nlev)
+#    NewPres_5m=np.linspace(0,300,61)
+#    NewPres_5m=np.linspace(0,200,41)
     nPnewpres = len(NewPres_5m)
 
     timelabel_list = list()
@@ -178,21 +190,25 @@ for j,wmo in enumerate(wmo_list):
         Lon[ip] = p.lon
         Lat[ip] = p.lat
 
-        timelabel_list.append(p.time)
-        for var_mod in ['N3n','Chla']:
+#        timelabel_list.append(p.time)
+#        for var_mod in ['N3n','Chla']:
+#        for var_mod in ['N3n','P_l']:
+        for var_mod in ['N3n']:
+            if p.available_params.find(FLOATVARS[var_mod])<0 : continue
+            timelabel_list.append(p.time)
             NewProf_5m = np.zeros(len(NewPres_5m))
             NewProf_5m[:] = np.nan
             # print p.time
             # print var_mod
-            var = LOVFLOATVARS[var_mod]
+            var = FLOATVARS[var_mod]
             adj=Adj[var_mod]
 
             # FLOAT
             Pres,Prof,Qc = p.read(var,read_adjusted=adj)
-            # ii = Pres<=300
-            ii = Pres<=200
+            ii = Pres<=300
+            # ii = Pres<=200
             # Deve avere almeno 5 records:
-            if len(Prof[ii])>5 :
+            if len(Prof[ii])>3 :
                 NewProf_5m = np.interp(NewPres_5m,Pres[ii],Prof[ii])
 
             # MODEL
@@ -209,7 +225,7 @@ for j,wmo in enumerate(wmo_list):
             if var_mod == 'N3n':
                 for ivarp, varp_mod in enumerate(VARLIST_PHYS):
         #     if (ivar==0):
-                    varp = LOVFLOATVARS[varp_mod]
+                    varp = FLOATVARS[varp_mod]
                     adj=Adj[varp_mod]
 
                     Presp,Profp,Qcp = p.read(varp,read_adjusted=adj)
@@ -221,7 +237,7 @@ for j,wmo in enumerate(wmo_list):
 
         # PLOT FOR THE MODEL
                     TMP = MM.modeltime(p)
-                    FILENAME = BASEDIR_PHYS + TMP.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
+                    FILENAME = BASEDIR + TMP.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
                     MP = readModelProfile(FILENAME,varp_mod,p.ID())
                     MP_newDepth[varp_mod]=np.interp(NewPres_5m,TheMask_phys.zlevels[:max_depthp+1],MP[:max_depthp+1])
 
@@ -261,12 +277,13 @@ for j,wmo in enumerate(wmo_list):
     LIST[2] = covnmod
     LIST[3] = RMSD
 
-    filename = OUTDIR + 'corrcov' + run + '_' + p.name() + '.pkl'
-    fid = open(filename,'wb')
-    pickle.dump(LIST,fid)
-    fid.close()
+    if p.available_params.find(FLOATVARS[var_mod])>0:
+      filename = OUTDIR + 'corrcov' + run + '_' + p.name() + '.pkl'
+      fid = open(filename,'wb')
+      pickle.dump(LIST,fid)
+      fid.close()
 
-    if dofloat==True:
+      if dofloat==True:
         LISTF = [ii for ii in range(3)]
         LISTF[0] = timelabel_list
         LISTF[1] = corrfloat

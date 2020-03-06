@@ -36,8 +36,6 @@ def argument():
 args = argument()
 
 
-import matplotlib
-matplotlib.use('Agg')
 import os,sys
 from commons.mask import Mask
 from commons.Timelist import TimeList, TimeInterval
@@ -84,7 +82,7 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat']
 nStat = len(METRICS)
 max_depth = get_level_depth(TheMask,300)
 
@@ -193,7 +191,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
         ax5.plot(times,  surf_ref,'.b',label='FLOAT') #'REF SURF')
         ax5.plot(times,  surf_model,'b',label='MODEL') #'MOD SURF')
-        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
+#        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
         if ( var_mod == "P_l" ):
             ax6.set_ylabel('INTG 0-200 \n $[mg{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylabel('SURF\n $[mg{\  } m^{-3}]$',fontsize=15)
@@ -222,10 +220,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
         if ( var_mod == "O2o" ):
             ax6.set_ylabel('INTG 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylabel('SURF \n $[mmol{\  } m^{-3}]$',fontsize=15)
+            model_Osat, ref_Osat = A.plotdata(var_mod,'O2o_sat', only_good=False)
+
+            ax5.plot(times, ref_Osat, '.r',label='O2sat (FLOAT)') #'REF OXY at SATURATION'
 #            ax8.plot(times,  np.ones_like(times))
 #            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
 
-                        
+        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
+            
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,1.8)
@@ -272,8 +274,11 @@ for ivar_m, var_mod in enumerate(VARLIST):
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
         ticklabs = cbar.ax.get_yticklabels()
         cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
-
-#        xlabels = ax8.get_xticklabels()
+        
+        if var_mod == 'O2o': 
+            xlabels=ax7.get_xticklabels()
+        else:
+            xlabels = ax8.get_xticklabels()
         pl.setp(xlabels, rotation=30, fontsize=15)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
@@ -284,5 +289,6 @@ for ivar_m, var_mod in enumerate(VARLIST):
 #        ax8.xaxis.grid(True)
 
         fig.savefig(OUTFILE)
+#        fig.show()
         pl.close(fig)
 

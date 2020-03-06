@@ -127,7 +127,7 @@ for wmo in wmo_list:
             outfile = get_info(pLov,OUTDIR)
         else:
             outfile = get_info(pCor,OUTDIR)
-        if os.path.exists(outfile): continue
+        if superfloat_generator.exist_valid(outfile): continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
         if is_only_LOV:
@@ -165,7 +165,7 @@ for wmo in wmo_list:
     Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
         outfile = get_info(pCor, OUTDIR)
-        if os.path.exists(outfile): continue
+        if superfloat_generator.exist_valid(outfile): continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
         Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)

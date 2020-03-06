@@ -128,7 +128,7 @@ for wmo in wmo_list:
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if os.path.exists(outfile):
+        if superfloat_generator.exist_valid(outfile):
             if not superfloat_generator.exist_variable('PH_IN_SITU_TOTAL', outfile):
                 Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                 if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')

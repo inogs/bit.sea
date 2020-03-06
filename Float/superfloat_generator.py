@@ -1,6 +1,7 @@
 from commons import calculated_depths
 import numpy as np
 import scipy.io.netcdf as NC
+import os
 
 
 def general_quenching(profile_obj, Pres, Profile, Qc):
@@ -15,11 +16,10 @@ def general_quenching(profile_obj, Pres, Profile, Qc):
     '''
     PresT, Temp, _ = profile_obj.read('TEMP', read_adjusted=False)
     mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
-    print mld
     if mld < 80:
         if Pres[0] <= mld+5:
             ii = Pres <= mld + 5
-            descending_ordered = np.sort(ValueC[ii])[-1::-1]
+            descending_ordered = np.sort(Profile[ii])[-1::-1]
             n_chosen = min(3, len(descending_ordered))
             if n_chosen==0: n_chosen = 1
             quench_value = descending_ordered[:n_chosen].mean()
@@ -164,6 +164,21 @@ def treating_coriolis(pCor):
     else:
         print "R -- not dumped ", pCor._my_float.filename
         return None, None, None
+
+def exist_valid(filename):
+    '''Returns true if file exists and is a valid NetCDF file'''
+    if not os.path.exists(filename):
+        return False
+    good = True
+    try:
+        ncIN = NC.netcdf_file(filename,'r')
+    except:
+        good = False
+    if good:
+        ncIN.close()
+        return True
+    else:
+        return False
 
 def exist_variable(variable, filename):
     ncIN = NC.netcdf_file(filename,'r')

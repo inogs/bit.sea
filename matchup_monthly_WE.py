@@ -58,17 +58,17 @@ for i in range(len(argslist)):
         MODEL_W_std.append(  np.std( MODEL_W)) ; MODEL_E_std.append(  np.std( MODEL_E))
 
 
-    ax[i].scatter(MONTHS-0.25, FLOAT_W_mean, s=15, color='darkblue'    ,     label='float W')
-    ax[i].scatter(MONTHS-0.15, MODEL_W_mean, s=15, color='dodgerblue'  ,     label='model W') 
+    ax[i].scatter(MONTHS-0.20, FLOAT_W_mean, s=15, color='darkblue'    ,     label='float W')
+    ax[i].scatter(MONTHS-0.10, MODEL_W_mean, s=15, color='dodgerblue'  ,     label='model W') 
 
-    ax[i].scatter(MONTHS+0.15, FLOAT_E_mean, s=15, color='purple'     ,     label='float E')
-    ax[i].scatter(MONTHS+0.25, MODEL_E_mean, s=15, color='palevioletred'  ,     label='model E')   
+    ax[i].scatter(MONTHS+0.10, FLOAT_E_mean, s=15, color='purple'     ,     label='float E')
+    ax[i].scatter(MONTHS+0.20, MODEL_E_mean, s=15, color='palevioletred'  ,     label='model E')   
 
-    ax[i].errorbar(MONTHS-0.25, FLOAT_W_mean, yerr=FLOAT_W_std, color='darkblue'   , fmt='o')
-    ax[i].errorbar(MONTHS-0.15, MODEL_W_mean, yerr=MODEL_W_std, color='dodgerblue' , fmt='o')
+    ax[i].errorbar(MONTHS-0.20, FLOAT_W_mean, yerr=FLOAT_W_std, color='darkblue'   , fmt='o')
+    ax[i].errorbar(MONTHS-0.10, MODEL_W_mean, yerr=MODEL_W_std, color='dodgerblue' , fmt='o')
 
-    ax[i].errorbar(MONTHS+0.15, FLOAT_E_mean, yerr=FLOAT_E_std, color='purple'    , fmt='o')
-    ax[i].errorbar(MONTHS+0.25, MODEL_E_mean, yerr=MODEL_E_std, color='palevioletred' , fmt='o')
+    ax[i].errorbar(MONTHS+0.10, FLOAT_E_mean, yerr=FLOAT_E_std, color='purple'    , fmt='o')
+    ax[i].errorbar(MONTHS+0.20, MODEL_E_mean, yerr=MODEL_E_std, color='palevioletred' , fmt='o')
 
     ax[i].set_xticks(MONTHS)
     ax[i].set_xticklabels(months_str)

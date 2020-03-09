@@ -59,12 +59,15 @@ def calc_DCM(varname, requestor, basin, TI, M, mydepth, var_arg):
 
 def calc_statistics(MODEL, FLOAT):
     ''' Computes all relevant statistics in one go '''
-    count      = number(MODEL)
-    Model_mean = np.nanmean(MODEL)
-    Ref_mean   = np.nanmean(FLOAT)
-    corr_coeff = correlation(MODEL, FLOAT ,output_matrix=False)
-    bias_val   = bias(MODEL,FLOAT)
-    sigma      = RMSE(MODEL,FLOAT)
+    count        = number(MODEL)
+    Model_mean   = np.nanmean(MODEL)
+    Ref_mean     = np.nanmean(FLOAT)
+
+    corr_coeff   = correlation(MODEL, FLOAT ,output_matrix=False)
+    bias_val     = bias(MODEL,FLOAT)
+    sigma        = RMSE(MODEL,FLOAT)
+
+
     # Compute the linear regression masking the NaNs
     mask = ~np.isnan(MODEL) & ~np.isnan(FLOAT)
     b, a, r_value, p_value, _ = stats.linregress(FLOAT[mask], MODEL[mask]) 

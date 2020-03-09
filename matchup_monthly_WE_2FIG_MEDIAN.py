@@ -66,7 +66,7 @@ for i in range(len(varlist)):
         FLOAT_W_median.append( np.nanmedian(FLOAT_W)) ; FLOAT_E_median.append( np.nanmedian(FLOAT_E))
 
         # All the percentiles
-        FLOAT_W_5.append(np.nanpercentile( FLOAT_W,  5)) ; FLOAT_E_5.append(np.nanpercentile( FLOAT_E,  5))
+        FLOAT_W_5.append( np.nanpercentile(FLOAT_W,  5)) ; FLOAT_E_5.append( np.nanpercentile(FLOAT_E,  5))
         FLOAT_W_25.append(np.nanpercentile(FLOAT_W, 25)) ; FLOAT_E_25.append(np.nanpercentile(FLOAT_E, 25))
         FLOAT_W_75.append(np.nanpercentile(FLOAT_W, 75)) ; FLOAT_E_75.append(np.nanpercentile(FLOAT_E, 75))
         FLOAT_W_95.append(np.nanpercentile(FLOAT_W, 95)) ; FLOAT_E_95.append(np.nanpercentile(FLOAT_E, 95))
@@ -74,7 +74,7 @@ for i in range(len(varlist)):
         MODEL_W_median.append( np.nanmedian(MODEL_W)) ; MODEL_E_median.append( np.nanmedian(MODEL_E))
 
         # All the percentiles
-        MODEL_W_5.append(np.nanpercentile( MODEL_W,  5)) ; MODEL_E_5.append(np.nanpercentile( MODEL_E,  5))
+        MODEL_W_5.append( np.nanpercentile(MODEL_W,  5)) ; MODEL_E_5.append( np.nanpercentile(MODEL_E,  5))
         MODEL_W_25.append(np.nanpercentile(MODEL_W, 25)) ; MODEL_E_25.append(np.nanpercentile(MODEL_E, 25))
         MODEL_W_75.append(np.nanpercentile(MODEL_W, 75)) ; MODEL_E_75.append(np.nanpercentile(MODEL_E, 75))
         MODEL_W_95.append(np.nanpercentile(MODEL_W, 95)) ; MODEL_E_95.append(np.nanpercentile(MODEL_E, 95))

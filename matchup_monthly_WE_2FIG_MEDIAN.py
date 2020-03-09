@@ -122,7 +122,7 @@ for i in range(len(varlist)):
     countE, sigmaE, bias_valE, corr_coeffE, rE, pE, float_meanE, model_meanE = calc_statistics(np.array(MODEL_E_median), np.array(FLOAT_E_median))
     countW, sigmaW, bias_valW, corr_coeffW, rW, pW, float_meanW, model_meanW = calc_statistics(np.array(MODEL_W_median), np.array(FLOAT_W_median))
     
-    file_dir = 'STATS/'
+    file_dir = 'STATS_MEDIAN/'
     
     file_out_E = file_dir +  arglist[i]  + '_' + SIM_NAME.replace('/', '_') + 'E_monthly.stat'
     file_out_W = file_dir +  arglist[i]  + '_' + SIM_NAME.replace('/', '_') + 'W_monthly.stat'
@@ -131,7 +131,7 @@ for i in range(len(varlist)):
     f_out_W   = writefile(file_out_W, arglist[i], countW, sigmaW, corr_coeffW, bias_valW, rW, pW, float_meanW, model_meanW)
 
     #fig.suptitle(SIM_NAME, fontsize=20)
-    plot_out = 'PLOTS/' + SIM_NAME.replace('/', '_') + '_' + arglist[i] + '_scatter_MONTHLY_WE.png'
+    plot_out = 'PLOTS_MEDIAN/' + SIM_NAME.replace('/', '_') + '_' + arglist[i] + '_scatter_MONTHLY_WE.png'
     fig.savefig(plot_out, format='png',dpi=150)
 
 print('Calculation successfully computed.')

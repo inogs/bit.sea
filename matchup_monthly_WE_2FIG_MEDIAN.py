@@ -117,8 +117,6 @@ for i in range(len(varlist)):
     ax.legend(loc='upper right', ncol=2, fontsize=12)
     ax.set_title(varlist[i], fontsize=16)
 
-    fig.show()
-
     countE, sigmaE, bias_valE, corr_coeffE, rE, pE, float_meanE, model_meanE = calc_statistics(np.array(MODEL_E_median), np.array(FLOAT_E_median))
     countW, sigmaW, bias_valW, corr_coeffW, rW, pW, float_meanW, model_meanW = calc_statistics(np.array(MODEL_W_median), np.array(FLOAT_W_median))
     

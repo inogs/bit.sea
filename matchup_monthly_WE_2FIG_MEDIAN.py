@@ -36,7 +36,7 @@ for i in range(len(varlist)):
 
     varname=var_conversions.FLOAT_OPT_BIOPTIMOD[args] 
 
-    print('Calculating matchup for ', varname)
+    print('Calculating matchup for ', varlist[i])
 
     MONTHS = np.arange(1, 12 + 1)
     months_str  = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
@@ -96,17 +96,17 @@ for i in range(len(varlist)):
     ax.errorbar(MONTHS+0.15, FLOAT_E_median, yerr=FLOAT_E_IQR, color='purple'        , fmt='o')
     ax.errorbar(MONTHS+0.25, MODEL_E_median, yerr=MODEL_E_IQR, color='palevioletred' , fmt='o')
 
-    ax.scatter(MONTHS-0.25, FLOAT_W_5, s=10, color='darkblue'  )
-    ax.scatter(MONTHS-0.25, FLOAT_W_95, s=10, color='darkblue'  )
+    ax.scatter(MONTHS-0.25, FLOAT_W_5,  s=10, color='darkblue' , marker= "_")
+    ax.scatter(MONTHS-0.25, FLOAT_W_95, s=10, color='darkblue' , marker= "_")
 
-    ax.scatter(MONTHS-0.15, MODEL_W_5, s=10, color='dodgerblue'  )
-    ax.scatter(MONTHS-0.15, MODEL_W_95, s=10, color='dodgerblue'  )
+    ax.scatter(MONTHS-0.15, MODEL_W_5,  s=10, color='dodgerblue' , marker= "_")
+    ax.scatter(MONTHS-0.15, MODEL_W_95, s=10, color='dodgerblue' , marker= "_")
 
-    ax.scatter(MONTHS+0.15, FLOAT_E_5, s=10, color='purple'  )
-    ax.scatter(MONTHS+0.15, FLOAT_E_95, s=10, color='purple'  )
+    ax.scatter(MONTHS+0.15, FLOAT_E_5,  s=10, color='purple' , marker= "_")
+    ax.scatter(MONTHS+0.15, FLOAT_E_95, s=10, color='purple' , marker= "_")
 
-    ax.scatter(MONTHS+0.25, MODEL_E_5, s=10, color='palevioletred'  )  
-    ax.scatter(MONTHS+0.25, MODEL_E_95, s=10, color='palevioletred'  )
+    ax.scatter(MONTHS+0.25, MODEL_E_5,  s=10, color='palevioletred' , marker= "_")
+    ax.scatter(MONTHS+0.25, MODEL_E_95, s=10, color='palevioletred' , marker= "_")
 
     ax.set_xticks(MONTHS)
     ax.set_xticklabels(months_str)

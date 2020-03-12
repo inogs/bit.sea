@@ -67,7 +67,7 @@ TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', \
 
 DAfloatdates = []
 NnoDAdates = 0
-for dateref in TL[1:]:
+for dateref in TL:
     datefreq = timerequestors.Interval_req(dateref.year,dateref.month,dateref.day, \
                         days=DAfreq)
     dateend = datefreq.time_interval.end_time - datetime.timedelta(days=1)

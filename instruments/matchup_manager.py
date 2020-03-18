@@ -406,7 +406,11 @@ class Matchup_Manager():
 
             for i,model_varname in enumerate(MODELVARLIST):
                 ref_varname = self.reference_var(p, model_varname)
-                if ref_varname not in VARLIST: continue
+                if ref_varname not in VARLIST: 
+                    ax=axs[mapgraph[i]]
+                    ax.set_title(plotvarname[i])
+                    ax.invert_yaxis()
+                    continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
                 seaPoints = ~np.isnan(ModelProfile)
                 Pres, Profile, Qc = p.read(ref_varname)
@@ -437,6 +441,7 @@ class Matchup_Manager():
 
                 ax=axs[mapgraph[i]] #get subplot
                 fig, ax = Matchup.plot_subplot(plotvarname[i], fig, ax)
+                ax.set_title(plotvarname[i])
 
             ncOUT.close()
             pngfile = filename + ".png"

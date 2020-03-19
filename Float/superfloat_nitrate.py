@@ -19,6 +19,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
 
     return parser.parse_args()
 
@@ -112,7 +116,7 @@ R = Rectangle(-6,36,30,46)
 PROFILES_LOV =lovbio_float.FloatSelector('SR_NO3', TI, R)
 wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
 
-force_writing_nitrate=False
+force_writing_nitrate=args.force
 
 for wmo in wmo_list:
     print wmo

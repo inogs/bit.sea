@@ -19,7 +19,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
-
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
     return parser.parse_args()
 
 args = argument()
@@ -107,7 +110,7 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_=False
+force_writing_bbp=args.force
 
 PROFILES_COR =bio_float.FloatSelector('BBP700', TI, R)
 
@@ -133,7 +136,7 @@ for wmo in wmo_list:
                 Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                 if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                if force_writing_:
+                if force_writing_bbp:
                     Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                     if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
         else:

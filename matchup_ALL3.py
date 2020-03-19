@@ -1,5 +1,4 @@
-
-from basins import V2 as OGS
+from ancillary import euphotic 
 from commons.layer import Layer
 from instruments import optbio_float_2019
 from instruments import var_conversions
@@ -10,7 +9,7 @@ from profiler_SAT import *
 from scipy.optimize import curve_fit
 from commons import netcdf4
 from instruments.matchup_manager_SAT import Matchup_Manager as Matchup_Manager_SAT
-
+from basins import V2 as OGS
 
 PATH=os.getcwd()   
 SIM_NAME = PATH.strip('galileo/home/userexternal/eterzic0/BIOPTIMOD/KD_VAL/INPUT/.../bit.sea/')
@@ -33,30 +32,38 @@ Profilelist    =optbio_float_2019.FloatSelector(varname,TI , OGS.med)
 Kd_Model = 0.1
 Kd_Float = 0.1
 
+file_dir = PATH + '/STATS_SAT/'
+file_out =  file_dir + SIM_NAME.replace('/', '_') + '_test.stat'
+fid = open(file_out,'wb')
+fid.write("%s %s %s %s %s %s %s %s %s \n" % ('WMO', 'timestr', 'Kd_Model', 'Kd_Float', 'Kd_Sat', 'Lat', 'Lon', 'Sub', 'profile_ID' ) )
 
-fid = open(filestat,'wb')
+for i, p in enumerate(Profilelist):
 
-for p in Profilelist[0:20]:
     profile_ID = p.ID()
-    print(profile_ID)
-
     '''
     phase 1. Read BGC-ARGO profiles
     '''
     Pres, Ed_float,  Qc = p.read(varname)   #'IRR_490'
     Lon = p.lon
     Lat = p.lat
+    WMO = p.name()
     timestr = p.time.strftime("%Y%m%d-%H:%M:%S")
     nLevels = len(Pres)
 
+    # Assign subbasin
+    found = False
+
+    for isub, sub in enumerate(OGS.Pred):
+        if sub.is_inside(Lon, Lat):
+            Subbasin = sub.extended_name.replace(' ', '_')
+            found    = True
+            break # Just exit the for loop once we found the subbasin
+    # crash if no basin is found
+    if not found:
+        raise ValueError("Basin not found!",Lon,Lat)
+
+
     if not TI.contains(p.time): continue
-
-
-    for subbasin in OGS.Pred:
-        if subbasin.is_inside(Lon, Lat):
-            sub_float = subbasin.name
-            print(sub_float)
-
 
     '''
     phase 2. Read model data - in theory you can use this also for float data
@@ -76,11 +83,9 @@ for p in Profilelist[0:20]:
     '''
     Kd_Sat = Ed_matchup_SAT.Model[0]
 
-
     if len(PresEu) < 5: continue
     if PresEu[1] - PresEu[0] > 9. : continue
     if PresEu[4] > 15. : continue
-
 
     func = lambda z, Kd: np.exp(-Kd*z)
 
@@ -92,13 +97,8 @@ for p in Profilelist[0:20]:
     if Kd_Model < 0.01:
         continue
 
-    
-    fid.write("%s %.2f %.2f %.2f %.2f %.2f %.2f \n" % (profile_ID, Kd_Model, Kd_Float, Kd_Sat, Lat, Lon, Sub )
+    fid.write(" %s %s %.3f %.3f %.3f %.2f %.2f %s %s\n" % (WMO, timestr, Kd_Model, Kd_Float, Kd_Sat, Lat, Lon, Subbasin, profile_ID ) )
 
-
-file_dir = PATH + 'STATS_SAT/'
-file_out1 =  file_dir + '_' + SIM_NAME.replace('/', '_') + 'test.stat'
 fid.close()
 
-    #print(Kd_Model, Kd_Float, Kd_Sat)
-     
+print('Calculation computed.')

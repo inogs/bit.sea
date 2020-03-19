@@ -11,23 +11,20 @@ def argument():
 
     parser.add_argument(   '--inputdir','-i',
                                 type = str,
-                                required = False,
-                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/",
-                                help = 'directory of dataset')
+                                required = True,
+                                help = 'e.g. /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/')
     parser.add_argument(   '--input_float_indexer','-f',
                                 type = str,
                                 required = False,
-                                default = "",
                                 help = 'float indexer corrected file, like Float_Indexer.txt')
     parser.add_argument(   '--output_float_indexer','-o',
                                 type = str,
-                                required = False,
-                                default = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Indexer.0.txt",
-                                help = 'float indexer rough file')
+                                required = True,
+                                help = '''float indexer rough file as
+                                /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Indexer.0.txt''')
     parser.add_argument(   '--type','-t',
                                 type = str,
-                                required = False,
-                                default = "",
+                                required = True,
                                 choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'superfloat'])
 
     return parser.parse_args()

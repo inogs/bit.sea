@@ -19,6 +19,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
 
     return parser.parse_args()
 
@@ -142,7 +146,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_oxygen=False
+force_writing_oxygen=args.force
 
 PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
 PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")

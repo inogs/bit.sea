@@ -19,6 +19,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
 
     return parser.parse_args()
 
@@ -107,7 +111,7 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_=False
+force_writing_ph=args.force
 
 PROFILES_COR =bio_float.FloatSelector('PH_IN_SITU_TOTAL', TI, R)
 
@@ -133,7 +137,7 @@ for wmo in wmo_list:
                 Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                 if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                if force_writing_:
+                if force_writing_ph:
                     Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                     if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
         else:

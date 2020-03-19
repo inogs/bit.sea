@@ -30,9 +30,13 @@ def figure_generator(p):
     c_lon, c_lat=coastline.get()
     ax.plot(c_lon,c_lat, color='#000000',linewidth=0.5)
     ax.plot(p.lon,p.lat,'ro')
-    ax.set_xticks(np.arange(-6,36))
-    ax.set_yticks(np.arange(-30,46))
-    extent=6 #degrees
+    ax.set_xticks(np.arange(-6,36,2))
+#    ax.set_yticks(np.arange(-30,46))
+    ax.set_yticks(np.arange(0,100,2))
+    ax.set_xlabel("lon")
+    ax.set_ylabel("lat")
+    ax.set_title(p.time.strftime('%Y/%m/%d'))
+    extent=10 #6 #degrees
     ax.set_xlim([p.lon -extent/2, p.lon+extent/2])
     ax.set_ylim([p.lat -extent/2, p.lat+extent/2])
     bbox=ax.get_position()
@@ -42,8 +46,10 @@ def figure_generator(p):
     bottom = bbox.ymax - new_deltay
     ax.set_position([bbox.xmin, bottom, deltax, new_deltay])
 
+    floatlabel = 'Float \n'+ p.name() +" - "+str(p._my_float.cycle)
     b_patch = mpatches.Patch(color='red', label='Model')
-    g_patch = mpatches.Patch(color='blue', label='Float')
+#    g_patch = mpatches.Patch(color='blue', label='Float')
+    g_patch = mpatches.Patch(color='blue', label=floatlabel)
     ax.legend(handles=[b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)
 
     for ax in axs[1:]:

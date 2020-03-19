@@ -20,6 +20,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
 
     return parser.parse_args()
 
@@ -48,7 +52,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
-    print "dumping chla on " + outfile
+    print "dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S")
     ncOUT = NC.netcdf_file(outfile,"w")
     ncOUT.createDimension("DATETIME",14)
     ncOUT.createDimension("NPROF", 1)
@@ -127,7 +131,7 @@ for wmo in wmo_list:
             outfile = get_info(pLov,OUTDIR)
         else:
             outfile = get_info(pCor,OUTDIR)
-        if superfloat_generator.exist_valid(outfile): continue
+        if superfloat_generator.exist_valid(outfile) & (not args.force) : continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
         if is_only_LOV:
@@ -165,7 +169,7 @@ for wmo in wmo_list:
     Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
         outfile = get_info(pCor, OUTDIR)
-        if superfloat_generator.exist_valid(outfile): continue
+        if superfloat_generator.exist_valid(outfile) & (not args.force): continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
         Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)

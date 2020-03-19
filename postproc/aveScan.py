@@ -101,16 +101,9 @@ ionamesfile  = args.ionames
 IOnames      = IOname.IOnames(ionamesfile)
 filtervar    = args.var
 
-try:
-    from mpi4py import MPI
-    comm  = MPI.COMM_WORLD
-    rank  = comm.Get_rank()
-    nranks =comm.size
-    isParallel = True
-except:
-    rank   = 0
-    nranks = 1
-    isParallel = False
+rank   = 0
+nranks = 1
+isParallel = False
     
 if rank==0 : print "list      " ,args.avelist, "filtered by", filtervar
 def wp(data, wt, percentiles):

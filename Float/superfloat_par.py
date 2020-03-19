@@ -19,6 +19,10 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing files
+                                """)
 
     return parser.parse_args()
 
@@ -107,7 +111,7 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_par=False
+force_writing_par=args.par
 
 PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 

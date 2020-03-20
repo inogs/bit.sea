@@ -111,7 +111,7 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
-force_writing_par=args.par
+force_writing_par=args.force
 
 PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 

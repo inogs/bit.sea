@@ -51,12 +51,14 @@ mydtype= np.dtype([
           ('time','S17'),
           ('parameters','S200')] )
 
-if os.path.exists(args.input_float_indexer):
-    INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
-    FILELIST=INDEX_FILE['file_name'].tolist()
-else:
-    FILELIST=[]
-is_provided_indexer = len(FILELIST) >0
+FILELIST=[]
+is_provided_indexer = False
+if args.input_float_indexer is not None:
+    if os.path.exists(args.input_float_indexer):
+        INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
+        FILELIST=INDEX_FILE['file_name'].tolist()
+        is_provided_indexer = len(FILELIST) >0
+
 
 if args.type=="coriolis":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]

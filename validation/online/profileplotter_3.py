@@ -113,8 +113,8 @@ def ncreader(filename):
     Lat numpy array with 1 value
     '''
     dtype=[(var,np.float32) for var in VARLIST]
-    MODEL = np.zeros((81,),dtype=dtype)
-    FLOAT = np.zeros((81,),dtype=dtype)
+    MODEL = np.zeros((101,),dtype=dtype)
+    FLOAT = np.zeros((101,),dtype=dtype)
 
     f = NC.netcdf_file(filename, 'r')
     Lon= f.variables['longitude'].data.copy()
@@ -185,7 +185,7 @@ dump_xml(xmlfile)
 
 
 
-zlevels_out=np.arange(0,401,5)
+zlevels_out=np.arange(0,501,5)
 mapgraph = [5,6,7,1,2,8,9,3,4]
 
 plotvarname = [r'Chl  $[ mg/m^3]$',

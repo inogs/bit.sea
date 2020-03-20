@@ -342,6 +342,8 @@ class Matchup_Manager():
 
         Matchups are provided at fixed depths: every 5 meters from 0 to 400m,
         because in biofloats physical and biological variables do not have the same sampling.
+        This is extended to 500m just for generating a shift value calculated as mean between
+        400m and 500m.
 
         Arguments:
         * Profilelist * is provided by FloatSelector
@@ -360,7 +362,7 @@ class Matchup_Manager():
         Returns nothing
         '''
         from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
-        zlevels_out=np.arange(0,401,5)
+        zlevels_out=np.arange(0,501,5)
         MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
         plotvarname = [r'Chl $[mg/m^3]$',
                        r'Oxy $[mmol/m^3]$',
@@ -421,15 +423,26 @@ class Matchup_Manager():
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
+                ii=(zlevels_out >= 400) & (zlevels_out <= 500)
+
                 if model_varname=='POC':
                     float_on_common_grid = float_on_common_grid *  52779.37 - 3.57 # Bellacicco 2019
+                    shift=float_on_common_grid[ii].mean()
+                    print "POC: adding a shift of " + np.str(shift)
+                    float_on_common_grid = float_on_common_grid - shift
+
                 if model_varname == 'P_c':
                      bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
                      float_on_common_grid = 12128 * bbp470 + 0.59
-                if model_varname == "PAR":
-                    sec = p.time.hours*3600 + p.time.min*60
+                     shift=float_on_common_grid[ii].mean()
+                     print "P_c: adding a shift of " + np.str(shift)
+                     float_on_common_grid = float_on_common_grid - shift
+
+                if model_varname == "EIR": #"PAR":
+                    sec = p.time.hour*3600 + p.time.minute*60
                     POSITIVE_VALUE = np.cos(2*np.pi*sec/86400. -np.pi )
-                    model_on_common_grid = np.max(0.001, np.pi*POSITIVE_VALUE  *     model_on_common_grid )
+#                    model_on_common_grid = np.amax(0.001, np.pi*POSITIVE_VALUE  *     model_on_common_grid )
+                    model_on_common_grid = np.pi*POSITIVE_VALUE  *     model_on_common_grid
 
 
 

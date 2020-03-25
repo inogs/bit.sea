@@ -103,7 +103,7 @@ if somecheck or reset:
     print('Read climatology')
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
 
-    filemaskmed = SUBMASKDIR + 'maskmed_1kmOpen.npy'
+    filemaskmed = SUBMASKDIR + 'maskmed_1kmAll.npy'
     maskmed_1km = np.load(filemaskmed)
 
     masksub_M = {}
@@ -112,7 +112,7 @@ if somecheck or reset:
     for sub in V2.P:
         nsub += 1
         subnames += sub.name + ', '
-        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'Open.npy'
+        filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'All.npy'
         masksub = np.load(filemasksub)
         masksub_M[sub.name] = np.zeros((maskSat.jpj,maskSat.jpi),dtype=bool)
         masksub_M[sub.name][maskmed_1km] = masksub

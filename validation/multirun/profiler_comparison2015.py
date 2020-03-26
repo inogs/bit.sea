@@ -11,6 +11,7 @@ from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from basins.region import Rectangle
+from instruments.var_conversions import LOVFLOATVARS
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 
@@ -18,6 +19,8 @@ RUN_REF ='DA_Float/RUN_REF'
 
 RUN_DA  ='DA_Float/RUN_FLOAT_chl12'
 RUN_DA  ='DA_Float/RUN_FLOAT_chl_nupd'
+RUN_DA  ='DA_Float/RUN_FLOAT_chl_n'
+RUN_DA  ='DA_Float/RUN_FLOAT_chlnit_std2d'
 
 INPUTDIR = '/gpfs/scratch/userexternal/ateruzzi/' + RUN_REF + \
     '/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/'

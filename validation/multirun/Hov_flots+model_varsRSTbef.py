@@ -15,7 +15,7 @@ from basins import OGS
 import matplotlib.pyplot as pl
 from commons.utils import addsep
 import numpy as np
-from instruments.var_conversions import LOVFLOATVARS
+from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
 from instruments import lovbio_float as bio_float
 import instruments
 from layer_integral import coastline
@@ -129,42 +129,47 @@ VARLIST = ['Chla', 'O2o', 'N3n']
 Adj = [True, False, True]
 VARLIST = ['P_l']
 Adj = [True]
-VARLIST = ['P_l', 'N3n']
+VARLIST = ['N3n', 'P_l']
 Adj = [True, True]
+VARLIST = ['N3n']
+Adj = [True]
 nVar = len(VARLIST)
 
 meanObj11 = PLGaussianMean(11, 1.0)
 
-Profilelist_1 = bio_float.FloatSelector(None, TI1, OGS.med)
-wmo_list = bio_float.get_wmo_list(Profilelist_1)
+for ivar, var_mod in enumerate(VARLIST):
+    var = FLOATVARS[var_mod]
+    Profilelist_1 = bio_float.FloatSelector(var, TI1, OGS.med)
+    wmo_list = bio_float.get_wmo_list(Profilelist_1)
 
-print wmo_list
+    print '-----------' + var_mod + '------------'
+    print wmo_list
 
 # for j in range(0,len(wmo_list)):
-for j, wmo in enumerate(wmo_list):
-    #    if (j==0):
-    if plotlines:
-        filestats = DIRSTATS + '/' + wmo + '.nc'
-        stats = ncreader(filestats)
-    list_float_track = bio_float.filter_by_wmo(Profilelist_1, wmo)
-    nP = len(list_float_track)
-    Lon = np.zeros((nP,), np.float64)
-    Lat = np.zeros((nP,), np.float64)
-    NewPres_5m = np.linspace(0, 300, 61)
-    depths = NewPres_5m
+    for j, wmo in enumerate(wmo_list):
+        #    if (j==0):
+        if plotlines:
+            filestats = DIRSTATS + '/' + wmo + '.nc'
+            stats = ncreader(filestats)
+        list_float_track = bio_float.filter_by_wmo(Profilelist_1, wmo)
+        nP = len(list_float_track)
+        Lon = np.zeros((nP,), np.float64)
+        Lat = np.zeros((nP,), np.float64)
+        NewPres_5m = np.linspace(0, 300, 61)
+        depths = NewPres_5m
 
-    for ivar, var_mod in enumerate(VARLIST):
         #       if (ivar==0):
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
         plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
         timelabel_list = list()
-        var = LOVFLOATVARS[var_mod]
+        # adj = Adj[ivar]
         adj = Adj[ivar]
 
         for ip, p in enumerate(list_float_track):
             #         if ( ip == 91 ):
             Lon[ip] = p.lon
             Lat[ip] = p.lat
+            # Pres, Prof, Qc = p.read(var) #, read_adjusted=adj)
             Pres, Prof, Qc = p.read(var, read_adjusted=adj)
             ii = Pres <= 300
 # Deve avere almeno 5 records:
@@ -172,43 +177,28 @@ for j, wmo in enumerate(wmo_list):
                 NewProf_5m = np.interp(NewPres_5m, Pres[ii], Prof[ii])
                 plotmat[:, ip] = NewProf_5m
 # FILTRAGGIO per CHLA e N3n dato dai valori troppo alti registrato in superficie:
-                if (var_mod == "P_l"):
-                    if (plotmat[0, ip] > 0.45):
-                        plotmat[:, ip] = np.nan
-                if (var_mod == "N3n"):
-                    if (plotmat[0, ip] > 2):
-                        plotmat[:, ip] = np.nan
+                # if (var_mod == "P_l"):
+                #     if (plotmat[0, ip] > 0.45):
+                #         plotmat[:, ip] = np.nan
+                # if (var_mod == "N3n"):
+                #     if (plotmat[0, ip] > 2):
+                #         plotmat[:, ip] = np.nan
             timelabel_list.append(p.time)
 
             # PLOT FOR THE MODEL
-            TM = MM.modeltime(p)
-            FILENAME = BASEDIR + \
-                TM.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
-            M = readModelProfile(FILENAME, var_mod, p.ID())
-            M_newDepth = np.interp(
-                NewPres_5m, TheMask.zlevels[:max_depth+1], M[:max_depth+1])
-            plotmat_model[:, ip] = M_newDepth
+            try:
+                TM = MM.modeltime(p)
+                FILENAME = BASEDIR + \
+                TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
+                M = readModelProfile(FILENAME, var_mod, p.ID())
+                M_newDepth = np.interp(
+                    NewPres_5m, TheMask.zlevels[:max_depth+1], M[:max_depth+1])
+                plotmat_model[:, ip] = M_newDepth
+            except:
+                print ' ... Not exists ' + FILENAME
+                continue
 
         print var_mod + " " + np.str(len(timelabel_list)) + p.available_params
-        if p.available_params.find(var) < 0:
-            continue
-        for ip, p in enumerate(list_float_track):
-            break  # esco
-            Lon[ip] = p.lon
-            Lat[ip] = p.lat
-            F = p._my_float
-            Pres, Prof, Profile_adj, Qc = F.read_very_raw(var)
-            Profile_adj
-            ii300 = Pres <= 300
-            if len(Prof[ii300]) > 0:
-                NewProf_5m = np.interp(NewPres_5m, Pres[ii300], Prof[ii300])
-        # ESEGUI UN FILTRO GAUSSANO 5M SOPRA E SOTTO IL PUNTO DEFINITO:
-                Prof_smooth = meanObj11.compute(NewProf_5m, NewPres_5m)
-            plotmat[:, ip] = NewProf_5m
-        #    plotmat[:,ip]=Prof_smooth
-        #    xs,ys = np.meshgrid(xlabel_list, dlabels)
-            dt = mpldates.date2num(F.time)
-            timelabel_list.append(dt)
 
         fig = plt.figure()
 

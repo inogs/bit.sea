@@ -4,16 +4,18 @@ import os
 import Sat.SatManager as Sat
 from postproc.masks import V4mesh
 
-Bias_monthly_file="/marconi/home/userexternal/ateruzzi/SATBIAS_CCI_MULTI/biasMonthPoint.npy"
-INPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/WEEKLY_16/"
+Bias_monthly_file="/galileo/home/userexternal/ateruzzi/SATBIAS_CCI_MULTI/biasMonthPoint.npy"
+INPUTDIR="/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2018/WEEKLY_2_16_2018/"
+# INPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/WEEKLY_16/"
 # INPUTDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/DT/WEEKLY/"
 # OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CORRECTED/"
 # CHECKDIR="/pico/scratch/userexternal/gbolzon0/REANALYSIS_2016/wrkdir/SAT_CHECK/"
-OUTPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/SAT_CORRECTED/"
-CHECKDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/SAT_CHECK/"
+# OUTPUTDIR="/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/SAT_CORRECTED/"
+OUTPUTDIR="/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2018/SAT_CORRECTED/"
+CHECKDIR="/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2018/SAT_CHECK/"
 threshold = 0.01
 
-TI = TimeInterval("20170101","20180101","%Y%m%d")
+TI = TimeInterval("20180101","20190101","%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR, "*nc", prefix="", dateformat="%Y%m%d")
 
 

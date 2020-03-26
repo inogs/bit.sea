@@ -14,7 +14,7 @@ import os
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 run = "HC_2017_assw"
-run = "HC_2017_simdd"
+run = "DA_Float/RUN_REF"
 
 INPUTDIR="/gpfs/scratch/userexternal/ateruzzi/" + run + \
     "/wrkdir/MODEL/FORCINGS/"
@@ -23,8 +23,8 @@ aggregatedir=INPUTDIR
 BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_HC2017/VALID_float/' + \
     run + '/PROFILATORE_PHYS/'
 
-DATESTART = '20170101'
-DATE__END = '20180101'
+DATESTART = '20150101'
+DATE__END = '20160101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"T*.nc", prefix="T")

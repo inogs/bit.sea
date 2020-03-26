@@ -1,3 +1,5 @@
+### Float
+
 RUN=MULTIVARIATE_24/TEST_04/
 
 SCRATCHDIR=/gpfs/scratch/userexternal/ateruzzi/
@@ -33,3 +35,22 @@ FIG_RMSD=$POSTFLOAT_DIR/FIGRMSD/
 mkdir -p $FIG_RMSD
 echo python plot_rmsd_bias_float.py -i $OUT_RMSD -o $FIG_RMSD
 echo python plot_rmsd_bias_float_monthly.py -i $OUT_RMSD -o $FIG_RMSD
+
+
+### Sat
+
+SCRATCH_DIR=$CINECA_SCRATCH
+DA_DIR=$SCRATCH_DIR/MULTIVARIATE_24/TEST_04/wrkdir/MODEL/DA__FREQ_1/
+SATSTATS_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/SAT/MULTISENSOR/1Km/NRT/DAILY/STATISTICS
+SUBMASKDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SUBMASKsat/
+OUTDIR=$PWD/OUTSTATS
+OUTFIG=$PWD/OUTFIG
+MASKFILE=$CINECA_SCRATCH/MULTIVARIATE_24/TEST_04/wrkdir/MODEL/meshmask.nc
+
+mkdir -p $OUTDIR
+mkdir -p $OUTFIG
+
+echo python post_check_sat.py -d $DA_DIR -o $OUTDIR -m $MASKFILE
+
+echo python plot_check_sat.py -i $OUTDIR -o $OUTFIG -s $SATSTATS_DIR -b $SUBMASKDIR
+

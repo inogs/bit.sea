@@ -135,7 +135,7 @@ fig.autofmt_xdate()
 plt.savefig(OUTDIR + 'nit_daily.png')
 
 
-plt.show(block=False)
+#plt.show(block=False)
 
 
 

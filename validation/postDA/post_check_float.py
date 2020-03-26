@@ -93,7 +93,7 @@ DICTflagvar = {
 Ndates = TLmis.nTimes
 for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
     date8 = datemis.strftime('%Y%m%d')
-    print misfile
+    #print misfile
     req = requestors.Daily_req(datemis.year,datemis.month,datemis.day)
     misALL = np.loadtxt(misfile,skiprows=1)
     LIST = {}
@@ -141,7 +141,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
             nobsexc = np.sum(checkvar[:,5])
             nprofexc = checkvar.shape[0]
             nexc[var]+= 1 
-            print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
+            #print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
         LIST[var][3+Nlayers[var]] = nobsexc
         LIST[var][4+Nlayers[var]] = nprofexc
 
@@ -149,8 +149,8 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
         np.save(OUTDIR + nomefile, LIST[var])
 
 
-print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
-print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)
+#print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
+#print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)
 
 
 # for var in varLIST:

@@ -201,7 +201,7 @@ plt.savefig(OUTDIR + 'nit_monthly.png')
 
 
 
-plt.show(block=False)
+#plt.show(block=False)
 
 
 

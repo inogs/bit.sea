@@ -87,7 +87,7 @@ DICTflagvar = {
 Ndates = TLmis.nTimes
 for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
     date8 = datemis.strftime('%Y%m%d')
-    print misfile
+    #print misfile
     req = requestors.Daily_req(datemis.year,datemis.month,datemis.day)
     misALL = np.loadtxt(misfile,skiprows=1)
     LIST = {}

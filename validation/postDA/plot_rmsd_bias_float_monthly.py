@@ -77,7 +77,7 @@ for dd in TL['N3n'].filelist:
         BIASnit[1+ii].append(ll[1+ii+Nlayers_nit])
 Nnit = len(RMSDnit[0])
     
-rangermsdCHL = {
+rangermsdCHL = { #min, max and mean of the QuID Q1 2020
     '0-10': [.039,.075,.055],
     '10-30': [.039,.076,.055],
     '30-60': [.039,.085,.063],
@@ -235,7 +235,7 @@ for il,ll in enumerate(NITlist):
 fig.autofmt_xdate()
 plt.savefig(OUTDIR + 'nit_biaslayers_monthly.png')
 
-plt.show(block=False)
+#plt.show(block=False)
 
 
 

@@ -94,7 +94,7 @@ for i, p in enumerate(Profilelist):
 
     Kd_Model = poptM[0]   ; Kd_Float = poptF[0]
 
-    if Kd_Model < 0.01:
+    if Kd_Model < 0.01 or Kd_Float < 0.01 or Kd_Sat < 0.01:
         continue
 
     fid.write(" %s %s %.3f %.3f %.3f %.2f %.2f %s %s\n" % (WMO, timestr, Kd_Model, Kd_Float, Kd_Sat, Lat, Lon, Subbasin, profile_ID ) )

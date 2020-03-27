@@ -17,6 +17,9 @@ from basins.region import Rectangle
 RUN='DA_Float/RUN_FLOAT_chl12'
 RUN='DA_Float/RUN_FLOAT_chl_nupd'
 RUN='DA_Float/RUN_FLOAT_chl_n'
+RUN='DA_Float/RUN_FLOAT_chlnit'
+RUN='DA_Float/RUN_FLOAT_nit'
+RUN='DA_Float/RUN_FLOAT_chlnit_std2d'
 
 INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN + \
     '/wrkdir/POSTPROC/output/DA__FREQ_1/TMP/'
@@ -31,19 +34,19 @@ BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/' \
 DATESTART = '20150103'
 DATE__END = '20160101'
 
-varmodel = 'P_l'
+varmodel = 'N1p'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"RSTbefore*.nc", \
     prefix='RSTbefore.',filtervar=varmodel)
 
-ALL_PROFILES = FloatSelector(LOVFLOATVARS[varmodel],T_INT, Rectangle(-6,36,30,46))
+# ALL_PROFILES = FloatSelector(LOVFLOATVARS[varmodel],T_INT, Rectangle(-6,36,30,46))
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
 
 vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/" + \
     "ELAB_DAFloat/VALID_float/bit.sea/validation/multirun/" + \
-    "VarDescriptorRSTaft_2015.xml"
+    "VarDescriptorRSTaft_2015.xml_3vars"
 
 #This previous part will be imported in matchups setup.
 

@@ -14,9 +14,12 @@ from basins.region import Rectangle
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 
-RUN='DA_Float/RUN_FLOAT_chl12'
 RUN='DA_Float/RUN_FLOAT_chl_nupd'
+RUN='DA_Float/RUN_FLOAT_chl12'
 RUN='DA_Float/RUN_FLOAT_chl_n'
+RUN='DA_Float/RUN_FLOAT_nit'
+RUN='DA_Float/RUN_FLOAT_chlnit'
+RUN='DA_Float/RUN_FLOAT_chlnit_std2d'
 
 INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN + \
     '/wrkdir/POSTPROC/output/DA__FREQ_1/TMP/'
@@ -40,7 +43,7 @@ ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
 vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/" + \
     "ELAB_DAFloat/VALID_float/bit.sea/validation/multirun/" + \
-    "VarDescriptorRSTaft_2015.xml"
+    "VarDescriptorRSTaft_2015.xml_3vars"
 
 #This previous part will be imported in matchups setup.
 

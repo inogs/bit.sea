@@ -77,6 +77,9 @@ class plot_container():
             y = self.values[:,iSub,iCoast, idepth,0]
             if ~np.isnan(y).all():
                 ax.plot(self.timelist,y,self.plotargs, label=self.name)
+                ax.grid()
+                pl.gcf().autofmt_xdate()
+
         ax = axes[-1] # the profile
         ax.plot(self.values[:,iSub,iCoast,:,0].mean(axis=0), self.mask.zlevels, self.plotargs, label=self.name )
         
@@ -108,6 +111,7 @@ class figure_generator():
         for iax, ax in enumerate(self.LEFT_SIDE_AXES):
             if iax<len(self.LEFT_SIDE_AXES)-1:
                 ax.set_xticks([])
+                ax.grid()
         
         ax_p = fig.add_subplot(122)
         title = "%s %s" %(var, subname)
@@ -156,31 +160,38 @@ PATH14= LOC + "DEGRADATION_4_70/TEST_14/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_P
 PATH16= LOC + "DEGRADATION_4_70/TEST_16/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 PATH17= LOC + "DEGRADATION_4_70/TEST_17/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
 
-PATH_05 = LOC + '/gbolzon0/OPEN_BOUNDARY/TEST_05/' + \
-    'wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/'
-PATH_06 = LOC + '/ateruzzi/POSTPROC_TEST06/' + \
+PATH_05 = LOC + '/ateruzzi/MULTIVARIATE_24/STAT_PROFILES_TRANSITION/' + \
+    '/STAT_PROFILES/'
+# PATH_06 = LOC + '/ateruzzi//MULTIVARIATE_24/TEST_01/wrkdir/POSTPROC/' + \
+#     '/output/AVE_FREQ_1/STAT_PROFILES/'
+PATH_07 = LOC + '/ateruzzi//MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/' + \
     '/output/AVE_FREQ_2/STAT_PROFILES/'
 
 #Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
 #Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
 #Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
-Mask24=Mask(LOC + "/gbolzon0/OPEN_BOUNDARY/TEST_06/wrkdir/MODEL/meshmask.nc",loadtmask=False)
-OUTDIR= LOC + "ateruzzi/ELAB_DA12/CFR_TESTS/"
+# Mask24=Mask(LOC + "/gbolzon0/OPEN_BOUNDARY/TEST_06/wrkdir/MODEL/meshmask.nc",loadtmask=False)
+Mask24=Mask(LOC + "/ateruzzi//MULTIVARIATE_24/TEST_02/wrkdir/MODEL/meshmask.nc",loadtmask=False)
+OUTDIR= LOC + "/ateruzzi/ELAB_DAFloat_24/ProfilesCOMPARISONweekly_02/"
 
 LEVELS=[0,50,100,150] #m
 
 #P14= plot_container('HC16_4_BFMv2', "r:"   ,PATH14, Mask_4)
 #P16= plot_container('HC16_4_bfmv5', "g"  , PATH16, Mask_4)
 #P17= plot_container('HC16_4_bfmv5_day_night', "k"  , PATH16, Mask_4)
-P05= plot_container('TEST_05', "r"  , PATH_05, Mask24)
-P06= plot_container('TEST_06', "b"  , PATH_06, Mask24)
+P05= plot_container('TRANS', "r"  , PATH_05, Mask24)
+# P06= plot_container('TEST_01', "b"  , PATH_06, Mask24)
+# P06b= plot_container('TEST_01', "ob"  , PATH_06, Mask24)
+P07= plot_container('TEST_02', "g"  , PATH_07, Mask24)
 
 #PLOT_LIST=[P14,P16,P17]
-PLOT_LIST=[P05,P06]
+PLOT_LIST=[P05,P07]
 
-VARLIST=["Ac","N1p", "N3n", "O2o", "P_l", "P_c", "DIC", "ppn", "P_n", "P_p", 'pH', "pCO2", "ppg", "ppb", "resPBAc", "CaCO3flux_dic"]
-VARLIST=["P_l", "ppn"]
-VARLIST_only_v5=['exPPYcR1', 'exPPYcR2','exPPYcR3','exPPYcR6',"resPPYc"]
+VARLIST=["P_l","N3n","N1p","N4n","N5s","P_c","O2o"]
+VARLIST=["N1p", "N3n", "N4n", "O2o", "P_l", "P_c", "DIC", "ppn", "ALK", "DIC", 'pH', "pCO2","exR2ac"]
+VARLIST=["O3h","O3c"]
+# VARLIST=["DIC","pH","Ac","pCO2"]
+# VARLIST_only_v5=['exPPYcR1', 'exPPYcR2','exPPYcR3','exPPYcR6',"resPPYc"]
 
 ##################################################################
 
@@ -189,7 +200,7 @@ for var in VARLIST[rank::nranks] :
     for p in PLOT_LIST: p.load(var)
 
     for iSub, sub in enumerate(V2.P):
-        # if sub.name != "ion2" : continue
+        # if sub.name != "alb" : continue
         outfile = "%sMultirun_Profiles.%s.%s.png" %(OUTDIR,var,sub.name)
         print outfile
 
@@ -200,7 +211,8 @@ for var in VARLIST[rank::nranks] :
         FigureGenerator.add_text(LEVELS)
         FigureGenerator.add_legend()
         
-        #fig.show()
+        # fig.show()
+        # break
 
         fig.savefig(outfile)
         pl.close(fig)

@@ -15,6 +15,7 @@ from basins.region import Rectangle
 # ave files are supposed to have N3n, O2o and chl
 
 RUN='DA_Float/RUN_FLOAT_chl12'
+RUN='DA_Float/RUN_FLOAT_chl_n'
 
 INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN +'/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/'
 
@@ -34,7 +35,8 @@ TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
 
-vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/bit.sea/validation/multirun/VarDescriptor_2015.xml"
+vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/ELAB_DAfloatNut/VALID_float/" + 
+    "bit.sea/validation/multirun/VarDescriptor_2015.xml"
 
 #This previous part will be imported in matchups setup.
 

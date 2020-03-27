@@ -27,11 +27,13 @@ MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK
 
 # Multisensor DT
 WEEKLY_1KMDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/SAT/MULTISENSOR/1Km/DT/WEEKLY_2_1km/
-WEEKLY_16_DIR=/marconi_scratch/userexternal/ateruzzi/MULTIsat_biascorrect/WEEKLY_16/
-MASKFILE=/marconi_work/OGS_dev_0/MULTIPLATFORM/meshmask.nc
+WEEKLY_1KMDIR=/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2018/WEEKLY_2_1km_2018
+WEEKLY_16_DIR=/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2018/WEEKLY_2_16_2018/
+MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc
+
 
 mkdir -p $WEEKLY_16_DIR
-mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16_DIR -inmesh SAT1km_mesh -m V4mesh -M $MASKFILE
+echo mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16_DIR -inmesh SAT1km_mesh -m V4mesh -M $MASKFILE
 
 
 exit 0

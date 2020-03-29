@@ -36,6 +36,7 @@ from commons.utils import addsep
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 
+from layerinfo import *
 
 
 
@@ -81,8 +82,10 @@ dep5m ={
 
 nexc = {}
 Nlayers = {}
+NlayersQ = {}
 for var in varLIST:
     Nlayers[var] = len(DICTlayers[var])
+    NlayersQ[var] = len(DICTlayersQ[var])
     nexc[var] = 0
 
 DICTflagvar = {
@@ -93,13 +96,16 @@ DICTflagvar = {
 Ndates = TLmis.nTimes
 for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
     date8 = datemis.strftime('%Y%m%d')
-    #print misfile
+    print misfile
     req = requestors.Daily_req(datemis.year,datemis.month,datemis.day)
     misALL = np.loadtxt(misfile,skiprows=1)
     LIST = {}
+    LISTq = {}
     for var in varLIST:
         LIST[var] = [i for i in range(5+Nlayers[var])]
+        LISTq[var] = [i for i in range(1+2*NlayersQ[var])]
         LIST[var][0] = datemis
+        LISTq[var][0] = datemis
         misvar = misALL[misALL[:,1]==DICTflagvar[var]]
     
         wmovar = set(misvar[:,-1])
@@ -129,6 +135,32 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
                 meanmis = np.nan
             LIST[var][3+il] = meanmis
 
+        # Statistics on QuID layers
+        for il,ll in enumerate(DICTlayersQ[var]):
+        # print '   ...' + ll
+            LISTmeanmis = [[] for ii in range(2)]
+            for wmo in wmovar:
+                # print wmo
+                miswmo = misvar[misvar[:,-1]==wmo]
+                maskll = (miswmo[:,4]>=DICTlayerQ[ll][0]) & \
+                         (miswmo[:,4]<DICTlayerQ[ll][1])
+                if any(maskll):
+                    depmasked = miswmo[:,4][maskll]
+                    mismasked = miswmo[:,6][maskll]
+                    misint = np.interp(dep5mQ[ll],depmasked,mismasked)
+                    rmsd = (np.nanmean(misint**2))**.5
+                    bias = np.nanmean(misint)
+                    LISTmeanmis[0].append(rmsd)
+                    LISTmeanmis[1].append(bias)
+            if len(LISTmeanmis)>0:
+                meanmis = np.nanmean(LISTmeanmis[0])
+                meanbias = np.nanmean(LISTmeanmis[1])
+            else:
+                meanmis = np.nan
+                meanbias = np.nan
+            LISTq[var][1+il] = meanmis
+            LISTq[var][1+NlayersQ[var]+il] = meanbias
+
 
         icheck = TL[var].select_one(req)
         txtvar = TL[var].filelist[icheck]
@@ -148,15 +180,18 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
         nomefile = 'postcheck.' + date8 + '.' + DICTvarname[var] + '.npy'
         np.save(OUTDIR + nomefile, LIST[var])
 
+        nomefile = 'poststats.' + date8 + '.' + DICTvarname[var] + '.npy'
+        np.save(OUTDIR + nomefile, LISTq[var])
+
 
 #print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
 #print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)
 
 
-# for var in varLIST:
-    # nomefile = 'postcheck_' + var + '_'  + START_TIME + '_' + END___TIME
-    # print nomefile
-    # np.save(OUTDIR + nomefile,LIST[var])
+
+
+
+
 
 
 

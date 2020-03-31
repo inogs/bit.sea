@@ -21,14 +21,13 @@ def argument():
 
 args = argument()
 
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np
-import pylab as plt
-
+import matplotlib.pyplot as plt
 from commons.utils import addsep
 from commons.Timelist import TimeList
 from commons import genUserDateList as DL
-from commons import timerequestors as requestors
-
 from layerinfo import DICTlayersQ
 
 INDIR = addsep(args.indir)
@@ -149,9 +148,6 @@ fig.autofmt_xdate()
 plt.savefig(OUTDIR + 'nit_daily.png')
 
 
-#plt.show(block=False)
-
-
 
 
 ## monthly
@@ -218,6 +214,7 @@ plt.grid()
 fig.autofmt_xdate()
 
 plt.savefig(OUTDIR + 'chl_monthly.png')
+plt.close(fig)
 
 
 #Nit
@@ -279,7 +276,7 @@ plt.grid()
 fig.autofmt_xdate()
 
 plt.savefig(OUTDIR + 'nit_monthly.png')
-
+plt.close(fig)
 
 ## Quid layers
 TL = {}

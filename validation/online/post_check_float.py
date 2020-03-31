@@ -31,12 +31,10 @@ args = argument()
 import numpy as np
 import commons.timerequestors as requestors
 import os
-
 from commons.utils import addsep
-from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 
-from layerinfo import *
+from layerinfo import DICTlayerQ, DICTlayersQ, dep5mQ
 
 
 
@@ -116,10 +114,8 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
             LIST[var][2] = np.nan
 
         for il,ll in enumerate(DICTlayers[var]):
-        # print '   ...' + ll
             LISTmeanmis = []
             for wmo in wmovar:
-                # print wmo
                 miswmo = misvar[misvar[:,-1]==wmo]
                 maskll = (miswmo[:,4]>=DICTlayer[ll][0]) & \
                          (miswmo[:,4]<DICTlayer[ll][1])
@@ -137,10 +133,8 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
 
         # Statistics on QuID layers
         for il,ll in enumerate(DICTlayersQ[var]):
-        # print '   ...' + ll
             LISTmeanmis = [[] for ii in range(2)]
             for wmo in wmovar:
-                # print wmo
                 miswmo = misvar[misvar[:,-1]==wmo]
                 maskll = (miswmo[:,4]>=DICTlayerQ[ll][0]) & \
                          (miswmo[:,4]<DICTlayerQ[ll][1])
@@ -172,8 +166,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
             checkvar = np.loadtxt(txtvar,ndmin=2)
             nobsexc = np.sum(checkvar[:,5])
             nprofexc = checkvar.shape[0]
-            nexc[var]+= 1 
-            #print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
+            nexc[var]+= 1
         LIST[var][3+Nlayers[var]] = nobsexc
         LIST[var][4+Nlayers[var]] = nprofexc
 
@@ -182,16 +175,4 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
 
         nomefile = 'poststats.' + date8 + '.' + DICTvarname[var] + '.npy'
         np.save(OUTDIR + nomefile, LISTq[var])
-
-
-#print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
-#print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)
-
-
-
-
-
-
-
-
 

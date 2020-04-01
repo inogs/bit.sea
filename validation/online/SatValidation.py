@@ -7,19 +7,13 @@ def argument():
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
-    parser.add_argument(   '--date','-d',
+    parser.add_argument(   '--modelfile','-f',
                                 type = str,
                                 required = True,
-                                help = 'first day of forecast')
-
-    parser.add_argument(   '--forecastdir','-f',
+                                help = 'input model file')
+    parser.add_argument(   '--satfile','-s',
                                 type = str,
-                                required = True,
-                                help = 'input dir validation tmp')
-    parser.add_argument(   '--satdir','-s',
-                                type = str,
-                                required = True,
-                                help = 'Satellite directory, usually weekly or daily')
+                                required = True)
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
@@ -39,7 +33,6 @@ args = argument()
 
 
 
-from commons.utils import addsep
 import numpy as np
 import Sat.SatManager as Sat
 import matchup.matchup as matchup
@@ -59,9 +52,8 @@ def weighted_mean(Conc, Weight):
 
 
 
-date=args.date
-MODELDIR=addsep(args.forecastdir)
-REF_DIR=addsep(args.satdir)
+modfile =args.modelfile
+satfile=args.satfile
 outfile = args.outfile
 
 TheMask=Mask(args.maskfile)
@@ -87,9 +79,6 @@ COASTNESS = np.ones((jpj,jpi),dtype=dtype)
 COASTNESS['coast']     = ~mask200_2D;
 COASTNESS['open_sea']  =  mask200_2D;
 #COASTNESS['everywhere'] = True;
-
-satfile = glob.glob(REF_DIR+date+"*")[0]
-modfile = MODELDIR + "ave." + date + "-12:00:00.P_l.nc" 
 
 De = DataExtractor(TheMask,filename=modfile,varname='P_l')
 Model = De.values[0,:,:]

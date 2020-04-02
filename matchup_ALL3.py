@@ -33,7 +33,7 @@ Kd_Model = 0.1
 Kd_Float = 0.1
 
 file_dir = PATH + '/STATS_SAT/'
-file_out =  file_dir + SIM_NAME.replace('/', '_') + '_test.stat'
+file_out =  file_dir + SIM_NAME.replace('/', '_') + '.stat'
 fid = open(file_out,'wb')
 fid.write("%s %s %s %s %s %s %s %s %s \n" % ('WMO', 'timestr', 'Kd_Model', 'Kd_Float', 'Kd_Sat', 'Lat', 'Lon', 'Sub', 'profile_ID' ) )
 

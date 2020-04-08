@@ -35,7 +35,7 @@ Kd_Float = 0.1
 file_dir = PATH + '/STATS_SAT/'
 file_out =  file_dir + SIM_NAME.replace('/', '_') + '.stat'
 fid = open(file_out,'wb')
-fid.write("%s %s %s %s %s %s %s %s %s \n" % ('WMO', 'timestr', 'Kd_Model', 'Kd_Float', 'Kd_Sat', 'Lat', 'Lon', 'Sub', 'profile_ID' ) )
+fid.write("%s %s %s %s %s %s %s %s %s %s %s %s \n" % ('WMO', 'timestr', 'Kd_Model', 'Kd_Float', 'Kd_Sat', 'Lat', 'Lon', 'Day', 'Month', 'Year', 'Sub', 'profile_ID' ) )
 
 for i, p in enumerate(Profilelist):
 
@@ -44,11 +44,14 @@ for i, p in enumerate(Profilelist):
     phase 1. Read BGC-ARGO profiles
     '''
     Pres, Ed_float,  Qc = p.read(varname)   #'IRR_490'
-    Lon = p.lon
-    Lat = p.lat
-    WMO = p.name()
+    Lon     = p.lon
+    Lat     = p.lat
+    WMO     = p.name()
     timestr = p.time.strftime("%Y%m%d-%H:%M:%S")
     nLevels = len(Pres)
+    Day     = p.time.day
+    Month   = p.time.month
+    Year    = p.time.year
 
     # Assign subbasin
     found = False
@@ -97,7 +100,7 @@ for i, p in enumerate(Profilelist):
     if Kd_Model < 0.01 or Kd_Float < 0.01 or Kd_Sat < 0.01:
         continue
 
-    fid.write(" %s %s %.3f %.3f %.3f %.2f %.2f %s %s\n" % (WMO, timestr, Kd_Model, Kd_Float, Kd_Sat, Lat, Lon, Subbasin, profile_ID ) )
+    fid.write(" %s %s %.3f %.3f %.3f %.2f %.2f %i %i %i %s %s\n" % (WMO, timestr, Kd_Model, Kd_Float, Kd_Sat, Lat, Lon, Subbasin, profile_ID ) )
 
 fid.close()
 

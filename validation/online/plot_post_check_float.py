@@ -51,13 +51,13 @@ MonthList = TL['P_l'].getMonthlist()
 
 LISTchl = [[] for ii in range(7)]
 for dd in TL['P_l'].filelist:
-    ll = np.load(dd)
+    ll = ll = np.load(dd, allow_pickle=True)(dd)
     for ii in range(7):
         LISTchl[ii].append(ll[ii])
     
 LISTnit = [[] for ii in range(8)]
 for dd in TL['N3n'].filelist:
-    ll = np.load(dd)
+    ll = np.load(dd, allow_pickle=True)
     for ii in range(8):
         LISTnit[ii].append(ll[ii])
     
@@ -292,7 +292,7 @@ Nlayers_nit = len(NITlist)
 RMSDchl = [[] for ii in range(1+Nlayers_chl)]
 BIASchl = [[] for ii in range(1+Nlayers_chl)]
 for dd in TL['P_l'].filelist:
-    ll = np.load(dd)
+    ll = np.load(dd, allow_pickle=True)
     RMSDchl[0].append(ll[0])
     BIASchl[0].append(ll[0])
     for ii in range(Nlayers_chl):
@@ -303,7 +303,7 @@ Nchl = len(RMSDchl[0])
 RMSDnit = [[] for ii in range(1+Nlayers_nit)]
 BIASnit = [[] for ii in range(1+Nlayers_nit)]
 for dd in TL['N3n'].filelist:
-    ll = np.load(dd)
+    ll = np.load(dd, allow_pickle=True)
     RMSDnit[0].append(ll[0])
     BIASnit[0].append(ll[0])
     for ii in range(Nlayers_nit):

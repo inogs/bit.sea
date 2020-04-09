@@ -161,7 +161,7 @@ def get_outfile(p,outdir):
     return filename
 
 def read_doxy(pCor):
-    Pres, Value, Qc = pCor.read('DOXY',read_adjusted=False)
+    Pres, Value, Qc = pCor.read('DOXY',read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
         print "few values for " + pCor._my_float.filename

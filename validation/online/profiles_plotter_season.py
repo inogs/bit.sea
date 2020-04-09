@@ -1,18 +1,11 @@
-# module load mpi4py/1.3.1--intelmpi--2017--binary
-# srun -N 1 -n 15 -A IscrB_MED21BIO_1 --time=30:00  --mem=50gb --partition=gll_usr_prod --pty bash
-
-# Generates images (in parallel) to compare different runs,
-# using STAT_PROFILES directories
-
-# Edit the USER SETTINS section below before launch.
 import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description='''
-    plot post check and mis stats of BGC-Argo DA
+    Generates spaghetti plots
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('--indir', '-i',
+    parser.add_argument('--inputdir', '-i',
                         type=str,
                         default=None,
                         required=True,
@@ -28,7 +21,7 @@ def argument():
                         type=str,
                         default=None,
                         required=True,
-                        help="FIGURES")
+                        help="Plotlist_bio.xml")
 
     parser.add_argument('--maskfile', '-m',
                         type=str,
@@ -36,11 +29,11 @@ def argument():
                         required=True,
                         help="meshmask.nc")
 
-    parser.add_argument('--daterun', '-d',
+    parser.add_argument('--rundate', '-d',
                         type=str,
                         default=None,
                         required=True,
-                        help="meshmask.nc")
+                        help="date in yyyymmdd format")
 
     return parser.parse_args()
 
@@ -59,29 +52,12 @@ from timeseries.plot import read_pickle_file
 from datetime import datetime as date
 from datetime import timedelta as timedelta
 from xml.dom import minidom
-import os
 
-INDIR = addsep(args.indir)
+INPUTDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-filevars = args.variables
-MaskFile = args.maskfile
-daterun8 = args.daterun
 
+xmldoc = minidom.parse(args.variables)
 
-xmldoc = minidom.parse(filevars)
-
-BFMv5_dict={     'Ac':'ALK',
-                'ppn': 'netPPYc',
-                'ppg':'ruPPYc',
-                'ppb':'ruPBAc',
-      'CaCO3flux_dic':'rcalCARc' }
-
-BFMv2_dict={    'ALK':'Ac',
-            'netPPYc': 'ppn' ,
-           'netPPYc2': 'ppn' ,
-             'ruPPYc': 'ppg',
-             'ruPBAc':'ppb',
-           'rcalCARc':'CaCO3flux_dic' }
 
 try:
     from mpi4py import MPI
@@ -104,14 +80,6 @@ class plot_container():
 
     def load(self, varname):
         filename=self.path + varname + ".pkl"
-        if varname in BFMv5_dict.keys():
-            bfmv5_filename = self.path + BFMv5_dict[varname] + ".pkl"
-            if (~os.path.exists(filename) & os.path.exists(bfmv5_filename)):
-                filename=bfmv5_filename
-        if varname in BFMv2_dict.keys():
-            bfmv2_filename = self.path + BFMv2_dict[varname] + ".pkl"
-            if (~os.path.exists(filename) & os.path.exists(bfmv2_filename)):
-                filename=bfmv2_filename
         data, TL = read_pickle_file(filename)
         self.timelist=TL.Timelist
         self.values=data
@@ -238,21 +206,17 @@ class figure_generator():
 
                     
 ##### USER SETTINGS #######################################
-LOC = INDIR
-
-datetoday = date.now()
-datetoday = date.strptime('20200415','%Y%m%d')
-datetoday = date.strptime(daterun8,'%Y%m%d')
+datetoday = date.strptime(args.rundate,'%Y%m%d')
 
 year = datetoday.year
 LISTyear = np.arange(year-3,year+1)
 
 PATH = {}
 for yy in LISTyear:
-    PATH[yy] =  LOC  + '/PKL' + np.str(yy) + '/'
+    PATH[yy] =  INPUTDIR  + '/PKL' + np.str(yy) + '/'
 
 
-Mask24=Mask(MaskFile)
+Mask24=Mask(args.maskfile)
 
 LEVELS=[0,50,100,150] #m
 
@@ -263,31 +227,26 @@ for ii,yy in enumerate(LISTyear):
     PLOT_LIST.append(plot_container(np.str(yy),StyleLIST[ii],PATH[yy],Mask24))
 
 
-VARLIST=["P_l"]
-
 NN = xmldoc.getElementsByTagName("LayersMaps")
 MM = NN[0].getElementsByTagName("plots")
 VARLIST = []
 for n in MM:
-      VARLIST.append(str(n.attributes['var'].value))
-
+    VARLIST.append(str(n.attributes['var'].value))
 
 
 ##################################################################
 
 for var in VARLIST[rank::nranks] :
-#for var in [VARLIST[0]] :
     
     for p in PLOT_LIST: p.load(var)
 
     for iSub, sub in enumerate(V2.P):
-        outfile = "%sMultirun_Profiles.%s.%s.png" %(OUTDIR,var,sub.name)
+        outfile = "%sProfiles.%s.%s.png" %(OUTDIR,var,sub.name)
         print outfile
 
         FigureGenerator=figure_generator()
         fig, axes= FigureGenerator.gen_structure(var, sub.name,LEVELS,datetoday)
         
-        #for p in PLOT_LIST: p.plot_timeser(axes, LEVELS, iSub, year)
         for p in PLOT_LIST: p.plot(axes, LEVELS, iSub, datetoday)
         FigureGenerator.add_text(LEVELS)
         FigureGenerator.add_legend()

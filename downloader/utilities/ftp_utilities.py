@@ -3,6 +3,7 @@
 from os.path import exists, join
 from os import fsync, rename
 from time import sleep
+from commons.utils import deblank
 
 import ftplib
 import traceback
@@ -268,7 +269,7 @@ def _list_files_backup(ls_output):
         l = l[len(str(size)):].lstrip()
         date = " ".join(l.split()[:3])
         l = l[len(date)+1:]
-        name = l
+        name = deblank(l)
     
         isdir = perms.startswith('d')
         if isdir:

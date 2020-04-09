@@ -35,7 +35,7 @@ print(wmo_file)
 class BioFloatsHarvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files whose name
-    start with "MR" or "MD" from the ftp server ftp.ifremer.fr. This harvester
+    start with "SR" or "SD" from the ftp server ftp.ifremer.fr. This harvester
     need a file (called wmo_file) that reports the status of the biological
     floats. The position of that file is set in the global variable "wmo_file".
     Moreover, the harvester will save the information of the previous file
@@ -130,6 +130,7 @@ class BioFloatsHarvester(HarvesterInterface):
                 continue
 
             _, float_dirs, _ = list_files(connection)
+            print(float_dirs)
             # Now I look for the profiles dir. This is the folder
             # where all the data are stored
             if 'profiles' in float_dirs:
@@ -138,7 +139,7 @@ class BioFloatsHarvester(HarvesterInterface):
                 min_len = len(f) + 2
                 to_be_downloaded = [ff for ff in float_files
                                     if len(ff)>min_len
-                                    and ff[:min_len] in ['MR'+f,'MD'+f ]]
+                                    and ff[:min_len] in ['SR'+f,'SD'+f ]]
                 if len(to_be_downloaded) > 0:
                     download_for_f = []
                     # Copy all file in a local dir with the same name
@@ -208,7 +209,7 @@ class BioFloatsHarvester(HarvesterInterface):
                     min_len = len(f) + 2
                     to_be_downloaded = [ff for ff in float_files
                                         if len(ff)>min_len
-                                        and ff[:min_len] in ['MR'+f,'MD'+f]]
+                                        and ff[:min_len] in ['SR'+f,'SD'+f]]
                     if len(to_be_downloaded) > 0:
                         # Copy all file in a local dir with the same name
                         # skipping the one that we already have
@@ -246,7 +247,7 @@ class BioFloatsHarvester(HarvesterInterface):
     def rebuild(self, db_path, log, skip_if_present=False):
         """
         For every float in the file wmo, download every data file related to
-        that float that starts with 'MR' or 'MD'. Then create a xml file with the
+        that float that starts with 'SR' or 'SD'. Then create a xml file with the
         data read from the wmo file.
 
         Args:
@@ -318,7 +319,7 @@ class BioFloatsHarvester(HarvesterInterface):
                 min_len = len(f) + 2
                 to_be_downloaded = [ff for ff in float_files
                                     if len(ff)>min_len
-                                    and ff[:min_len] in ['MR'+f, 'MD'+f]]
+                                    and ff[:min_len] in ['SR'+f, 'SD'+f]]
                 if len(to_be_downloaded) > 0:
                     download_for_f = []
                     # Copy all file in a local dir with the same name

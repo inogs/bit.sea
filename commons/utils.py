@@ -6,6 +6,19 @@ import numpy as np
 import re
 """Helper functions"""
 
+def deblank(str):
+    l =len(str)
+    for i in range(l):
+        if not str[i]==' ':
+            break
+    junk=str[i:]
+    l=len(junk)
+    for i in range(l):
+        if not junk[l-i-1]==' ':
+            break
+    return junk[:l-i]
+
+
 def is_number(val):
     """Tells if a value is a number type
 

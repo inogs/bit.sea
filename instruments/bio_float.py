@@ -92,7 +92,6 @@ class BioFloat(Instrument):
         self.N_PROF    = ncIN.dimensions['N_PROF']
         self.N_PARAM   = ncIN.dimensions['N_PARAM']
         self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
-        self.DATA_MODE = ncIN.variables['DATA_MODE'].data.copy()
         self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
         ncIN.close()
 

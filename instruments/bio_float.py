@@ -94,6 +94,11 @@ class BioFloat(Instrument):
         self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
         self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
         ncIN.close()
+        _,_,nParams,_=self.PARAMETER.shape
+        self.PARAMETERS=[]
+        for iParam in range(nParams):
+            Param_name=self.PARAMETER[0,0,iParam,:].tostring().replace(' ',"")
+            self.PARAMETERS.append(Param_name)
 
     def _searchVariable_on_parameters(self, var):
         '''
@@ -103,16 +108,8 @@ class BioFloat(Instrument):
         '''
         if self.PARAMETER is None:
             self.load_basics()
+        return self.PARAMETERS.index(var)
 
-
-        if self.PARAMETER.tostring().rstrip() == '':
-            return -1
-        else:
-            for iprof in range(self.N_PROF):
-                for iparam in range(self.N_PARAM):
-                    s = self.PARAMETER[iprof,0,iparam,:].tostring().rstrip()
-                    if s==var:
-                        return iprof
 
     def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
@@ -154,27 +151,18 @@ class BioFloat(Instrument):
         '''
         if self.PARAMETER is None:
             self.load_basics()
-        iProf = self._searchVariable_on_parameters(var);
-        return self.DATA_MODE[iProf]
+        iParam = self._searchVariable_on_parameters(var);
+        return self.PARAMETER_DATA_MODE[0,iParam]
 
     def read_very_raw(self,var):
         '''
         Reads data from file
         Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
         '''
-        iProf = self._searchVariable_on_parameters(var); #print iProf
+        iProf = 0 #self._searchVariable_on_parameters(var)
         ncIN=NC.netcdf_file(self.filename,'r')
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
-        if iProf== -1 :
-            M = self.__merge_var_with_adjusted(ncIN, var)
-            N_PROF= ncIN.dimensions['N_PROF']
-            N_MEAS = np.zeros((N_PROF),np.int32)
-            for iprof in range(N_PROF):
-                N_MEAS[iprof] = (~np.isnan(M[iprof,:])).sum()
-            #per il momento cerco il massimo
-            iProf = N_MEAS.argmax()
-            print "iprof new value", iProf
 
         if ncIN.variables.has_key(var + "_ADJUSTED"):
             M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")

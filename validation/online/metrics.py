@@ -83,3 +83,18 @@ def find_NITRICL_dz_max(Profile,Pres):
          dN = np.diff(Profile)/np.diff(Pres)
          ip = dN.argmax()
          return Pres[ip]    
+
+def find_OMZ(Profile,Pres):
+         ii = (Pres>200) & (Pres<=1000)
+         Pred=Profile[ii]
+         j_minO2=np.argmin(Pred)
+         OMZ=Pres[j_minO2]
+         print OMZ
+         return OMZ
+
+def find_maxO2(Profile,Pres):
+         Pred=Profile[Pres<=200]
+         j_maxO2=np.argmax(Pred)
+         MaxO2=Pres[j_maxO2]
+         return MaxO2
+

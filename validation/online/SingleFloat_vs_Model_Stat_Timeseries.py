@@ -45,7 +45,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins import V2 as OGS
 import datetime
 from instruments import check
-
+from float_OXY_saturation import *
 
 
 
@@ -65,12 +65,14 @@ ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 
 layer=Layer(0,200)
 layer300=Layer(0,350)
+layer1000=Layer(200,1000)
 
 VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
+extrap = [True,False,True]
 nVar = len(VARLIST)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat','OMZ','max_O2']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -79,6 +81,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 iz200 = TheMask.getDepthIndex(200)+1 # Max Index for depth 200m
 iz300 = TheMask.getDepthIndex(350)+1 # Max Index for depth 300m for Nitracl def
 iz10 = TheMask.getDepthIndex(10.8)+1
+iz1000 = TheMask.getDepthIndex(1000)+1 # Max Index for depth 1000
 
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
@@ -105,7 +108,7 @@ for ivar, var_mod in enumerate(VARLIST):
 
             try:
 
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj)
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 
             except:
                 print p.ID()  + " not found in " + BASEDIR
@@ -117,6 +120,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 continue
             gm200 = GM.subset(layer)
             gm300 = GM.subset(layer300)
+            gm1000=GM.subset(layer1000)
  
 
             nLevels = gm200.number()
@@ -124,6 +128,9 @@ for ivar, var_mod in enumerate(VARLIST):
   
             nLevels300 = gm300.number()
             izmax300 = min(nLevels300,iz300)
+
+            nLevels1000 = gm1000.number()
+            izmax1000 = min(nLevels1000,iz1000)
 
             # INTEGRAL 
             A_float[itime,0] =  np.nansum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
@@ -151,6 +158,19 @@ for ivar, var_mod in enumerate(VARLIST):
 
                 A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
                 A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
+
+            if (var_mod == "O2o"):
+                A_float[itime,8] = oxy_sat(p)
+
+                print gm1000.Ref
+                print gm1000.Depth
+                if len(gm1000.Ref) > 1:
+                    A_float[itime,9] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
+                    A_model[itime,9] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 
+
+                    A_float[itime,10] = find_maxO2(gm300.Ref, gm300.Depth) # Oxygen Max depth
+                    A_model[itime,10] = find_maxO2(gm300.Model, gm300.Depth) # Oxygen Max depth
+
 
             A_float[itime,1] = gm200.correlation() # Correlation
             A_model[itime,1] = gm200.correlation() # Correlation

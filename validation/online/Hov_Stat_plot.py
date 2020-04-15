@@ -53,6 +53,7 @@ import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import datetime
 import plotter
+import plotter_oxy
 from instruments import check
 Check_obj = check.check("", verboselevel=0)
 
@@ -83,7 +84,7 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat','OMZ','max_O2']
 nStat = len(METRICS)
 max_depth = get_level_depth(TheMask,300)
 
@@ -92,11 +93,12 @@ T_end2num   = mdates.date2num(TI.end_time)
 
 plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$'] 
 VARLIST = ['P_l','O2o','N3n']
+extrap = [True,False,True]
 nVar = len(VARLIST)
 bt=300
 depths=np.linspace(0,300,121)
 
-for var_mod in VARLIST:
+for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
@@ -108,6 +110,8 @@ for var_mod in VARLIST:
         fig,axes= plotter.figure_generator(list_float_track)
 
         ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8=axes
+        xlabels = ax8.get_xticklabels()
+        ax8.xaxis.grid(True)
         nP = len(list_float_track)
         if nP <2 : continue
 
@@ -129,7 +133,7 @@ for var_mod in VARLIST:
             timelabel_list.append(p.time)
 
             try:
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths)
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
             except:
                 continue
 
@@ -211,7 +215,21 @@ for var_mod in VARLIST:
         if ( var_mod == "O2o" ):
             ax6.set_ylabel('INTG 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylabel('SURF \n $[mmol{\  } m^{-3}]$',fontsize=15)
-            ax8.plot(times,  np.ones_like(times))
+            model_Osat, ref_Osat = A.plotdata(var_mod,'O2o_sat', only_good=False)
+            model_OMZ , ref_OMZ = A.plotdata(var_mod,'OMZ', only_good=False)
+            model_maxO2, ref_maxO2 = A.plotdata(var_mod,'max_O2', only_good=False)
+
+            ax5.plot(times, ref_Osat, '.r',label='O2sat (FLOAT)') #'REF OXY at SATURATION'
+
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ Ref') #'REF OMZ
+            ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max Ref') #'REF maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
+            ax8.set_ylim(1000,0)
+            legend = ax8.legend(loc='upper left', shadow=True, fontsize=10)
+
+
+        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
 
                         
         if ( var_mod == "N3n" ):
@@ -249,8 +267,10 @@ for var_mod in VARLIST:
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)
-            ax7.set_xticklabels([])
+            if ( var_mod != 'OXY' ):
+                ax7.set_xticklabels([])
             ax7.set_ylim(0,1)
+
 
             ax7.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
             ax7.tick_params(axis = 'both', which = 'major', labelsize = label_s)
@@ -260,7 +280,13 @@ for var_mod in VARLIST:
         ticklabs = cbar.ax.get_yticklabels()
         cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
 
-        xlabels = ax8.get_xticklabels()
+        if var_mod == 'OXY':
+            xlabels=ax7.get_xticklabels()
+        else:
+            xlabels = ax8.get_xticklabels()
+
+
+#        xlabels = ax8.get_xticklabels()
         pl.setp(xlabels, rotation=30, fontsize=15)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
@@ -268,7 +294,7 @@ for var_mod in VARLIST:
         ax5.xaxis.grid(True)
         ax6.xaxis.grid(True)
         ax7.xaxis.grid(True)
-        ax8.xaxis.grid(True)
+#        ax8.xaxis.grid(True)
 
         fig.savefig(OUTFILE)
         pl.close(fig)

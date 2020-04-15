@@ -39,7 +39,8 @@ def argument():
 
 args = argument()
 
-
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np
 import matplotlib.pyplot as pl
 from basins import V2
@@ -133,6 +134,8 @@ class figure_generator():
         Arguments :
         * var     * string
         * subname * string
+        * LEVELS  * list of float or integers
+        * datetoday * a datetime object
         They are used just for the profile axes, at the left of the figure.
 
 
@@ -153,7 +156,7 @@ class figure_generator():
         
         ax_p = fig.add_subplot(122)
         datestr = datetoday.strftime('%Y-%m-%d')
-        title = "%s %s Last daterun %s" %(var,subname,datestr)
+        title = "%s %s rundate %s" %(var,subname,datestr)
         ax_p.set_title(title)
         ax_p.set_ylim([0, 1000])
         y_ticklabels=[0,200,400,600,800,1000]
@@ -251,9 +254,7 @@ for var in VARLIST[rank::nranks] :
         FigureGenerator.add_text(LEVELS)
         FigureGenerator.add_legend()
         FigureGenerator.add_seasonarea(datetoday)
-        
-        # fig.show()
-        # break
+
 
         fig.savefig(outfile)
         pl.close(fig)

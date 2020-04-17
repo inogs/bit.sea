@@ -1,19 +1,21 @@
 import numpy as np
 import math
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
 
 def oxy_sat(p):
     '''
+    Arguments:
+    * p * a profile object
     Calculate the oxygen at saturation with the formula from
     Garcia and Gordon, 1992 L&O
     using Temperature and Salinity "at surface" misurated by
     argo float. Instead of the "real surface", for T and S we adopt
     the mean value of the first 5m.
-    As input, it requires the profile object.
+    
+    Returns:
+    * O2o * a concentration of oxygen in mmol/m3
     '''
 
-    print "These variables are available: " +  p.available_params
+    
     PresT,Temp,QcT=p.read("TEMP")
     PresS,Sal,QcS=p.read("PSAL")
 

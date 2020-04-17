@@ -51,7 +51,7 @@ MonthList = TL['P_l'].getMonthlist()
 
 LISTchl = [[] for ii in range(7)]
 for dd in TL['P_l'].filelist:
-    ll = ll = np.load(dd, allow_pickle=True)(dd)
+    ll = np.load(dd, allow_pickle=True)
     for ii in range(7):
         LISTchl[ii].append(ll[ii])
     

@@ -271,6 +271,25 @@ class Hourly_req():
     def __repr__(self):
         return "Hourly requestor object: " + self.string + "  delta :  " + str(self.delta_hours)  + " hours"
 
+class seconds_req():
+    '''
+    '''
+    def __init__(self,year,month,day, hour, minutes, delta_seconds=1800):
+        self.year    = year
+        self.month   = month
+        self.day     = day
+        self.hour    = hour
+        self.minutes = minutes
+        centertime    = datetime.datetime(self.year,self.month,self.day,self.hour,self.minutes)
+        delta = datetime.timedelta(seconds=delta_seconds)
+
+        self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
+        self.string  = centertime.strftime("%Y%m%d-%H%M%S")
+        self.delta_seconds = delta_seconds
+    def __repr__(self):
+        return "Seconds requestor object: " + self.string + "  delta :  " + str(self.delta_seconds)  + " seconds"
+
+
 
 class Clim_Hourly_req():
     '''

@@ -241,6 +241,16 @@ class TimeList():
 
 
         '''
+        if isinstance(requestor,requestors.seconds_req):
+            assert self.inputFrequency in ["seconds=900", "seconds=1800"]
+            SELECTION=[]
+            weights = []
+            for it,t in enumerate(self.Timelist):
+                if requestor.time_interval.contains(t):
+                    SELECTION.append(it)
+                    weights.append(1.)
+            return SELECTION , np.array(weights)
+
         if isinstance(requestor,requestors.Hourly_req):
             assert self.inputFrequency in [ 'hourly', "seconds=900", "seconds=1800"]
             SELECTION=[]
@@ -622,6 +632,11 @@ if __name__ == '__main__':
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
+
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    TL     = TimeList(Min15)
+    Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)
+    ii,w = TL.select(Sec_req)
 
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
     TL     = TimeList(Min15)

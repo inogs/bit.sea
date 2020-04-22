@@ -242,7 +242,7 @@ class TimeList():
 
         '''
         if isinstance(requestor,requestors.Hourly_req):
-            assert self.inputFrequency == 'hourly'
+            assert self.inputFrequency in [ 'hourly', "seconds=900", "seconds=1800"]
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -253,7 +253,7 @@ class TimeList():
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
-            assert self.inputFrequency in ["hourly","daily"] # it does not matter how many hours
+            assert self.inputFrequency in ["hourly","daily", "seconds=900", "seconds=1800"] # it does not matter how many hours
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -267,7 +267,7 @@ class TimeList():
             SELECTION=[]
             weights = []
 
-            if self.inputFrequency in  ['daily','hourly'] :
+            if self.inputFrequency in  ['daily','hourly',"seconds=900", "seconds=1800"] :
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)
@@ -631,6 +631,8 @@ if __name__ == '__main__':
 
     Clim_Hour_req  = requestors.Clim_Hourly_req(12,delta_hours=2)
     Clim_Montlhy_req = requestors.Clim_month(4)
+
+
     ii,w = TL.select(Clim_Hour_req)
     jj,wj = TL.select(Clim_Montlhy_req)
     intersection=[ k for k in ii if k in jj]

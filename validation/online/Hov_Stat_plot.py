@@ -143,7 +143,7 @@ for ivar, var_mod in enumerate(VARLIST):
             timelabel_list.append(p.time)
 
             try:
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar])
             except:
                 continue
 

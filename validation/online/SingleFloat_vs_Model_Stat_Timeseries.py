@@ -26,6 +26,10 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--date','-d',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')
 
     return parser.parse_args()
 
@@ -43,7 +47,8 @@ from basins.region import Rectangle
 from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins import V2 as OGS
-import datetime
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from instruments import check
 from surf.oxy_saturation import oxy_sat
 
@@ -57,9 +62,12 @@ Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 
 TheMask=Mask(args.maskfile, loadtmask=False)
 
+Graphic_DeltaT = relativedelta(months=24)
+datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
+timestart = datestart.strftime("%Y%m%d")
+
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
-deltaT= datetime.timedelta(hours=12)
-TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+TI = TimeInterval(timestart, args.date,'%Y%m%d')
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 
 
@@ -162,8 +170,6 @@ for ivar, var_mod in enumerate(VARLIST):
             if (var_mod == "O2o"):
                 A_float[itime,8] = oxy_sat(p)
 
-                print gm1000.Ref
-                print gm1000.Depth
                 if len(gm1000.Ref) > 1:
                     A_float[itime,9] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
                     A_model[itime,9] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 

@@ -89,7 +89,6 @@ def find_OMZ(Profile,Pres):
          Pred=Profile[ii]
          j_minO2=np.argmin(Pred)
          OMZ=Pres[j_minO2]
-         print OMZ
          return OMZ
 
 def find_maxO2(Profile,Pres):

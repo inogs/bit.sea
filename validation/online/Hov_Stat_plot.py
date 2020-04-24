@@ -57,7 +57,7 @@ import matplotlib.pyplot as pl
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-import datetime
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotter
 import plotter_oxy
@@ -90,7 +90,6 @@ font_s2 = 3
 label_s = 15
 
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
-deltaT= datetime.timedelta(hours=12)
 TI = TimeInterval(timestart, args.date,'%Y%m%d')
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -144,7 +143,7 @@ for ivar, var_mod in enumerate(VARLIST):
             timelabel_list.append(p.time)
 
             try:
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar])
             except:
                 continue
 

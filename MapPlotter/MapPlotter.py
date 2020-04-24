@@ -165,6 +165,13 @@ class MapPlotter():
 		Wrapper to matplotlib.pyplot.show()
 		'''
 		plt.show()
+	
+	@staticmethod
+	def close():
+		'''
+		Wrapper to matplotlib.pyplot.close()
+		'''
+		plt.close()
 
 	def save(self,filename,dpi=300,margin='tight'):
 		'''

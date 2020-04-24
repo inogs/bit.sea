@@ -74,10 +74,10 @@ class Matchup_Manager():
                 filtervarline=""
             else:
                 filtervarline= ' -f '  + self.TL.filtervar
-            outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d") + ".dat" #punti_20150416.dat
+            outpuntifile= PUNTI_DIR + "punti_" + Model_time.strftime("%Y%m%d-%H:%M:%S") + ".dat" #punti_20150416-12:15:00.dat
             self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \
-                ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d*")  + \
+                ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d-%H:%M:%S*")  + \
                 ' -i '  + self.AVE_INPUT_DIR  +  \
                 ' -a '  + aggregatedir       +  \
                 filtervarline                +  \

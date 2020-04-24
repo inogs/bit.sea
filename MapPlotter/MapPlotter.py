@@ -166,16 +166,23 @@ class MapPlotter():
 		'''
 		plt.show()
 
-	def save(self,filename,dpi=300):
+	def save(self,filename,dpi=300,margin='tight'):
 		'''
 		Save figure to disk.
 
 		Inputs:
 			> filename: Output file name
 			> dpi:      Pixel depth (default: 300)
+			> margin;   Bbox margins
 		'''
 		if self._fig and self._ax and self._plot:
-			self._fig.savefig(filename,dpi=dpi,bbox_inches='tight')
+			self._fig.savefig(filename,dpi=dpi,bbox_inches=margin)
+
+	def clear():
+		'''
+		Wrapper to matplotlib.pyplot.clf()
+		'''
+		self._fig.clf()
 
 	def createFigure(self,sz=(8,6),dpi=100,style=None):
 		'''
@@ -382,13 +389,14 @@ class MapPlotter():
 			cbar.update_ticks()
 		return cbar
 
-	def plot_empty(self,params=None):
+	def plot_empty(self,params=None,clear=True):
 		'''
 		Plot the map with all the settings and without data.
 
 		Outputs:
 			> Figure object
 		'''
+		if clear: self.clear
 		if params == None:
 			params = self.defaultParams()
 		# Do we have figure and axes?
@@ -438,7 +446,7 @@ class MapPlotter():
 
 		return self._fig
 
-	def plot(self,lon,lat,data,params=None):
+	def plot(self,lon,lat,data,params=None,clear=True):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
@@ -448,11 +456,12 @@ class MapPlotter():
 			> lat:    Latitude vector or matrix
 			> data:   Data matrix
 			> params: Optional parameter dictionary
+			> clear:    Clear axes before plotting
 
 		Outputs:
 			> Figure object
 		'''
-		self.plot_empty(params=params)
+		self.plot_empty(params=params,clear=clear)
 
 		# Set maximum and minimum
 		z_min, z_max = np.nanmin(data), np.nanmax(data)
@@ -486,7 +495,7 @@ class MapPlotter():
 
 		return self._fig
 
-	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None):
+	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None,clear=True):
 		'''
 		Plot function. Plots data given a NetCDF file and the names of the variables
 		as well as the current depth and time index.
@@ -499,6 +508,7 @@ class MapPlotter():
 			> iTime:    Time index for NetCDF (default: 0)
 			> iDepth:   Depth index for NetCDF (default: 0)
 			> params: Optional parameter dictionary
+			> clear:    Clear axes before plotting
 
 		Outputs:
 			> Figure object
@@ -513,10 +523,10 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params)
+		return self.plot(lon,lat,data,params=params,clear=clear)
 
 	def plot_from_file_and_mask(self,filename,varname,maskfile,iTime=0,iDepth=0,
-		masklon='glamt',masklat='gphit',params=None):
+		masklon='glamt',masklat='gphit',params=None,clear=True):
 		'''
 		Plot function. Plots data given a NetCDF file, a mask file, the names of 
 		the variables as well as the current depth and time index.
@@ -529,7 +539,8 @@ class MapPlotter():
 			> iDepth:   Depth index for NetCDF (default: 0)
 			> masklon:  Name of the longitude dimension (default: 'glamt')
 			> masklat:  Name of the latitude dimension (default: 'gphit')
-			> params: Optional parameter dictionary
+			> params:   Optional parameter dictionary
+			> clear:    Clear axes before plotting
 
 		Outputs:
 			> Figure object		
@@ -552,4 +563,4 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params)
+		return self.plot(lon,lat,data,params=params,clear=False)

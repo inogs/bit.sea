@@ -3,7 +3,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates float validation data on a single week, from one single chain run.
-    Week is centered on tuesday.
+    Week is centered on thursday.
     Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
     for chlorophyll, nitrate and oxygen.
     In this approach we define the measurement as mean on layer of the float profile values.
@@ -69,9 +69,8 @@ RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
 TI =R.time_interval
-#print TI
 TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
-print TL.filelist
+
 ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
@@ -82,8 +81,7 @@ for ivar, var in enumerate(VARLIST):
         Profilelist_all = bio_float.FloatSelector(FLOATVARS[var], TI, sub)
         Profilelist = bio_float.remove_bad_sensors(Profilelist_all,FLOATVARS[var])
         nProfiles = len(Profilelist)
-#        print "ALL " + np.str(len(Profilelist_all))
-#        print sub.name, nProfiles
+
         Matchup_object_list=[]
         for ip in range(nProfiles):
             floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var)
@@ -94,7 +92,7 @@ for ivar, var in enumerate(VARLIST):
             REF_LAYER_MEAN   = []
             for floatmatchup in Matchup_object_list:
                 m_layer = floatmatchup.subset(layer)
-                #print ilayer, m_layer.number()
+
                 if m_layer.number() > 0:
                     REF_LAYER_MEAN.append(m_layer.Ref.mean())
                     MODEL_LAYER_MEAN.append(m_layer.Model.mean())

@@ -167,15 +167,16 @@ class TimeList():
         UniqueDiffs, nRepetions = np.unique(DIFFS,return_counts=True)
         moda = UniqueDiffs[nRepetions.argmax()]
         days = moda/(3600.*24)
-
         if days == 1:
             return "daily"
         if (days > 6 ) & (days < 8 ) :
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
         if (days > 26) & (days < 32) :
             return "monthly"
-        if (days < 1 ):
+        if (days < 1 ) & ( days > 1./24.):
             return "hourly"
+        if (days < 1./24 ) :
+            return "seconds=%d" % int(days*24.*3600.)
         if (days > 364 ) & (days < 367): 
             return "yearly"
         if (abs (int(days) -days)) < 0.1:
@@ -240,8 +241,18 @@ class TimeList():
 
 
         '''
+        if isinstance(requestor,requestors.seconds_req):
+            assert self.inputFrequency in ["seconds=900", "seconds=1800"]
+            SELECTION=[]
+            weights = []
+            for it,t in enumerate(self.Timelist):
+                if requestor.time_interval.contains(t):
+                    SELECTION.append(it)
+                    weights.append(1.)
+            return SELECTION , np.array(weights)
+
         if isinstance(requestor,requestors.Hourly_req):
-            assert self.inputFrequency == 'hourly'
+            assert self.inputFrequency in [ 'hourly', "seconds=900", "seconds=1800"]
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -252,7 +263,7 @@ class TimeList():
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
-            assert self.inputFrequency in ["hourly","daily"] # it does not matter how many hours
+            assert self.inputFrequency in ["hourly","daily", "seconds=900", "seconds=1800"] # it does not matter how many hours
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -266,7 +277,7 @@ class TimeList():
             SELECTION=[]
             weights = []
 
-            if self.inputFrequency in  ['daily','hourly'] :
+            if self.inputFrequency in  ['daily','hourly',"seconds=900", "seconds=1800"] :
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)
@@ -506,24 +517,41 @@ class TimeList():
         Not useful for time aggregation, but to get requestors in order to match with observations'''
 
         REQ_LIST=[]
+        if self.inputFrequency == 'seconds=900':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,900))
+            return REQ_LIST
+        if self.inputFrequency == 'seconds=1800':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,1800))
+            return REQ_LIST
+        if self.inputFrequency == 'hourly':
+            for t in self.Timelist:
+                REQ_LIST.append(requestors.hourly_req(t.year,t.month,t.day,t.hour))
+            return REQ_LIST
         if self.inputFrequency == 'daily':
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Daily_req(t.year,t.month,t.day))
+            return REQ_LIST
         if self.inputFrequency == '10days':
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Interval_req(t.year, t.month, t.day, 'days=10'))
+            return REQ_LIST
         if self.inputFrequency == 'monthly':
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Monthly_req(t.year, t.month))
+            return REQ_LIST
         if self.inputFrequency == 'weekly' :
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Weekly_req(t.year, t.month, t.day))
+            return REQ_LIST
         if self.inputFrequency == 'yearly' :
             for t in self.Timelist:
                 REQ_LIST.append(requestors.Yearly_req(t.year))
-        if self.inputFrequency == None:
-            raise NotImplementedError
-        return REQ_LIST
+            return REQ_LIST
+#       if self.inputFrequency == None:
+        raise NotImplementedError
+#       return REQ_LIST
 
 
     def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
@@ -607,12 +635,19 @@ if __name__ == '__main__':
 
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
     TL     = TimeList(Min15)
+    Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)
+    ii,w = TL.select(Sec_req)
+
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    TL     = TimeList(Min15)
     Hourly_req=requestors.Hourly_req(2018,3,5,12,delta_hours=2)
     ii,w = TL.select(Hourly_req)
 
 
     Clim_Hour_req  = requestors.Clim_Hourly_req(12,delta_hours=2)
     Clim_Montlhy_req = requestors.Clim_month(4)
+
+
     ii,w = TL.select(Clim_Hour_req)
     jj,wj = TL.select(Clim_Montlhy_req)
     intersection=[ k for k in ii if k in jj]

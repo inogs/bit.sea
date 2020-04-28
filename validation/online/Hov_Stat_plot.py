@@ -7,6 +7,7 @@ def argument():
     - the float trajectory
     - the Hovmoeller for float and model
     - the specific statistics
+    The time window to display is of 24 months
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -31,6 +32,11 @@ def argument():
                                 required = True,
                                 help = "path of the output dir")
 
+    parser.add_argument(   '--date','-d',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')
+
     return parser.parse_args()
 
 args = argument()
@@ -51,7 +57,8 @@ import matplotlib.pyplot as pl
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-import datetime
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import plotter
 import plotter_oxy
 from instruments import check
@@ -74,13 +81,16 @@ OUTDIR = addsep(args.outdir)
 BASEDIR = addsep(args.basedir)
 TheMask=Mask(args.maskfile, loadtmask=False)
 
+Graphic_DeltaT = relativedelta(months=24)
+datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
+timestart = datestart.strftime("%Y%m%d")
+
 font_s =  13
 font_s2 = 3
 label_s = 15
 
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
-deltaT= datetime.timedelta(hours=12)
-TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+TI = TimeInterval(timestart, args.date,'%Y%m%d')
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
@@ -133,7 +143,7 @@ for ivar, var_mod in enumerate(VARLIST):
             timelabel_list.append(p.time)
 
             try:
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar])
             except:
                 continue
 
@@ -203,13 +213,13 @@ for ivar, var_mod in enumerate(VARLIST):
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='WLB REF') # WINTER AYER BLOOM
-            ax8.plot(times,model_mld,'r',label='WLB MOD')
+            ax8.plot(times, ref_mld,'.r',label='MWB REF') # vertically Mixed Winter Bloom depth | WINTER LAYER BLOOM
+            ax8.plot(times,model_mld,'r',label='MWB MOD')
             ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]
             ymean=np.mean(ax8.get_ylim())
-            ax8.text(xmax, ymean, "WLB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+            ax8.text(xmax, ymean, "MWB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
 
 
         if ( var_mod == "O2o" ):

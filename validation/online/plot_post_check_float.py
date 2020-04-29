@@ -27,6 +27,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from commons.utils import addsep
 from commons.Timelist import TimeList
+from commons.Timelist import TimeInterval
 from commons import genUserDateList as DL
 from layerinfo import DICTlayersQ
 
@@ -43,10 +44,13 @@ for var in varLIST:
 START_TIME = TL['P_l'].Timelist[0]
 END___TIME = TL['P_l'].Timelist[-1]
 
+TI = TimeInterval(START_TIME.strftime('%Y%m%d'),END___TIME.strftime('%Y%m%d'))
+
 MonthlyTL = DL.getTimeList(START_TIME,END___TIME,'months=1')
 Ntot = TL['P_l'].nTimes
-Nmonths = len(MonthlyTL)
-MonthList = TL['P_l'].getMonthlist()
+
+mmTL = TimeList(MonthlyTL)
+MonthList = mmTL.getOwnList()
 
 
 LISTchl = [[] for ii in range(7)]
@@ -279,10 +283,14 @@ plt.savefig(OUTDIR + 'nit_monthly.png')
 plt.close(fig)
 
 ## Quid layers
-TL = {}
+TLq = {}
 for var in varLIST:
-    TL[var] = TimeList.fromfilenames(None, INDIR, 'poststats.*' + var + '*npy', \
+    TLq[var] = TimeList.fromfilenames(TI, INDIR, 'poststats.*' + var + '*npy', \
             prefix='poststats.',dateformat='%Y%m%d')
+
+Ntotq = TLq['P_l'].nTimes
+Nmonths = len(MonthlyTL)
+# MonthList = TL['P_l'].getMonthlist()
 
 CHLlist = DICTlayersQ['chl']
 NITlist = DICTlayersQ['nit']
@@ -291,7 +299,7 @@ Nlayers_nit = len(NITlist)
 
 RMSDchl = [[] for ii in range(1+Nlayers_chl)]
 BIASchl = [[] for ii in range(1+Nlayers_chl)]
-for dd in TL['P_l'].filelist:
+for dd in TLq['P_l'].filelist:
     ll = np.load(dd, allow_pickle=True)
     RMSDchl[0].append(ll[0])
     BIASchl[0].append(ll[0])
@@ -302,7 +310,7 @@ Nchl = len(RMSDchl[0])
 
 RMSDnit = [[] for ii in range(1+Nlayers_nit)]
 BIASnit = [[] for ii in range(1+Nlayers_nit)]
-for dd in TL['N3n'].filelist:
+for dd in TLq['N3n'].filelist:
     ll = np.load(dd, allow_pickle=True)
     RMSDnit[0].append(ll[0])
     BIASnit[0].append(ll[0])
@@ -452,8 +460,8 @@ for il,ll in enumerate(CHLlist):
     LISTmonthly = []
     arrayrms = np.array(RMSDchl[1+il])
     for mreq in MonthList:
-        mind,_ = TL['P_l'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        mind,_ = TLq['P_l'].select(mreq)
+        maskm = np.zeros(Ntotq,dtype=np.bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -482,8 +490,8 @@ for il,ll in enumerate(NITlist):
     LISTmonthly = []
     arrayrms = np.array(RMSDnit[1+il])
     for mreq in MonthList:
-        mind,_ = TL['N3n'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        mind,_ = TLq['N3n'].select(mreq)
+        maskm = np.zeros(Ntotq,dtype=np.bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -512,8 +520,8 @@ for il,ll in enumerate(CHLlist):
     LISTmonthly = []
     arrayrms = np.array(BIASchl[1+il])
     for mreq in MonthList:
-        mind,_ = TL['P_l'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        mind,_ = TLq['P_l'].select(mreq)
+        maskm = np.zeros(Ntotq,dtype=np.bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -542,8 +550,8 @@ for il,ll in enumerate(NITlist):
     LISTmonthly = []
     arrayrms = np.array(BIASnit[1+il])
     for mreq in MonthList:
-        mind,_ = TL['N3n'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        mind,_ = TLq['N3n'].select(mreq)
+        maskm = np.zeros(Ntotq,dtype=np.bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 

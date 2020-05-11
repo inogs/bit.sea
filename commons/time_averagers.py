@@ -62,3 +62,61 @@ def TimeAverager3D_2(Filelist,weights,varname,mask):
         MSUM += M*M*weights[t]
     averaged = MSUM/weights.sum()
     return averaged
+
+
+def TimeAverager3D_std(Filelist,weights,varname,mask):
+    '''
+    Performs a weighted average and std dev, working on a list of files.
+    This function uses Welford's one loop formula for the 
+    computation of std_dev computation.
+    The weights are usually provided by TimeList.select() method.
+    varname is a string
+    mask is an common.mask.Mask object
+    '''
+    n             = len(Filelist)
+    jpk, jpj, jpi = mask.shape
+    average       = np.zeros((jpk,jpj,jpi),np.float32)
+    std_dev       = np.zeros((jpk,jpj,jpi),np.float32)
+    sum_weight    = 0.
+    for t in range(n):
+        # Extract the data
+        filename = Filelist[t]
+        De       = DataExtractor(mask,filename,varname)
+        M        = De.values
+        # Sum the weight
+        sum_weight += weights[t]
+        # Compute mean and std using Welford algorithm
+        average_old = average.copy()
+        average    += weights[t]/sum_weight*(M-average)
+        std_dev    += weights[t]*(M-average_old)*(M-average)
+    std_dev = np.sqrt(std_dev/sum_weight)
+    return average, std_dev
+
+
+def TimeAverager2D_std(Filelist,weights,varname,mask):
+    '''
+    Performs a weighted average and std dev, working on a list of files.
+    This function uses Welford's one loop formula for the 
+    computation of std_dev computation.
+    The weights are usually provided by TimeList.select() method.
+    varname is a string
+    mask is an common.mask.Mask object
+    '''
+    n             = len(Filelist)
+    _,jpj, jpi    = mask.shape
+    average       = np.zeros((jpj,jpi),np.float32)
+    std_dev       = np.zeros((jpj,jpi),np.float32)
+    sum_weight    = 0.
+    for t in range(n):
+        # Extract the data
+        filename = Filelist[t]
+        De       = DataExtractor(mask,filename,varname,dimvar=2)
+        M        = De.values
+        # Sum the weight
+        sum_weight += weights[t]
+        # Compute mean and std using Welford algorithm
+        average_old = average.copy()
+        average    += weights[t]/sum_weight*(M-average)
+        std_dev    += weights[t]*(M-average_old)*(M-average)
+    std_dev = np.sqrt(std_dev/sum_weight)
+    return average, std_dev

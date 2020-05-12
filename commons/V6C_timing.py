@@ -1,11 +1,19 @@
 from datetime import datetime,timedelta
 
 def last_day(d, day_name):
+    '''
+    Takes in account that at 11:00 V6C has analysis in archive '''
     days_of_week = ['sunday','monday','tuesday','wednesday',
                         'thursday','friday','saturday']
     target_day = days_of_week.index(day_name.lower())
     delta_day = target_day - d.isoweekday()
-    if delta_day >= 0: delta_day -= 7 # go back 7 days
+    if delta_day > 0: delta_day -= 7 # go back 7 days
+    if day_name.lower()=='tuesday':
+        if delta_day ==0 :
+            if d.hour < 11:
+                delta_day -= 7
+            else:
+                target_day - d.isoweekday()
     return d + timedelta(days=delta_day)
 
 def next_day(d, day_name):
@@ -16,11 +24,12 @@ def next_day(d, day_name):
     if delta_day <= 0: delta_day += 7 # go back 7 days
     return d + timedelta(days=delta_day)
 
+def round(timeobj):
+    return datetime.strptime(timeobj.strftime("%Y%m%d"), "%Y%m%d")
 
-
-today   =  datetime.strptime(datetime.now().strftime("%Y%m%d"), "%Y%m%d")
-yesterday=  today - timedelta(days=1)
-Last_rundate_analysis=last_day(today, 'tuesday')
+today   =  datetime.now()
+yesterday=  round(today - timedelta(days=1))
+Last_rundate_analysis=round(last_day(today, 'tuesday'))
 date__end=Last_rundate_analysis - timedelta(days=1)
 
 
@@ -47,7 +56,7 @@ def find_best(d):
         # searching in forecast
         if d<=yesterday:
             mtype="Hindcast"
-            rundate=d
+            rundate=d+timedelta(days=1)
         else:
             mtype="Forecast"
             rundate=yesterday
@@ -89,15 +98,16 @@ def find_best_bgc(datestr,dateformat="%Y%m%d"):
 
 
 if __name__=="__main__":
+
     from commons import genUserDateList as DL
-    DAYS=DL.getTimeList("20200401-12:00:00", "20200515-12:00:00", "days=1")
+    DAYS=DL.getTimeList("20200420-12:00:00", "20200515-12:00:00", "days=1")
 
     for d in DAYS:
         weekday=d.isoweekday()
         mtype, rundate= find_best(d)
         datestr=d.strftime("%Y%m%d")
-        #print "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
+        a= "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
         forcingT=find_best_forcing(datestr)
-        print forcingT
+        print a + " " + forcingT
         
 

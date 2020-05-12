@@ -53,7 +53,7 @@ def find_best(d):
             rundate=yesterday
     return mtype, rundate
 
-def find_best_datestr(datestr, dateformat="%Y%m%d"):
+def find_best_dir(datestr, dateformat="%Y%m%d"):
     '''Prints V6C archive directory for a specific date
     The corresponding ave files in that directory are the best choice for that date,
     and correspond to DU content.
@@ -70,18 +70,34 @@ def find_best_datestr(datestr, dateformat="%Y%m%d"):
     else:
         runtype="analysis"
     return runtype + "/" + rundate.strftime("%Y%m%d")
-                
+
+def letter(mtype):
+    if mtype=='Hindcast' : return 's'
+    if mtype=='Forecast' : return 'f'
+    if mtype=='Analysis' : return 'a'
+
+def find_best_forcing(datestr,dateformat="%Y%m%d"):
+    d=datetime.strptime(datestr,dateformat)
+    if d.hour==0: d += timedelta(hours=12)
+    mtype, rundate= find_best(d)
+    thedir=find_best_dir(datestr)
+    forcing="%s/CMCC_PHYS/mfs_eas5-%s-%s-%s-"  %(thedir, rundate.strftime("%Y%m%d"), d.strftime("%Y%m%d"), letter(mtype))
+    return forcing
+def find_best_bgc(datestr,dateformat="%Y%m%d"):
+    thedir=find_best_dir(datestr)
+    return thedir + "/POSTPROC/AVE_FREQ_1/ARCHIVE/ave." + datestr + "-12:00:00."
 
 
 if __name__=="__main__":
     from commons import genUserDateList as DL
-    DAYS=DL.getTimeList("20200401-12:00:00", "20200510-12:00:00", "days=1")
+    DAYS=DL.getTimeList("20200401-12:00:00", "20200515-12:00:00", "days=1")
 
     for d in DAYS:
         weekday=d.isoweekday()
         mtype, rundate= find_best(d)
         datestr=d.strftime("%Y%m%d")
-        print "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
-
+        #print "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
+        forcingT=find_best_forcing(datestr)
+        print forcingT
         
 

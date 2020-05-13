@@ -163,26 +163,29 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
 
 
         icheck = TL[var].select_one(req)
-        txtvar = TL[var].filelist[icheck]
-        ss = os.path.getsize(txtvar)
-        if ss==0:
-            nobsexc = 0
-            nprofexc = 0
-        else:
-            checkvar = np.loadtxt(txtvar,ndmin=2)
-            nobsexc = np.sum(checkvar[:,5])
-            nprofexc = checkvar.shape[0]
-            nexc[var]+= 1 
-            #print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
-        LIST[var][3+Nlayers[var]] = nobsexc
-        LIST[var][4+Nlayers[var]] = nprofexc
+        try:
+            txtvar = TL[var].filelist[icheck]
+            ss = os.path.getsize(txtvar)
+            if ss==0:
+                nobsexc = 0
+                nprofexc = 0
+            else:
+                checkvar = np.loadtxt(txtvar,ndmin=2)
+                nobsexc = np.sum(checkvar[:,5])
+                nprofexc = checkvar.shape[0]
+                nexc[var]+= 1 
+                #print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
+            LIST[var][3+Nlayers[var]] = nobsexc
+            LIST[var][4+Nlayers[var]] = nprofexc
 
-        nomefile = 'postcheck.' + date8 + '.' + DICTvarname[var] + '.npy'
-        np.save(OUTDIR + nomefile, LIST[var])
+            nomefile = 'postcheck.' + date8 + '.' + DICTvarname[var] + '.npy'
+            np.save(OUTDIR + nomefile, LIST[var])
 
-        nomefile = 'poststats.' + date8 + '.' + DICTvarname[var] + '.npy'
-        np.save(OUTDIR + nomefile, LISTq[var])
+            nomefile = 'poststats.' + date8 + '.' + DICTvarname[var] + '.npy'
+            np.save(OUTDIR + nomefile, LISTq[var])
 
+        except:
+            nomefile = None
 
 #print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
 #print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)

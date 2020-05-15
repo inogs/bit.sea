@@ -96,16 +96,30 @@ def find_best_bgc(datestr,dateformat="%Y%m%d"):
     thedir=find_best_dir(datestr)
     return thedir + "/POSTPROC/AVE_FREQ_1/ARCHIVE/ave." + datestr + "-12:00:00."
 
+def list_for_maps(datestr,dateformat="%Y%m%d"):
+    timeobj=datetime.strptime(datestr,dateformat)
+    DIRS=[]
+    for deltadays in range(-10,11):
+        d=timeobj + timedelta(days=deltadays)
+        thedir=find_best_dir(d.strftime("%Y%m%d"))
+        if thedir not in DIRS:
+            DIRS.append(thedir)
+    return DIRS
+
+
 
 if __name__=="__main__":
 
+    print list_for_maps("20200512")
+
     from commons import genUserDateList as DL
-    DAYS=DL.getTimeList("20200420-12:00:00", "20200515-12:00:00", "days=1")
+    DAYS=DL.getTimeList("20200505-12:00:00", "20200525-12:00:00", "days=1")
 
     for d in DAYS:
         weekday=d.isoweekday()
         mtype, rundate= find_best(d)
         datestr=d.strftime("%Y%m%d")
+
         a= "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
         forcingT=find_best_forcing(datestr)
         print a + " " + forcingT

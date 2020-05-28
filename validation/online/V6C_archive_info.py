@@ -26,6 +26,10 @@ def argument():
                                 action='store_true',
                                 required = False,
                                 help = 'enables directory print')
+    parser.add_argument(   '--maps',
+                                action='store_true',
+                                required = False,
+                                help = 'enables ordered printout of maps.tar')
     
     return parser.parse_args()
 
@@ -37,3 +41,6 @@ if args.bgc:
     print V6C_timing.find_best_bgc(args.date)
 if args.dir:
     print V6C_timing.find_best_dir(args.date)
+if args.maps:
+    for thedir in V6C_timing.list_for_maps(args.date):
+        print thedir + "/POSTPROC/AVE_FREQ_1/maps.tar"

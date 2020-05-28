@@ -39,6 +39,7 @@ from basins import V2 as OGS
 from commons.utils import addsep
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+from matplotlib.ticker import MaxNLocator
 
 ARCHIVEDIR       = addsep(args.archivedir)
 OUTFIG_DIR       = addsep(args.outdir)
@@ -102,6 +103,7 @@ def single_plot(longvar, var, sub, layer ):
         tick.label.set_fontsize(16)
     for tick in ax2.yaxis.get_major_ticks():
         tick.label.set_fontsize(16)
+        ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
     for l in ax2.get_yticklabels() : l.set_fontsize(16)
 
 

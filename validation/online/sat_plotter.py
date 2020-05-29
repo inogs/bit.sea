@@ -83,7 +83,7 @@ F2 = timelistcontainer(TI,INPUT_DIR, 'Validation_f3_*on_daily_Sat*', prefix=pref
 
 EAN_BIAS_s = [0.008, 0.005, 0.005, 0.005, 0.005, 0.005, -0.01, -0.007, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
 
-EAN_RMSD_w = [0.01, 0.05, 0.05, 0.05, 0.03, 0.03, 0.04, 0.04, 0.03, 0.02, 0.02, 0.03, 0.02, 0.02, 0.01, 0.01, 0.04]
+EAN_RMSD_w = [0.10, 0.05, 0.05, 0.05, 0.03, 0.03, 0.04, 0.04, 0.03, 0.02, 0.02, 0.03, 0.02, 0.02, 0.01, 0.01, 0.04]
 EAN_RMSD_s = [0.05, 0.01, 0.006, 0.008, 0.007, 0.005, 0.01, 0.01, 0.008, 0.005, 0.005, 0.007, 0.005, 0.005, 0.005, 0.008, 0.01]
 
 
@@ -149,7 +149,7 @@ for isub, sub in enumerate(OGS.P):
     
 
     ax3.set_ylabel('# of points',fontsize=14)
-    ax3.xaxis.set_major_locator(mdates.DayLocator())
+    ax3.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=0, interval=2))
     ax3.xaxis.set_major_formatter(mdates.DateFormatter("%d-%b-%y"))
 
     fig.subplots_adjust(hspace=0.1)

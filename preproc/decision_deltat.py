@@ -36,5 +36,8 @@ else:
     if A['deltaT'].min() > 450:
         print "namelist.init.450"
     else:
-        print "namelist.init.300"
+        if A['deltaT'].min() > 360:
+            print print "namelist.init.360"
+        else:
+            print "namelist.init.300"
 

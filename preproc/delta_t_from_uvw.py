@@ -78,6 +78,9 @@ for iframe in FRAMES[rank::nranks]:
     U[U==0]=eps
     V[V==0]=eps
     W[W==0]=eps
+    U[U>1.e+19]=eps
+    V[V>1.e+19]=eps
+    W[W>1.e+19]=eps
     Fact = U/E1T + V/E2T + W/TheMask.e3t
     deltat = Cmax/Fact
     K,J,I = np.nonzero(deltat==deltat.min())

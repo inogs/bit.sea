@@ -39,6 +39,7 @@ from datetime import datetime
 import scipy.io.netcdf as NC
 import os
 from commons.utils import addsep
+from commons.time_interval import TimeInterval
 
 def unique_rows(data, prec=5):
     
@@ -48,8 +49,8 @@ def unique_rows(data, prec=5):
     return np.unique(b).view(d_r.dtype).reshape(-1, d_r.shape[1]), ia, ic
 
 
-def get_Profiles(filename, varname, thedtype):
-    A=np.loadtxt(filename, dtype=thedtype,skiprows=1)
+def get_Profiles(filename, varname="VALUE", dtype=BIOOPTIMOD_type):
+    A=np.loadtxt(filename, dtype=dtype,skiprows=1)
     year                            = np.array( [ np.int(A['date'][i][1:5]) for i in range(len(A)) ] )
     month                           = np.array( [ np.int(A['date'][i][6:8]) for i in range(len(A)) ] )
     day                             = np.array( [ np.int(A['date'][i][9:11]) for i in range(len(A)) ] )
@@ -108,11 +109,33 @@ def Same_Profilelist(p, VARLIST, CHL_PL, ED380_PL, ED412_PL, ED490_PL, PAR_PL):
         Profilelist.append(PAR_PL[ind])
     return Profilelist
 
+def Same_Profilelist_2020(p, VARLIST, TEMP_PL, SALI_PL, BBP700_PL):
+    '''
+    Returns the a list of profile objects referring to the same lon,lat,time
+    The order corresponds to VARLIST
+    '''
+
+    Profilelist=[]
+
+    if "TEMP" in VARLIST:
+        ind = TEMP_PL.index(p)
+        Profilelist.append(TEMP_PL[ind])
+    if "SALI" in VARLIST:
+        ind = SALI_PL.index(p)
+        Profilelist.append(SALI_PL[ind])
+    if "BBP700" in VARLIST:
+        ind = BBP700_PL.index(p)
+        Profilelist.append(BBP700_PL[ind])
+    return Profilelist
+
+
 INPUTDIR = addsep(args.inputdir)
 FloatIndexer=args.FloatIndex
 OUTDIR = addsep(args.outputdir)
+setup_2019=False
+setup_2020=True
 
-if True:
+if setup_2019:
     filename=INPUTDIR + "QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD.txt"  #"CHL_red.txt"
     P_chl = get_Profiles(filename, "CHL", QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD_type)
     
@@ -127,10 +150,23 @@ if True:
     
     filename=INPUTDIR + "QC_PAR_MEDSEA_MAY2019_BIOOPTIMOD.txt"  #"CHL_red.txt"
     P_PAR = get_Profiles(filename, "PAR", QC_PAR_MEDSEA_MAY2019_BIOOPTIMOD_type)
+    UNIQUE_PROFILES=P_chl
+
+if setup_2020:
+    filename=INPUTDIR + "QC_TEMP_MEDSEA_MAY2020_BIOOPTIMOD.txt"
+    P_TEMP = get_Profiles(filename)
+
+    filename=INPUTDIR + "QC_SAL_MEDSEA_MAY2020_BIOOPTIMOD.txt"
+    P_SALI = get_Profiles(filename)
+
+    filename=INPUTDIR + "GB_BBP700_MEDSEA_MAY2020_BIOOPTIMOD.txt"
+    P_BBP700 = get_Profiles(filename)
+    UNIQUE_PROFILES=P_TEMP[:]
+
   
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=FloatIndex_type, delimiter=",",ndmin=1)
 
-UNIQUE_PROFILES=P_chl[:]#P_TEM[:]
+
 
 for ip, p in enumerate(UNIQUE_PROFILES):
     for ifile, filename in enumerate(INDEX_FILE['file_name']):
@@ -140,7 +176,12 @@ for ip, p in enumerate(UNIQUE_PROFILES):
             lat = INDEX_FILE[ifile]['lat'].astype(np.float64)
             break
     else:
-        raise ValueError ( "file %s not found" %(p.name()) )
+        TI = TimeInterval("20160701","20160811","%Y%m%d")
+        if (p.name()=="6901766") & (TI.contains(p.time)):
+            print p.ID(), " Ma da dove l'hai preso?"
+            continue
+        else:
+            raise ValueError ( "file %s not found" %(p.name()) )
 
     wmodir=OUTDIR + os.path.dirname(filename)
     outfile=OUTDIR + filename
@@ -148,14 +189,22 @@ for ip, p in enumerate(UNIQUE_PROFILES):
     
 
     VARLIST=[]
-    if p in P_chl  : VARLIST.append('CHL')   
-    if p in P_Ed380: VARLIST.append('IRR_380')
-    if p in P_Ed412: VARLIST.append('IRR_412')
-    if p in P_Ed490: VARLIST.append('IRR_490')
-    if p in P_PAR: VARLIST.append('PAR')
-    
-    
-    same_profile_objects = Same_Profilelist(p, VARLIST, P_chl,P_Ed380, P_Ed412, P_Ed490, P_PAR)
+
+    if setup_2019:
+        if p in P_chl  : VARLIST.append('CHL')
+        if p in P_Ed380: VARLIST.append('IRR_380')
+        if p in P_Ed412: VARLIST.append('IRR_412')
+        if p in P_Ed490: VARLIST.append('IRR_490')
+        if p in P_PAR: VARLIST.append('PAR')
+        same_profile_objects = Same_Profilelist(p, VARLIST, P_chl,P_Ed380, P_Ed412, P_Ed490, P_PAR)
+
+
+    if setup_2020:
+        if p in P_TEMP  : VARLIST.append('TEMP')
+        if p in P_SALI  : VARLIST.append('SALI')
+        if p in P_BBP700: VARLIST.append('BBP700')
+        same_profile_objects = Same_Profilelist_2020(p, VARLIST, P_TEMP, P_SALI, P_BBP700)
+
     
     V=[]
     for ivar, var in enumerate(VARLIST):

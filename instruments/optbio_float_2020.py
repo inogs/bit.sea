@@ -269,6 +269,7 @@ def from_profile(profile, verbose=True):
             INDEXES.append(iFile)
     A = INDEX_FILE[INDEXES]
     nFiles = len(A)
+    if nFiles==0: return None
     DELTA_TIMES = np.zeros((nFiles,), np.float32)
     for k in range(nFiles):
         float_time =datetime.datetime.strptime(A['time'][k],'%Y%m%d-%H:%M:%S')

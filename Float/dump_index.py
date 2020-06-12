@@ -25,7 +25,7 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'superfloat'])
+                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat'])
 
     return parser.parse_args()
 
@@ -68,6 +68,8 @@ if args.type=='Float_opt':
     VARLIST=['PRES','PSAL','TEMP','PAR','CHLA', 'Ed_380','Ed_412','Ed_490']
 if args.type=='Float_opt_19':
     VARLIST=['PRES', 'PAR','CHL','IRR_380','IRR_412','IRR_490']
+if args.type=='Float_opt_20':
+    VARLIST=['PRES', 'SALI','TEMP','BBP700']
 if args.type=="superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
 

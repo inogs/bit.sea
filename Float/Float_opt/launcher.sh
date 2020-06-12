@@ -23,7 +23,13 @@ INPUTDIR=/gpfs/scratch/userexternal/eterzic0/BGC-ARGO-DATA
 OUTDIR=/gpfs/scratch/userexternal/gbolzon0/plazzari/Float_opt_2020
 FLOAT_INDEX=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/FLOAT_BIO/Float_Index.txt
 
-echo python Float_opt_converter_2.py -i $INPUTDIR -o $OUTDIR -f $FLOAT_INDEX
+python Float_opt_converter_2.py -i $INPUTDIR -o $OUTDIR -f $FLOAT_INDEX
+cd ..
+python dump_index.py -i $OUTDIR -o $OUTDIR/Float_Index.0.txt -t Float_opt_20
+
+### optional -- positions are supposed to be good
+# edit check_time_pos.py in order to have float_dataset="FLOAT_BIO
+echo python check_time_pos.py -i $OUTDIR/Float_Index.0.txt -o $OUTDIR/Float_Index.txt
 
 
 exit 0

@@ -115,6 +115,7 @@ force_writing_chla=args.force
 PROFILES_OPT_2019 =optbio_float_2019.FloatSelector('CHL', TI, R)
 
 wmo_list= optbio_float_2019.get_wmo_list(PROFILES_OPT_2019)
+nWMOS=len(wmo_list)
 #for p in PROFILES_OPT_2019:
 #    p_2020=optbio_float_2020.from_profile(p, verbose=True)
 #    import sys
@@ -125,8 +126,8 @@ def get_outfile(p,outdir):
     filename="%s%s" %(outdir,p._my_float.filename)
     return filename
 
-for wmo in wmo_list:
-    print wmo
+for iwmo, wmo in enumerate(wmo_list):
+    print wmo, iwmo, " of ", nWMOS
     Profilelist=optbio_float_2019.filter_by_wmo(PROFILES_OPT_2019, wmo)
     for ip, p in enumerate(Profilelist):
         p_2020 = optbio_float_2020.from_profile(p, verbose=True)

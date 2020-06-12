@@ -9,7 +9,16 @@ from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
-
+mydtype= np.dtype([
+          ('file_name','S200'),
+          ('lat',np.float32),
+          ('lon',np.float32),
+          ('time','S17'),
+          ('parameters','S200')] )
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
+STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
+FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
+INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
     def __init__(self, time, lon, lat, my_float, available_params,mean=None):
@@ -158,15 +167,6 @@ class BioFloat(Instrument):
         '''
         Returns the single Bio_Float instance corresponding to filename
         '''
-        mydtype= np.dtype([
-                  ('file_name','S200'),
-                  ('lat',np.float32),
-                  ('lon',np.float32),
-                  ('time','S17'),
-                  ('parameters','S200')] )
-
-        FloatIndexer="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2019/Float_indexer.0.txt"
-        INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
             timestr          = INDEX_FILE['time'][iFile]
@@ -198,18 +198,6 @@ def FloatSelector(var, T, region):
        export STATIC_REPO=/some/path/with/ Float_opt_2019/ Float_opt_2020/
     '''
 
-    mydtype= np.dtype([
-              ('file_name','S200'),
-              ('lat',np.float32),
-              ('lon',np.float32),
-              ('time','S17'),
-              ('parameters','S200')] )
-    GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
-    STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
-    FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
-
-
-    INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):

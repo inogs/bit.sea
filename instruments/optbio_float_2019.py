@@ -206,7 +206,7 @@ def FloatSelector(var, T, region):
               ('parameters','S200')] )
     GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
     STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
-    FloatIndexer=addsep(STATIC_REPO_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
+    FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
 
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)

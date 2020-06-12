@@ -193,9 +193,9 @@ def FloatSelector(var, T, region):
         a list of BioFloatProfile objects.
     Caveats:
        In order to work on dataset different from the cineca DRES archive
-       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/
-       remember to define the environment variable ONLINE_REPO
-       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/
+       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/
+       remember to define the environment variable STATIC_REPO
+       export STATIC_REPO=/some/path/with/ Float_opt_2019/ Float_opt_2020/
     '''
 
     mydtype= np.dtype([
@@ -205,8 +205,8 @@ def FloatSelector(var, T, region):
               ('time','S17'),
               ('parameters','S200')] )
     GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
-    ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-    FloatIndexer=addsep(ONLINE_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
+    STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
+    FloatIndexer=addsep(STATIC_REPO_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
 
 
     INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
@@ -219,7 +219,7 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + "Float_OPT_2019/" + filename
+        filename = STATIC_REPO + "Float_OPT_2019/" + filename
 
         if var is None :
             VarCondition = True

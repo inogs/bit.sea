@@ -2,7 +2,7 @@ from datetime import datetime,timedelta
 
 def last_day(d, day_name):
     '''
-    Takes in account that at 11:00 V6C has analysis in archive '''
+    Takes in account that at 09:00 V6C has analysis in archive '''
     days_of_week = ['sunday','monday','tuesday','wednesday',
                         'thursday','friday','saturday']
     target_day = days_of_week.index(day_name.lower())
@@ -10,7 +10,7 @@ def last_day(d, day_name):
     if delta_day > 0: delta_day -= 7 # go back 7 days
     if day_name.lower()=='tuesday':
         if delta_day ==0 :
-            if d.hour < 11:
+            if d.hour < 9:
                 delta_day -= 7
             else:
                 target_day - d.isoweekday()

@@ -26,6 +26,7 @@ FLOAT_INDEX=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/FL
 
 python Float_opt_converter_2.py -i $INPUTDIR -o $OUTDIR -f $FLOAT_INDEX
 cd ..
+# Float_Index.0.txt structure 6901772/SR6901772_139.nc,36.174896,18.768433,20200514-10:21:00, SALI TEMP BBP700
 python dump_index.py -i $OUTDIR -o $OUTDIR/Float_Index.0.txt -t Float_opt_20
 
 ### optional -- positions are supposed to be good

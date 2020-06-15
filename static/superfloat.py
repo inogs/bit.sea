@@ -180,9 +180,9 @@ def FloatSelector(var, T, region):
         a list of BioFloatProfile objects.
     Caveats:
        In order to work on dataset different from the cineca DRES archive
-       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/
-       remember to define the environment variable ONLINE_REPO
-       export ONLINE_REPO=/some/path/with/ COPERNICUS/  FLOAT_BIO/  FLOAT_LOVBIO/  SAT/ SUPERFLOAT/
+       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC
+       remember to define the environment variable STATIC_REPO
+       export STATIC_REPO=/some/path/with/  Float_opt/ Float_opt_2020/ SUPERFLOAT/
     '''
 
     nFiles=INDEX_FILE.size

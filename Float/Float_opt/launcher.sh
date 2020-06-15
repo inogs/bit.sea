@@ -20,7 +20,8 @@ source /gpfs/work/OGS20_PRACE_P/COPERNICUS/py_env_2.7.12/bin/activate
 export PYTHONPATH=$PYTHONPATH:/gpfs/work/OGS20_PRACE_P/COPERNICUS/bit.sea
 
 INPUTDIR=/gpfs/scratch/userexternal/eterzic0/BGC-ARGO-DATA
-$=/gpfs/scratch/userexternal/gbolzon0/plazzari/Float_opt_2020
+OUTDIR=/gpfs/scratch/userexternal/gbolzon0/plazzari/Float_opt_2020
+#OUTDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2020/
 FLOAT_INDEX=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/FLOAT_BIO/Float_Index.txt
 
 python Float_opt_converter_2.py -i $INPUTDIR -o $OUTDIR -f $FLOAT_INDEX

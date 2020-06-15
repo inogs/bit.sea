@@ -40,18 +40,22 @@ export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE
 cp -r $OUTDIR /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
 # T,S, BBP are "generated" by copying from Float_opt_2020
 
+SUPERFLOAT_DIR=/gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT
+COMMON="-s 20120101 -e 20200601 -o $SUPERFLOAT_DIR"
+python superfloat_chla.py    $COMMON
+python superfloat_irr380.py  $COMMON
+python superfloat_irr412.py  $COMMON
+python superfloat_irr490.py  $COMMON
+python superfloat_par.py     $COMMON
 
-python superfloat_chla.py    -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_irr380.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_irr412.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_irr490.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_par.py     -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_oxygen.py  $COMMON
+python superfloat_ph.py      $COMMON
+python superfloat_cdom.py    $COMMON
+python superfloat_nitrate.py $COMMON
 
-python superfloat_oxygen.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_ph.py      -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_cdom.py    -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
-python superfloat_nitrate.py -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
 
+python dump_index.py -i $SUPERFLOAT_DIR -o $SUPERFLOAT_DIR/Float_Index.0.txt -t static_superfloat
+python check_time_pos.py -i $SUPERFLOAT_DIR/Float_Index.0.txt -o $SUPERFLOAT_DIR/Float_Index.txt # no changes
 
 exit 0
 # caso Float_opt_2019

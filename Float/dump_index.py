@@ -25,7 +25,7 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat'])
+                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat'])
 
     return parser.parse_args()
 
@@ -72,6 +72,8 @@ if args.type=='Float_opt_20':
     VARLIST=['PRES', 'SALI','TEMP','BBP700']
 if args.type=="superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
+if args.type=="static_superfloat":
+    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR','CDOM','IRR_380' ,'IRR_412','IRR_490' ]
 
 
 def file_header_content(filename,VARLIST, avail_params=None):

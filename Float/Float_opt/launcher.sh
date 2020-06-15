@@ -20,7 +20,7 @@ source /gpfs/work/OGS20_PRACE_P/COPERNICUS/py_env_2.7.12/bin/activate
 export PYTHONPATH=$PYTHONPATH:/gpfs/work/OGS20_PRACE_P/COPERNICUS/bit.sea
 
 INPUTDIR=/gpfs/scratch/userexternal/eterzic0/BGC-ARGO-DATA
-OUTDIR=/gpfs/scratch/userexternal/gbolzon0/plazzari/Float_opt_2020
+$=/gpfs/scratch/userexternal/gbolzon0/plazzari/Float_opt_2020
 FLOAT_INDEX=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/FLOAT_BIO/Float_Index.txt
 
 python Float_opt_converter_2.py -i $INPUTDIR -o $OUTDIR -f $FLOAT_INDEX
@@ -30,6 +30,27 @@ python dump_index.py -i $OUTDIR -o $OUTDIR/Float_Index.0.txt -t Float_opt_20
 ### optional -- positions are supposed to be good
 # edit check_time_pos.py in order to have float_dataset="FLOAT_BIO
 echo python check_time_pos.py -i $OUTDIR/Float_Index.0.txt -o $OUTDIR/Float_Index.txt
+
+
+
+# superfloat generation
+export STATIC_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC
+export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C
+
+cp -r $OUTDIR /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+# T,S, BBP are "generated" by copying from Float_opt_2020
+
+
+python superfloat_chla.py    -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_irr380.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_irr412.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_irr490.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_par.py     -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+
+python superfloat_oxygen.py  -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_ph.py      -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_cdom.py    -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
+python superfloat_nitrate.py -s 20120101 -e 20200601 -o /gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/
 
 
 exit 0

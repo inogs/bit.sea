@@ -4,10 +4,12 @@ import datetime
 import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
+from scipy.optimize import curve_fit
 
 from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
+
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -47,6 +49,15 @@ class BioFloatProfile(Profile):
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
         return self._my_float.read(var, mean=self.mean)
+
+    def read_fitted(self,var, func):
+        '''
+        This is used to calculate the radiometric profile values at the surface.
+        Use an exponential fit and extrapolate values to the surface.
+        Returns 3 numpy arrays: Pres, Profile, Qc with values extrapolated to 0 m
+        '''
+
+        return self._my_float.read_fitted(var, func, mean=self.mean)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -128,6 +139,49 @@ class BioFloat(Instrument):
                 return pres, prof, qc
         else:
             return pres, mean.compute(prof, pres), mean.compute(qc,pres)
+
+
+    def read_fitted(self, var, func, mean=None):
+        '''
+        This is used to calculate the radiometric profile values at the surface.
+        Use an exponential fit and extrapolate values to the surface.
+        Returns the irradiance values at the surface.
+
+        Reads profile data from file, applies a rarefaction and optionally a filter to the data
+
+        Returns the measurement's surface value
+
+        '''
+
+        raw_pres, raw_prof   = self.read_raw(var)
+        pres,index           = np.unique(raw_pres,return_index=True)
+        prof                 = raw_prof[index]
+        
+        popt,_   = curve_fit(func, pres, prof)
+
+        
+        pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
+
+        qc       = np.ones_like(pres_new)*2
+
+        prof_new = func(pres_new, *popt)
+
+        #import matplotlib.pyplot as plt
+        #plt.plot(prof, -pres, 'm', label='Profile')
+        #plt.plot(prof_new, -pres_new, 'b', label='Curve fit')
+        #plt.legend(loc='best')
+        #plt.show()
+        
+        if pres_new.size ==0:
+            return pres_new, prof_new, qc
+
+        if mean == None:
+            if BioFloat.default_mean != None:
+                return pres_new, BioFloat.default_mean.compute(prof_new, pres_new), qc
+            else:
+                return pres_new, prof_new, qc
+        else:
+            return pres_new, mean.compute(prof_new, pres_new), mean.compute(qc,pres_new)
 
 
     def basicplot(self,Pres,profile):

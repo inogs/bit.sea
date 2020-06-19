@@ -156,15 +156,18 @@ class BioFloat(Instrument):
         raw_pres, raw_prof   = self.read_raw(var)
         pres,index           = np.unique(raw_pres,return_index=True)
         prof                 = raw_prof[index]
-        
-        popt,_   = curve_fit(func, pres, prof)
 
+        if pres[0] < 1.5 and pres[3] < 10.: 
         
-        pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
+            popt,_   = curve_fit(func, pres, prof)
+            pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
+            prof_new = func(pres_new, *popt)
+
+        else:
+            pres_new = pres
+            prof_new = prof
 
         qc       = np.ones_like(pres_new)*2
-
-        prof_new = func(pres_new, *popt)
 
         #import matplotlib.pyplot as plt
         #plt.plot(prof, -pres, 'm', label='Profile')

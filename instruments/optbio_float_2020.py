@@ -4,12 +4,10 @@ import datetime
 import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
-from scipy.optimize import curve_fit
 
 from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
-
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -19,7 +17,7 @@ mydtype= np.dtype([
           ('parameters','S200')] )
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
 STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
+FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2020/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
@@ -49,15 +47,6 @@ class BioFloatProfile(Profile):
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
         return self._my_float.read(var, mean=self.mean)
-
-    def read_fitted(self,var, func):
-        '''
-        This is used to calculate the radiometric profile values at the surface.
-        Use an exponential fit and extrapolate values to the surface.
-        Returns 3 numpy arrays: Pres, Profile, Qc with values extrapolated to 0 m
-        '''
-
-        return self._my_float.read_fitted(var, func, mean=self.mean)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -141,52 +130,6 @@ class BioFloat(Instrument):
             return pres, mean.compute(prof, pres), mean.compute(qc,pres)
 
 
-    def read_fitted(self, var, func, mean=None):
-        '''
-        This is used to calculate the radiometric profile values at the surface.
-        Use an exponential fit and extrapolate values to the surface.
-        Returns the irradiance values at the surface.
-
-        Reads profile data from file, applies a rarefaction and optionally a filter to the data
-
-        Returns the measurement's surface value
-
-        '''
-
-        raw_pres, raw_prof   = self.read_raw(var)
-        pres,index           = np.unique(raw_pres,return_index=True)
-        prof                 = raw_prof[index]
-
-        if pres[0] < 1.5 and pres[3] < 10.: 
-        
-            popt,_   = curve_fit(func, pres, prof)
-            pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
-            prof_new = func(pres_new, *popt)
-
-        else:
-            pres_new = pres
-            prof_new = prof
-
-        qc       = np.ones_like(pres_new)*2
-
-        #import matplotlib.pyplot as plt
-        #plt.plot(prof, -pres, 'm', label='Profile')
-        #plt.plot(prof_new, -pres_new, 'b', label='Curve fit')
-        #plt.legend(loc='best')
-        #plt.show()
-        
-        if pres_new.size ==0:
-            return pres_new, prof_new, qc
-
-        if mean == None:
-            if BioFloat.default_mean != None:
-                return pres_new, BioFloat.default_mean.compute(prof_new, pres_new), qc
-            else:
-                return pres_new, prof_new, qc
-        else:
-            return pres_new, mean.compute(prof_new, pres_new), mean.compute(qc,pres_new)
-
-
     def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)
@@ -236,6 +179,9 @@ class BioFloat(Instrument):
                 return BioFloat(lon,lat,float_time,filename,available_params)
         return None
 
+def profile_gen(lon,lat,float_time,filename,available_params):
+    thefloat = BioFloat(lon,lat,float_time,filename,available_params)
+    return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
 
 def FloatSelector(var, T, region):
     '''
@@ -264,7 +210,7 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = STATIC_REPO + "Float_OPT_2019/" + filename
+        filename = STATIC_REPO + "Float_OPT_2020/" + filename
 
         if var is None :
             VarCondition = True
@@ -307,16 +253,53 @@ def filter_by_wmo(Profilelist,wmo):
     return [p for p in Profilelist if p._my_float.wmo == wmo]
 
 
+def from_profile(profile, verbose=True):
+    '''
+    Arguments:
+    * profile * a profile object (float_opt_2019, 
+    * verbose     * logical, used to print lov files that don't have a corresponding in coriolis
+
+    Returns:
+    *  p * a LOV BioFloatProfile object
+    '''
+    wmo = profile._my_float.wmo
+    INDEXES=[]
+    for iFile, filename in enumerate(INDEX_FILE['file_name']):
+        if filename.startswith(wmo):
+            INDEXES.append(iFile)
+    A = INDEX_FILE[INDEXES]
+    nFiles = len(A)
+    if nFiles==0: return None
+    DELTA_TIMES = np.zeros((nFiles,), np.float32)
+    for k in range(nFiles):
+        float_time =datetime.datetime.strptime(A['time'][k],'%Y%m%d-%H:%M:%S')
+        deltat = profile.time - float_time
+        DELTA_TIMES[k] = deltat.total_seconds()
+    min_DeltaT = np.abs(DELTA_TIMES).min()
+    if min_DeltaT > 3600*3 :
+        if verbose: print "no FLOAT_OPT_2020 file corresponding to "  + profile._my_float.filename
+        return None
+    F = (A['lon'] - profile.lon)**2 + (A['lat'] - profile.lat)**2 +  DELTA_TIMES**2
+    iFile = F.argmin()
+    timestr          = A['time'][iFile]
+    lon              = A['lon' ][iFile]
+    lat              = A['lat' ][iFile]
+    filename         = A['file_name'][iFile]
+    available_params = A['parameters'][iFile]
+    float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+    return profile_gen(lon, lat, float_time, filename, available_params)
+
+
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'IRR_490'
+    var = 'BBP700'
     TI = TimeInterval('20120101','20170130','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2019/6901861/MR6901861_051.nc"
+    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2020/6903197/SD6903197_079.nc"
     F=BioFloat.from_file(filename)
 
 

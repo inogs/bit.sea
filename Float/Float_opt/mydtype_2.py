@@ -2,6 +2,10 @@
 
 import numpy as np
 
+BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('VALUE'      , np.float)  ,  ('qc'    ,   'S100')   ,\
+                                ('Latitude'    , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+                                ('Name'        , 'S100')     , ('date'       , 'S100')])
+
 
 QC_380_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('IRR_380'    , np.float)  ,  ('qc_380'    ,   'S100')   ,\
                                                        ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\

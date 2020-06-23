@@ -365,7 +365,7 @@ plt.close('all')
 # RMSD figure
 #chl
 fig,axs = plt.subplots(Nlayers_chl,1,sharex=True,sharey=True,figsize=[10,9])
-plt.suptitle(r'RMSD chl $[mg/m^3]$')
+plt.suptitle(r'Misfit RMS chl $[mg/m^3]$')
 
 for il,ll in enumerate(CHLlist):
     plt.sca(axs[il])
@@ -385,7 +385,7 @@ plt.savefig(OUTDIR + 'chl_rmsdlayers.png')
 
 #nit
 fig,axs = plt.subplots(Nlayers_nit,1,sharex=True,sharey=True,figsize=[10,9])
-plt.suptitle(r'RMSD nit $[mmol/m^3]$')
+plt.suptitle(r'Misfit RMS nit $[mmol/m^3]$')
 
 for il,ll in enumerate(NITlist):
     plt.sca(axs[il])
@@ -452,7 +452,7 @@ plt.savefig(OUTDIR + 'nit_biaslayers.png')
 # RMSD figure
 #chl
 fig,axs = plt.subplots(Nlayers_chl,1,sharex=True,sharey=True,figsize=[10,9])
-plt.suptitle(r'RMSD chl $[mg/m^3]$')
+plt.suptitle(r'Misfit RMS chl $[mg/m^3]$')
 
 for il,ll in enumerate(CHLlist):
     plt.sca(axs[il])
@@ -482,7 +482,7 @@ plt.savefig(OUTDIR + 'chl_rmsdlayers_monthly.png')
 
 #nit
 fig,axs = plt.subplots(Nlayers_nit,1,sharex=True,sharey=True,figsize=[10,9])
-plt.suptitle(r'RMSD nit $[mmol/m^3]$')
+plt.suptitle(r'Misfit RMS nit $[mmol/m^3]$')
 
 for il,ll in enumerate(NITlist):
     plt.sca(axs[il])

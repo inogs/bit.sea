@@ -571,3 +571,24 @@ class MapPlotter():
 			data = data[iDepth,:,:]
 		# Plot
 		return self.plot(lon,lat,data,params=params,clear=False)
+
+	def scatter(self,xc,yc,params=None,clear=True,**kwargs):
+		'''
+		Main plotting function. Plots given the longitude, latitude and data.
+		An optional params dictionary can be inputted to control the plot.
+
+		Inputs:
+			> xc:     Scatter x points
+			> yc:     Scatter y points
+			> params: Optional parameter dictionary
+			> clear:  Clear axes before plotting
+
+		Outputs:
+			> Figure object
+		'''
+		self.plot_empty(params=params,clear=clear)
+
+		# Plot
+		self._plot = self._ax.scatter(xc,yc,data,transform=self._projection,**kwargs)
+
+		return self._fig

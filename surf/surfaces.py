@@ -91,6 +91,8 @@ def DCM2(chl,maskobj):
     matrixCM[:,:] = np.nan
     matrixIDCM = np.zeros((jpj,jpi))
     matrixIDCM[:,:] = np.nan
+    matrixDCMthick = np.zeros((jpj,jpi))
+    matrixDCMthick[:,:] = np.nan
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -116,11 +118,16 @@ def DCM2(chl,maskobj):
                         matrixCM[jj,ji] = CM
                         matrixIDCM[jj,ji] = profile_len-(iid+indmax)
                         break
-    
+                if not(np.isnan(matrixDCM[jj,ji])):
+                    inddcm = profile>(matrixCM[jj,ji]-(matrixCM[jj,ji]-profile[0])/2.)
+                    dzp = maskobj.e3t[:profile_len,jj,ji]
+                    matrixDCMthick[jj,ji] = np.nansum(dzp[inddcm])
+
     matrixDCM[~tmask] = np.nan
     matrixCM[~tmask] = np.nan
     matrixIDCM[~tmask] = np.nan
-    return matrixDCM,matrixCM,matrixIDCM
+    matrixDCMthick[~tmask] = np.nan
+    return matrixDCM,matrixCM,matrixIDCM,matrixDCMthick
 
 def MWB(chl,maskobj):
     '''
@@ -206,6 +213,8 @@ def NUTRCL_dz_max(nut,maskobj):
     matrixN[:,:] = np.nan
     matrixINCL = np.zeros((jpj,jpi))
     matrixINCL[:,:] = np.nan
+    matrixNCLslope = np.zeros((jpj,jpi))
+    matrixNCLslope[:,:] = np.nan
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -221,10 +230,12 @@ def NUTRCL_dz_max(nut,maskobj):
                 matrixNCL[jj,ji] = NCL
                 matrixN[jj,ji] = NUT
                 matrixINCL[jj,ji] = iid
-                    
+                matrixNCLslope[jj,ji] = np.nanmean(dN[iid-2:iid+2])
+ 
     
     matrixNCL[~tmask] = np.nan
     matrixN[~tmask] = np.nan
     matrixINCL[~tmask] = np.nan
-    return matrixNCL,matrixN,matrixINCL
+    matrixNCLslope[~tmask] = np.nan
+    return matrixNCL,matrixN,matrixINCL,matrixNCLslope
 

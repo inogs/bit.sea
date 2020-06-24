@@ -4,12 +4,7 @@ import datetime
 import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
-from scipy.optimize import curve_fit
-
-from instrument import Instrument, Profile
-from mhelpers.pgmean import PLGaussianMean
-meanObj = PLGaussianMean(5,1.0)
-
+from instruments.instrument import Instrument, Profile
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -19,7 +14,7 @@ mydtype= np.dtype([
           ('parameters','S200')] )
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
 STATIC_REPO = addsep(os.getenv("STATIC_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(STATIC_REPO) + "Float_OPT_2019/Float_indexer.0.txt"
+FloatIndexer=addsep(STATIC_REPO) + "SUPERFLOAT/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
@@ -40,24 +35,18 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var, read_adjusted=True):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
-        Takes var as string
-              read_adjusted as logical
+        Arguments:
+        * var *  string
+        * read_adjusted * IS NOT USED, but we leave it here because there is a lot of calls using it
+                          Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
+
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var, mean=self.mean)
-
-    def read_fitted(self,var, func):
-        '''
-        This is used to calculate the radiometric profile values at the surface.
-        Use an exponential fit and extrapolate values to the surface.
-        Returns 3 numpy arrays: Pres, Profile, Qc with values extrapolated to 0 m
-        '''
-
-        return self._my_float.read_fitted(var, func, mean=self.mean)
+        return self._my_float.read(var)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -65,7 +54,7 @@ class BioFloatProfile(Profile):
         return self._my_float.wmo
 
     def ID(self):
-        return  self.name() + "_" + self.time.strftime("%Y%m%d-%H:%M:%S_") + str(self.lon) + "_"+ str(self.lat)
+        return  self.name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
 
 
 class BioFloat(Instrument):
@@ -78,14 +67,11 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        #istart=filename.index("/",filename.index('Float_OPT_2019'))
-        #iend  =filename.index("/",istart+1)
-        wmo, cycle = os.path.basename(filename).rsplit("_")
-        self.wmo = wmo[2:]
-        self.cycle = int(cycle[:3])
-        #self.wmo = filename[istart+1:iend]
-        #cycle = os.path.basename(filename).rsplit("_")[2]
-        #self.cycle = int(cycle)
+        istart=filename.index("/",filename.index('SUPERFLOAT/'))
+        iend  =filename.index("/",istart+1)
+        self.wmo = filename[istart+1:iend]
+        cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
+        self.cycle = int(cycle)
 
 
     def __eq__(self,other):
@@ -99,92 +85,35 @@ class BioFloat(Instrument):
 
 
 
-    def read_raw(self,var):
+    def read(self,var):
         '''
         Reads data from file
-        Returns 2 numpy arrays: Pres, Profile
+        Returns 3 numpy arrays: Pres, Profile, Qc
         '''
         ncIN=NC.netcdf_file(self.filename,'r')
         Pres    = ncIN.variables['PRES_'+var].data.copy()
         Profile = ncIN.variables[        var].data.copy()
+        try:
+            Qc      = ncIN.variables[var + "_QC"].data.copy()
+        except:
+            Qc = np.ones_like(Pres, dtype=np.int)*2
         ncIN.close()
 
-        return Pres, Profile
-
-    def read(self, var, mean=None):
+        return Pres, Profile, Qc
+    def origin(self,var):
         '''
-
-        Reads profile data from file, applies a rarefaction and optionally a filter to the data
-
-        Takes var as string
-              read_adjusted as logical
-        Returns 3 numpy arrays: Pres, Profile, Qc
+        Arguments:
+        * var * string
+        Returns:
+        a tuple of two strings:
+           * origin      * string, "lov" or "Coriolis"
+           * file_origin * string , path of the source file
         '''
-
-
-        raw_pres, raw_prof   = self.read_raw(var)
-        pres,index=np.unique(raw_pres,return_index=True)
-        prof =  raw_prof[index]
-        qc = np.ones_like(pres)*2
-        #if var=='CHLA': prof = prof*0.5
-
-
-        if pres.size ==0:
-            return pres, prof, qc
-
-        if mean == None:
-            if BioFloat.default_mean != None:
-                return pres, BioFloat.default_mean.compute(prof, pres), qc
-            else:
-                return pres, prof, qc
-        else:
-            return pres, mean.compute(prof, pres), mean.compute(qc,pres)
-
-
-    def read_fitted(self, var, func, mean=None):
-        '''
-        This is used to calculate the radiometric profile values at the surface.
-        Use an exponential fit and extrapolate values to the surface.
-        Returns the irradiance values at the surface.
-
-        Reads profile data from file, applies a rarefaction and optionally a filter to the data
-
-        Returns the measurement's surface value
-
-        '''
-
-        raw_pres, raw_prof   = self.read_raw(var)
-        pres,index           = np.unique(raw_pres,return_index=True)
-        prof                 = raw_prof[index]
-
-        if pres[0] < 1.5 and pres[3] < 10.: 
-        
-            popt,_   = curve_fit(func, pres, prof)
-            pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
-            prof_new = func(pres_new, *popt)
-
-        else:
-            pres_new = pres
-            prof_new = prof
-
-        qc       = np.ones_like(pres_new)*2
-
-        #import matplotlib.pyplot as plt
-        #plt.plot(prof, -pres, 'm', label='Profile')
-        #plt.plot(prof_new, -pres_new, 'b', label='Curve fit')
-        #plt.legend(loc='best')
-        #plt.show()
-        
-        if pres_new.size ==0:
-            return pres_new, prof_new, qc
-
-        if mean == None:
-            if BioFloat.default_mean != None:
-                return pres_new, BioFloat.default_mean.compute(prof_new, pres_new), qc
-            else:
-                return pres_new, prof_new, qc
-        else:
-            return pres_new, mean.compute(prof_new, pres_new), mean.compute(qc,pres_new)
+        ncIN=NC.netcdf_file(self.filename,'r')
+        origin=ncIN.variables[var].origin
+        file_origin=ncIN.variables[var].file_origin
+        ncIN.close()
+        return origin, file_origin
 
 
     def basicplot(self,Pres,profile):
@@ -224,6 +153,7 @@ class BioFloat(Instrument):
         '''
         Returns the single Bio_Float instance corresponding to filename
         '''
+
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
             timestr          = INDEX_FILE['time'][iFile]
@@ -250,9 +180,9 @@ def FloatSelector(var, T, region):
         a list of BioFloatProfile objects.
     Caveats:
        In order to work on dataset different from the cineca DRES archive
-       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/
+       /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC
        remember to define the environment variable STATIC_REPO
-       export STATIC_REPO=/some/path/with/ Float_opt_2019/ Float_opt_2020/
+       export STATIC_REPO=/some/path/with/  Float_opt/ Float_opt_2020/ SUPERFLOAT/
     '''
 
     nFiles=INDEX_FILE.size
@@ -264,7 +194,7 @@ def FloatSelector(var, T, region):
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = STATIC_REPO + "Float_OPT_2019/" + filename
+        filename = STATIC_REPO + "SUPERFLOAT/" + filename
 
         if var is None :
             VarCondition = True
@@ -305,31 +235,48 @@ def filter_by_wmo(Profilelist,wmo):
     '''
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
+def remove_bad_sensors(Profilelist,var):
+    '''
+
+    Subsetter, filtering out bad sensors for that var.
+    At the moment that method does not do anything, because bad sensors have been already removed
+    by superfloat generators.
+
+    In case of new expert evaluation, if we decide to remove another bad sensor,
+    we can add here the part of code to have quickly the desired result.
+    Then, the procedure to avoid bad sensors in superfloat dataset is
+    - adding bad float in superfloat_${var}.py remove_bad_sensor()
+    - remove files from SUPERFLOAT DATASET
+    - launch dump_index.py without Float_Indexer.txt input
+
+
+     Arguments:
+      * Profilelist * list of Profile objects
+      * var         * string
+
+      Returns:
+        a list of Profile Objects
+    '''
+
+    return Profilelist
 
 
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'IRR_490'
+    var = 'CDOM'
     TI = TimeInterval('20120101','20170130','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Float_OPT_2019/6901861/MR6901861_051.nc"
+    filename="/gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/6901032/SD6901032_015.nc"
     F=BioFloat.from_file(filename)
 
+    print len(PROFILE_LIST)
 
-    for ip, p in enumerate(PROFILE_LIST):
+    for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
-        ii=Pres>100
-        deriv_1 = np.diff(V[ii])
-        if (deriv_1>0).any():
-            print "First derivative > 0 at profile ", ip
-            import sys
-            sys.exit()
-
-
         if Pres.min()>0:
             print Pres.min()
 

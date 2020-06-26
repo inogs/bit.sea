@@ -67,8 +67,8 @@ aeg = Polygon([21.85, 24.00, 24.90, 26.25, 26.25, 26.30, 28.00, 28.00, 21.85],
 aeg = SimplePolygonalBasin('aeg', aeg, 'Aegean Sea')
 
 
-atl  = Polygon([ -5.5,-5.5,-30.0,-30.0], 
-               [ 32.0,40.0,40.0,32.0]) 
+atl =  Polygon([ -6., -6., -9., -9. ],
+               [ 30., 43., 43., 30. ])
 atl  = SimplePolygonalBasin('atl', atl,'Atlantic buffer')
 
 med = ComposedBasin('med',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4],'Mediterranean Sea')
@@ -86,8 +86,8 @@ mid3 = ComposedBasin('mid3', [adr1,adr2,ion1,ion2,ion3] , 'Central Mediterranean
 med3 = ComposedBasin('MED3', [eas3,wes3,mid3,med])
 #med3 = ComposedBasin('MED3', [eas3,wes3,mid3])
 
-Pred = ComposedBasin('Pr',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4])
-P    = ComposedBasin('P',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,med])
+Pred = ComposedBasin('Pr',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,atl])
+P    = ComposedBasin('P',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,med,atl])
 
 #for NRT3
 

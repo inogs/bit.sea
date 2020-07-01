@@ -19,6 +19,9 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString[:5]=='days='):
         ndays=int(freqString[5:])
         req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,days=ndays)
+    if (freqString[:8]=='seconds='):
+        nseconds=int(freqString[8:])
+        req = requestors.seconds_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour,currentDate.minute, delta_seconds=nseconds) 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
 class TimeList():

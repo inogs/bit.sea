@@ -283,7 +283,7 @@ class Matchup_Manager():
 
 
             ref_varname = self.reference_var(p, model_varname) if refvar==None else refvar
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile)):
+            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile, all_instruments.superfloat.BioFloatProfile, static.superfloat.BioFloatProfile)):
                 Pres, Profile, Qc = p.read_fitted(ref_varname, func)
             else:
                 Pres, Profile, Qc = p.read_fitted(ref_varname, func, read_adjusted)

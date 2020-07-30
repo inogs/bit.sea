@@ -5,6 +5,7 @@ import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
 from instruments.instrument import Instrument, Profile
+from scipy.optimize import curve_fit
 
 mydtype= np.dtype([
           ('file_name','S200'),

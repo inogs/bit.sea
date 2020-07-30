@@ -1,5 +1,5 @@
 import numpy as np
-from Sat import SatManager as Sat
+from Sat import SatManager
 
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
@@ -45,7 +45,7 @@ def array_of_indices_for_slicing(xcoarse, xfine):
     return I_START, I_END
 
 
-def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fillValue=-999.0, min_cov=0.0, ave_func=Sat.mean):
+def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fillValue=-999.0, min_cov=0.0, ave_func=SatManager.mean):
     '''
     Interpolates data from a fine mesh to a coarser one.
     

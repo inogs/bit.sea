@@ -110,6 +110,7 @@ if somecheck or reset:
     nsub = 0
     subnames = ''
     for sub in V2.P:
+        if sub.name=='atl': continue
         nsub += 1
         subnames += sub.name + ', '
         filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'All.npy'
@@ -183,6 +184,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     if (args.statsdir is not None) and (not all(exit_condmask)):
         masksubday = {}
         for sub in V2.P:
+            if sub.name=='atl': continue
             masksubday[sub.name] = {}
             masksubday[sub.name]['ORIG'] = masksub_M[sub.name] & (cloudsLandTIME == False)
             masksubday[sub.name]['CHECK'] = masksub_M[sub.name] & (cloudsLandTIME == False) & (maskreject == 0)
@@ -195,6 +197,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
             stats_day[:,:] = np.nan
             print(masktype + ' --- Cycle on sub   ---')
             for isub,sub in enumerate(V2.P):
+                if sub.name=='atl': continue
                 climadmean = DAILY_REF_MEAN[masksubday[sub.name][masktype]]
                 climadmean[climadmean<0] = np.nan
                 climadstd = DAILY_REF_STD[masksubday[sub.name][masktype]]

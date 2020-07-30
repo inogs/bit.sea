@@ -125,6 +125,9 @@ class Matchup_Manager():
         ncIN = NC.netcdf_file(filename,'r')
 
         M = ncIN.variables[var].data.copy()
+
+        print('WMO = ', wmo)
+        print('Cruise Index = ', ncIN.CruiseIndex)
         iProfile = ncIN.CruiseIndex.rsplit(", ").index(wmo)
         ncIN.close()
         Profile = M[iProfile,:]
@@ -270,7 +273,7 @@ class Matchup_Manager():
             print('Modelfile = ', Modelfile)
             print('Model_time = ', Model_time)
             print('p_ID = ', p.ID())
-            
+
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 

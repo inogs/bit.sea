@@ -6,6 +6,7 @@ import matchup.matchup
 import matplotlib.pyplot as pl
 import all_instruments
 import postproc
+import static
 
 
 class Matchup_Manager():

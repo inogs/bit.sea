@@ -54,7 +54,7 @@ class BioFloatProfile(Profile):
         return self._my_float.wmo
 
     def ID(self):
-        return  self.name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
+        return  self.name() + "_" + self.time.strftime("%Y%m%d-%H:%M:%S_") + str(self.lon) + "_"+ str(self.lat)
 
 
 class BioFloat(Instrument):
@@ -67,11 +67,14 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        istart=filename.index("/",filename.index('SUPERFLOAT/'))
-        iend  =filename.index("/",istart+1)
-        self.wmo = filename[istart+1:iend]
-        cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
-        self.cycle = int(cycle)
+        #istart=filename.index("/",filename.index('SUPERFLOAT/'))
+        #iend  =filename.index("/",istart+1)
+        wmo, cycle = os.path.basename(filename).rsplit("_")
+        self.wmo = wmo[2:]
+        self.cycle = int(cycle[:3])
+        #self.wmo = filename[istart+1:iend]
+        #cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
+        #self.cycle = int(cycle)
 
 
     def __eq__(self,other):

@@ -266,6 +266,11 @@ class Matchup_Manager():
                 continue
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
+
+            print('Modelfile = ', Modelfile)
+            print('Model_time = ', Model_time)
+            print('p_ID = ', p.ID())
+            
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 

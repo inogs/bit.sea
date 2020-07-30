@@ -114,6 +114,18 @@ class BioFloat(Instrument):
 
         return Pres, Profile, Qc
 
+    def read_raw(self,var):
+        '''
+        Reads data from file
+        Returns 2 numpy arrays: Pres, Profile
+        '''
+        ncIN=NC.netcdf_file(self.filename,'r')
+        Pres    = ncIN.variables['PRES_'+var].data.copy()
+        Profile = ncIN.variables[        var].data.copy()
+        ncIN.close()
+
+        return Pres, Profile
+
 
     def read_fitted(self, var, func, mean=None):
         '''

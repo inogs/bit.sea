@@ -127,9 +127,9 @@ class Matchup_Manager():
 
         M = ncIN.variables[var].data.copy()
 
-        print('WMO = ', wmo)
-        print('Cruise Index = ', ncIN.CruiseIndex)
-        iProfile = ncIN.CruiseIndex.rsplit(", ").index(wmo)
+        #print('WMO = ', wmo)
+        #print('Cruise Index = ', ncIN.CruiseIndex)
+        iProfile = 0 #ncIN.CruiseIndex.rsplit(", ").index(wmo)
         ncIN.close()
         Profile = M[iProfile,:]
 
@@ -271,9 +271,9 @@ class Matchup_Manager():
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
 
-            print('Modelfile = ', Modelfile)
-            print('Model_time = ', Model_time)
-            print('p_ID = ', p.ID())
+            #print('Modelfile = ', Modelfile)
+            #print('Model_time = ', Model_time)
+            #print('p_ID = ', p.ID())
 
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)

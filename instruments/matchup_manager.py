@@ -129,7 +129,7 @@ class Matchup_Manager():
 
         #print('WMO = ', wmo)
         #print('Cruise Index = ', ncIN.CruiseIndex)
-        iProfile = 0 #ncIN.CruiseIndex.rsplit(", ").index(wmo)
+        ncIN.CruiseIndex.rsplit(", ").index(wmo)
         ncIN.close()
         Profile = M[iProfile,:]
 

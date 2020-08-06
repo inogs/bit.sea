@@ -194,11 +194,13 @@ class Transect(object):
             #Divide the segment in points
             xs = np.linspace(x_min,x_max,num=seg.points)
             ys = np.linspace(y_min,y_max,num=seg.points)
-            xs = np.round(xs)
-            ys = np.round(ys)
+            xs = np.round(xs).astype(np.int32)
+            ys = np.round(ys).astype(np.int32)
             #Fill data with the nearest neighbour
             data = list()
+            #print "seg.points = ", seg.points
             for i in range(seg.points):
+                #print "indexes=", i, ys[i], xs[i]
                 data.append(self.__datacache['data'][:,ys[i],xs[i]])
             #Convert data to a Numpy array
             data = np.array(data)

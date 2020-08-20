@@ -233,6 +233,43 @@ class TimeList():
         print "Time not found"
         return None
 
+    def selectWeeklyGaussWeights(self,requestor,std):
+        '''
+        Method for time aggregation for weekly req 
+        with weigths from Gaussian distribution centered on week central date
+        shape of Gaussian distribution from std input
+        indexes, weights = select(requestor,std)
+        Returned values:
+         - a list of indexes (integers) indicating to access selected times (or files)
+         - a numpy array of weights
+
+
+        '''
+
+
+        if isinstance(requestor, requestors.Weekly_req):
+            assert self.inputFrequency != "monthly"
+            assert self.inputFrequency != "weekly"
+            assert self.inputFrequency != "10days"
+
+            from scipy.stats import norm
+
+            SELECTION=[]
+            weights  =[]
+
+            gaussweight = [norm.pdf(x,0,std) for x in range(4)]
+
+            if self.inputFrequency == "daily":
+                for it,t in enumerate(self.Timelist):
+                    if requestor.time_interval.contains(t):
+                        SELECTION.append(it)
+                        dayd = abs((t-requestor.time_interval.start_time).days-3)
+                        weights.append(gaussweight[dayd])
+            return SELECTION , np.array(weights)
+
+
+        else: 
+                raise NotImplementedError
 
     def select(self,requestor):
         '''

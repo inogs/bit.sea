@@ -82,7 +82,7 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','dNit_dz','CM','O2o_sat','OMZ','max_O2']
 nStat = len(METRICS)
 max_depth = get_level_depth(TheMask,300)
 
@@ -97,6 +97,7 @@ bt=300
 depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
+#  if (var_mod =="O2o"):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
@@ -105,7 +106,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
         print OUTFILE
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
-        if ( var_mod == 'O2o'):
+#        if ( var_mod == 'O2o'):
+        if ( var_mod == 'pippo'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)
             ax1,ax2,ax3,ax4,ax5,ax6,ax7=axes
             xlabels = ax7.get_xticklabels()
@@ -137,10 +139,10 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
             timelabel_list.append(p.time)
 
-#            try:
-            GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
-#            except:
-#                continue
+            try:
+              GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
+            except:
+                continue
 
             if GM.number()> 0:
                 plotmat_model[:,ip] = GM.Model
@@ -208,21 +210,31 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='WLB REF') # WINTER AYER BLOOM
-            ax8.plot(times,model_mld,'r',label='WLB MOD')
+            ax8.plot(times, ref_mld,'.r',label='MWB REF') # vertically Mixed Winter Bloom depth | WLB WINTER LAYER BLOOM
+            ax8.plot(times,model_mld,'r',label='MWB MOD')
             ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]
             ymean=np.mean(ax8.get_ylim())
-            ax8.text(xmax, ymean, "WLB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+            ax8.text(xmax, ymean, "MWB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
 
 
         if ( var_mod == "O2o" ):
             ax6.set_ylabel('INTG 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylabel('SURF \n $[mmol{\  } m^{-3}]$',fontsize=15)
             model_Osat, ref_Osat = A.plotdata(var_mod,'O2o_sat', only_good=False)
+            model_OMZ , ref_OMZ = A.plotdata(var_mod,'OMZ', only_good=False)
+            model_maxO2, ref_maxO2 = A.plotdata(var_mod,'max_O2', only_good=False)
 
             ax5.plot(times, ref_Osat, '.r',label='O2sat (FLOAT)') #'REF OXY at SATURATION'
+
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ Ref') #'REF OMZ
+            ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max Ref') #'REF maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
+            ax8.set_ylim(1000,0)
+            legend = ax8.legend(loc='upper left', shadow=True, fontsize=10)
+
 #            ax8.plot(times,  np.ones_like(times))
 #            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
 
@@ -263,7 +275,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)
-            if ( var_mod != 'O2o' ):
+#            if ( var_mod != 'O2o' ):
+            if ( var_mod != 'OXY' ):
                 ax7.set_xticklabels([])
             ax7.set_ylim(0,1)
 
@@ -275,7 +288,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
         ticklabs = cbar.ax.get_yticklabels()
         cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
         
-        if var_mod == 'O2o': 
+#        if var_mod == 'O2o': 
+        if var_mod == 'OXY':
             xlabels=ax7.get_xticklabels()
         else:
             xlabels = ax8.get_xticklabels()

@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Weighted averager for sat files for weekly average only.
+    Generic averager for sat files.
     It works with one mesh, without performing interpolations.
     Files with dates used for the average provided (dirdates).
     ''',
@@ -21,20 +21,6 @@ def argument():
 
                                 )
 
-    parser.add_argument(   '--dirdates', '-d',
-                                type = str,
-                                required = True,
-                                help = ''' OUT dates sat directory'''
-
-                                )
-
-    parser.add_argument(   '--dirpmap', '-p',
-                                type = str,
-                                required = True,
-                                help = ''' OUT dates sat directory'''
-
-                                )
-
     parser.add_argument(   '--mesh', '-m',
                                 type = str,
                                 required = True,
@@ -45,16 +31,9 @@ def argument():
     parser.add_argument(   '--timeaverage', '-t',
                                 type = str,
                                 required = True,
-                                choices = ['weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday'],
+                                choices = ['monthly','weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
-
-    parser.add_argument(   '--stdweight', '-s',
-                                type = str,
-                                required = True,
-                                help = ''' Std for Gaussian weight (n. days of time correlation'''
-                                )
-
     return parser.parse_args()
 
 args = argument()
@@ -67,7 +46,6 @@ import numpy as np
 import os
 import Sat.SatManager as Sat
 from commons.utils import addsep
-
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD
@@ -81,12 +59,9 @@ except:
 
 CHECKDIR = addsep(args.checkdir)
 OUTDIR   = addsep(args.outdir)
-DIRDATES = addsep(args.dirdates)
-DIRPMAP  = addsep(args.dirpmap)
-std = float(args.stdweight)
 maskSat = getattr(masks,args.mesh)
 
-reset = False
+reset = True
 
 Timestart="19500101"
 Time__end="20500101"
@@ -95,6 +70,7 @@ TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%
 suffix = os.path.basename(TLCheck.filelist[0])[8:]
 
 
+if args.timeaverage == 'monthly'        : TIME_reqs=TLCheck.getMonthlist()
 if args.timeaverage == 'weekly_tuesday' : TIME_reqs=TLCheck.getWeeklyList(2)
 if args.timeaverage == 'weekly_friday'  : TIME_reqs=TLCheck.getWeeklyList(5)
 if args.timeaverage == 'weekly_monday'  : TIME_reqs=TLCheck.getWeeklyList(1)
@@ -112,49 +88,23 @@ for req in TIME_reqs[rank::nranks]:
     outfile = req.string + suffix
     outpathfile = OUTDIR + outfile
 
-    ii,ww = TLCheck.selectWeeklyGaussWeights(req,std)
+    ii, w = TLCheck.select(req)
     nFiles = len(ii)
 
-    if os.path.exists(outpathfile):
-        outdates = DIRDATES + req.string + 'weekdates.txt'
-        weekdates = np.loadtxt(outdates,dtype=str)
-        nDates = len(weekdates)
-    
-        if nFiles>nDates:
-            print 'Not skipping ' + req.string
-        else:
-            conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
-            if conditionToSkip: continue
+    if (os.path.exists(outpathfile)) and (not reset):
+        continue
 
     print outfile
-    dateweek = []
-    if nFiles < 3 : 
-        print req
-        print "less than 3 files"
-        filedates = DIRDATES + req.string + 'weekdates.txt'
-        print(filedates)
-        np.savetxt(filedates,dateweek,fmt='%s')
-        continue
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]
-        CHL = Sat.readfromfile(inputfile)
+        CHL = Sat.readfromfile(inputfile,'KD490')
         M[iFrame,:,:] = CHL
         idate = TLCheck.Timelist[j]
         date8 = idate.strftime('%Y%m%d')
-        dateweek.append(date8)
-    CHL_OUT = Sat.WeightedLogAverager(M,ww)
-    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
+    CHL_OUT = Sat.averager(M)
+    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='KD490', mesh=maskSat)
 
-    filepmap = DIRPMAP + req.string + 'npmap.nc'
-    maskM = M>0.
-    npM = np.sum(maskM,0)
-    Sat.dumpGenericNativefile(filepmap, npM, varname='npWeek',mesh=maskSat)
-    print(filepmap)
 
-    filedates = DIRDATES + req.string + 'weekdates.txt'
-    print(filedates)
-    np.savetxt(filedates,dateweek,fmt='%s')
 
     print "\trequest ", counter, " of ", MySize, " done by rank ", rank
-

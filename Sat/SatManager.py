@@ -246,14 +246,12 @@ def logAverager(M):
     _,jpj,jpi = M.shape
     CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(jpi):
-        for j in range(jpj):
-            l = M[:,j,i]
-            goodValues = l != fillValue
-            if np.any(goodValues):
-                count = goodValues.sum()
-                LOGmean = np.log(l[goodValues]).sum() / count
-                CHL_OUT[j,i] = np.exp(LOGmean)
+    maskM = M==fillValue
+    Mnan = M.copy()
+    Mnan[maskM] = np.nan
+    LOGm = np.nanmean(np.log(Mnan),0)
+    CHL_OUT = np.exp(LOGm)
+    CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
 
 def averager(M):
@@ -275,8 +273,9 @@ def averager(M):
 #                count = goodValues.sum()
 #                CHL_OUT[j,i] = l[goodValues].sum() / count
     maskM = M==fillValue
-    M[maskM] = np.nan
-    CHL_OUT = np.nanmean(M,0)
+    Mnan = M.copy()
+    Mnan[maskM] = np.nan
+    CHL_OUT = np.nanmean(Mnan,0)
     CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
 

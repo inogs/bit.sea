@@ -46,25 +46,31 @@ from instruments.var_conversions import FLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
-from metrics import *
+from metrics2 import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
 import commons.timerequestors as requestors
 from instruments import check
+from float_OXY_saturation import *
 
 OUTDIR = addsep(args.outdir)
 Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 TheMask=Mask(args.maskfile, loadtmask=False)
 layer=Layer(0,200)
+layer300=Layer(0,350)
+layer1000=Layer(200,1000)
 
 VARLIST = ['P_l','N3n','O2o']
 Adj = [True,True,False]
+Adj = [True,True,True]
 extrap = [True,False,True]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','dNit_dz','CM','O2o_sat','OMZ','max_O2']
+METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','OMZ','max_O2']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -78,6 +84,7 @@ A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 A_model = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 
 for ivar, var_mod in enumerate(VARLIST):
+# if (ivar == 2):
     var = FLOATVARS[var_mod]
     adj=Adj[ivar]
 
@@ -114,6 +121,9 @@ for ivar, var_mod in enumerate(VARLIST):
                     continue
 
 		gm200 = GM.subset(layer)
+                gm300 = GM.subset(layer300)
+                gm1000=GM.subset(layer1000)
+
 		nLevels = gm200.number()
 		izmax = min(nLevels,iz200)
 
@@ -128,14 +138,25 @@ for ivar, var_mod in enumerate(VARLIST):
 
 		if (VARLIST[ivar] == "P_l"):
 		    Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
-		    Flo[ip,3] = find_MLD(gm200.Ref  ,gm200.Depth) # MLB
+		    Flo[ip,3] = find_WLB(gm200.Ref  ,gm200.Depth) # MLB
 		    Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
-                    Mod[ip,3] = find_MLD(gm200.Model,gm200.Depth) # MLB
+                    Mod[ip,3] = find_WLB(gm200.Model,gm200.Depth) # MLB
 
 
 		if (VARLIST[ivar] == "N3n"):
                     Flo[ip,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
 		    Mod[ip,4] = find_NITRICL(gm200.Model,gm200.Depth)
+  
+                if (VARLIST[ivar] == "O2o"):
+                    if ( len(gm1000.Model) > 2):
+                        Flo[ip,7] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
+                        Mod[ip,7] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 
+                    else:
+                        Flo[ip,7] = np.nan
+                        Mod[ip,7] = np.nan
+
+                    Flo[ip,8] = find_maxO2(gm300.Ref, gm300.Depth) # Oxygen Max depth
+                    Mod[ip,8] = find_maxO2(gm300.Model, gm300.Depth) # Oxygen Max depth
 
 
 	    for iStat, sStat in enumerate(METRICS):

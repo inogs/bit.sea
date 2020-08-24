@@ -121,7 +121,10 @@ nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 
 METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
+METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
+
 METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
+METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
@@ -143,8 +146,8 @@ A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
 A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
-    TABLE_METRICS = np.zeros((nSub,18),np.float32)*np.nan
-    TABLE_METRICS_SHORT = np.zeros((nSub,10),np.float32)*np.nan
+    TABLE_METRICS = np.zeros((nSub,26),np.float32)*np.nan #before 18 metrics
+    TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
 	OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
         S = SubMask(SubBasin, maskobject=TheMask)
@@ -195,7 +198,7 @@ for ivar, var in enumerate(VARLIST):
 	ax2.set_ylabel(' # Points')
         ax2.set_ylim([0,numP.max() +2])
 	ax2.legend(loc=1)
-	TABLE_METRICS[iSub,17] = np.mean(numP[ii])
+	TABLE_METRICS[iSub,25] = np.mean(numP[ii])
  
         if (var == "P_l"):
 	    DCM_Ref = A_float[ivar,:,iSub,2]
@@ -264,11 +267,33 @@ for ivar, var in enumerate(VARLIST):
             axes[3].set_ylim([200,0])
 
         if (var == "O2o"):
-            axes[3].plot(times,  np.ones_like(times))
+#            axes[3].plot(times,  np.ones_like(times))
+            OMZmeanRef = A_float[ivar,:,iSub,7]
+            OMZmeanMod = A_model[ivar,:,iSub,7]
+            O2oMaxRef = A_float[ivar,:,iSub,8]
+            O2oMaxMod = A_model[ivar,:,iSub,8]
+            axes[3].plot(times,O2oMaxRef,'r',label='REF')
+            axes[3].plot(times,O2oMaxMod,'b',label='MOD')
+            axes[3].invert_yaxis()
+            axes[3].set_ylabel('MAX OXY depth $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
 	    legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
+
+            TABLE_METRICS[iSub,17] = np.nanmean(OMZmeanRef[ii])
+            TABLE_METRICS[iSub,18] = np.nanmean(OMZmeanMod[ii])
+            good = ~np.isnan(OMZmeanRef[ii]) &  ~np.isnan(OMZmeanMod[ii])
+            m = matchup(OMZmeanMod[ii][good],   OMZmeanRef[ii][good])
+            TABLE_METRICS[iSub,19] = m.bias()
+            TABLE_METRICS[iSub,20] = m.RMSE()
+
+            TABLE_METRICS[iSub,21] = np.nanmean(O2oMaxRef[ii])
+            TABLE_METRICS[iSub,22] = np.nanmean(O2oMaxMod[ii])
+            good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
+            m = matchup(O2oMaxMod[ii][good],   O2oMaxRef[ii][good])
+            TABLE_METRICS[iSub,23] = m.bias()
+            TABLE_METRICS[iSub,24] = m.RMSE()
 
         if ( (np.isnan(corr)).all() == True ) : continue
         fig.savefig(OUTFILE)
@@ -285,12 +310,20 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS_SHORT[:,6] = TABLE_METRICS[:,12]
     TABLE_METRICS_SHORT[:,7] = TABLE_METRICS[:,15]
     TABLE_METRICS_SHORT[:,8] = TABLE_METRICS[:,16]
-    TABLE_METRICS_SHORT[:,9] = TABLE_METRICS[:,17]
+    TABLE_METRICS_SHORT[:,9] = TABLE_METRICS[:,19]
+
+    TABLE_METRICS_SHORT[:,10] = TABLE_METRICS[:,20]
+    TABLE_METRICS_SHORT[:,11] = TABLE_METRICS[:,23]
+    TABLE_METRICS_SHORT[:,12] = TABLE_METRICS[:,24]
+    TABLE_METRICS_SHORT[:,13] = TABLE_METRICS[:,25]
 
 #    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
 #    np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
-    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
-    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
+#    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
+#    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
+
+    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t")
+    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
 
 # METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 

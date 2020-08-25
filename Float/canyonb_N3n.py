@@ -28,14 +28,19 @@ def get_nitrate(timeobj,lat,lon, pres,temp, psal, doxy):
     Calculates the nitrate value of canyon_b
     Arguments:
     * timeobj * a datetime object
-    * lat     * a float scalar
+    * lat     * scalar value
     * lon     * idem
     * pres    * idem
     * psal    * idem
     * doxy    * idem
-
     '''
 
+    lon = float(lon)
+    lat = float(lat)
+    pres = float(pres)
+    temp = float(temp)
+    psal = float(psal)
+    doxy = float(doxy)
     doy=np.int(timeobj.strftime('%j'))*360./365
 
     if lon>180: lon=lon-360

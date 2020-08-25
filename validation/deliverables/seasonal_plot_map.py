@@ -90,7 +90,7 @@ CLIM_DICT={
 
 
 CONVERSION_DICT={
-         'ppn' : 365./100,
+         'ppn' : 365./1000,
          'N1p' : 1,
          'N3n' : 1,
          'PH'  : 1,

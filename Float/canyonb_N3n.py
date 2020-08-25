@@ -13,7 +13,7 @@ doy=np.int(d.strftime('%j'))*360./365
 
 if lon>180: lon=lon-360
 x,y= np.meshgrid(presgrid[1:,0],presgrid[0,1:])
-f = interpolate.interp2d(presgrid[1:,0],presgrid[0,1:],presgrid[1:,1:])
+f = interpolate.interp2d(presgrid[1:,0],presgrid[0,1:],presgrid[1:,1:].T)
 prespivot = f(lon,lat)
 
 fsigmoid=1./(1 + np.exp((pres-prespivot)/50))
@@ -73,3 +73,4 @@ y_rescaled=1.5*y*Ecart[ne]+Moy[ne]
 
 # and put into same shape as the input variables
 out=y_rescaled[0]
+print out

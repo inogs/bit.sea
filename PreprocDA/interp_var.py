@@ -1,13 +1,4 @@
 import argparse
-import numpy as np
-import os
-from commons.dataextractor import DataExtractor
-from commons.interpolators import surf_interp_2d
-from commons.mask import Mask
-from commons import netcdf4
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -50,6 +41,17 @@ def argument():
     return parser.parse_args()
 
 args = argument()
+
+import numpy as np
+import os
+from commons.dataextractor import DataExtractor
+from commons.interpolators import surf_interp_2d
+from commons.mask import Mask
+from commons import netcdf4
+from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
+from commons.utils import addsep
+
 
 INDIR = addsep(args.indir)
 OUTDIR = addsep(args.outdir)

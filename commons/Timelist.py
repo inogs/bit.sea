@@ -594,14 +594,15 @@ class TimeList():
 #       return REQ_LIST
 
 
-    def getSpecificIntervalList(self,deltastr='days=10',starttime="19971001-12:00:00"):
+    def getSpecificIntervalList(self,deltadays=10,starttime="19971001-12:00:00"):
         '''
         Useful in case of 10 days average, for example
         '''
+        deltastr = 'days=' + str(int(deltadays)) 
         REQ_LIST=[]
         dl=DL.getTimeList(starttime, self.timeinterval.end_time.strftime("%Y%m%d-%H:%M:%S"), deltastr)
         for dateobj in dl:
-            req= requestors.Interval_req(dateobj.year,dateobj.month,dateobj.day, deltastr)
+            req= requestors.Interval_req(dateobj.year,dateobj.month,dateobj.day, deltadays)
             REQ_LIST.append(req)
         return REQ_LIST
 

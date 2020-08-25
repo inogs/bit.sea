@@ -83,7 +83,7 @@ if args.timeaverage == 'weekly_tuesday' : TIME_reqs=TLCheck.getWeeklyList(2)
 if args.timeaverage == 'weekly_friday'  : TIME_reqs=TLCheck.getWeeklyList(5)
 if args.timeaverage == 'weekly_monday'  : TIME_reqs=TLCheck.getWeeklyList(1)
 if args.timeaverage == 'weekly_thursday': TIME_reqs=TLCheck.getWeeklyList(4)
-if args.timeaverage == 'tendays'        : TIME_reqs=TLCheck.Interval_req(1950,1,1,days=10)
+if args.timeaverage == 'tendays'        : TIME_reqs=TLCheck.getSpecificIntervalList(10,"19971001-12:00:00")
 
 jpi = maskSat.jpi
 jpj = maskSat.jpj

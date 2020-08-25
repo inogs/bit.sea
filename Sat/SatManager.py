@@ -310,8 +310,6 @@ def WeightedLogAverager(M, w):
     return CHL_OUT
 
 
-
-
 def WeightedAverager(M, w):
     '''
     Inner matrix M has dimensions (nFrames, jpj, jpi ), while w has dimension (nFrames)
@@ -323,15 +321,25 @@ def WeightedAverager(M, w):
     #assert jpi == NativeMesh.jpi
     CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(jpi):
-        for j in range(jpj):
-            l = M[:,j,i]
-            goodValues = l != fillValue
-            MyWeights = w[goodValues]
-            if np.any(goodValues):
-                count = MyWeights.sum()
-                CHL_OUT[j,i] = (MyWeights*l[goodValues]).sum() / count
+    nFrames = M.shape[0]
+    maskM = (M==fillValue)==False
+    maskNotallNan = np.sum(maskM,0)>0
+    nP = np.sum(maskNotallNan)
+    Mmasked = np.zeros((nFrames,nP))
+    wwM = np.zeros_like(Mmasked)
+    for iframe in range(nFrames):
+        wwM[iframe,:] = w[iframe]
+        Mmasked[iframe,:] = M[iframe,maskNotallNan]
+    noValidM = Mmasked==fillValue
+    Mmasked[noValidM] = np.nan
+    wwM[noValidM] = np.nan
+    countM = np.nansum(wwM,0)
+    chlm = np.nansum(wwM*Mmasked,0) / countM
+    CHL_OUT[maskNotallNan] = chlm
+
     return CHL_OUT
+
+
 
 def getnextIndex(array,value):
     for i,val in enumerate(array):

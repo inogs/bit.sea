@@ -6,6 +6,7 @@ import matplotlib.pyplot as pl
 from commons.utils import addsep
 from instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
+from instruments.var_conversions import SUPERFLOAT_VARS as conversion
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -26,6 +27,7 @@ class BioFloatProfile(Profile):
         self._my_float = my_float
         self.available_params = available_params
         self.mean = mean
+        self.has_adjusted = False
 
     def __eq__(self, other):
         if isinstance(other, BioFloatProfile):
@@ -66,7 +68,13 @@ class BioFloatProfile(Profile):
 
     def ID(self):
         return  self.name() + "_" + self.time.strftime("%Y%m%d-%H:%M:%S_") + str(self.lon) + "_"+ str(self.lat)
-
+    def reference_var(self,var):
+        '''
+        Returns the reference varname, for a given profile object and
+        a ogstm model varname
+        For BioFloats p.reference_var('O2o') returns 'DOXY'
+        '''
+        return conversion[var]
 
 class BioFloat(Instrument):
 

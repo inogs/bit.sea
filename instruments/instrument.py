@@ -6,6 +6,8 @@ class Profile(object):
         raise NotImplementedError
     def ID(self):
         raise NotImplementedError
+    def reference_var(self):
+        raise NotImplementedError
 
 class Instrument(object):
     pass

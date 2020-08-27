@@ -4,7 +4,6 @@ import scipy.io.netcdf as NC
 import numpy as np
 import matchup.matchup
 import matplotlib.pyplot as pl
-import all_instruments
 import postproc
 import static
 
@@ -154,24 +153,6 @@ class Matchup_Manager():
             return None
         return Model_time
 
-    def reference_var(self,p,var):
-        '''
-        returns the reference varname, for a given profile object and
-        a model varname
-        For BioFloats reference_var(p,'O2o') returns 'DOXY'
-        '''
-        if isinstance(p, all_instruments.optbio_float.BioFloatProfile):
-            return all_instruments.FLOAT_OPT_VARS[var]
-        if isinstance(p, all_instruments.optbio_float_2019.BioFloatProfile):
-            return all_instruments.FLOAT_OPT_VARS_2019[var]
-        if isinstance(p, all_instruments.superfloat.BioFloatProfile):
-            return all_instruments.FLOATVARS[var]
-        if isinstance(p, all_instruments.bio_float.BioFloatProfile):
-            return all_instruments.FLOATVARS[var]
-        if isinstance(p, all_instruments.lovbio_float.BioFloatProfile):
-            return all_instruments.LOVFLOATVARS[var]
-        if isinstance(p, all_instruments.mooring.MooringProfile):
-            return all_instruments.MOORINGVARS[var]
 
 
     def getMatchups(self,Profilelist,nav_lev,model_varname, read_adjusted=True, interpolation_on_Float=True, refvar=None):
@@ -216,11 +197,11 @@ class Matchup_Manager():
                 continue
 
 
-            ref_varname = self.reference_var(p, model_varname) if refvar==None else refvar
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile)):
-                Pres, Profile, Qc = p.read(ref_varname)
-            else:
+            ref_varname = p.reference_var(model_varname) if refvar==None else refvar
+            if p.has_adjusted:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
+            else:
+                Pres, Profile, Qc = p.read(ref_varname)
 
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
@@ -283,11 +264,11 @@ class Matchup_Manager():
                 continue
 
 
-            ref_varname = self.reference_var(p, model_varname) if refvar==None else refvar
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile, all_instruments.superfloat.BioFloatProfile, static.superfloat.BioFloatProfile)):
-                Pres, Profile, Qc = p.read_fitted(ref_varname, func)
-            else:
+            ref_varname = p.reference_var(model_varname) if refvar==None else refvar
+            if p.has_adjusted:
                 Pres, Profile, Qc = p.read_fitted(ref_varname, func, read_adjusted)
+            else:
+                Pres, Profile, Qc = p.read_fitted(ref_varname, func)
 
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
@@ -347,11 +328,11 @@ class Matchup_Manager():
                 continue
 
 
-            ref_varname = self.reference_var(p, model_varname)
-            if isinstance(p, (all_instruments.superfloat.BioFloatProfile, all_instruments.optbio_float.BioFloatProfile, all_instruments.optbio_float_2019.BioFloatProfile)):
-                Pres, Profile, Qc = p.read(ref_varname)
-            else:
+            ref_varname = p.reference_var(model_varname)
+            if p.has_adjusted:
                 Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
+            else:
+                Pres, Profile, Qc = p.read(ref_varname)
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
             CheckReport=None
             if checkobj is not None:
@@ -466,7 +447,7 @@ class Matchup_Manager():
 
 
             model_varname = 'votemper'
-            ref_varname = self.reference_var(p, model_varname)
+            ref_varname = p.reference_var(model_varname)
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
                 print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
@@ -479,7 +460,7 @@ class Matchup_Manager():
             #pl.rc('text', usetex=True)
 
             for i,model_varname in enumerate(MODELVARLIST):
-                ref_varname = self.reference_var(p, model_varname)
+                ref_varname = p.reference_var(model_varname)
                 if ref_varname not in VARLIST: 
                     ax=axs[mapgraph[i]]
                     ax.set_title(plotvarname[i])

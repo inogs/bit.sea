@@ -14,16 +14,16 @@ def argument():
                             help = ''' Outputdir'''
                             )
 
+    parser.add_argument(   '--inmod', '-d',
+                            type = str,
+                            required = True,
+                            help = 'Input model'
+                            )
+
     parser.add_argument(   '--insat', '-s',
                             type = str,
                             required = True,
                             help = 'Input var sat'
-                            )
-
-    parser.add_argument(   '--indif', '-d',
-                            type = str,
-                            required = True,
-                            help = 'Input var dif'
                             )
 
 #    parser.add_argument(   '--limgib', '-g',
@@ -50,22 +50,36 @@ def argument():
 
 args = argument()
 
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
 
 import numpy as np
 from commons.dataextractor import DataExtractor
 from commons.mask import Mask 
+from commons.Timelist import TimeList
 from commons.utils import addsep
+from commons.timerequestors import Clim_month
 from postproc import masks
 from Sat import SatManager
 
 maskSat = getattr(masks,'Mesh24')
 
 INSAT = addsep(args.insat)
-INDIF = addsep(args.indif)
+INMOD = addsep(args.inmod)
 OUTDIR = addsep(args.outdir)
 TheMask = Mask(args.maskfile)
 minvmodLIST = args.minvmod
 
+_,jpj,jpi = TheMask.shape
 indGib,_ = TheMask.convert_lon_lat_to_indices(-5.2,35.9)
 
 masksurf = TheMask.mask[0,:,:].copy()
@@ -77,35 +91,42 @@ maskCoast =(TheMask.mask_at_level(200)==False) & (masksurf)
 minOpen = float(minvmodLIST[0])
 minCoast = float(minvmodLIST[1])
 
-for im in range(1,13):
+TL_mod = TimeList.fromfilenames(None,INMOD,'ave*Chla.nc',prefix='ave.')
+
+
+MONTHLY_reqs=[Clim_month(i) for i in range(1,13)]
+Chl = np.zeros((12,jpj,jpi), dtype=float)
+ChlSquare = np.zeros((12,jpj,jpi), dtype=float)
+
+for req in MONTHLY_reqs[rank::nranks]:
+    im = req.month
     print 'Month %i' %im
     filesat = INSAT + "/var2Dsat.CCI.F7.2.%02d.nc"%(im)
     De = DataExtractor(TheMask,filename=filesat,varname='variance',dimvar=2)
     varSat = De.filled_values[:,:]
-    filedif = INDIF + "/varErr.%02d.nc"%(im)
-    De = DataExtractor(TheMask,filename=filedif,varname='variance',dimvar=2)
-    varDif = De.filled_values[:,:]
 
-    varMod = varDif-varSat
+    ii,w = TL_mod.select(req)
+    nFiles = len(ii)
+    M  = np.zeros((nFiles,jpj,jpi),np.float32)
+    M2 = np.zeros((nFiles,jpj,jpi),np.float32)
 
-    maskminOpen = (varMod<minOpen*varDif) & maskOpen
-    varMod[maskminOpen] = minOpen*varDif[maskminOpen]
-    maskminCoast = (varMod<minCoast*varDif) & maskCoast
-    varMod[maskminCoast] = minCoast*varDif[maskminCoast]
+    for iFrame, j in enumerate(ii):
+        inputfile = TL_mod.filelist[j]
+        print '   ' + inputfile
+        De = DataExtractor(TheMask,filename=inputfile,varname='Chla',dimvar=3)
+        CHL = De.filled_values[0,:,:].copy()
+        TmpMat = np.zeros(CHL.shape)
+        M[iFrame,:,:]  = CHL
 
-    iterfill = np.any(np.isnan(varMod[masksurf]))
-    print '  N nan varMod points %i' %np.sum(np.isnan(varMod[masksurf]))
-    if iterfill:
-        for ifill in range(5):
-            indxsp = np.argwhere(np.isnan(varMod) & masksurf)
-            for jjp,iip in indxsp:
-                varMod[jjp,iip] = np.nanmean(varMod[jjp-1:jjp+2,iip-1:iip+2])
-            iterfnew = np.any(np.isnan(varMod[masksurf]))
-            if iterfnew==False: 
-                print "  Any nan after %i iteration" %(ifill+1)
-                break
-    if iterfnew:
-        print '---- Still nan in variance with 5 iteration ----'
+        TmpMat = CHL*CHL
+        M2[iFrame,:,:] = TmpMat
+
+    MonthIndex = req.month-1
+    Chl[MonthIndex,:,:] = np.nanmean(M,0)
+    ChlSquare[MonthIndex,:,:] = np.nanmean(M2,0)
+
+    varMod = ChlSquare[MonthIndex,:,:] - Chl[MonthIndex,:,:]*Chl[MonthIndex,:,:]
+
 
     MonthStr = '%02d'%(im)
 

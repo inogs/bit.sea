@@ -1,5 +1,6 @@
 CHECKEDDIR=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/DAILY/CHECKEDfrom1999/
-WEEKLYbase=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/WEEKLYweight/
+ORIGDIR=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/DAILY/ORIGfrom1999/
+WEEKLYbase=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/WEEKLY_ORIGweight/
 WEEKLY_DIR=$WEEKLYbase/WEEKLY/
 WEEKLYDATES=$WEEKLYbase/WEEKLYDATES
 MAPCOUNT_DIR=$WEEKLYbase/WEEKLYmapcount
@@ -9,7 +10,7 @@ mkdir -p $WEEKLY_DIR
 mkdir -p $WEEKLYDATES
 mkdir -p $MAPCOUNT_DIR
 
-echo mpirun -np 32 python aveSatWeighted.py -i $CHECKEDDIR -o $WEEKLY_DIR -s $STD -d $WEEKLYDATES -m SAT1km_mesh -t weekly_monday -p $MAPCOUNT_DIR
+echo mpirun -np 32 python aveSatWeighted.py -i $ORIGDIR -o $WEEKLY_DIR -s $STD -d $WEEKLYDATES -m SAT1km_mesh -t weekly_monday -p $MAPCOUNT_DIR
 
 
 WEEKLYDIR_24=$WEEKLYbase/WEEKLY_24/
@@ -58,3 +59,24 @@ mkdir -p $WEEKLYDIR_24
 echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m Mesh24 -M $MASKFILE --inmesh SAT1km_mesh
 
 ##############################
+
+
+echo ##############
+echo verify sat variance
+
+INSAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/WEEKLYweight/WEEKLY/
+OUTDIRP=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/CHECKpoints/WEEKLY_CHECKEDw/
+INSAT=$CHECKEDDIR
+OUTDIRP=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/CHECKpoints/DAILY_CHECKED/
+mesh=SAT1km_mesh
+INSAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/TESTS_forlowvarsat/SAT_10days_mario/
+OUTDIRP=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/CHECKpoints/TENDAYSmario/
+mesh=V4mesh
+INSAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/WEEKLYweight/WEEKLY_24/
+OUTDIRP=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/CHECKpoints/WEEKLY_C24/
+mesh=Mesh24
+mkdir -p $OUTDIRP
+
+
+echo python sat_extractpoints.py -i $INSAT -o $OUTDIRP -m $mesh -n 6 25.4 -t 41.5 33.5
+

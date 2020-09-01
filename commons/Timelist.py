@@ -259,7 +259,7 @@ class TimeList():
 
             gaussweight = [norm.pdf(x,0,std) for x in range(4)]
 
-            if self.inputFrequency == "daily":
+            if self.inputFrequency in ["daily","days=2"]:
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -360,7 +360,7 @@ class TimeList():
             SELECTION=[]
             weights  =[]
 
-            if self.inputFrequency == "daily":
+            if self.inputFrequency in ["daily","days=2"]:
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)

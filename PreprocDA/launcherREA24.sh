@@ -4,7 +4,7 @@
 # These values are not used in var_sat but to assign name of output files
 
 INSAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_SAT/WEEKLYweight/WEEKLY_24/
-OUTVAR_SAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_SAT/
+OUTVAR_SAT=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_SAT_CHECKED/
 DAYF=7 # see file-beginning note
 LIMSTD=2 # see file-beginning note
 MESH=Mesh24
@@ -17,18 +17,32 @@ echo mpirun -np 12 python var_sat.py -i $INSAT -o $OUTVAR_SAT -m $MESH -s $LIMST
 #More than 12 procs are unuseful becasue of iteration on 12 climatological months
 
 
-INMOD=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/CHLA_HC24/
-OUTVAR_DIFF=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_DIFF_MOD_SAT/
-MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
+#INMOD=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/CHLA_HC24/
+#OUTVAR_DIFF=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_DIFF_MOD_SAT/
+#MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
 
-mkdir -p $OUTVAR_DIFF
+#mkdir -p $OUTVAR_DIFF
 
-echo mpirun -np 12 python VarianceDiffModObs.py -s $INSAT -d $INMOD -o $OUTVAR_DIFF -m $MESH -f $MASKFILE
+#echo mpirun -np 12 python VarianceDiffModObs.py -s $INSAT -d $INMOD -o $OUTVAR_DIFF -m $MESH -f $MASKFILE
 #More than 12 procs are unuseful becasue of iteration on 12 climatological months
 
+INMOD2DAYS=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/CHLA_HC24/
+MODWEEKLY=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/CHLA_HC24_WEEKLY/
+MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
 
-OUTVAR_MOD=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_MOD/
+mkdir -p $MODWEEKLY
+
+echo mpirun -np 32 python aveModWeighted.py -i $INMOD2DAYS -o $MODWEEKLY -m $MASKFILE -t weekly_monday -s 3.5
+
+
+
+OUTVAR_MOD=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/PURE_VAR_MOD_WEEKLY/
 
 mkdir -p $OUTVAR_MOD
+echo mpirun -np 12 python varmod_ratiosat.py -s $OUTVAR_SAT -d $MODWEEKLY -o $OUTVAR_MOD -m $MASKFILE -v 0.5 0.75
 
-echo python varmod_vdiffvsat.py -s $OUTVAR_SAT -d $OUTVAR_DIFF -o $OUTVAR_MOD -m $MASKFILE -v 0.5 0.75
+#OUTVAR_MOD=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/VAR_MOD/
+
+#mkdir -p $OUTVAR_MOD
+
+#echo python varmod_vdiffvsat.py -s $OUTVAR_SAT -d $OUTVAR_DIFF -o $OUTVAR_MOD -m $MASKFILE -v 0.5 0.75

@@ -44,6 +44,10 @@ class matchup(object):
         '''
         return self.diff().mean();
 
+    def maxdiff(self):
+
+        return self.diff().max()
+
     def MSE(self):
         '''Mean Square Error
         ID 4.4

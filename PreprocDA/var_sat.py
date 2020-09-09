@@ -125,7 +125,7 @@ for req in MONTHLY_reqs[rank::nranks]:
     Var2D = ChlSquare[MonthIndex,:,:] - Chl[MonthIndex,:,:]*Chl[MonthIndex,:,:]
     
     # filling missing points
-    MyMask = np.where(ChlSquare[MonthIndex,:,:] == fillValue)
+    MyMask = np.where((ChlSquare[MonthIndex,:,:] == fillValue) | (Var2D<0))
     Var2D[MyMask]  = fillValue
     
     # saving results

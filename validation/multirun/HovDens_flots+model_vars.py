@@ -56,13 +56,17 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
 from commons.mask import Mask
 from timeseries.plot import *
+from metrics import find_SLOPE_dz_max,find_NITRICL_dz_max
 meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
 import numpy.ma as ma
 
 TheMask=Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
-DIRSTATS = addsep(args.statsdir)
+if not args.statsdir is None:
+    DIRSTATS = addsep(args.statsdir)
+else:
+    DIRSTATS = None
 
 plotlines = False
 if not DIRSTATS is None: plotlines = True
@@ -134,17 +138,21 @@ for j,wmo in enumerate(wmo_list):
     if plotlines:
         filestats = DIRSTATS + '/' + wmo + 'phys.nc'
         stats = ncreader(filestats)
-	list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
+    list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
     nP = len(list_float_track)
     Lon = np.zeros((nP,), np.float64)
     Lat = np.zeros((nP,), np.float64)
-    NewPres_5m=np.linspace(0,300,61)
+    NewPres_5m=np.linspace(0,600,121)
     depths=NewPres_5m
 
     NewProf_5m = {}
     M_newDepth = {}
     plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
     plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
+    slope_ref = []
+    slope_mod = []
+    pcl_ref = []
+    pcl_mod = []
 
         
     timelabel_list = list()
@@ -157,7 +165,7 @@ for j,wmo in enumerate(wmo_list):
             var = LOVFLOATVARS[var_mod]
             adj=Adj[ivar]
             Pres,Prof,Qc=p.read(var,read_adjusted=adj)
-            ii = Pres<=300
+            ii = Pres<=600
             if p.available_params.find(var)<0 : continue
 # Deve avere almeno 5 records:
             if len(Prof[ii])>5 :
@@ -178,25 +186,44 @@ for j,wmo in enumerate(wmo_list):
 	        M_newDepth[var_mod]=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
 	#    plotmat_model[:,ip] = M_newDepth
 
-	    timelabel_list.append(p.time)
+        timelabel_list.append(p.time)
 	
         densprof_Ref = seawater.dens(NewProf_5m['vosaline'],NewProf_5m['votemper'],NewPres_5m)
         densprof_Mod = seawater.dens(M_newDepth['vosaline'],M_newDepth['votemper'],NewPres_5m)
         plotmat[:,ip] = densprof_Ref
         plotmat_model[:,ip] = densprof_Mod
+        pcl_ref.append(find_NITRICL_dz_max(densprof_Ref,NewPres_5m))
+        pcl_mod.append(find_NITRICL_dz_max(densprof_Mod,NewPres_5m))
+        slope_ref.append(find_SLOPE_dz_max(densprof_Ref,NewPres_5m))
+        slope_mod.append(find_SLOPE_dz_max(densprof_Mod,NewPres_5m))
 
     print np.str(len(timelabel_list)) +  p.available_params
 
+    pl.close('all')
     fig = plt.figure()
 
-    ax1 = plt.subplot2grid((3, 3), (0, 0), colspan=2)
-    ax2 = plt.subplot2grid((3, 3), (0, 2))
-    ax3 = plt.subplot2grid((3, 3), (1, 0), colspan=3)
-    ax4 = plt.subplot2grid((3, 3), (2, 0), colspan=3)
+    ax1 = plt.subplot2grid((4, 3), (0, 0), colspan=2)
+    ax2 = plt.subplot2grid((4, 3), (0, 2))
+    ax3 = plt.subplot2grid((4, 3), (1, 0), colspan=3)
+    ax4 = plt.subplot2grid((4, 3), (2, 0), colspan=3)
+    ax5 = plt.subplot2grid((4, 3), (3, 0), colspan=3)
+
+    ax5.set_xlim([T_start2num,T_end2num])
+    ssr = ax5.plot(mpldates.date2num(timelabel_list),slope_ref,'xr')
+    ssm = ax5.plot(mpldates.date2num(timelabel_list),slope_mod,'xb')
+    ax5.set_ylim(0,0.13)
+    ax5.grid()
+    ax5.set_xlim([T_start2num,T_end2num])
+    ax5.xaxis_date()
+    ax5.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
+    ax5.xaxis.set_major_formatter(mdates.DateFormatter("%Y%m")) #("%b%y"))
+    for tick in ax5.get_xticklabels():
+        tick.set_rotation(45)
 
     xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
     plotmat_m=ma.masked_invalid(plotmat)
     quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=1025,vmax=1030,cmap="viridis")# default is 'flat'
+    ax3.plot(mpldates.date2num(timelabel_list),pcl_ref,'-w')
       #Inform matplotlib that the x axis is made by dates
     ax3.set_xlim([T_start2num,T_end2num])
 #      ax3.xaxis_date()
@@ -212,6 +239,7 @@ for j,wmo in enumerate(wmo_list):
     xs,ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
     plotmat_model_m=ma.masked_invalid(plotmat_model)
     quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=1025,vmax=1030,cmap="viridis")# default is 'flat'
+    ax4.plot(mpldates.date2num(timelabel_list),pcl_mod,'-w')
     ax4.set_xlim([T_start2num,T_end2num])
     ax4.xaxis_date()
     ax4.set_ylim(0,300)
@@ -257,6 +285,7 @@ for j,wmo in enumerate(wmo_list):
     ax2.plot(Lon[0],Lat[0],'bx',markersize=font_s)
     ax2.set_xlim([np.min(Lon[:ipp]) -extent/2, np.max(Lon[:ipp]) +extent/2])
     ax2.set_ylim([np.min(Lat[:ipp]) -extent/2, np.max(Lat[:ipp]) +extent/2])
+
 
     fig.savefig(''.join([OUTDIR,'HovPhys_Float+TRANS_',p.name(),'_','densisty','.png']))
     pl.close(fig)

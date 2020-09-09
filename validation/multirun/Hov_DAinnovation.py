@@ -1,17 +1,17 @@
-import sys
-import os
-from profiler_onlymodel import dep1, dep2
-from timeseries.plot import *
-from profiler_comparison2015 import *
-import pylab as pl
+import numpy as np
 import numpy.ma as ma
-from mhelpers.pgmean import PLGaussianMean
+import pylab as pl
 import matplotlib.dates as mdates
+from profiler_onlymodel import dep1, dep2
+from profiler_comparison2017 import *
+from timeseries.plot import *
 from basins import OGS
 from instruments.matchup_manager import Matchup_Manager
 from layer_integral import coastline
-from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
-from instruments import lovbio_float as bio_float
+from instruments.var_conversions import FLOATVARS
+# from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
+from instruments import superfloat as bio_float
+# from instruments import lovbio_float as bio_float
 from instruments import matchup_manager
 from instruments import check
 from commons.utils import addsep
@@ -19,7 +19,6 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons.mask import Mask
 import scipy.io.netcdf as NC
-import numpy as np
 import argparse
 
 
@@ -43,48 +42,14 @@ def argument():
     return parser.parse_args()
 
 
-<<<<<<< HEAD
 args = argument()
-=======
-import numpy as np
-import os,sys
-import scipy.io.netcdf as NC
-from commons.mask import Mask
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from instruments import matchup_manager
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
-from layer_integral import coastline
-from instruments.matchup_manager import Matchup_Manager
-from basins import OGS
-import matplotlib.dates as mdates
-from mhelpers.pgmean import PLGaussianMean
-import numpy.ma as ma
-import matplotlib.pyplot as pl
-from profiler_comparison2015 import *
-from profiler_onlymodel import dep1,dep2
-from timeseries.plot import *
->>>>>>> d834a55f182403d62b438e9e1045a110ce19df9b
 
-
-#meanObj11 = PLGaussianMean(5,1.0)
 
 TheMask = Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
 font_s = 15
 label_s = 15
-
-# def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
-#     if (fig is None) or (ax is None):
-#         fig , ax = pl.subplots()
-#     quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='gouraud')# default is 'flat'
-#     #Inform matplotlib that the x axis is made by dates
-#     ax.xaxis_date()
-#     ax.invert_yaxis()
-#     return fig, ax, quadmesh
 
 
 def readModelProfile(filename, var, wmo):
@@ -125,16 +90,14 @@ MM = Matchup_Manager(ALL_PROFILES, TL, BASEDIR['RSTbef'])
 
 VARLIST = ['P_l']
 VARLIST = ['P_l', 'N3n']
-Adj = {
-       'P_l': True,
-       'N3n': True,
-       }
+# Adj = {
+#        'P_l': True,
+#        'N3n': True,
+#        }
 # VARLIST = ['N3n']
 # plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$'] #,r'Temp $[^\circ C]$','Sal']
 nVar = len(VARLIST)
 
-
-meanObj11 = PLGaussianMean(11, 1.0)
 
 Profilelist_1 = bio_float.FloatSelector(None, TI1, OGS.med)
 wmo_list = bio_float.get_wmo_list(Profilelist_1)
@@ -166,7 +129,7 @@ for j, wmo in enumerate(wmo_list):
         plotmat_innov[:, :] = np.nan
         timelabel_list = list()
         var = FLOATVARS[var_mod]
-        adj = Adj[var_mod]
+        # adj = Adj[var_mod]
 
         Goodp = []
         for ip, p in enumerate(list_float_track):
@@ -174,30 +137,36 @@ for j, wmo in enumerate(wmo_list):
             Lat[ip] = p.lat
             timelabel_list.append(p.time)
             try:
-                Pres, Prof, Qc = p.read(var,adj)
+                Pres, Prof, Qc = p.read(var)
+                # Pres, Prof, Qc = p.read(var,adj)
             except: continue
             ii = Pres <= dep2
-            if len(Prof[ii]) > 5:
-                NewProf_5m = np.interp(NewPres_5m, Pres[ii], Prof[ii])
-                plotmat[:, ip] = NewProf_5m
+            if len(Prof[ii]) < 5:
+                continue
+                # NewProf_5m = np.interp(NewPres_5m, Pres[ii], Prof[ii])
+                # plotmat[:, ip] = NewProf_5m
 
             # PLOT FOR THE MODEL
             try:
-                #GM = MM.getMatchups2([p], TheMask.zlevels, var_mod, \
-                #        interpolation_on_Float=False,checkobj=Check_obj, \
-                #        forced_depth=NewPres_5m, extrapolation=DICTextrap[var_mod])
-                TM = MM.modeltime(p)
-                FILENAME = BASEDIR['RSTbef'] + \
-                        TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
-                M = readModelProfile(FILENAME, var_mod, p.ID())
-                M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth2+1],M[:max_depth2+1])
-                exist = True
+                GM = MM.getMatchups2([p], TheMask.zlevels, var_mod, \
+                       interpolation_on_Float=False,checkobj=Check_obj, \
+                       forced_depth=NewPres_5m, extrapolation=DICTextrap[var_mod])
+                # TM = MM.modeltime(p)
+                # FILENAME = BASEDIR['RSTbef'] + \
+                #         TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
+                # M = readModelProfile(FILENAME, var_mod, p.ID())
+                # M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth2+1],M[:max_depth2+1])
+                if len(GM.Ref)>0:
+                    exist = True
+                else:
+                    exist = False
             except:
                 exist = False
                 continue
 
             if exist:
-                plotmat_innov[:, ip] = plotmat[:, ip] - M_newDepth
+                # plotmat_innov[:, ip] = plotmat[:,ip] - M_newDepth
+                plotmat_innov[:, ip] = GM.Ref - GM.Model
                 Goodp.append(p)
 
         if len(Goodp)==0: continue
@@ -218,7 +187,7 @@ for j, wmo in enumerate(wmo_list):
         plotmat_innov_m = ma.masked_invalid(plotmat_innov[0:nlev_part, :])
         if (var_mod == 'P_l'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_innov_m, shading='flat',
-                                      vmin=-0.1, vmax=0.1, cmap="Spectral_r")  # default is 'flat'
+                                      vmin=-0.15, vmax=0.15, cmap="Spectral_r")  # default is 'flat'
         if (var_mod == 'N1p'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_innov_m, shading='flat',
                                       vmin=-0.05, vmax=0.05, cmap="Spectral_r")  # ,cmap="jet")# default is 'flat'
@@ -236,7 +205,7 @@ for j, wmo in enumerate(wmo_list):
         plotmat_innov_m = ma.masked_invalid(plotmat_innov[nlev_part:-1, :])
         if (var_mod == 'P_l'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_innov_m, shading='flat',
-                                      vmin=-0.1, vmax=0.1, cmap="Spectral_r")  # default is 'flat'
+                                      vmin=-0.15, vmax=0.15, cmap="Spectral_r")  # default is 'flat'
         if (var_mod == 'N1p'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_innov_m, shading='flat',
                                       vmin=-0.05, vmax=0.05, cmap="Spectral_r")  # ,cmap="jet")# default is 'flat'

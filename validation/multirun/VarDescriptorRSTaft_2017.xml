@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<vars_for_All_Statistics description="point profiles, subbasin statistic profiles, volume integrals">
+
+<native>
+<var name="P_l" ></var>
+<var name="N3n" ></var>
+<var name="N1p" ></var>
+</native>
+
+<aggregate>
+</aggregate>
+</vars_for_All_Statistics>
+
+
+
+<var_for_Some_Statistics>
+</var_for_Some_Statistics>
+
+
+<toArchive>
+</toArchive>
+
+
+<var2D>
+<vars_for_All>
+<native>
+</native>
+</vars_for_All>
+</var2D>
+
+</root>
+

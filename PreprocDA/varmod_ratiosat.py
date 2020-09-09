@@ -42,7 +42,14 @@ def argument():
                             type = str,
                             required = True,
                             nargs=2,
-                            help = 'min mod var quotas of vdiff in open sea and coast'
+                            help = 'min mod var quotas of varsat  in open sea and coast'
+                            )
+
+    parser.add_argument(   '--maxvmod', '-r',
+                            type = str,
+                            required = True,
+                            nargs=2,
+                            help = 'max mod var quotas of vsat in open sea and coast'
                             )
 
     return parser.parse_args()
@@ -72,12 +79,14 @@ from postproc import masks
 from Sat import SatManager
 
 maskSat = getattr(masks,'Mesh24')
+fillValue = -999
 
 INSAT = addsep(args.insat)
 INMOD = addsep(args.inmod)
 OUTDIR = addsep(args.outdir)
 TheMask = Mask(args.maskfile)
 minvmodLIST = args.minvmod
+maxvmodLIST = args.maxvmod
 
 _,jpj,jpi = TheMask.shape
 indGib,_ = TheMask.convert_lon_lat_to_indices(-5.2,35.9)
@@ -90,6 +99,8 @@ maskCoast =(TheMask.mask_at_level(200)==False) & (masksurf)
 
 minOpen = float(minvmodLIST[0])
 minCoast = float(minvmodLIST[1])
+maxOpen = float(maxvmodLIST[0])
+maxCoast = float(maxvmodLIST[1])
 
 TL_mod = TimeList.fromfilenames(None,INMOD,'ave*Chla.nc',prefix='ave.')
 
@@ -104,6 +115,10 @@ for req in MONTHLY_reqs[rank::nranks]:
     filesat = INSAT + "/var2Dsat.CCI.F7.2.%02d.nc"%(im)
     De = DataExtractor(TheMask,filename=filesat,varname='variance',dimvar=2)
     varSat = De.filled_values[:,:]
+    if np.any(varSat[np.isnan(varSat)==False]<0):
+        print 'Negative varSat'
+        import sys
+        sys.exit(0)
 
     ii,w = TL_mod.select(req)
     nFiles = len(ii)
@@ -113,27 +128,44 @@ for req in MONTHLY_reqs[rank::nranks]:
     for iFrame, j in enumerate(ii):
         inputfile = TL_mod.filelist[j]
         print '   ' + inputfile
-        De = DataExtractor(TheMask,filename=inputfile,varname='Chla',dimvar=3)
-        CHL = De.filled_values[0,:,:].copy()
+        De = DataExtractor(TheMask,filename=inputfile,varname='Chla',dimvar=2)
+        CHL = De.filled_values[:,:].copy()
+        mymask = np.isnan(CHL)
+        CHL[mymask] = fillValue
         TmpMat = np.zeros(CHL.shape)
         M[iFrame,:,:]  = CHL
 
         TmpMat = CHL*CHL
+        TmpMat[mymask] = fillValue
         M2[iFrame,:,:] = TmpMat
 
     MonthIndex = req.month-1
-    Chl[MonthIndex,:,:] = np.nanmean(M,0)
-    ChlSquare[MonthIndex,:,:] = np.nanmean(M2,0)
+    Chl[MonthIndex,:,:] = SatManager.WeightedAverager(M,w)
+    ChlSquare[MonthIndex,:,:] = SatManager.WeightedAverager(M2,w)
+    mymask = ChlSquare[MonthIndex,:,:]==fillValue
 
     varMod = ChlSquare[MonthIndex,:,:] - Chl[MonthIndex,:,:]*Chl[MonthIndex,:,:]
+    varMod[mymask] = np.nan
+    ratio = varMod/varSat
+    maskminOpen = maskOpen & (ratio<minOpen)
+    varMod[maskminOpen] = minOpen*varSat[maskminOpen]
+    maskmaxOpen = maskOpen & (ratio>maxOpen)
+    varMod[maskmaxOpen] = maxOpen*varSat[maskmaxOpen]
+    maskminCoast = maskCoast & (ratio<minCoast)
+    varMod[maskminCoast] = minCoast*varSat[maskminCoast]
+    maskmaxCoast = maskCoast & (ratio>maxCoast)
+    varMod[maskmaxCoast] = maxCoast*varSat[maskmaxCoast]
 
-
+    if np.any(varMod[np.isnan(varMod)==False]<0):
+        print 'Negative varMod'
+        import sys
+        sys.exit(0)
+    ratioNew = varMod/varSat
     MonthStr = '%02d'%(im)
 
-    ratio = varMod/varSat
     fname = OUTDIR + '/ratiovarM_S.' + MonthStr + '.nc'
     print "\tsaving ", fname
-    SatManager.dumpGenericNativefile(fname,ratio,'variance',maskSat)
+    SatManager.dumpGenericNativefile(fname,ratioNew,'ratio',maskSat)
 
     fname = OUTDIR + '/var2D.' + MonthStr + '.nc'
     print "\tsaving ", fname

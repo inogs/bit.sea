@@ -1,24 +1,24 @@
-import sys
+import numpy as np
+import numpy.ma as ma
+import pylab as pl
 import os
+import matplotlib.dates as mdates
 from profiler_onlymodel import dep1, dep2
 from timeseries.plot import *
-from profiler_comparison2015 import *
-import pylab as pl
-import numpy.ma as ma
-from mhelpers.pgmean import PLGaussianMean
-import matplotlib.dates as mdates
+from profiler_comparison2017 import *
 from basins import OGS
 from instruments.matchup_manager import Matchup_Manager
 from layer_integral import coastline
-from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
-from instruments import lovbio_float as bio_float
+from instruments.var_conversions import FLOATVARS
+# from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
+from instruments import superfloat as bio_float
+# from instruments import lovbio_float as bio_float
 from instruments import matchup_manager
 from commons.utils import addsep
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons.mask import Mask
 import scipy.io.netcdf as NC
-import numpy as np
 import argparse
 
 
@@ -42,48 +42,15 @@ def argument():
     return parser.parse_args()
 
 
-<<<<<<< HEAD
 args = argument()
-=======
-import numpy as np
-import os,sys
-import scipy.io.netcdf as NC
-from commons.mask import Mask
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from instruments import matchup_manager
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
-from layer_integral import coastline
-from instruments.matchup_manager import Matchup_Manager
-from basins import OGS
-import matplotlib.dates as mdates
-from mhelpers.pgmean import PLGaussianMean
-import numpy.ma as ma
-import matplotlib.pyplot as pl
-from profiler_comparison2015 import *
-from profiler_onlymodel import dep1,dep2
-from timeseries.plot import *
->>>>>>> d834a55f182403d62b438e9e1045a110ce19df9b
 
 
-#meanObj11 = PLGaussianMean(5,1.0)
 
 TheMask = Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
 font_s = 15
 label_s = 15
-
-# def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):
-#     if (fig is None) or (ax is None):
-#         fig , ax = pl.subplots()
-#     quadmesh = ax.pcolormesh(xs, ys, plotmat,shading='gouraud')# default is 'flat'
-#     #Inform matplotlib that the x axis is made by dates
-#     ax.xaxis_date()
-#     ax.invert_yaxis()
-#     return fig, ax, quadmesh
 
 
 def readModelProfile(filename, var, wmo):
@@ -129,7 +96,6 @@ VARLIST = ['P_l', 'N3n', 'N1p']
 nVar = len(VARLIST)
 
 
-meanObj11 = PLGaussianMean(11, 1.0)
 
 Profilelist_1 = bio_float.FloatSelector(None, TI1, OGS.med)
 wmo_list = bio_float.get_wmo_list(Profilelist_1)
@@ -173,7 +139,7 @@ for j in range(0, len(wmo_list)):
             except: continue
             for tt in ['RSTaft', 'RSTbef']:
                 FILENAME = BASEDIR[tt] + \
-                    TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
+                    TM.strftime("PROFILES/ave.%Y%m%d-13:00:00.profiles.nc")
                 if os.path.isfile(FILENAME):
                     M[tt] = readModelProfile(FILENAME, var_mod, p.ID())
                     M[tt][M[tt] == 0] = np.nan
@@ -204,7 +170,7 @@ for j in range(0, len(wmo_list)):
         plotmat_model_m = ma.masked_invalid(plotmat_model[0:max_depth1, :])
         if (var_mod == 'P_l'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_model_m, shading='flat',
-                                      vmin=-0.1, vmax=0.1, cmap="Spectral_r")  # default is 'flat'
+                                      vmin=-0.15, vmax=0.15, cmap="Spectral_r")  # default is 'flat'
         if (var_mod == 'N1p'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_model_m, shading='flat',
                                       vmin=-0.05, vmax=0.05, cmap="Spectral_r")  # ,cmap="jet")# default is 'flat'
@@ -223,7 +189,7 @@ for j in range(0, len(wmo_list)):
             plotmat_model[max_depth1:max_depth2, :])
         if (var_mod == 'P_l'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m, shading='flat',
-                                      vmin=-0.1, vmax=0.1, cmap="Spectral_r")  # default is 'flat'
+                                      vmin=-0.15, vmax=0.15, cmap="Spectral_r")  # default is 'flat'
         if (var_mod == 'N1p'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m, shading='flat',
                                       vmin=-0.05, vmax=0.05, cmap="Spectral_r")  # ,cmap="jet")# default is 'flat'

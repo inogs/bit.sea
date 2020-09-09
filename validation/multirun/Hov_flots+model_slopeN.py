@@ -60,11 +60,13 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 
 
-from metrics import find_SLOPE_dz_max
+from metrics import find_SLOPE_dz_max,find_NITRICL_dz_max
 
 TheMask=Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
-DIRSTATS = addsep(args.statsdir)
+DIRSTATS = None
+if not args.statsdir is None:
+    DIRSTATS = addsep(args.statsdir)
 
 plotlines = False
 if not DIRSTATS is None: plotlines = True
@@ -133,9 +135,7 @@ wmo_list=bio_float.get_wmo_list(Profilelist_1)
 
 print wmo_list
 
-#for j in range(0,len(wmo_list)):
 for j,wmo in enumerate(wmo_list):
-#    if (j==0): 
     if plotlines:
         filestats = DIRSTATS + '/' + wmo + '.nc'
         stats = ncreader(filestats)
@@ -152,9 +152,12 @@ for j,wmo in enumerate(wmo_list):
         plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
         slope_ref = []
         slope_mod = []
+        ncl_ref = []
+        ncl_mod = []
         var = LOVFLOATVARS[var_mod]
         adj=Adj[ivar]
         
+        theresvar = 0
         for ip, p in enumerate(list_float_track):
             if p.available_params.find(var)<0 : continue
             Lon[ip] = p.lon
@@ -163,6 +166,7 @@ for j,wmo in enumerate(wmo_list):
             ii = Pres<=600
 # Deve avere almeno 5 records:
             if len(Prof[ii])>5 :
+                theresvar += 1
                 NewProf_5m = np.interp(NewPres_5m,Pres[ii],Prof[ii])
                 plotmat[:,ip]=NewProf_5m
 # FILTRAGGIO per CHLA e N3n dato dai valori troppo alti registrato in superficie:
@@ -179,12 +183,18 @@ for j,wmo in enumerate(wmo_list):
             M = readModelProfile(FILENAME,var_mod,p.ID())
             M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
             plotmat_model[:,ip] = M_newDepth
-            slope_ref.append(find_SLOPE_dz_max(NewProf_5m,NewPres_5m))
+            ncl_ref.append(find_NITRICL_dz_max(plotmat[:,ip],NewPres_5m))
+            ncl_mod.append(find_NITRICL_dz_max(M_newDepth,NewPres_5m))
+            slope_ref.append(find_SLOPE_dz_max(plotmat[:,ip],NewPres_5m))
             slope_mod.append(find_SLOPE_dz_max(M_newDepth,NewPres_5m))
 
-
+        print wmo
         print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        if theresvar==0:
+            print 'No N3n'
+            continue
 
+        plt.close('all')
 	fig = plt.figure()
 
 	ax1 = plt.subplot2grid((4, 3), (0, 0), colspan=2)
@@ -196,7 +206,7 @@ for j,wmo in enumerate(wmo_list):
         ax5.set_xlim([T_start2num,T_end2num])
         ssr = ax5.plot(mpldates.date2num(timelabel_list),slope_ref,'xr')
         ssm = ax5.plot(mpldates.date2num(timelabel_list),slope_mod,'xb')
-      #  ax5.set_ylim(0,0.05)
+        ax5.set_ylim(0,0.13)
         ax5.grid()
         ax5.set_xlim([T_start2num,T_end2num])
         ax5.xaxis_date()
@@ -209,22 +219,15 @@ for j,wmo in enumerate(wmo_list):
         plotmat_m=ma.masked_invalid(plotmat)
         if (var_mod == 'P_l') or (var_mod == 'Chla'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            if plotlines:
-                _,ref_dcm = stats.plotdata(var_mod,'DCM')
-                ax3.plot(mpldates.date2num(timelabel_list),ref_dcm,'-k')
-                _,ref_mld = stats.plotdata(var_mod,'MLD3')
-                ax3.plot(mpldates.date2num(timelabel_list),ref_mld,'-w')
         if (var_mod == 'O2o'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=200,vmax=250) #,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            if plotlines:
-                _,ref_nit3 = stats.plotdata(var_mod,'Nit_prof')
-                ax3.plot(mpldates.date2num(timelabel_list),ref_nit3,'-k')
+            ax3.plot(mpldates.date2num(timelabel_list),ncl_ref,'-w')
 	#Inform matplotlib that the x axis is made by dates
         ax3.set_xlim([T_start2num,T_end2num])
         ax3.set_xticklabels([])
-        ax3.set_ylim(0,300)
+        ax3.set_ylim(0,350)
         ax3.invert_yaxis()
         ax3.set_ylabel("depth $[m]$",color = 'k', fontsize=font_s)
         fig.set_size_inches(15,10)
@@ -234,21 +237,14 @@ for j,wmo in enumerate(wmo_list):
         plotmat_model_m=ma.masked_invalid(plotmat_model)
         if (var_mod == 'P_l') or (var_mod == 'Chla'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            if plotlines:
-                model_dcm,_ = stats.plotdata(var_mod,'DCM')
-                ax4.plot(mpldates.date2num(timelabel_list),model_dcm,'-k')
-                model_mld,_ = stats.plotdata(var_mod,'MLD3')
-                ax4.plot(mpldates.date2num(timelabel_list),model_mld,'-w')
         if (var_mod == 'O2o'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=200,vmax=250) #,cmap="jet")# default is 'flat'
         if (var_mod == 'N3n'):
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            if plotlines:
-                model_nit3,_ = stats.plotdata(var_mod,'Nit_prof')
-                ax4.plot(mpldates.date2num(timelabel_list),model_nit3,'-k')
+            ax4.plot(mpldates.date2num(timelabel_list),ncl_mod,'-w')
         ax4.set_xlim([T_start2num,T_end2num])
         ax4.xaxis_date()
-        ax4.set_ylim(0,300)
+        ax4.set_ylim(0,350)
         ax4.invert_yaxis()
         ax4.set_ylabel("depth $[m]$",color = 'k',fontsize=font_s)
         ax4.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
@@ -292,8 +288,10 @@ for j,wmo in enumerate(wmo_list):
         ax2.set_xlim([np.min(Lon[:ipp]) -extent/2, np.max(Lon[:ipp]) +extent/2])
         ax2.set_ylim([np.min(Lat[:ipp]) -extent/2, np.max(Lat[:ipp]) +extent/2])
 
-        plt.show(block=False)
-        break
+#    if theresvar==0:
+#        continue
+#    plt.show(block=False)
+#    break
 
         fig.savefig(''.join([OUTDIR,'Hov_Float+TRANS_',p.name(),'_',var_mod,'.png']))
         pl.close(fig)

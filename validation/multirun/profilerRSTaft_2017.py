@@ -5,34 +5,41 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-#from instruments import instruments
-from instruments import lovbio_float
+from instruments.superfloat import FloatSelector
+
 from instruments.matchup_manager import Matchup_Manager
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
-import os
+from basins.region import Rectangle
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
-run = "HC_2017_assw"
-run = "DA_Float/RUN_SAT_FLOAT_chl_n/"
 
-INPUTDIR="/gpfs/scratch/userexternal/ateruzzi/" + run + \
-    "/wrkdir/MODEL/FORCINGS/"
-aggregatedir=INPUTDIR
+RUN='MULTIVARIATE_24/TEST_04'
+
+INPUTDIR='/gpfs/scratch/userexternal/ateruzzi/' + RUN + \
+    '/wrkdir/POSTPROC/output/DA__FREQ_1/TMP/'
+
 # output directory, where aveScan.py will be run.
-BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/' + \
-    run + '/PROFILATORE_PHYS/'
 
-DATESTART = '20150101'
-DATE__END = '20160101'
+
+BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat_24/VALID_float/' \
+    + RUN + '/PROFILATORE_RSTaft/'
+
+
+DATESTART = '20170101'
+DATE__END = '20190101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"T*.nc", prefix="T", hour=0)
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"RST_after*.nc", \
+    prefix='RST_after.',filtervar="P_l")
 
-import basins.OGS as OGS
-ALL_PROFILES = lovbio_float.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)
+ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
-vardescriptorfile="/galileo/home/userexternal/ateruzzi/bit.sea/validation/multirun/VarDescriptor_valid_online.xml"
+
+vardescriptorfile="/gpfs/scratch/userexternal/ateruzzi/" + \
+    "ELAB_DAFloat_24/VALID_float/bit.sea/validation/multirun/" + \
+    "VarDescriptorRSTaft_2017.xml"
+
 #This previous part will be imported in matchups setup.
 
 # The following part, the profiler, is executed once and for all.
@@ -43,7 +50,7 @@ if __name__ == '__main__':
 
 
     profilerscript = BASEDIR + 'jobProfiler.sh'
-
+    aggregatedir="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v19_3/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
     M.writefiles_for_profiling(vardescriptorfile, profilerscript, aggregatedir=aggregatedir) # preparation of data for aveScan
 
     M.dumpModelProfiles(profilerscript) # sequential launch of aveScan

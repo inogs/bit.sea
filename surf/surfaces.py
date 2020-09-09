@@ -116,12 +116,12 @@ def DCM2(chl,maskobj):
                         DCM = d_max_cand[indmax]
                         matrixDCM[jj,ji] = DCM
                         matrixCM[jj,ji] = CM
-                        matrixIDCM[jj,ji] = profile_len-(iid+indmax)
                         break
                 if not(np.isnan(matrixDCM[jj,ji])):
                     inddcm = profile>(matrixCM[jj,ji]-(matrixCM[jj,ji]-profile[0])/2.)
                     dzp = maskobj.e3t[:profile_len,jj,ji]
                     matrixDCMthick[jj,ji] = np.nansum(dzp[inddcm])
+                    matrixIDCM[jj,ji] = np.nanargmin(np.abs(profile-matrixDCM[jj,ji]))
 
     matrixDCM[~tmask] = np.nan
     matrixCM[~tmask] = np.nan
@@ -355,4 +355,41 @@ def PICNCL_dz_max(den,maskobj):
     matrixPCLslope[~tmask] = np.nan
     #return matrixPCL,matrixD,matrixIPCL,matrixPCLslope
     return matrixPCL,matrixD,matrixPCLslope,matrixPCLthick
+
+def DIFFST(dff,maskobj):
+    '''
+    Calculates some statistics on diffusion 
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    # indlev = maskobj.getDepthIndex(0)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixMAX = np.zeros((jpj,jpi))
+    matrixMAX[:,:] = np.nan
+    matrixMEAN = np.zeros((jpj,jpi))
+    matrixMEAN[:,:] = np.nan
+    matrixDLOW = np.zeros((jpj,jpi))
+    matrixDLOW[:,:] = np.nan
+    i200 = maskobj.getDepthIndex(200)
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = dff[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                idd = np.min([i200,profile_len])
+                imax = np.nanargmax(profile[:idd])
+                dabs = np.abs(profile-.01)
+                i10 = np.nanargmin(dabs[imax:idd])+imax
+                matrixMAX[jj,ji] = profile[imax]
+                matrixDLOW[jj,ji] = depths[i10]
+                matrixMEAN[jj,ji] = np.nanmean(profile[imax:i10])
+
+    matrixMAX[~tmask] = np.nan
+    matrixMEAN[~tmask] = np.nan
+    matrixDLOW[~tmask] = np.nan
+    return matrixMAX,matrixMEAN,matrixDLOW
+
 

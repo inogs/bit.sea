@@ -1,31 +1,25 @@
-# , add_metadata
-import sys
-import os
-from validation.online.profileplotter import figure_generator, ncwriter
-import numpy.ma as ma
-import matplotlib.pyplot as plt
-from timeseries.plot import *
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-import matplotlib.dates as mdates
-from instruments.matchup_manager import Matchup_Manager
-from profilerRSTbef_2015 import *
-from mhelpers.pgmean import PLGaussianMean
-import matplotlib
-from basins import OGS
-import matplotlib.pyplot as pl
-from commons.utils import addsep
 import numpy as np
-from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
-from instruments import lovbio_float as bio_float
-import instruments
+import numpy.ma as ma
+import pylab as plt
+import matplotlib.dates as mdates
+
+from basins import OGS
+from instruments.matchup_manager import Matchup_Manager
+from timeseries.plot import *
+from profilerRSTbef_2017 import *
+from instruments import check
+from instruments.var_conversions import FLOATVARS
+# from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
+from instruments import superfloat as bio_float
+# from instruments import lovbio_float as bio_float
 from layer_integral import coastline
-from basins.region import Region, Rectangle
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
-from instruments import matchup_manager
 from commons.mask import Mask
+from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import scipy.io.netcdf as NC
 import argparse
+from commons.utils import addsep
 
 
 def argument():
@@ -57,8 +51,6 @@ def argument():
 args = argument()
 
 
-meanObj11 = PLGaussianMean(5, 1.0)
-
 TheMask = Mask(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
@@ -67,20 +59,10 @@ if not (args.statsdir is None):
     DIRSTATS = addsep(args.statsdir)
     plotlines = True
 
+Check_obj = check.check("", verboselevel=0)
 
 font_s = 15
 label_s = 15
-
-
-def my_Hovmoeller_diagram(plotmat, xs, ys, fig=None, ax=None):
-    if (fig is None) or (ax is None):
-        fig, ax = pl.subplots()
-    quadmesh = ax.pcolormesh(
-        xs, ys, plotmat, shading='gouraud')  # default is 'flat'
-    # Inform matplotlib that the x axis is made by dates
-    ax.xaxis_date()
-    ax.invert_yaxis()
-    return fig, ax, quadmesh
 
 
 def readModelProfile(filename, var, wmo):
@@ -113,9 +95,7 @@ T_end2num = mpldates.date2num(datetime.strptime(T_end, '%Y%m%d'))
 reg1 = [OGS.med]
 reg_sn = ['med']
 
-#max_depth = 26
-# max_depth = 44 # 303m in the 142 levels model
-max_depth = get_level300(TheMask)
+# max_depth = get_level300(TheMask)
 
 MM = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 #varname = ['CHLA','DOXY','NITRATE','TEMP','PSAL']
@@ -129,14 +109,17 @@ VARLIST = ['Chla', 'O2o', 'N3n']
 Adj = [True, False, True]
 VARLIST = ['P_l']
 Adj = [True]
-VARLIST = ['N3n', 'P_l']
-Adj = [True, True]
 VARLIST = ['N3n']
 Adj = [True]
+VARLIST = ['N3n', 'P_l']
+# Adj = [True, True]
 nVar = len(VARLIST)
 
-meanObj11 = PLGaussianMean(11, 1.0)
 
+depthDICT = {
+    'P_l': 300,
+    'N3n': 500,
+}
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist_1 = bio_float.FloatSelector(var, TI1, OGS.med)
@@ -144,10 +127,11 @@ for ivar, var_mod in enumerate(VARLIST):
 
     print '-----------' + var_mod + '------------'
     print wmo_list
+    ndepths = depthDICT[var_mod]/5+1
+    NewPres_5m = np.linspace(0, depthDICT[var_mod], ndepths)
+    depths = NewPres_5m
 
-# for j in range(0,len(wmo_list)):
-    for j, wmo in enumerate(wmo_list):
-        #    if (j==0):
+    for wmo in wmo_list:
         if plotlines:
             filestats = DIRSTATS + '/' + wmo + '.nc'
             stats = ncreader(filestats)
@@ -155,50 +139,44 @@ for ivar, var_mod in enumerate(VARLIST):
         nP = len(list_float_track)
         Lon = np.zeros((nP,), np.float64)
         Lat = np.zeros((nP,), np.float64)
-        NewPres_5m = np.linspace(0, 300, 61)
-        depths = NewPres_5m
 
-        #       if (ivar==0):
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
         plotmat_model = np.zeros([len(depths), len(list_float_track)])*np.nan
         timelabel_list = list()
         # adj = Adj[ivar]
-        adj = Adj[ivar]
 
         for ip, p in enumerate(list_float_track):
-            #         if ( ip == 91 ):
             Lon[ip] = p.lon
             Lat[ip] = p.lat
-            # Pres, Prof, Qc = p.read(var) #, read_adjusted=adj)
-            Pres, Prof, Qc = p.read(var, read_adjusted=adj)
+            Pres, Prof, Qc = p.read(var) #, read_adjusted=adj)
+            # Pres, Prof, Qc = p.read(var, read_adjusted=adj)
             ii = Pres <= 300
-# Deve avere almeno 5 records:
-            if len(Prof[ii]) > 5:
-                NewProf_5m = np.interp(NewPres_5m, Pres[ii], Prof[ii])
-                plotmat[:, ip] = NewProf_5m
-# FILTRAGGIO per CHLA e N3n dato dai valori troppo alti registrato in superficie:
-                # if (var_mod == "P_l"):
-                #     if (plotmat[0, ip] > 0.45):
-                #         plotmat[:, ip] = np.nan
-                # if (var_mod == "N3n"):
-                #     if (plotmat[0, ip] > 2):
-                #         plotmat[:, ip] = np.nan
+            # Deve avere almeno 5 records:
             timelabel_list.append(p.time)
+            if len(Prof[ii]) < 5:
+                continue
+                # NewProf_5m = np.interp(NewPres_5m, Pres[ii], Prof[ii])
+                # plotmat[:, ip] = NewProf_5m
 
-            # PLOT FOR THE MODEL
             try:
-                TM = MM.modeltime(p)
-                FILENAME = BASEDIR + \
-                TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
-                M = readModelProfile(FILENAME, var_mod, p.ID())
-                M_newDepth = np.interp(
-                    NewPres_5m, TheMask.zlevels[:max_depth+1], M[:max_depth+1])
-                plotmat_model[:, ip] = M_newDepth
+                GM = MM.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False, \
+                    checkobj=Check_obj, forced_depth=depths, extrapolation=False)
+                # TM = MM.modeltime(p)
+                # FILENAME = BASEDIR + \
+                # TM.strftime("PROFILES/ave.%Y%m%d-12:00:00.profiles.nc")
+                # M = readModelProfile(FILENAME, var_mod, p.ID())
+                # M_newDepth = np.interp(
+                #     NewPres_5m, TheMask.zlevels[:max_depth+1], M[:max_depth+1])
+                # plotmat_model[:, ip] = M_newDepth
+                plotmat_model[:, ip] = GM.Model
+                plotmat[      :, ip] = GM.Ref
             except:
-                print ' ... Not exists ' + FILENAME
+                print ' ... Not exists ' + p.time.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
                 continue
 
         print var_mod + " " + np.str(len(timelabel_list)) + p.available_params
+        if p.available_params.find(var) < 0:
+            continue
 
         fig = plt.figure()
 
@@ -218,31 +196,22 @@ for ivar, var_mod in enumerate(VARLIST):
                 _, ref_mld = stats.plotdata(var_mod, 'MLD3')
                 ax3.plot(mpldates.date2num(timelabel_list), ref_mld, '-w')
         if (var_mod == 'O2o'):
-            # ,cmap="jet")# default is 'flat'
             quadmesh = ax3.pcolormesh(
                 xs, ys, plotmat_m, shading='flat', vmin=200, vmax=250)
         if (var_mod == 'N3n'):
-            #print len(xs)
-            #print len(ys)
-            #print plotmat_m.shape
-            # ,cmap="jet")# default is 'flat'
             quadmesh = ax3.pcolormesh(
-                xs, ys, plotmat_m, shading='flat', vmin=0.00, vmax=4)
+                xs, ys, plotmat_m, shading='flat', vmin=0.00, vmax=6)
             if plotlines:
                 _, ref_nit3 = stats.plotdata(var_mod, 'Nit_prof')
                 ax3.plot(mpldates.date2num(timelabel_list), ref_nit3, '-k')
         # Inform matplotlib that the x axis is made by dates
         ax3.set_xlim([T_start2num, T_end2num])
-#	ax3.xaxis_date()
         ax3.set_xticklabels([])
-        ax3.set_ylim(0, 300)
+        ax3.set_ylim(0, depths[-1])
         ax3.invert_yaxis()
-#	ax3.set_title("FLOAT " + p.name() + ": " + plotvarname[ivar], color = 'b')
         ax3.set_ylabel("depth $[m]$", color='k', fontsize=font_s)
         fig.set_size_inches(15, 10)
-#	fig.set_dpi(300)
 
-        ###ax = axs[2]
         xs, ys = np.meshgrid(mpldates.date2num(timelabel_list), depths)
         plotmat_model_m = ma.masked_invalid(plotmat_model)
         if (var_mod == 'P_l') or (var_mod == 'Chla'):
@@ -254,21 +223,18 @@ for ivar, var_mod in enumerate(VARLIST):
                 model_mld, _ = stats.plotdata(var_mod, 'MLD3')
                 ax4.plot(mpldates.date2num(timelabel_list), model_mld, '-w')
         if (var_mod == 'O2o'):
-            # ,cmap="jet")# default is 'flat'
             quadmesh = ax4.pcolormesh(
                 xs, ys, plotmat_model_m, shading='flat', vmin=200, vmax=250)
         if (var_mod == 'N3n'):
-            # ,cmap="jet")# default is 'flat'
             quadmesh = ax4.pcolormesh(
-                xs, ys, plotmat_model_m, shading='flat', vmin=0.00, vmax=4)
+                xs, ys, plotmat_model_m, shading='flat', vmin=0.00, vmax=6)
             if plotlines:
                 model_nit3, _ = stats.plotdata(var_mod, 'Nit_prof')
                 ax4.plot(mpldates.date2num(timelabel_list), model_nit3, '-k')
         ax4.set_xlim([T_start2num, T_end2num])
         ax4.xaxis_date()
-        ax4.set_ylim(0, 300)
+        ax4.set_ylim(0, depths[-1])
         ax4.invert_yaxis()
-#	ax4.set_title("BFM model: " + plotvarname[ivar], color = 'b')
         ax4.set_ylabel("depth $[m]$", color='k', fontsize=font_s)
         ax4.xaxis.set_major_locator(
             mdates.MonthLocator(bymonth=[1, 3, 5, 7, 9, 11]))
@@ -285,7 +251,6 @@ for ivar, var_mod in enumerate(VARLIST):
         colorbar_bottom = ax4.get_position().ymin
         colorbar_extent = ax3.get_position().ymax - colorbar_bottom
 
-  #      cbaxes = fig.add_axes([0.95, 0.01, 0.02, 0.95])
         cbaxes = fig.add_axes([0.93, colorbar_bottom, 0.02, colorbar_extent])
         cbar = fig.colorbar(quadmesh, cax=cbaxes, )
         ticklabs = cbar.ax.get_yticklabels()
@@ -301,13 +266,10 @@ for ivar, var_mod in enumerate(VARLIST):
         ax1.plot(Lon[0], Lat[0], 'bo')
         ax1.plot(Lon[0], Lat[0], 'bx')
         ax1.set_xlim([-5.5, 36])
-#	ax1.set_ylabel("LAT",color = 'k',fontsize=font_s)
-#	ax1.set_xlabel("LON",color = 'k')
         extent = 4  # degrees
         ipp = len(list_float_track)
         ax2.plot(c_lon, c_lat, 'k')
         ax2.plot(Lon, Lat, 'ro')
-#	ax2.plot(Lon[ind_max_sup],Lat[ind_max_sup],'go')
         ax2.plot(Lon[0], Lat[0], 'bo')
         ax2.plot(Lon[0], Lat[0], 'bx', markersize=font_s)
         ax2.set_xlim([np.min(Lon[:ipp]) - extent/2,
@@ -317,4 +279,4 @@ for ivar, var_mod in enumerate(VARLIST):
 
         fig.savefig(
             ''.join([OUTDIR, 'HovRSTbef_Float+TRANS_', p.name(), '_', var_mod, '.png']))
-        pl.close(fig)
+        plt.close(fig)

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import scipy.io.netcdf as NC
 import numpy as np
 import datetime
@@ -356,12 +358,12 @@ if __name__ == '__main__':
     filename="/gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/6901032/SD6901032_015.nc"
     F=BioFloat.from_file(filename)
 
-    print len(PROFILE_LIST)
+    print(len(PROFILE_LIST))
 
     for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
         if Pres.min()>0:
-            print Pres.min()
+            print(Pres.min())
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

@@ -246,14 +246,12 @@ def logAverager(M):
     _,jpj,jpi = M.shape
     CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(jpi):
-        for j in range(jpj):
-            l = M[:,j,i]
-            goodValues = l != fillValue
-            if np.any(goodValues):
-                count = goodValues.sum()
-                LOGmean = np.log(l[goodValues]).sum() / count
-                CHL_OUT[j,i] = np.exp(LOGmean)
+    maskM = M==fillValue
+    Mnan = M.copy()
+    Mnan[maskM] = np.nan
+    LOGm = np.nanmean(np.log(Mnan),0)
+    CHL_OUT = np.exp(LOGm)
+    CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
 
 def averager(M):
@@ -267,14 +265,50 @@ def averager(M):
     #assert jpi == NativeMesh.jpi
     CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(jpi):
-        for j in range(jpj):
-            l = M[:,j,i]
-            goodValues = l != fillValue
-            if np.any(goodValues):
-                count = goodValues.sum()
-                CHL_OUT[j,i] = l[goodValues].sum() / count
+#    for i in range(jpi):
+#        for j in range(jpj):
+#            l = M[:,j,i]
+#            goodValues = l != fillValue
+#            if np.any(goodValues):
+#                count = goodValues.sum()
+#                CHL_OUT[j,i] = l[goodValues].sum() / count
+    maskM = M==fillValue
+    Mnan = M.copy()
+    Mnan[maskM] = np.nan
+    CHL_OUT = np.nanmean(Mnan,0)
+    CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
+
+
+def WeightedLogAverager(M, w):
+    '''
+    Inner matrix M has dimensions (nFrames, jpj, jpi ), while w has dimension (nFrames)
+    Performs a log weighted average on present values (avoiding fillvalues)
+
+    '''
+    _,jpj,jpi = M.shape
+    #assert jpj == NativeMesh.jpj
+    #assert jpi == NativeMesh.jpi
+    CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
+
+    nFrames = M.shape[0]
+    maskM = (M==fillValue)==False
+    maskNotallNan = np.sum(maskM,0)>0
+    nP = np.sum(maskNotallNan)
+    Mmasked = np.zeros((nFrames,nP))
+    wwM = np.zeros_like(Mmasked)
+    for iframe in range(nFrames):
+        wwM[iframe,:] = w[iframe]
+        Mmasked[iframe,:] = M[iframe,maskNotallNan]
+    noValidM = Mmasked==fillValue
+    Mmasked[noValidM] = np.nan
+    wwM[noValidM] = np.nan
+    countM = np.nansum(wwM,0)
+    chlm = np.nansum(wwM*np.log(Mmasked),0) / countM
+    CHL_OUT[maskNotallNan] = np.exp(chlm)
+
+    return CHL_OUT
+
 
 def WeightedAverager(M, w):
     '''
@@ -287,15 +321,25 @@ def WeightedAverager(M, w):
     #assert jpi == NativeMesh.jpi
     CHL_OUT = np.ones((jpj,jpi),np.float32) * fillValue
 
-    for i in range(jpi):
-        for j in range(jpj):
-            l = M[:,j,i]
-            goodValues = l != fillValue
-            MyWeights = w[goodValues]
-            if np.any(goodValues):
-                count = MyWeights.sum()
-                CHL_OUT[j,i] = (w[goodValues]*l[goodValues]).sum() / count
+    nFrames = M.shape[0]
+    maskM = (M==fillValue)==False
+    maskNotallNan = np.sum(maskM,0)>0
+    nP = np.sum(maskNotallNan)
+    Mmasked = np.zeros((nFrames,nP))
+    wwM = np.zeros_like(Mmasked)
+    for iframe in range(nFrames):
+        wwM[iframe,:] = w[iframe]
+        Mmasked[iframe,:] = M[iframe,maskNotallNan]
+    noValidM = Mmasked==fillValue
+    Mmasked[noValidM] = np.nan
+    wwM[noValidM] = np.nan
+    countM = np.nansum(wwM,0)
+    chlm = np.nansum(wwM*Mmasked,0) / countM
+    CHL_OUT[maskNotallNan] = chlm
+
     return CHL_OUT
+
+
 
 def getnextIndex(array,value):
     for i,val in enumerate(array):

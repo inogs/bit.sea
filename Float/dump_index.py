@@ -79,6 +79,10 @@ if args.type=="static_superfloat":
 def file_header_content(filename,VARLIST, avail_params=None):
     '''
     it takes variable list
+    Returns
+    - a string like
+        6901765/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEMP
+    - None in case of error
     '''
     try:
         ncIN = NC.netcdf_file(filename,'r')
@@ -143,13 +147,13 @@ for DIR in DIRLIST:
                     LINES.append(line+"\n")
                 else:
                     line=file_header_content(filename,VARLIST,avail_params=None)
-                    if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     if line is not None:
+                        if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                         LINES.append(line+"\n")
             else:
                 line=file_header_content(filename,VARLIST,avail_params=None)
-                if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                 if line is not None:
+                    if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     LINES.append(line+"\n")
                     if is_provided_indexer: print "added " + line
 

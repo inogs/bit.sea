@@ -80,3 +80,17 @@ FLOAT_OPT_VARS_2019 = {"P_l": "CHL",
                   "Ed_par": "PAR",
                   }
 
+SUPERFLOAT_VARS = {"P_l"    : "CHLA",
+                  "Ed_380"  : "IRR_380",
+                  "Ed_412"  : "IRR_412",
+                  "Ed_490"  : "IRR_490",
+                  "Ed_par"  : "PAR",
+                  "O2o"     : "DOXY",
+                  "N3n"     : "NITRATE",
+                  "CDOM"    : "CDOM",
+                  "vosaline": "SALI",
+                  "votemper": "TEMP",
+                  "POC"     : "BBP700",
+                  }
+
+

@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 import os
 from commons.utils import addsep
+from var_conversions import FLOATVARS as conversion
 import matplotlib.pyplot as pl
 
 from instrument import Instrument, Profile
@@ -31,6 +32,7 @@ class BioFloatProfile(Profile):
         self._my_float = my_float
         self.available_params = available_params
         self.mean = mean
+        self.has_adjusted = True
 
     def __eq__(self, other):
         if isinstance(other, BioFloatProfile):
@@ -58,7 +60,13 @@ class BioFloatProfile(Profile):
 
     def ID(self):
         return self.name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
-
+    def reference_var(self,var):
+        '''
+        Returns the reference varname, for a given profile object and
+        a ogstm model varname
+        For BioFloats p.reference_var('O2o') returns 'DOXY'
+        '''
+        return conversion[var]
 
 
 class BioFloat(Instrument):

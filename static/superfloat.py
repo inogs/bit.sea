@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import scipy.io.netcdf as NC
 import numpy as np
 import datetime
@@ -5,6 +7,8 @@ import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
 from instruments.instrument import Instrument, Profile
+from scipy.optimize import curve_fit
+from instruments.var_conversions import SUPERFLOAT_VARS as conversion
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -25,6 +29,7 @@ class BioFloatProfile(Profile):
         self._my_float = my_float
         self.available_params = available_params
         self.mean = mean
+        self.has_adjusted = False
 
     def __eq__(self, other):
         if isinstance(other, BioFloatProfile):
@@ -48,14 +53,30 @@ class BioFloatProfile(Profile):
 
         return self._my_float.read(var)
 
+
+    def read_fitted(self,var, func):
+        '''
+        This is used to calculate the radiometric profile values at the surface.
+        Use an exponential fit and extrapolate values to the surface.
+        Returns 3 numpy arrays: Pres, Profile, Qc with values extrapolated to 0 m
+        '''
+
+        return self._my_float.read_fitted(var, func, mean=self.mean)
+
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
         '''
         return self._my_float.wmo
 
     def ID(self):
-        return  self.name() + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
-
+        return  self.name() + "_" + self.time.strftime("%Y%m%d-%H:%M:%S_") + str(self.lon) + "_"+ str(self.lat)
+    def reference_var(self,var):
+        '''
+        Returns the reference varname, for a given profile object and
+        a ogstm model varname
+        For BioFloats p.reference_var('O2o') returns 'DOXY'
+        '''
+        return conversion[var]
 
 class BioFloat(Instrument):
 
@@ -67,11 +88,14 @@ class BioFloat(Instrument):
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        istart=filename.index("/",filename.index('SUPERFLOAT/'))
-        iend  =filename.index("/",istart+1)
-        self.wmo = filename[istart+1:iend]
-        cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
-        self.cycle = int(cycle)
+        #istart=filename.index("/",filename.index('SUPERFLOAT/'))
+        #iend  =filename.index("/",istart+1)
+        wmo, cycle = os.path.basename(filename).rsplit("_")
+        self.wmo = wmo[2:]
+        self.cycle = int(cycle[:3])
+        #self.wmo = filename[istart+1:iend]
+        #cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
+        #self.cycle = int(cycle)
 
 
     def __eq__(self,other):
@@ -100,6 +124,67 @@ class BioFloat(Instrument):
         ncIN.close()
 
         return Pres, Profile, Qc
+
+    def read_raw(self,var):
+        '''
+        Reads data from file
+        Returns 2 numpy arrays: Pres, Profile
+        '''
+        ncIN=NC.netcdf_file(self.filename,'r')
+        Pres    = ncIN.variables['PRES_'+var].data.copy()
+        Profile = ncIN.variables[        var].data.copy()
+        ncIN.close()
+
+        return Pres, Profile
+
+
+    def read_fitted(self, var, func, mean=None):
+        '''
+        This is used to calculate the radiometric profile values at the surface.
+        Use an exponential fit and extrapolate values to the surface.
+        Returns the irradiance values at the surface.
+
+        Reads profile data from file, applies a rarefaction and optionally a filter to the data
+
+        Returns the measurement's surface value
+
+        '''
+
+        raw_pres, raw_prof   = self.read_raw(var)
+        pres,index           = np.unique(raw_pres,return_index=True)
+        prof                 = raw_prof[index]
+
+        if pres[0] < 1.5 and pres[3] < 10.: 
+        
+            popt,_   = curve_fit(func, pres, prof)
+            pres_new = np.insert(pres, 0, 0.)  if not pres[0] == 0. else pres # Add z=0 m
+            prof_new = func(pres_new, *popt)
+
+        else:
+            pres_new = pres
+            prof_new = prof
+
+        qc       = np.ones_like(pres_new)*2
+
+        #import matplotlib.pyplot as plt
+        #plt.plot(prof, -pres, 'm', label='Profile')
+        #plt.plot(prof_new, -pres_new, 'b', label='Curve fit')
+        #plt.legend(loc='best')
+        #plt.show()
+        
+        if pres_new.size ==0:
+            return pres_new, prof_new, qc
+
+        if mean == None:
+            if BioFloat.default_mean != None:
+                return pres_new, BioFloat.default_mean.compute(prof_new, pres_new), qc
+            else:
+                return pres_new, prof_new, qc
+        else:
+            return pres_new, mean.compute(prof_new, pres_new), mean.compute(qc,pres_new)
+
+
+
     def origin(self,var):
         '''
         Arguments:
@@ -273,12 +358,12 @@ if __name__ == '__main__':
     filename="/gpfs/scratch/userexternal/gbolzon0/plazzari/SUPERFLOAT/6901032/SD6901032_015.nc"
     F=BioFloat.from_file(filename)
 
-    print len(PROFILE_LIST)
+    print(len(PROFILE_LIST))
 
     for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
         if Pres.min()>0:
-            print Pres.min()
+            print(Pres.min())
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

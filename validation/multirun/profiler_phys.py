@@ -14,20 +14,20 @@ import os
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
 run = "HC_2017_assw"
-run = "DA_Float/RUN_REF"
+run = "DA_Float/RUN_SAT_FLOAT_chl_n/"
 
 INPUTDIR="/gpfs/scratch/userexternal/ateruzzi/" + run + \
     "/wrkdir/MODEL/FORCINGS/"
 aggregatedir=INPUTDIR
 # output directory, where aveScan.py will be run.
-BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_HC2017/VALID_float/' + \
+BASEDIR='/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/' + \
     run + '/PROFILATORE_PHYS/'
 
 DATESTART = '20150101'
 DATE__END = '20160101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"T*.nc", prefix="T")
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"T*.nc", prefix="T", hour=0)
 
 import basins.OGS as OGS
 ALL_PROFILES = lovbio_float.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)

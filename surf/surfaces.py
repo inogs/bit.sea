@@ -116,12 +116,12 @@ def DCM2(chl,maskobj):
                         DCM = d_max_cand[indmax]
                         matrixDCM[jj,ji] = DCM
                         matrixCM[jj,ji] = CM
-                        matrixIDCM[jj,ji] = profile_len-(iid+indmax)
                         break
                 if not(np.isnan(matrixDCM[jj,ji])):
                     inddcm = profile>(matrixCM[jj,ji]-(matrixCM[jj,ji]-profile[0])/2.)
                     dzp = maskobj.e3t[:profile_len,jj,ji]
                     matrixDCMthick[jj,ji] = np.nansum(dzp[inddcm])
+                    matrixIDCM[jj,ji] = np.nanargmin(np.abs(profile-matrixDCM[jj,ji]))
 
     matrixDCM[~tmask] = np.nan
     matrixCM[~tmask] = np.nan
@@ -201,7 +201,7 @@ def NITRCL(nit,maskobj):
 def NUTRCL_dz_max(nut,maskobj):
     '''
     Calculates of nitracline depth
-    based on criteria p>=2
+    based on maximum gradient
 
     '''
     _,jpj,jpi = maskobj.shape
@@ -211,10 +211,12 @@ def NUTRCL_dz_max(nut,maskobj):
     matrixNCL[:,:] = np.nan
     matrixN = np.zeros((jpj,jpi))
     matrixN[:,:] = np.nan
-    matrixINCL = np.zeros((jpj,jpi))
-    matrixINCL[:,:] = np.nan
+    #matrixINCL = np.zeros((jpj,jpi))
+    #matrixINCL[:,:] = np.nan
     matrixNCLslope = np.zeros((jpj,jpi))
     matrixNCLslope[:,:] = np.nan
+    matrixNCLthick = np.zeros((jpj,jpi))
+    matrixNCLthick[:,:] = np.nan
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -229,13 +231,165 @@ def NUTRCL_dz_max(nut,maskobj):
                 NUT = profile[iid]
                 matrixNCL[jj,ji] = NCL
                 matrixN[jj,ji] = NUT
-                matrixINCL[jj,ji] = iid
-                matrixNCLslope[jj,ji] = np.nanmean(dN[iid-2:iid+2])
- 
+                pslope = dN[iid]
+                iip = dN>(.75*pslope)
+                iia = np.argwhere(np.diff(iip))[:,0]
+                if (len(iia))>1:
+                    iit = np.zeros(len(dN),dtype=bool)
+                    for ind in range(len(iia)-1):
+                        if iid in range(iia[ind]+1,iia[ind+1]+1):
+                            iit[iia[ind]+1:iia[ind+1]+1] = True
+                            break
+                    dzp = maskobj.e3t[:profile_len-1,jj,ji]
+                    matrixNCLthick[jj,ji] = np.nansum(dzp[iit])
+                    matrixNCLslope[jj,ji] = np.nanmean(dN[iit])
+
     
     matrixNCL[~tmask] = np.nan
     matrixN[~tmask] = np.nan
-    matrixINCL[~tmask] = np.nan
+    #matrixINCL[~tmask] = np.nan
     matrixNCLslope[~tmask] = np.nan
-    return matrixNCL,matrixN,matrixINCL,matrixNCLslope
+    #return matrixNCL,matrixN,matrixINCL,matrixNCLslope
+    return matrixNCL,matrixN,matrixNCLslope,matrixNCLthick
+
+
+
+def NLAYERS(nut,maskobj):
+    '''
+    Calculates layers above and below nutricline and their average concentration
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixSURF = np.zeros((jpj,jpi))
+    matrixSURF[:,:] = np.nan
+    matrixNSURF = np.zeros((jpj,jpi))
+    matrixNSURF[:,:] = np.nan
+    matrixBOTT = np.zeros((jpj,jpi))
+    matrixBOTT[:,:] = np.nan
+    matrixNBOTT = np.zeros((jpj,jpi))
+    matrixNBOTT[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = nut[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                dN = np.diff(profile)/np.diff(depths)
+                iid = np.nanargmax(dN)
+                pslope = dN[iid]
+                dNsurf = np.diff(profile[:iid])/np.diff(depths[:iid])
+                iis = np.abs(dNsurf)<.1*pslope
+                if np.sum(iis)>1:
+                    matrixSURF[jj,ji] = depths[:iid-1][iis][-1]
+                    e3tp = maskobj.e3t[:iid-1,jj,ji][iis]
+                    profpp = profile[:iid-1][iis]
+                    matrixNSURF[jj,ji] = np.nansum(profpp*e3tp)/np.nansum(e3tp)
+                dNbott = np.diff(profile[iid:])/np.diff(depths[iid:])
+                iib = np.abs(dNbott)<.1*pslope
+                if np.sum(iib)>1:
+                    matrixBOTT[jj,ji] = depths[iid:-1][iib][0]
+                    e3tp = maskobj.e3t[iid:profile_len-1,jj,ji][iib]
+                    profpp = profile[iid:-1][iib]
+                    matrixNBOTT[jj,ji] = np.nansum(profpp*e3tp)/np.nansum(e3tp)
+
+    matrixSURF[~tmask] = np.nan
+    matrixBOTT[~tmask] = np.nan
+    matrixNSURF[~tmask] = np.nan
+    matrixNBOTT[~tmask] = np.nan
+    return matrixSURF,matrixBOTT,matrixNSURF,matrixNBOTT
+    #return matrixSURF,matrixBOTT
+
+def PICNCL_dz_max(den,maskobj):
+    '''
+    Calculates picnocline depth
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixPCL = np.zeros((jpj,jpi))
+    matrixPCL[:,:] = np.nan
+    matrixD = np.zeros((jpj,jpi))
+    matrixD[:,:] = np.nan
+    #matrixIPCL = np.zeros((jpj,jpi))
+    #matrixIPCL[:,:] = np.nan
+    matrixPCLslope = np.zeros((jpj,jpi))
+    matrixPCLslope[:,:] = np.nan
+    matrixPCLthick = np.zeros((jpj,jpi))
+    matrixPCLthick[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = den[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                dN = np.diff(profile)/np.diff(depths)
+                dN[depths[:-1]<=5] = np.nan
+                iid = np.nanargmax(dN)
+                PCL = depths[iid]
+                DEN = profile[iid]
+                matrixPCL[jj,ji] = PCL
+                matrixD[jj,ji] = DEN
+                #matrixIPCL[jj,ji] = iid
+                pslope = dN[iid]
+                iip = dN>(.75*pslope)
+                iia = np.argwhere(np.diff(iip))[:,0]
+                if (len(iia))>1:
+                    iit = np.zeros(len(dN),dtype=bool)
+                    for ind in range(len(iia)-1):
+                        if iid in range(iia[ind]+1,iia[ind+1]+1):
+                            iit[iia[ind]+1:iia[ind+1]+1] = True
+                            break
+                    dzp = maskobj.e3t[:profile_len-1,0,0]
+                    matrixPCLthick[jj,ji] = np.nansum(dzp[iit])
+                    matrixPCLslope[jj,ji] = np.nanmean(dN[iit])
+
+
+    matrixPCL[~tmask] = np.nan
+    matrixD[~tmask] = np.nan
+    #matrixIPCL[~tmask] = np.nan
+    matrixPCLslope[~tmask] = np.nan
+    #return matrixPCL,matrixD,matrixIPCL,matrixPCLslope
+    return matrixPCL,matrixD,matrixPCLslope,matrixPCLthick
+
+def DIFFST(dff,maskobj):
+    '''
+    Calculates some statistics on diffusion 
+
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    # indlev = maskobj.getDepthIndex(0)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixMAX = np.zeros((jpj,jpi))
+    matrixMAX[:,:] = np.nan
+    matrixMEAN = np.zeros((jpj,jpi))
+    matrixMEAN[:,:] = np.nan
+    matrixDLOW = np.zeros((jpj,jpi))
+    matrixDLOW[:,:] = np.nan
+    i200 = maskobj.getDepthIndex(200)
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = bathy_len
+                profile = dff[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                idd = np.min([i200,profile_len])
+                imax = np.nanargmax(profile[:idd])
+                dabs = np.abs(profile-.01)
+                i10 = np.nanargmin(dabs[imax:idd])+imax
+                matrixMAX[jj,ji] = profile[imax]
+                matrixDLOW[jj,ji] = depths[i10]
+                matrixMEAN[jj,ji] = np.nanmean(profile[imax:i10])
+
+    matrixMAX[~tmask] = np.nan
+    matrixMEAN[~tmask] = np.nan
+    matrixDLOW[~tmask] = np.nan
+    return matrixMAX,matrixMEAN,matrixDLOW
+
 

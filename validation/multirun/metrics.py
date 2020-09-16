@@ -139,3 +139,9 @@ def find_THERMOCL(Profile,Pres,Temp):
                 break
         return thermocl,ip
 
+def find_SLOPE_dz_max(Profile,Pres):
+         dN = np.diff(Profile)/np.diff(Pres)
+         icl = dN.argmax()
+         slope = np.nanmean(dN[icl-2:icl+2])
+         return slope
+

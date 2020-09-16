@@ -1,6 +1,6 @@
 MASK=$CINECA_SCRATCH/MASKS16corrected/meshmask.nc
 
-RUN=DA_FloatNut/RUN_FLOAT_chl12
+RUN=DA_Float/RUN_SAT_FLOAT_chl_n
 OUTHOEV=$CINECA_SCRATCH/ELAB_DAFloat/VALID_float/FIGURES/Hoevmoller/$RUN/
 OUTHOEVMODEL=$CINECA_SCRATCH/ELAB_DAFloat/VALID_float/FIGURES/HoevmollerModel/$RUN/
 mkdir -p $OUTHOEV
@@ -46,4 +46,19 @@ OUTDIFF=$CINECA_SCRATCH/ELAB_DAFloat/VALID_float/FIGURES/Hoevmoller/DIFF/$DIRDIF
 mkdir -p $OUTDIFF
 echo Hovdiff_models_vars.py -m $MASKFILE -i $BASESTATS -o $OUTDIFF
 
+#Hov density
+BASEDIR=/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/$RUN/PROFILATORE_PHYS/
+OUTHPHYS=/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/$RUN/FIGURES/HovmoellerPHY/
+mkdir -p $OUTHPHYS
+export MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS16_INGV/meshmask_1672.nc
+mkdir -p $BASEDIR # Must be consistent with BASEDIRE in profiler
+echo python profiler_phys.py # To be launched 1 time
 
+echo python HovDens_flots+model_vars.py -m $MASKFILE -o $OUTHPHYS
+
+
+#Hov N with slope
+MASKFILE=$CINECA_SCRATCH/MASKS16corrected/meshmask.nc
+OUTSLOPE=/gpfs/scratch/userexternal/ateruzzi/ELAB_DAFloat/VALID_float/$RUN/FIGURES/HovmoellerNslope/
+mkdir -p $OUTSLOPE
+echo python Hov_flots+model_slopeN.py -m $MASKFILE -o $OUTSLOPE 

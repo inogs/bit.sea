@@ -7,8 +7,11 @@ from matplotlib.cm import ScalarMappable as ScalarMappable
 
 class matchup(object):
     def __init__(self, Model, Ref):
-        self.Model = Model
-        self.Ref   = Ref
+
+        mask = ~np.isnan(Model) & ~np.isnan(Ref)
+
+        self.Model = Model[mask]
+        self.Ref   = Ref[mask]
 
     def diff(self):
         return self.Model - self.Ref
@@ -40,6 +43,10 @@ class matchup(object):
         Result of zero does not necessarily indicate low error due to cancellation.
         '''
         return self.diff().mean();
+
+    def maxdiff(self):
+
+        return self.diff().max()
 
     def MSE(self):
         '''Mean Square Error

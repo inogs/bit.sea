@@ -5,12 +5,13 @@ from dataextractor import DataExtractor
 
 
 
-def TimeAverager3D(Filelist,weights,varname,mask):
+def TimeAverager3D(Filelist,weights,varname,mask,accept_neg=True):
     '''
     Performs a weighted average, working on a list of files.
     The weights are usually provided by TimeList.select() method.
     varname is a string
     mask is an common.mask.Mask object
+    if accept_neg is False, it modifies negative values in zeros
     '''
     n=len(Filelist)
     jpk, jpj, jpi= mask.shape
@@ -20,9 +21,12 @@ def TimeAverager3D(Filelist,weights,varname,mask):
         De      = DataExtractor(mask,filename,varname)
         M = De.values
         #M = netcdf3.read_3d_file(filename, varname)
+        if not accept_neg:
+             M[M<0]=0
         MSUM += M*weights[t]
     averaged = MSUM/weights.sum()
     return averaged
+
 
 def TimeAverager2D(Filelist,weights,varname,mask):
     '''

@@ -11,7 +11,7 @@ class CarbonReader(DatasetExtractor):
         Reads the NetCDF Dataset
         '''
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys_RIC.nc"
-        self.DataExtractor = DatasetExtractor(self.filename)
+        self.DataExtractor = DatasetExtractor(self.filename,'Carbon')
 
         # DATA ELIMINATION in order to not duplicate values with nutrients dataset
         for cruisename in ['METEOR','METEOR51', 'METEOR95','PROSOPE']:

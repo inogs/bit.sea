@@ -14,7 +14,7 @@ class NutrientsReader():
         Reads the NetCDF Dataset
         '''
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
-        self.DataExtractor = DatasetExtractor(self.filename)
+        self.DataExtractor = DatasetExtractor(self.filename, 'Nutrients')
 
         # QC  section ----------------
         M = self.DataExtractor

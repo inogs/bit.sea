@@ -1,4 +1,5 @@
 import numpy as np
+import var_conversions
 class Profile(object):
     def read(self,var):
         raise NotImplementedError
@@ -15,13 +16,15 @@ class Instrument(object):
 
 
 class ContainerProfile(Profile):
-    def __init__(self,lon,lat,time, depth, values,name):
+    def __init__(self,lon,lat,time, depth, values,name, datasetname):
         self.lon     = lon
         self.lat     = lat
         self.time    = time
         self.pres    = depth
         self.profile = values
         self._name    = name
+        self.datasetname = datasetname
+        self.has_adjusted = False
 
     def __eq__(self, other):
         if isinstance(other, ContainerProfile):
@@ -44,4 +47,12 @@ class ContainerProfile(Profile):
         return self._name
     def ID(self):
         return  self._name + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
+    def reference_var(self, var):
+        '''
+        Returns the reference varname, for a given profile object and
+        a ogstm model varname
+        For BioFloats p.reference_var('O2o') returns 'DOXY'
+        '''
+        if (self.datasetname == 'Nutrients'): return var_conversions.NUTRVARS[var]
+        if (self.datasetname == 'Carbon') : return var_conversions.CARBONVARS[var]
 

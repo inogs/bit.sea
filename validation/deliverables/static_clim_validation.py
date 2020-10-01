@@ -92,9 +92,9 @@ def Layers_Mean(Pres,Values,LayerList):
 # BFMv2:
 #VARLIST=['N1p','N3n','O2o','Ac','DIC','pH']
 # BFMv5:
-VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','pCO2']
+VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','pCO2','N4n','N5s']
 SUBlist = basV2.Pred.basin_list
-SUBlist2 = basV2.Pred2.basin_list
+#SUBlist2 = basV2.Pred2.basin_list
 #nSub = len(SUBlist)
 nLayers = len(LayerList)
 METRICvar = {'N1p':'PHO',
@@ -104,7 +104,9 @@ METRICvar = {'N1p':'PHO',
              'ALK':'ALK',
              'DIC':'DIC',
              'pH':'pH_t',
-            'pCO2':'pCO2'}
+            'pCO2':'pCO2',
+             'N4n':'NH4',
+             'N5s':'SiO2'}
 
 
 
@@ -112,7 +114,7 @@ rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
 column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
 for ivar, var in enumerate(VARLIST):
-#  if (ivar == 5) :
+  if (ivar == 4) : #3 7 
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
@@ -130,12 +132,17 @@ for ivar, var in enumerate(VARLIST):
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
+        print sub.name
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
+    print "CLIM_REF_static"
+    print CLIM_REF_static
+    print "CLIM_MODEL"
+    print CLIM_MODEL
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
@@ -145,6 +152,7 @@ for ivar, var in enumerate(VARLIST):
         good = ~bad
 
         m = matchup(modsubs[good], refsubs[good])
+
         STATS[ilayer,0] = m.bias()
         STATS[ilayer,1] = m.RMSE()
         STATS[ilayer,2] = m.correlation()

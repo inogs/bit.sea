@@ -25,7 +25,7 @@ def DatasetInfo(modelvarname):
     * var     * variable name to access dataset
     * dataset * NutrientsReader or Carbonreader object
     '''
-    if modelvarname in ['N1p','N3n','O2o','N5s']:
+    if modelvarname in ['N1p','N3n','O2o','N4n','N5s']:
         var =  NUTRVARS[modelvarname]
         dataset     = N
     if modelvarname in ['O3h', 'Ac', 'ALK'] :
@@ -40,7 +40,7 @@ def DatasetInfo(modelvarname):
     if modelvarname == 'pCO2' :
         var='pCO2'
         dataset = C
-    if modelvarname not in ['N1p','N3n','O2o','N5s','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
+    if modelvarname not in ['N1p','N3n','O2o','N4n','N5s','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
         raise ValueError("variable not in static dataset ")
     return var, dataset
 
@@ -180,3 +180,5 @@ if __name__ == "__main__":
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list
     N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList, basin_expand=True, QC=True)
+    N5s_clim, N5s_std = get_climatology('N5s', SUBLIST, LayerList, basin_expand=True, QC=True)
+    N4n_clim, N4n_std = get_climatology('N4n', SUBLIST, LayerList, basin_expand=True, QC=True)

@@ -248,16 +248,16 @@ class MapPlotter():
 			self._ax.set_ylim(ylim)
 			# Grid lines
 			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
-			gl.xlocator       = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],max_div))
-			gl.ylocator       = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],max_div))
-			gl.xformatter     = LONGITUDE_FORMATTER
-			gl.yformatter     = LATITUDE_FORMATTER
-			gl.xlabels_top    = top
-			gl.xlabels_bottom = bottom
-			gl.xlabel_style   = style
-			gl.ylabels_left   = left
-			gl.ylabels_right  = right
-			gl.ylabel_style   = style
+			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))
+			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],(ylim[1]-ylim[0])/max_div))
+			gl.xformatter    = LONGITUDE_FORMATTER
+			gl.yformatter    = LATITUDE_FORMATTER
+			gl.top_labels    = top
+			gl.bottom_labels = bottom
+			gl.xlabel_style  = style
+			gl.left_labels   = left
+			gl.right_labels  = right
+			gl.ylabel_style  = style
 		return gl
 
 	def setTitle(self,title,**kwargs):

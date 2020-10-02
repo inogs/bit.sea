@@ -2,7 +2,11 @@
 #
 # Map Plotter Class
 #
-# Plot NETCDF Data using CARTOPY
+# Plot map Data using CARTOPY
+#
+# Fix Cartopy blowup errors:
+#	pip uninstall shapely
+#	pip install --no-binary :all: shapely
 #
 # Arnau Miro, OGS (2019)
 from __future__ import print_function
@@ -18,7 +22,7 @@ class MapPlotter():
 	'''
 	MAPPLOTTER class
 
-	Plot NETCDF data using CARTOPY. Therefore Cartopy must be installed
+	Plot data using CARTOPY. Therefore Cartopy must be installed
 	on your system.
 
 	Example usage:
@@ -243,7 +247,7 @@ class MapPlotter():
 			self._ax.set_xlim(xlim)
 			self._ax.set_ylim(ylim)
 			# Grid lines
-			gl = self._ax.gridlines(crs=self._projection,**gridlines_kwargs)
+			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
 			gl.xlocator       = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],max_div))
 			gl.ylocator       = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],max_div))
 			gl.xformatter     = LONGITUDE_FORMATTER
@@ -291,6 +295,14 @@ class MapPlotter():
 		'''
 		if self._ax:
 			self._ax.set_ylabel(label,**kwargs)
+
+	def setAxisExtent(self,ext,projection='PlateCarree',**kwargs):
+		'''
+		Set the limits for the x and y axis
+		'''
+		if self._ax:
+			transform = getattr(ccrs,projection)(**kwargs)
+			self._ax.set_extent(ext,transform)
 
 	def drawCoastline(self,res='50m',color=(0,0,0,1),linewidth=.75):
 		'''
@@ -453,17 +465,19 @@ class MapPlotter():
 
 		return self._fig
 
-	def plot(self,lon,lat,data,params=None,clear=True):
+	def plot(self,lon,lat,data,params=None,clear=True,projection='PlateCarree',**kwargs):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
 
 		Inputs:
-			> lon:    Longitude vector or matrix
-			> lat:    Latitude vector or matrix
-			> data:   Data matrix
-			> params: Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> lon:        Longitude vector or matrix
+			> lat:        Latitude vector or matrix
+			> data:       Data matrix
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object
@@ -483,11 +497,12 @@ class MapPlotter():
 		if (cbar_min > z_min and cbar_max < z_max): extend = 'both'
 
 		# Plot
+		transform  = getattr(ccrs,projection)(**kwargs)
 		self._plot = self._ax.pcolormesh(lon,lat,data,
 					cmap=self.setColormap(cmap=params['cmap'],ncol=params['ncol']),
 					norm=matplotlib.colors.Normalize(cbar_min,cbar_max),
 					alpha=params['alpha'],
-					transform=self._projection
+					transform=transform
 					 		 )
 
 		# Colorbar
@@ -502,20 +517,22 @@ class MapPlotter():
 
 		return self._fig
 
-	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None,clear=True):
+	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None,clear=True,projection='PlateCarree',**kwargs):
 		'''
 		Plot function. Plots data given a NetCDF file and the names of the variables
 		as well as the current depth and time index.
 
 		Inputs:
-			> filename: NetCDF file path
-			> varname:  Name of the NetCDF variable to plot
-			> lonname:  Name of the longitude dimension
-			> latname:  Name of the latitude dimension
-			> iTime:    Time index for NetCDF (default: 0)
-			> iDepth:   Depth index for NetCDF (default: 0)
-			> params: Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> filename:   NetCDF file path
+			> varname:    Name of the NetCDF variable to plot
+			> lonname:    Name of the longitude dimension
+			> latname:    Name of the latitude dimension
+			> iTime:      Time index for NetCDF (default: 0)
+			> iDepth:     Depth index for NetCDF (default: 0)
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object
@@ -530,7 +547,7 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params,clear=clear)
+		return self.plot(lon,lat,data,params=params,clear=clear,projection=projection,**kwargs)
 
 	def plot_from_file_and_mask(self,filename,varname,maskfile,iTime=0,iDepth=0,
 		masklon='glamt',masklat='gphit',params=None,clear=True):
@@ -539,15 +556,17 @@ class MapPlotter():
 		the variables as well as the current depth and time index.
 
 		Inputs:
-			> filename: NetCDF file path
-			> varname:  Name of the NetCDF variable to plot
-			> maskfile: Path to the mask file
-			> iTime:    Time index for NetCDF (default: 0)
-			> iDepth:   Depth index for NetCDF (default: 0)
-			> masklon:  Name of the longitude dimension (default: 'glamt')
-			> masklat:  Name of the latitude dimension (default: 'gphit')
-			> params:   Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> filename:   NetCDF file path
+			> varname:    Name of the NetCDF variable to plot
+			> maskfile:   Path to the mask file
+			> iTime:      Time index for NetCDF (default: 0)
+			> iDepth:     Depth index for NetCDF (default: 0)
+			> masklon:    Name of the longitude dimension (default: 'glamt')
+			> masklat:    Name of the latitude dimension (default: 'gphit')
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object		
@@ -570,9 +589,9 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params,clear=False)
+		return self.plot(lon,lat,data,params=params,clear=clear,projection=projection,**kwargs)
 
-	def scatter(self,xc,yc,params=None,clear=True,**kwargs):
+	def scatter(self,xc,yc,params=None,clear=True,projection='PlateCarree',**kwargs):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
@@ -589,6 +608,7 @@ class MapPlotter():
 		self.plot_empty(params=params,clear=clear)
 
 		# Plot
-		self._plot = self._ax.scatter(xc,yc,data,transform=self._projection,**kwargs)
+		transform  = getattr(ccrs,projection)(**kwargs)
+		self._plot = self._ax.scatter(xc,yc,data,transform=transform,**kwargs)
 
 		return self._fig

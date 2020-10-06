@@ -13,7 +13,7 @@ class MassimiliReader():
         Reads the NetCDF Dataset
         '''
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/MASSIMILI/Dataset_Massimili.nc"
-        self.DataExtractor = DatasetExtractor(self.filename)
+        self.DataExtractor = DatasetExtractor(self.filename,'Massimili')
 
 
     def CruiseSelector(self, var,Cruisename):

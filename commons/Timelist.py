@@ -404,6 +404,21 @@ class TimeList():
 
             return SELECTION , np.array(weights)
 
+        if isinstance(requestor,requestors.Clim_Interval_req):
+            SELECTION = []
+            weights   = []
+            YEARLIST=self.getYearlist()
+            for year_req in YEARLIST:
+                req = requestors.Interval_req(year_req.year, \
+                                              requestor.month, \
+                                              requestor.day, \
+                                              requestor.deltadays)
+                s,w = self.__generaltimeselector(req)
+                SELECTION.extend(s)
+                weights.extend(w)
+
+            return SELECTION , np.array(weights)
+
         if isinstance(requestor,requestors.Clim_season):
             SELECTION = []
             weights   = []

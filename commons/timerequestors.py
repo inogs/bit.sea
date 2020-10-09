@@ -89,6 +89,23 @@ class Clim_day():
     def __repr__(self):
         return "Climatologic Daily requestor object : "  + self.string
 
+class Clim_Interval_req():
+    ''' Useful for clima days averages
+    Interval_req(1,25,days=10)
+    '''
+    def __init__(self,month,day, hour=12, days=10):
+        self.month  = month
+        self.day    = day
+        self.hour   = hour
+        centertime     = datetime.datetime(2001,self.month,self.day,self.hour)
+        delta = datetime.timedelta(days)
+        #exec 'delta= relativedelta(' + deltastr + ')'
+        self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
+        self.string  = centertime.strftime("Climatological Interval requestor %m%d")
+        self.deltadays = days
+    def __repr__(self):
+        return "Interval requestor object: " + self.string + "  delta :  " + str(self.deltadays)  + " days"
+
 class Monthly_req():
     ''' Requestor object - for specific month - used in Timelist.select() method.
         '''
@@ -300,6 +317,7 @@ class Clim_Hourly_req():
         self.delta_hours = delta_hours
     def __repr__(self):
         return "CLimatologic requestor object: " + self.string + "  delta :  " + str(self.delta_hours)  + " hours"
+
 
 
 

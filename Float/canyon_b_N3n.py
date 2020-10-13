@@ -103,14 +103,30 @@ def get_nitrate(timeobj,lat,lon, pres,temp, psal, doxy):
     cvalcu = (wgts*(cval-out_value)**2).sum()/(V1 - V2/V1) # CU variance
 
 
-def canyon_nitrate_correction(p):
+def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
 
-    '''from the profile object, get the correction using canyon routine'''
+    '''Get the correction using canyon routine
 
-    Tp, T, Tqc=p.read('TEMP', False)
-    Sp, S, Sqc = p.read('PSAL', False)
-    Np, N, Nqc = p.read(FLOATVARS['N3n'],True)
-    OXp, OX, OXqc = p.read(FLOATVARS['O2o'],True)
+    Arguments:
+    * p  *  an object profile,
+    * Np *  numpy 1d array, nitrate pressure
+    * N  *  numpy 1d array, nitrate values
+    * Nqc*  numpy 1d array, nitrate Qc
+    * OXp*  numpy 1d array, oxygen pressure
+    * OXp*  numpy 1d array, oxygen values
+
+    Returns:
+    * Pres  * numpy 1d array, corrected pressure
+    * Value *
+    * Qc    *
+    * t_lev * in meters, target level of the correction
+    * nit   * nitrate value at the target level
+    '''
+
+    Tp, T, _=   p.read('TEMP', False)
+    Sp, S, _  = p.read('PSAL', False)
+#    Np, N, Nqc = p.read('NITRATE',True)
+#    OXp, OX, _ = p.read('DOXY',True)
 
     # Check value at 900m depth
 
@@ -122,16 +138,25 @@ def canyon_nitrate_correction(p):
         ii = Np>=t_lev
 #    else: continue
 
-    print "t_lev ", t_lev
+
     iiOX = OXp>=t_lev
     iiT = Tp>=t_lev
 
 
     p900=Np[ii][0]
     N900=N[ii][0]
-    O900=OX[iiOX][0]
-    T900=T[iiT][0]
-    S900=S[iiT][0]
+    if iiOX.sum() > 0:
+        O900=OX[iiOX][0]
+    else:
+        O900 = min(t_lev,OXp.max())
+
+    if iiT.sum() > 0:
+        T900=T[iiT][0]
+        S900=S[iiT][0]
+    else:
+        T900 = T[-1]
+        S900 = S[-1]
+
     prof_time=p.time.strftime("%Y%m%d-%H:%M:%S")
     prof_lat=p.lat
     prof_lon=p.lon
@@ -159,7 +184,7 @@ def canyon_nitrate_correction(p):
     New_N = New_N[ii]
     Nqc   =   Nqc[ii]
 
-    return New_N, Np, Nqc
+    return New_N, Np, Nqc, t_lev, nit
 
 if __name__ == "__main__":
     timeobj=datetime(2014,12,9,8,45)

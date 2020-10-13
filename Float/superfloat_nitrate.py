@@ -2,7 +2,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of chla.
-    Reads from LOV dataset.
+    Reads from CORIOLIS dataset.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -29,7 +29,7 @@ def argument():
 args = argument()
 
 from instruments import bio_float
-from instruments import lovbio_float
+from canyon_b_N3n import canyon_nitrate_correction
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
@@ -37,6 +37,14 @@ from commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
+from commons.layer import Layer
+
+import basins.V2 as basV2
+from static.climatology import get_climatology
+SUBLIST = basV2.P.basin_list
+LayerList=[Layer(400,600),Layer(600,800),Layer(800,1000)]
+N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
+
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
@@ -113,8 +121,8 @@ TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
 
 
-PROFILES_LOV =lovbio_float.FloatSelector('SR_NO3', TI, R)
-wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
+PROFILES_COR =bio_float.FloatSelector('NITRATE', TI, R)
+wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 force_writing_nitrate=args.force
 
@@ -122,34 +130,53 @@ for wmo in wmo_list:
     print wmo
      # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
     #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
-    Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
-    for ip, pLov in enumerate(Profilelist):
-        pCor = bio_float.from_lov_profile(pLov, verbose=True)
-        is_only_lov = pCor is None
-        if is_only_lov: # wmo = [6903235, 6902900 6902902]
-            outfile = get_outfile(pLov,OUTDIR)
-            profile_for_position=pLov
-            #print "from LOV ", outfile
-        else:
-            outfile = get_outfile(pCor,OUTDIR)
-            profile_for_position=pCor
-            #print "from COR ", outfile
-        metatata = superfloat_generator.Metadata('lov',pLov._my_float.filename)
+    Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
+    for ip, pCor in enumerate(Profilelist):
+        outfile = get_outfile(pCor,OUTDIR)
+        profile_for_position=pCor
 
-        Pres, Value, Qc= pLov.read("SR_NO3", read_adjusted=True)
+        metatata = superfloat_generator.Metadata('coriolis',pCor._my_float.filename)
+
+        F=pCor._my_float
+        F.load_basics()
+        if F.status_var('DOXY') == 'R':
+            print "DOXY STATUS = R for", F.filename
+            continue
+
+        Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
         nP=len(Pres)
         if nP<5 :
-            print "few values for " + pLov._my_float.filename
+            print "few values for " + F.filename
+            continue
+        if Pres[-1]<100:
+            print "depth < 100 for "+ F.filename
+            continue
+        DOXYp, DOXY, _ = pCor.read('DOXY',True)
+        nP=len(DOXYp)
+        if nP < 5:
+            print "Not enough DOXY_ADJUSTED values for " + F.filename
             continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
 
+        Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
+        outOfClimatology = False
+        for ilayer, layer in enumerate(LayerList):
+            if (t_lev >= layer.top) & (t_lev < layer.bottom) :
+                for iSub,sub in enumerate(SUBLIST):
+                    if sub.is_inside(pCor.lon,pCor.lat):
+                        if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
+
+        if outOfClimatology:
+            print "Out of climatology for " + F.filename
+            continue
+
         if superfloat_generator.exist_valid(outfile):
             if not superfloat_generator.exist_variable('NITRATE', outfile):
-                dump_nitrate_file(outfile, profile_for_position, pLov, Pres, Value, Qc, metatata,mode='a')
+                dump_nitrate_file(outfile, profile_for_position, pCor, Pres, Value, Qc, metatata,mode='a')
             else:
                 if force_writing_nitrate:
-                    dump_nitrate_file(outfile, profile_for_position, pLov, Pres, Value, Qc, metatata,mode='a')
+                    dump_nitrate_file(outfile, profile_for_position, pCor, Pres, Value, Qc, metatata,mode='a')
         else:
             print outfile + " not found"
-            dump_nitrate_file(outfile, profile_for_position, pLov,Pres, Value, Qc, metatata,mode='w')
+            dump_nitrate_file(outfile, profile_for_position, pCor,Pres, Value, Qc, metatata,mode='w')
 

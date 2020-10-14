@@ -349,7 +349,7 @@ class MapPlotter():
 					edgecolor=color, facecolor='none', linewidth=linewidth)
 				)
 
-	def drawBackground(self,img=None):
+	def drawBackground(self,img=None,projection='PlateCarree',**kwargs):
 		'''
 		Draw a background image. If no image is provided it uses cartopy's stock image.
 
@@ -358,13 +358,14 @@ class MapPlotter():
 		'''
 		if self._ax:
 			if not img == None or img == '':
+				transform  = getattr(ccrs,projection)(**kwargs)
 				# Detect if we are dealing with a URL or a path
 				if 'https://' in img or 'http://' in img:
 					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content)), origin='upper', 
-						transform=self._projection, extent=[-180, 180, -90, 90])
+						transform=transform, extent=[-180, 180, -90, 90])
 				else:
 					self._ax.imshow(plt.imread(img), origin='upper', 
-						transform=self._projection, extent=[-180, 180, -90, 90])
+						transform=transform, extent=[-180, 180, -90, 90])
 			else:
 				self._ax.stock_img()
 

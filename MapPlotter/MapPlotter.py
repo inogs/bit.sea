@@ -17,7 +17,6 @@ Image.MAX_IMAGE_PIXELS = 18446744073709551616
 
 import numpy as np, matplotlib, matplotlib.pyplot as plt
 import cartopy.crs as ccrs, cartopy.feature as cfeature
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 import netCDF4 as NC
@@ -121,6 +120,7 @@ class MapPlotter():
 			'xlim'        : [-180,180],
 			'ylim'        : [-90,90],
 			'max_div'     : 4,
+			'axis_format' : '.1f',
 			'top_label'   : False,
 			'bottom_label': True,
 			'right_label' : False,
@@ -231,7 +231,7 @@ class MapPlotter():
 		'''
 		return plt.axes(projection=self._projection)
 
-	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],top=False,bottom=True,left=True,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
+	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],axis_format='.1f',top=False,bottom=True,left=True,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
 		'''
 		Create gridlines for the current axes.
 
@@ -256,14 +256,10 @@ class MapPlotter():
 			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
 			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))
 			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],(ylim[1]-ylim[0])/max_div))
-			#gl.xformatter    = LONGITUDE_FORMATTER
-			gl.xformatter    = LongitudeFormatter(number_format='.1f',
-												  degree_symbol='$^\circ$',
-												  dateline_direction_label=True)
-			#gl.yformatter    = LATITUDE_FORMATTER
-			gl.yformatter    = LatitudeFormatter(number_format='.1f',
-												 degree_symbol='$^\circ$',
-												 dateline_direction_label=True)
+			gl.xformatter    = LongitudeFormatter(number_format=axis_format,
+												  degree_symbol='$^\circ$')
+			gl.yformatter    = LatitudeFormatter(number_format=axis_format,
+												 degree_symbol='$^\circ$')
 			gl.top_labels    = top
 			gl.bottom_labels = bottom
 			gl.xlabel_style  = style
@@ -443,8 +439,8 @@ class MapPlotter():
 			self._ax  = params['ax']
 
 		# Axes grid lines
-		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],top=params['top_label'],
-			bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
+		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],axis_format=params['axis_format'],
+		 	top=params['top_label'],bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
 			max_div=params['max_div'],style=params['grdstyle'],gridlines_kwargs=params['grdargs'])
 
 		# Title and axis labels

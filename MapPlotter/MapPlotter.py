@@ -9,14 +9,19 @@
 #	pip install --no-binary :all: shapely
 #
 # Arnau Miro, OGS (2019)
-from __future__ import print_function
+from __future__ import print_function, division
 
 import io, requests, json
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = 18446744073709551616
+
 import numpy as np, matplotlib, matplotlib.pyplot as plt
 import cartopy.crs as ccrs, cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 import netCDF4 as NC
+
 
 class MapPlotter():
 	'''
@@ -125,6 +130,7 @@ class MapPlotter():
 			'features'    : ['coastline','continents','rivers','image'],
 			'res'         : '50m',
 			'img'         : None,
+			'img_format'  : 'png',
 			# Title and labels
 			'title'       : [], # [title,kwargs]
 			'xlabel'      : [],
@@ -250,8 +256,14 @@ class MapPlotter():
 			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
 			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))
 			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],(ylim[1]-ylim[0])/max_div))
-			gl.xformatter    = LONGITUDE_FORMATTER
-			gl.yformatter    = LATITUDE_FORMATTER
+			#gl.xformatter    = LONGITUDE_FORMATTER
+			gl.xformatter    = LongitudeFormatter(number_format='.1f',
+												  degree_symbol='$^\circ$',
+												  dateline_direction_label=True)
+			#gl.yformatter    = LATITUDE_FORMATTER
+			gl.yformatter    = LatitudeFormatter(number_format='.1f',
+												 degree_symbol='$^\circ$',
+												 dateline_direction_label=True)
 			gl.top_labels    = top
 			gl.bottom_labels = bottom
 			gl.xlabel_style  = style
@@ -349,7 +361,7 @@ class MapPlotter():
 					edgecolor=color, facecolor='none', linewidth=linewidth)
 				)
 
-	def drawBackground(self,img=None,projection='PlateCarree',**kwargs):
+	def drawBackground(self,img=None,img_fmt='png',projection='PlateCarree',**kwargs):
 		'''
 		Draw a background image. If no image is provided it uses cartopy's stock image.
 
@@ -361,8 +373,8 @@ class MapPlotter():
 				transform  = getattr(ccrs,projection)(**kwargs)
 				# Detect if we are dealing with a URL or a path
 				if 'https://' in img or 'http://' in img:
-					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content)), origin='upper', 
-						transform=transform, extent=[-180, 180, -90, 90])
+					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content),format=img_fmt), 
+						origin='upper', transform=transform, extent=[-180, 180, -90, 90])
 				else:
 					self._ax.imshow(plt.imread(img), origin='upper', 
 						transform=transform, extent=[-180, 180, -90, 90])
@@ -462,7 +474,7 @@ class MapPlotter():
 		if 'rivers' in params['features']:
 			self.drawRivers(res=params['res'])
 		if 'image' in params['features']:
-			self.drawBackground(img=params['img'])
+			self.drawBackground(img=params['img'],img_fmt=params['img_format'])
 
 		return self._fig
 

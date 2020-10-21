@@ -93,4 +93,9 @@ SUPERFLOAT_VARS = {"P_l"    : "CHLA",
                   "POC"     : "BBP700",
                   }
 
+SOCAT_VARS ={"votemper": "temp",
+             "vosaline": "sal",
+             "pCO2"    : "pCO2"
+             }
+
 

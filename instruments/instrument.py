@@ -56,4 +56,5 @@ class ContainerProfile(Profile):
         if (self.datasetname == 'Nutrients'): return var_conversions.NUTRVARS[var]
         if (self.datasetname == 'Carbon') : return var_conversions.CARBONVARS[var]
         if (self.datasetname == 'Massimili') : return var_conversions.MASSIMILIVARS[var]
+        if (self.datasetname == 'Socat') : return var_conversions.SOCAT_VARS[var]
 

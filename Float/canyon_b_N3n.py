@@ -184,7 +184,7 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     New_N = New_N[ii]
     Nqc   =   Nqc[ii]
 
-    return New_N, Np, Nqc, t_lev, nit
+    return Np, New_N, Nqc, t_lev, nit
 
 if __name__ == "__main__":
     timeobj=datetime(2014,12,9,8,45)

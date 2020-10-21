@@ -204,9 +204,9 @@ class TimeList():
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
                         weights.append(1.)
-            if self.inputFrequency in ['weekly','monthly','yearly','10days']:
+            if self.inputFrequency in ['weekly','monthly','yearly','10days','days=3']:
                 for it, t in enumerate(self.Timelist):
-                    t1 = computeTimeWindow(self.inputFrequency,t);
+                    t1 = computeTimeWindow(self.inputFrequency,t)
                     t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
                     weight = t1.overlapTime(t2)
                     if (weight > 0. ) :

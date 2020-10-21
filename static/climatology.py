@@ -1,4 +1,6 @@
 from commons.time_interval import TimeInterval
+from commons import season
+from commons import timerequestors
 from Nutrients_reader import NutrientsReader
 from Carbon_reader import CarbonReader
 from instruments.var_conversions import NUTRVARS
@@ -119,10 +121,14 @@ def get_sub_indexes(sub_search):
 
 TI = TimeInterval("1997","2016","%Y")
 
-def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False):
+def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False,climseason=-1):
     '''
+    basin_expand=True: apply research of data in close sub-basins (see basin_expansion)
+    QC=True: exclude non-good subbasins (see QualityCheck)
+    climseason=-1 (deafult): any season choice
+    climseason=0,1,2,3: winter,spring,summer,autumn mean (standard seasons definition)
     Returns 
-    * CLIM * [nsub, nLayers] numpy array, a basic annual climatology
+    * CLIM * [nsub, nLayers] numpy array, a basic or seasonal climatology
     * STD  * [nsub, nLayers] numpy array, relative std values
     '''
     nSub    = len(subbasinlist)
@@ -131,8 +137,13 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
     var, Dataset = DatasetInfo(modelvarname)
     var_exp      = Internal_conversion(modelvarname)
+    if climseason==-1:
+        T_int = TI
+    if climseason in [0,1,2,3]:
+        S=season.season()
+        T_int = timerequestors.Clim_season(climseason,S)
     for isub, sub in enumerate(subbasinlist):
-        Profilelist =Dataset.Selector(var, TI, sub)
+        Profilelist =Dataset.Selector(var, T_int, sub)
         Pres  =np.zeros((0,),np.float32)
         Values=np.zeros((0,),np.float32)
         for p in Profilelist: 

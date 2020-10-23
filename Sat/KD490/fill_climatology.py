@@ -79,6 +79,7 @@ for julian in range(365):
     climNN[tofill] = V
     #CLIMNN_FILLED[julian,:,start_i:] = climNN
     CLIMNN_FILLED[julian,:,:] = climNN
+    CLIMNN_FILLED[julian,tmask==0] = np.nan
 
 CLIMNN_FILLED[np.isnan(CLIMNN_FILLED)] = -999.0
 

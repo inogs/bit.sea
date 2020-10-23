@@ -380,7 +380,7 @@ class MapPlotter():
 	def setColormap(self,cmap='coolwarm',ncol=256):
 		'''
 		Set the colormap.
-
+		
 		Inputs:
 			> cmap: Colormap name (default: 'coolwarm')
 				https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html
@@ -409,7 +409,8 @@ class MapPlotter():
 		'''
 		cbar = None
 		if self._fig and self._plot:
-			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend)
+			cax = self._fig.add_axes([self._ax.get_position().x1+0.01,self._ax.get_position().y0,0.02,self._ax.get_position().height])
+			cbar    = self._fig.colorbar(self._plot,orientation=orientation,extend=extend, cax=cax)
 			cbar.set_label(**label)
 			if tick_font: cbar.ax.tick_params(labelsize=tick_font)
 			cbar.locator   = matplotlib.ticker.LinearLocator(numticks=numticks)
@@ -517,7 +518,7 @@ class MapPlotter():
 		# Colorbar
 		if params['draw_cbar']:
 			self.setColorbar(orientation=params['orientation'],
-							 extend=extend,
+							 extend='neither',
 							 numticks=params['numticks'],
 							 tick_format=params['tick_format'],
 							 tick_font=params['tick_font'],

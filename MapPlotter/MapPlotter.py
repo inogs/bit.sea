@@ -11,11 +11,7 @@
 # Arnau Miro, OGS (2019)
 from __future__ import print_function, division
 
-import io, requests, json, numpy as np
-from PIL import Image
-Image.MAX_IMAGE_PIXELS = 18446744073709551616
-
-import matplotlib, matplotlib.pyplot as plt
+import json, numpy as np, matplotlib, matplotlib.pyplot as plt
 import cartopy.crs as ccrs, cartopy.feature as cfeature
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
@@ -370,8 +366,13 @@ class MapPlotter():
 		if self._ax:
 			if not img == None or img == '':
 				transform  = getattr(ccrs,projection)(**kwargs)
+				# Dependencies for images
+				from PIL import Image
+				Image.MAX_IMAGE_PIXELS = 18446744073709551616
 				# Detect if we are dealing with a URL or a path
 				if 'https://' in img or 'http://' in img:
+					# Dependencies for URL
+					import io, requests
 					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content),format=img_fmt), 
 						origin='upper', transform=transform, extent=[-180, 180, -90, 90])
 				else:

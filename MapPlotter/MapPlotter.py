@@ -11,11 +11,11 @@
 # Arnau Miro, OGS (2019)
 from __future__ import print_function, division
 
-import io, requests, json
+import io, requests, json, numpy as np
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = 18446744073709551616
 
-import numpy as np, matplotlib, matplotlib.pyplot as plt
+import matplotlib, matplotlib.pyplot as plt
 import cartopy.crs as ccrs, cartopy.feature as cfeature
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
@@ -142,6 +142,9 @@ class MapPlotter():
 			'ncol'        : 256, 
 			'draw_cbar'   : True,
 			'orientation' : 'horizontal',
+			'extend'      : None,
+			'shrink'      : 1.0,
+			'aspect'      : 20.,
 			'bounds'      : [-1e30, 1e30], # [min,max]
 			'numticks'    : 10,
 			'tick_format' : '%.2f',
@@ -391,8 +394,8 @@ class MapPlotter():
 		'''
 		return plt.get_cmap(cmap,ncol)
 
-	def setColorbar(self,orientation='horizontal',extend='neither',numticks=10,tick_format='%.2f',tick_font=None,
-		label={}):
+	def setColorbar(self,orientation='horizontal',extend='neither',shrink=1.0,aspect=20,
+		numticks=10,tick_format='%.2f',tick_font=None,label={}):
 		'''
 		Set the colorbar.
 
@@ -409,8 +412,7 @@ class MapPlotter():
 		'''
 		cbar = None
 		if self._fig and self._plot:
-			cax = self._fig.add_axes([self._ax.get_position().x1+0.01,self._ax.get_position().y0,0.02,self._ax.get_position().height])
-			cbar    = self._fig.colorbar(self._plot,orientation=orientation,extend=extend, cax=cax)
+			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend,shrink=shrink,aspect=aspect)
 			cbar.set_label(**label)
 			if tick_font: cbar.ax.tick_params(labelsize=tick_font)
 			cbar.locator   = matplotlib.ticker.LinearLocator(numticks=numticks)
@@ -501,10 +503,11 @@ class MapPlotter():
 		cbar_max = params['bounds'][1] if params['bounds'][1] <= 1e20  else z_max
 
 		# Set extend
-		extend = 'neither'
-		if (cbar_min > z_min): extend = 'min'
-		if (cbar_max < z_max): extend = 'max'
-		if (cbar_min > z_min and cbar_max < z_max): extend = 'both'
+		if params['extend'] == None:
+			params['extend'] = 'neither'
+			if (cbar_min > z_min):                      params['extend'] = 'min'
+			if (cbar_max < z_max):                      params['extend'] = 'max'
+			if (cbar_min > z_min and cbar_max < z_max): params['extend'] = 'both'
 
 		# Plot
 		transform  = getattr(ccrs,projection)(**kwargs)
@@ -518,7 +521,9 @@ class MapPlotter():
 		# Colorbar
 		if params['draw_cbar']:
 			self.setColorbar(orientation=params['orientation'],
-							 extend='neither',
+							 extend=params['extend'],
+							 shrink=params['shrink'],
+							 aspect=params['aspect'],
 							 numticks=params['numticks'],
 							 tick_format=params['tick_format'],
 							 tick_font=params['tick_font'],

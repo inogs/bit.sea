@@ -49,7 +49,11 @@ VESSELVARS={'O2o':'DOX1', \
 CARBONVARS={'O2o':'oxygen', \
             'N3n':'nitrate',  \
             'N1p':'phosphate', \
-            'N5s':'silicate'}
+            'N5s':'silicate', \
+            'ALK':'ALK', \
+            'DIC':'DIC', \
+            'pH' :'PHt_{T-Press-ins}', \
+           'pCO2':'pCO2'}
 
 NUTRVARS={'O2o':'oxygen', \
              'N3n':'nitrate',  \

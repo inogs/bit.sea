@@ -51,7 +51,7 @@ CARBONVARS={'O2o':'oxygen', \
             'N1p':'phosphate', \
             'N5s':'silicate', \
             'ALK':'ALK', \
-            'DIC':'DIC', \
+            'DIC':'DICric', \
             'pH' :'PHt_{T-Press-ins}', \
            'pCO2':'pCO2'}
 
@@ -99,7 +99,7 @@ SUPERFLOAT_VARS = {"P_l"    : "CHLA",
 
 SOCAT_VARS ={"votemper": "temp",
              "vosaline": "sal",
-             "pCO2"    : "pCO2"
+             "pCO2"    : "fCO2"
              }
 
 

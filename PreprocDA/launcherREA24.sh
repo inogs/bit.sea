@@ -53,7 +53,7 @@ NPYEOF=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/EOF_PKL/
 
 mkdir -p $NPYEOF
 
-echo python eofs_statp.py -i $INSTATP -o $NPYEOF -m $MASKFILE -v Chla
+echo python eofs_statp.py -i $INSTATP -o $NPYEOF -m $MASKFILE -v Chla -d 200
 
 
 NCEOF=/gpfs/scratch/userexternal/ateruzzi/REA_24_DA_static/EOF_NC/
@@ -65,4 +65,7 @@ mkdir -p $NCEOF
 
 
 echo mpirun -np 12 python eofs_nc.py -i $NPYEOF -v $OUTVAR_MOD -n $NEOF -o $NCEOF -m $MASKFILE -c $MAPCNPY -g $GRID3DVAR
+
+
+
 

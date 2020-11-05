@@ -11,12 +11,8 @@
 # Arnau Miro, OGS (2019)
 from __future__ import print_function, division
 
-import io, requests, json
-from PIL import Image
-Image.MAX_IMAGE_PIXELS = 18446744073709551616
-
-import numpy as np, matplotlib, matplotlib.pyplot as plt
-import cartopy.crs as ccrs, cartopy.feature as cfeature
+import json, numpy as np, matplotlib, matplotlib.pyplot as plt
+import cartopy.crs as ccrs, cartopy.feature as cfeature, cartopy.io.img_tiles as cimgt
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 import netCDF4 as NC
@@ -131,6 +127,8 @@ class MapPlotter():
 			'res'         : '50m',
 			'img'         : None,
 			'img_format'  : 'png',
+			'map_zoom'    : 9,
+			'map_style'   : 'satellite',
 			# Title and labels
 			'title'       : [], # [title,kwargs]
 			'xlabel'      : [],
@@ -142,6 +140,9 @@ class MapPlotter():
 			'ncol'        : 256, 
 			'draw_cbar'   : True,
 			'orientation' : 'horizontal',
+			'extend'      : None,
+			'shrink'      : 1.0,
+			'aspect'      : 20.,
 			'bounds'      : [-1e30, 1e30], # [min,max]
 			'numticks'    : 10,
 			'tick_format' : '%.2f',
@@ -357,7 +358,7 @@ class MapPlotter():
 					edgecolor=color, facecolor='none', linewidth=linewidth)
 				)
 
-	def drawBackground(self,img=None,img_fmt='png',projection='PlateCarree',**kwargs):
+	def drawBackground(self,img=None,img_fmt='png',extent=[-180, 180, -90, 90],projection='PlateCarree',**kwargs):
 		'''
 		Draw a background image. If no image is provided it uses cartopy's stock image.
 
@@ -367,20 +368,37 @@ class MapPlotter():
 		if self._ax:
 			if not img == None or img == '':
 				transform  = getattr(ccrs,projection)(**kwargs)
+				# Use the transform to correct the extent
+				if not projection == 'PlateCarree':
+					out = transform.transform_point(extent[0],extent[2],ccrs.PlateCarree())
+					extent[0],extent[2] = out[0],out[1]
+					out = transform.transform_point(extent[1],extent[3],ccrs.PlateCarree())
+					extent[1],extent[3] = out[0],out[1]
+				# Dependencies for images
+				from PIL import Image
+				Image.MAX_IMAGE_PIXELS = 18446744073709551616
 				# Detect if we are dealing with a URL or a path
 				if 'https://' in img or 'http://' in img:
+					# Dependencies for URL
+					import io, requests
 					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content),format=img_fmt), 
-						origin='upper', transform=transform, extent=[-180, 180, -90, 90])
+						origin='upper', transform=transform, extent=extent)
 				else:
 					self._ax.imshow(plt.imread(img), origin='upper', 
-						transform=transform, extent=[-180, 180, -90, 90])
+						transform=transform, extent=extent)
 			else:
 				self._ax.stock_img()
+
+	def drawTileMap(self,zoom,style='satellite'):
+		'''
+		'''
+		tile = cimgt.GoogleTiles(style=style)
+		self._ax.add_image(tile,zoom)
 
 	def setColormap(self,cmap='coolwarm',ncol=256):
 		'''
 		Set the colormap.
-
+		
 		Inputs:
 			> cmap: Colormap name (default: 'coolwarm')
 				https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html
@@ -391,8 +409,8 @@ class MapPlotter():
 		'''
 		return plt.get_cmap(cmap,ncol)
 
-	def setColorbar(self,orientation='horizontal',extend='neither',numticks=10,tick_format='%.2f',tick_font=None,
-		label={}):
+	def setColorbar(self,orientation='horizontal',extend='neither',shrink=1.0,aspect=20,
+		numticks=10,tick_format='%.2f',tick_font=None,label={}):
 		'''
 		Set the colorbar.
 
@@ -409,7 +427,7 @@ class MapPlotter():
 		'''
 		cbar = None
 		if self._fig and self._plot:
-			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend)
+			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend,shrink=shrink,aspect=aspect)
 			cbar.set_label(**label)
 			if tick_font: cbar.ax.tick_params(labelsize=tick_font)
 			cbar.locator   = matplotlib.ticker.LinearLocator(numticks=numticks)
@@ -471,6 +489,8 @@ class MapPlotter():
 			self.drawRivers(res=params['res'])
 		if 'image' in params['features']:
 			self.drawBackground(img=params['img'],img_fmt=params['img_format'])
+		if 'tilemap' in params['features']:
+			self.drawTileMap(params['map_zoom'],style=params['map_style'])
 
 		return self._fig
 
@@ -500,10 +520,11 @@ class MapPlotter():
 		cbar_max = params['bounds'][1] if params['bounds'][1] <= 1e20  else z_max
 
 		# Set extend
-		extend = 'neither'
-		if (cbar_min > z_min): extend = 'min'
-		if (cbar_max < z_max): extend = 'max'
-		if (cbar_min > z_min and cbar_max < z_max): extend = 'both'
+		if params['extend'] == None:
+			params['extend'] = 'neither'
+			if (cbar_min > z_min):                      params['extend'] = 'min'
+			if (cbar_max < z_max):                      params['extend'] = 'max'
+			if (cbar_min > z_min and cbar_max < z_max): params['extend'] = 'both'
 
 		# Plot
 		transform  = getattr(ccrs,projection)(**kwargs)
@@ -517,7 +538,9 @@ class MapPlotter():
 		# Colorbar
 		if params['draw_cbar']:
 			self.setColorbar(orientation=params['orientation'],
-							 extend=extend,
+							 extend=params['extend'],
+							 shrink=params['shrink'],
+							 aspect=params['aspect'],
 							 numticks=params['numticks'],
 							 tick_format=params['tick_format'],
 							 tick_font=params['tick_font'],

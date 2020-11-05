@@ -68,27 +68,17 @@ def basin_expansion(sub, var):
     #assert var in ["N1p","N3n","N5s","O2o","O3c","O3h"]
     if var in ["pH", "PH", "pCO2"] : return sub
 
-    if (sub.name == "swm1"):
-        if var == "O2o":
-            return OGS.swm1
-        else:
-            return ComposedBasin('swm3', [OGS.alb, OGS.swm2], 'Neighbors of swm1')
-
     if (sub.name == "tyr1"):
-        if var in ["N5s","O2o","O3c","O3h"]: return OGS.tyr2
+        if var in ["O3c","O3h"]: return OGS.tyr2
         return OGS.tyr1
 
     if (sub.name == "adr1"):
-        if var in ["N3n", "O2o"]: return OGS.adr2
+        if var in ["N1p","N3n","N5s"]: return OGS.adr2
         return OGS.adr1
 
     if (sub.name == "ion1"):
-        if var in ["N3n", "O3c", "O3h"]: return ComposedBasin('ion4', [OGS.ion2, OGS.tyr2], 'Neighbors of ion1')
+        if var in ["N3n", "O3c", "O3h"]: return ComposedBasin('ion4', [OGS.swm2, OGS.ion2, OGS.tyr2], 'Neighbors of ion1')
         return OGS.ion1
-
-    if (sub.name == "lev3"):
-        if var in ["O3c","O3h"] : return ComposedBasin('lev5', [OGS.lev1, OGS.lev4], 'Neighbors of lev3')
-        return OGS.lev3
 
     return sub
 

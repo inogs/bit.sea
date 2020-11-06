@@ -175,6 +175,80 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     return CLIM, STD
 
 
+def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200, basin_expand=False, QC=False,climseason=-1):
+    '''
+    get climatolgy excluding coastal areas, it needs TheMask (a mask object)
+    limit depth for coastal areas (limdepth) is 200 by default
+    basin_expand=True: apply research of data in close sub-basins (see basin_expansion)
+    QC=True: exclude non-good subbasins (see QualityCheck)
+    climseason=-1 (deafult): any season choice
+    climseason=0,1,2,3: winter,spring,summer,autumn mean (standard seasons definition)
+    Returns 
+    * CLIM * [nsub, nLayers] numpy array, a basic or seasonal climatology
+    * STD  * [nsub, nLayers] numpy array, relative std values
+    '''
+    nSub    = len(subbasinlist)
+    nLayers = len(LayerList)
+    CLIM    = np.zeros((nSub, nLayers), np.float32)*np.nan
+    STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
+    var, Dataset = DatasetInfo(modelvarname)
+    var_exp      = Internal_conversion(modelvarname)
+    mask200 = TheMask.mask_at_level(200)
+
+    if climseason==-1:
+        T_int = TI
+    if climseason in [0,1,2,3]:
+        S=season.season()
+        T_int = timerequestors.Clim_season(climseason,S)
+    for isub, sub in enumerate(subbasinlist):
+        Profilelist =Dataset.Selector(var, T_int, sub)
+        Pres  =np.zeros((0,),np.float32)
+        Values=np.zeros((0,),np.float32)
+        for p in Profilelist: 
+            lonp = p.lon
+            latp = p.lat
+            ilon,ilat = TheMask.convert_lon_lat_to_indices(lonp,latp)
+            if mask200[ilat,ilon]:
+                pres, profile, _ = p.read(var)
+                Pres   = np.concatenate((Pres,pres))
+                Values = np.concatenate((Values,profile))
+        for ilayer, layer in enumerate(LayerList):
+            ii = (Pres>=layer.top) & (Pres<layer.bottom)
+            if (ii.sum()> 1 ) :
+                CLIM[isub, ilayer] = Values[ii].mean()
+                STD[isub, ilayer] = Values[ii].std()
+
+    if basin_expand:
+# 1. elimination nans by interpolation
+        nLayers=len(LayerList)
+        Layer_center=np.zeros((nLayers,),np.float32)
+        for i,l in enumerate(LayerList): Layer_center[i] = (l.top + l.bottom)/2
+        for isub, sub in enumerate(subbasinlist):
+            y = CLIM[isub,:]
+            nans= np.isnan(y)
+            z_good = Layer_center[~nans]
+            y_good = y[~nans]
+            if len(y_good) > 0:
+                CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
+# 2 apply expansion following Valeria's table
+        for isub, sub in enumerate(subbasinlist):
+            sub_search = basin_expansion(sub, var_exp)
+            INDEX_LIST=get_sub_indexes(sub_search)
+            print INDEX_LIST
+            CLIM[isub,:] = CLIM[INDEX_LIST,:].mean(axis=0)
+            STD [isub,:] =  STD[INDEX_LIST,:].mean(axis=0) # brutto ...
+    if QC:
+        for isub, sub in enumerate(subbasinlist):
+            is_good = QualityCheck(var_exp, sub)
+            if not is_good:
+                CLIM[isub,:] = np.nan
+                STD [isub,:] = np.nan
+
+    return CLIM, STD
+
+
+
+
 if __name__ == "__main__":
     from commons.layer import Layer
     PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])

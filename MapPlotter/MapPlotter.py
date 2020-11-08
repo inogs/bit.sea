@@ -70,9 +70,6 @@ class MapPlotter():
 	@property
 	def projection(self):
 		return self._projection
-	@projection.setter
-	def projection(self,value):
-		self._projection = getattr(ccrs,value)
 
 	@staticmethod
 	def loadNC(fname,varname,fill_value=1e20,mask_value=np.nan):
@@ -623,7 +620,7 @@ class MapPlotter():
 		# Plot
 		return self.plot(lon,lat,data,params=params,clear=clear,projection=projection,**kwargs)
 
-	def scatter(self,xc,yc,params=None,clear=True,projection='PlateCarree',**kwargs):
+	def scatter(self,xc,yc,params=None,clear=True,marker=None,size=None,projection='PlateCarree',**kwargs):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
@@ -641,6 +638,6 @@ class MapPlotter():
 
 		# Plot
 		transform  = getattr(ccrs,projection)(**kwargs)
-		self._plot = self._ax.scatter(xc,yc,data,transform=transform,**kwargs)
+		self._plot = self._ax.scatter(xc,yc,transform=transform,marker=marker,s=size)
 
 		return self._fig

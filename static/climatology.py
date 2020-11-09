@@ -193,7 +193,7 @@ def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdept
     STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
     var, Dataset = DatasetInfo(modelvarname)
     var_exp      = Internal_conversion(modelvarname)
-    mask200 = TheMask.mask_at_level(200)
+    mask200 = TheMask.mask_at_level(limdepth)
 
     if climseason==-1:
         T_int = TI

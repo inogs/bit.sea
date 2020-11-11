@@ -130,6 +130,48 @@ class check():
                 ncOUT.close()
         CR = checkreport(line, nP,nexcl, flag, np.nan)
         return CR
+
+    def phytoC_check(self, model, ref, depth, p):
+        bad=(np.isnan(model)) | (np.isnan(ref))
+        MODEL = model[~bad]
+        REF   = ref [~bad]
+        DEPTH= depth[~bad]
+        nP = len(DEPTH)
+
+        mydiff = np.abs(MODEL-REF)
+        flag1_array = (mydiff > 5)  & (DEPTH<=200)
+        flag1 = flag1_array.sum() > 5
+        nexcl = 0
+
+        line=""
+        flag=np.nan
+        if ( flag1) :#  |  flag2): 
+            if flag1: flag=1
+            # if flag2: flag=2
+            # if (flag1  & flag2) : flag=3
+            line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
+            nexcl=nP
+            FLAG = np.zeros((nP), np.int)
+            FLAG[flag1_array] =1
+            if self.verboselevel ==1 :
+                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_l.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                ncOUT = netCDF4.Dataset(outncfile,'w')
+                ncOUT.createDimension('depth',nP)
+
+                ncvar = ncOUT.createVariable('model','f',('depth', ))
+                ncvar[:]=MODEL
+                ncvar = ncOUT.createVariable('float','f',('depth', ))
+                ncvar[:]=REF
+                ncvar = ncOUT.createVariable('flag' ,'i',('depth', ))
+                ncvar[:]=FLAG
+
+                setattr(ncOUT, 'longitude', p.lon)
+                setattr(ncOUT, 'latitude' , p.lat)
+                ncOUT.close()
+        CR = checkreport(line, nP,nexcl, flag, np.nan)
+        return CR
+
+
     def perform(self, varname, Pres, Value, Qc, Model, p):
         ''' Works of Ref profiles '''
         

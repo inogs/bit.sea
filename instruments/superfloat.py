@@ -38,7 +38,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var,var_mod=None):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -108,7 +108,7 @@ class BioFloat(Instrument):
 
 
 
-    def read(self,var):
+    def read_raw(self,var):
         '''
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
@@ -119,6 +119,26 @@ class BioFloat(Instrument):
         Qc      = ncIN.variables[var + "_QC"].data.copy()
         ncIN.close()
 
+        return Pres, Profile, Qc
+
+
+    def read(self,var,var_mod=None):
+
+        Pres, Profile, Qc = self.read_raw(var)
+
+        if var_mod is None:
+           return Pres, Profile, Qc
+
+        ii=(Pres >= 400) & (Pres <= 500) 
+        if (var_mod == "P_c"):
+            bbp470 = Profile * ( 470.0/ 700)**0.78# [m-1]
+            Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
+            shift=Profile[ii].mean()
+            Profile = Profile - shift
+
+        if (var_mod == "POC"): 
+
+     
         return Pres, Profile, Qc
 
 

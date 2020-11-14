@@ -55,6 +55,7 @@ BASEDIR = addsep(args.basedir)
 OUTDIR = addsep(args.outdir)
 Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR + "chla_check/")
+Check_obj_PhytoC = check.check(OUTDIR + "/PhytoC_check/")
 
 
 TheMask=Mask(args.maskfile, loadtmask=False)
@@ -68,7 +69,7 @@ ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 layer=Layer(0,200)
 layer300=Layer(0,350)
 
-VARLIST = ['P_l','N3n','O2o']
+VARLIST = ['P_l','N3n','O2o','P_c']
 Adj = [True,True,False]
 extrap = [True,False,True]
 nVar = len(VARLIST)
@@ -89,6 +90,7 @@ for ivar, var_mod in enumerate(VARLIST):
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
     if var_mod == "O2o": Check_obj = None
+    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):

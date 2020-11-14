@@ -45,7 +45,7 @@ from instruments.matchup_manager import Matchup_Manager
 from instruments.var_conversions import FLOATVARS
 from commons.utils import addsep
 from commons.layer import Layer
-from profiler import ALL_PROFILES,TL,BASEDIR
+from profiler_floats import ALL_PROFILES,TL,BASEDIR
 from metrics2 import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
@@ -56,21 +56,22 @@ from float_OXY_saturation import *
 OUTDIR = addsep(args.outdir)
 Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR + "chla_check/")
+Check_obj_PhytoC  = check.check(OUTDIR + "/Phyto_C/")
 TheMask=Mask(args.maskfile, loadtmask=False)
 layer=Layer(0,200)
 layer300=Layer(0,350)
 layer1000=Layer(200,1000)
 
-VARLIST = ['P_l','N3n','O2o']
+VARLIST = ['P_l','N3n','O2o','P_c']
 Adj = [True,True,False]
-Adj = [True,True,True]
-extrap = [True,False,True]
+Adj = [True,True,True,True]
+extrap = [True,False,True,False]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','dNit_dz','CM','O2o_sat','OMZ','max_O2']
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','OMZ','max_O2']
+#METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','OMZ','max_O2']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -91,6 +92,7 @@ for ivar, var_mod in enumerate(VARLIST):
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
     if var_mod == "O2o": Check_obj = None
+    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
 
     for itime, Req in enumerate(MonthlyRequestors):
 	if Req.time_interval.end_time > TL.timeinterval.end_time : 
@@ -109,7 +111,11 @@ for ivar, var_mod in enumerate(VARLIST):
 	    Mod = np.zeros((len(BASIN_PROFILES_float), nStat), np.float32 ) * np.nan
 	    for ip, p in enumerate(BASIN_PROFILES_float):
 		if p.available_params.find(var)<0 : continue
-                Pres,Profile,Qc=p.read(var,read_adjusted=adj)
+#                Pres,Profile,Qc=p.read(var,read_adjusted=adj)
+                if (var_mod=="P_c"):
+                    Pres,Profile,Qc=p.read(var,var_mod="P_c")
+                else
+                    Pres,Profile,Qc=p.read(var) #,True)
 
 		if len(Pres) < 10 : continue
 #		GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)

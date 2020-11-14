@@ -51,7 +51,7 @@ from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from commons.utils import addsep
-from profiler import ALL_PROFILES,TL,BASEDIR
+from profiler_floats import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from basins.V2 import NRT3 as OGS
 from commons.time_interval import TimeInterval
@@ -59,7 +59,7 @@ from matchup.statistics import *
 from commons.utils import writetable
 from datetime import datetime
 from datetime import timedelta
-from profiler import *
+from profiler_floats import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -115,15 +115,15 @@ INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 #S = SubMask(basV2.lev1, maskobject=TheMask)
 
-VARLIST      = ['P_l','N3n','O2o']
-VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
+VARLIST      = ['P_l','N3n','O2o','P_c']
+VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen','PhytoC']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 
-METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
+#METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
 METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 
-METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
+#METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
 METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
@@ -146,6 +146,7 @@ A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
 A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
+ if ( var == "P_c"):
     TABLE_METRICS = np.zeros((nSub,26),np.float32)*np.nan #before 18 metrics
     TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
@@ -290,7 +291,7 @@ for ivar, var in enumerate(VARLIST):
 
             TABLE_METRICS[iSub,21] = np.nanmean(O2oMaxRef[ii])
             TABLE_METRICS[iSub,22] = np.nanmean(O2oMaxMod[ii])
-            good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
+            good = ~np.isnan(O2oMaxRef[ii]) &  ~np.isnan(O2oMaxMod[ii])
             m = matchup(O2oMaxMod[ii][good],   O2oMaxRef[ii][good])
             TABLE_METRICS[iSub,23] = m.bias()
             TABLE_METRICS[iSub,24] = m.RMSE()

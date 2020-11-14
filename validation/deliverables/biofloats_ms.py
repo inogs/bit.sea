@@ -39,10 +39,11 @@ import datetime
 import scipy.io.netcdf as NC
 from commons.utils import addsep
 from basins.region import Rectangle
-from profiler import ALL_PROFILES, TL, BASEDIR
+from profiler_floats import ALL_PROFILES, TL, BASEDIR
 from instruments import check
 Check_obj_nitrate = check.check("", verboselevel=0)
 Check_obj_chl     = check.check("", verboselevel=0)
+Check_obj_PhytoC  = check.check("", verboselevel=0)
 
 TheMask  = Mask(args.maskfile)
 
@@ -50,9 +51,9 @@ TheMask  = Mask(args.maskfile)
 
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
-VARLIST = ['P_l','N3n','O2o']
-read_adjusted = [True,True,False]
-extrap = [True,False,True]
+VARLIST = ['P_l','N3n','O2o','P_c']
+read_adjusted = [True,True,True,True]
+extrap = [True,False,True,False]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
@@ -77,6 +78,7 @@ for iFrame, req in enumerate(WEEKLY):
         if var == "N3n": Check_obj = Check_obj_nitrate
         if var == "P_l": Check_obj = Check_obj_chl
         if var == "O2o": Check_obj = None
+        if var == "P_c": Check_obj = Check_obj_PhytoC
         print var
 
         for isub, sub in enumerate(OGS.NRT3):
@@ -85,8 +87,8 @@ for iFrame, req in enumerate(WEEKLY):
             Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
             Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
-            print "RAW " + np.str(len(Profilelist_raw))
-            print sub.name, nProfiles
+#            print "RAW " + np.str(len(Profilelist_raw))
+#            print sub.name, nProfiles
             Matchup_object_list=[]
             for ip in range(nProfiles):
 #                floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar])

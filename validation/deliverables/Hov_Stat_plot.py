@@ -89,15 +89,16 @@ max_depth = get_level_depth(TheMask,300)
 T_start2num = mdates.date2num(TI.start_time)
 T_end2num   = mdates.date2num(TI.end_time)
 
-plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$'] 
-VARLIST = ['P_l','O2o','N3n']
-extrap = [True,False,True]
+plotvarname = [r'Chl $[mg/m^3]$',r'Oxy $[mmol/m^3]$',r'Nitr $[mmol/m^3]$',r'mgC m$^{-3}$'] 
+VARLIST = ['P_l','O2o','N3n','P_c']
+extrap = [True,False,True,False]
 nVar = len(VARLIST)
 bt=300
 depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
 #  if (var_mod =="O2o"):
+   if (var_mod =="P_c"):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
@@ -106,8 +107,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
         print OUTFILE
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
-#        if ( var_mod == 'O2o'):
-        if ( var_mod == 'pippo'):
+        if ( var_mod == 'P_c'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)
             ax1,ax2,ax3,ax4,ax5,ax6,ax7=axes
             xlabels = ax7.get_xticklabels()
@@ -128,12 +128,17 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
         for ip, p in enumerate(list_float_track):
             try:
-                Pres,Prof,Qc=p.read(var)
+                Pres,Prof,Qc=p.read(var,var_mod=var_mod)
+                print "HERE1"
+                print Prof
+                print "HERE2"
             except:
+                print var_mod
                 timelabel_list.append(p.time)
                 continue
             ii = Pres<=bt
             if ii.sum() < 2 :
+                print "less than 2 points"
                 timelabel_list.append(p.time)
                 continue
 
@@ -142,6 +147,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             try:
               GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
             except:
+                print "except"
                 continue
 
             if GM.number()> 0:
@@ -167,6 +173,10 @@ for ivar_m, var_mod in enumerate(VARLIST):
         if (var_mod == 'N3n'):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+        if (var_mod == 'P_c'):
+           # plotmat_m = 12128 * (plotmat_m * ( 470.0/ 700)**0.78 ) + 0.59
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=20)
 
         ax3.invert_yaxis()
         ax4.invert_yaxis()
@@ -184,11 +194,17 @@ for ivar_m, var_mod in enumerate(VARLIST):
         times = timelabel_list
 
         model, ref =           A.plotdata(var_mod,'Int_0-200', only_good=False)
+        print "ref"
+        print ref
         if np.isnan(ref).all(): continue
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
 
-        ax6.plot(times,  ref,'.b',label='REF INTEG')
+#        if ( var_mod == "P_c"):
+#           ref = 12128 * (ref * ( 470.0/ 700)**0.78 ) + 0.59
+#           surf_ref = 12128 * (surf_ref * ( 470.0/ 700)**0.78 ) + 0.59
+
+        ax6.plot(times,  ref,'.b',label='FLO INTEG')
         ax6.plot(times,model,'b',label='MOD INTEG')
 
         ax5.plot(times,  surf_ref,'.b',label='FLOAT') #'REF SURF')
@@ -205,12 +221,12 @@ for ivar_m, var_mod in enumerate(VARLIST):
             model_dcm, ref_dcm =A.plotdata(var_mod,'DCM', only_good=False)
             model_mld, ref_mld =A.plotdata(var_mod,'z_01',only_good=False)
             model_cm,  ref_cm  =A.plotdata(var,'CM',only_good=False)
-            ax5.plot(times,  ref_cm,'.r',label='CM REF')
+            ax5.plot(times,  ref_cm,'.r',label='CM FLO')
             ax5.plot(times,model_cm,'r',label='CM MOD')
             ax8.invert_yaxis()
-            ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
+            ax8.plot(times,  ref_dcm,'.b',label='DCM FLO')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='MWB REF') # vertically Mixed Winter Bloom depth | WLB WINTER LAYER BLOOM
+            ax8.plot(times, ref_mld,'.r',label='MWB FLO') # vertically Mixed Winter Bloom depth | WLB WINTER LAYER BLOOM
             ax8.plot(times,model_mld,'r',label='MWB MOD')
             ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
@@ -228,12 +244,19 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
             ax5.plot(times, ref_Osat, '.r',label='O2sat (FLOAT)') #'REF OXY at SATURATION'
 
-            ax8.plot(times, ref_OMZ, '.r',label='OMZ Ref') #'REF OMZ
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ Flo') #'REF OMZ
             ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
-            ax8.plot(times, ref_maxO2 , '.b',label='O2max Ref') #'REF maxO2
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max Flo') #'REF maxO2
             ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
             ax8.set_ylim(1000,0)
             legend = ax8.legend(loc='upper left', shadow=True, fontsize=10)
+
+        if ( var_mod == "P_c" ):
+            ax6.set_ylabel('INTG 0-200 \n $[mg{\  } m^{-3}]$',fontsize=15)
+            ax5.set_ylabel('SURF\n $[mg{\  } m^{-3}]$',fontsize=15)
+            ax5.set_ylim(0,0.5)
+            xmax=ax5.get_xlim()[1]
+            ymean=np.mean(ax5.get_ylim())
 
 #            ax8.plot(times,  np.ones_like(times))
 #            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
@@ -289,11 +312,15 @@ for ivar_m, var_mod in enumerate(VARLIST):
         cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
         
 #        if var_mod == 'O2o': 
-        if var_mod == 'OXY':
+#        if var_mod == 'OXY':
+        if var_mod == 'P_c':
             xlabels=ax7.get_xticklabels()
+#            ax8.plot(times,  np.ones_like(times))
+            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+
         else:
             xlabels = ax8.get_xticklabels()
-        pl.setp(xlabels, rotation=30, fontsize=15)
+        pl.setp(xlabels, rotation=30, fontsize=14)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
         for ax in axes[2:]: ax.set_xlim([T_start2num,timelabel_list[-1]])
@@ -305,4 +332,3 @@ for ivar_m, var_mod in enumerate(VARLIST):
         fig.savefig(OUTFILE)
 #        fig.show()
         pl.close(fig)
-

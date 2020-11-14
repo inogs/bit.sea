@@ -35,11 +35,11 @@ import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS
 from commons.utils import addsep
-from profiler import TL
+from profiler_floats import TL
 import scipy.io.netcdf as NC
 from commons.utils import writetable
 from datetime import datetime
-from profiler import *
+from profiler_floats import *
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -97,6 +97,8 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
 	ax.set_ylim([-0.4, 0.4])
 	ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 #	ax.ticklabel_format(axis='both', fontsize=20)
+    if longvar == 'PhytoC' :
+       ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 
     if longvar == 'Nitrate'     : 
 	ax.set_ylim([-5, 5])
@@ -122,8 +124,8 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     return fig, biasm, rmsem, ax, ax2
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
-VARLIST = ['P_l','N3n','O2o']
-VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen']
+VARLIST = ['P_l','N3n','O2o','P_c']
+VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen','PhytoC']
 SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)

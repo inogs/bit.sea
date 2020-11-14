@@ -109,12 +109,14 @@ METRICvar = {'N1p':'PHO',
              'N5s':'SiO2'}
 
 
+# Remove Altantic Buffer from the list:
+SUBlist.remove(SUBlist[-1])
 
 rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
 column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
 for ivar, var in enumerate(VARLIST):
-  if (ivar == 4) : #3 7 
+#  if (ivar == 4) : #3 7 
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"

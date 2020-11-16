@@ -136,7 +136,7 @@ class BioFloat(Instrument):
             shift=Profile[ii].mean()
             Profile = Profile - shift
 
-        if (var_mod == "POC"): 
+#        if (var_mod == "POC"): 
 
      
         return Pres, Profile, Qc

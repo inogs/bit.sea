@@ -210,7 +210,7 @@ class matchup(object):
         axis_max = max(self.Ref.max(),self.Model.max())
         extent = [axis_min, axis_max, axis_min, axis_max]
 
-        hexbin = ax.hexbin(self.Ref, self.Model, bins=None, extent=extent, cmap=cmap)
+        hexbin = ax.hexbin(self.Ref, self.Model, bins=None, extent=extent, cmap=cmap, mincnt=1)
         data = hexbin.get_array().astype(np.int32)
         MAX = data.max()
 

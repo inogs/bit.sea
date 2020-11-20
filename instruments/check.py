@@ -204,6 +204,13 @@ class check():
                 Value = np.array([],np.float32)
                 Qc    = np.array([],np.int)
 
+        if varname=='P_c':
+            CR = self.phytoC_check(Model, Value, Pres, p)
+            if CR.line != '':
+                Pres  = np.array([],np.float32)
+                Value = np.array([],np.float32)
+                Qc    = np.array([],np.int)
+
         return Pres, Value, Qc, CR
 
 

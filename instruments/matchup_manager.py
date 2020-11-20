@@ -199,9 +199,9 @@ class Matchup_Manager():
 
             ref_varname = p.reference_var(model_varname) if refvar==None else refvar
             if p.has_adjusted:
-                Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
+                Pres, Profile, Qc = p.read(ref_varname,read_adjusted,var_mod=model_varname)
             else:
-                Pres, Profile, Qc = p.read(ref_varname)
+                Pres, Profile, Qc = p.read(ref_varname,var_mod=model_varname)
 
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
@@ -330,9 +330,9 @@ class Matchup_Manager():
 
             ref_varname = p.reference_var(model_varname)
             if p.has_adjusted:
-                Pres, Profile, Qc = p.read(ref_varname,read_adjusted)
+                Pres, Profile, Qc = p.read(ref_varname,read_adjusted,var_mod=model_varname)
             else:
-                Pres, Profile, Qc = p.read(ref_varname)
+                Pres, Profile, Qc = p.read(ref_varname,var_mod=model_varname)
             MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
             CheckReport=None
             if checkobj is not None:
@@ -468,9 +468,9 @@ class Matchup_Manager():
                     continue
                 ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
                 seaPoints = ~np.isnan(ModelProfile)
-                Pres, Profile, Qc = p.read(ref_varname)
+                Pres, Profile, Qc = p.read(ref_varname,var_mod=model_varname)
                 if len(Pres) == 0:
-                    Pres, Profile, Qc = p.read(ref_varname)
+                    Pres, Profile, Qc = p.read(ref_varname,var_mod=model_varname)
 
                 print model_varname, len(Profile)
                 if len(Profile) < 2 : continue

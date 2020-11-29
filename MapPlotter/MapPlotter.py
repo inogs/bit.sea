@@ -529,6 +529,7 @@ class MapPlotter():
 					cmap=self.setColormap(cmap=params['cmap'],ncol=params['ncol']),
 					norm=matplotlib.colors.Normalize(cbar_min,cbar_max),
 					alpha=params['alpha'],
+					shading='auto',
 					transform=transform
 					 		 )
 

@@ -3,8 +3,8 @@ WEEKLY_DIR=/gpfs/scratch/userexternal/ateruzzi/KdProduct/WEEKLYAVE_24/
 # WEEKLY_DIR contains weekly kd490 obtained from KD490 CMEMS product interpolated at model resolution
 MONTHLY_DIR=/gpfs/scratch/userexternal/ateruzzi/KdProduct/MONTHLYAVE_24/
 # MONTHLY_DIR contains monthly kd490 obtained from KD490 CMEMS product interpolated at model resolution
-CLIMA_DIR=/gpfs/scratch/userexternal/ateruzzi/KdProduct/NRT_V7_newmesh/CLIMA_FILLED/
-# CLIMA_DIR contains daily climatological file obtained by KD490 CMEMS product interpolated at model resolution and gap-filled with nearest
+CLIMA_FILE=/gpfs/scratch/userexternal/ateruzzi/KdProduct/NRT_V7_newmesh/CLIMA_FILLED/KD490_Climatology_24_filled.nc
+# CLIMA_FILE daily climatological file obtained by KD490 CMEMS product interpolated at model resolution and gap-filled with nearest
 
 THEMASK=/gpfs/work/IscrC_REBIOMED/NRT_EAS6/PREPROC/MASK/ogstm/meshmask.nc
 # THEMASK is the mask at the model resolution
@@ -23,7 +23,7 @@ WEEKLYC=$OUTDIR/DAYS7_24compl
 # WEEKLYC will contains gap-filled weekly maps of KD490 at model resolution (used in the following script)
 mkdir -p $WEEKLYC
  
-echo python complete_maps.py -w $WEEKLY_DIR -d $MONTHLY_DIR -c $CLIMA_DIR -o $WEEKLYC -m $THEMASK -n $OUTIND
+echo python complete_maps.py -w $WEEKLY_DIR -d $MONTHLY_DIR -c $CLIMA_FILE -o $WEEKLYC -m $THEMASK -n $OUTIND
 
 
 PERC=60 # Increasing factor = 1.18

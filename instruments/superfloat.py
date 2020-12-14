@@ -49,7 +49,7 @@ class BioFloatProfile(Profile):
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var)
+        return self._my_float.read(var,var_mod)
 
 
     def read_fitted(self,var, func):
@@ -118,7 +118,7 @@ class BioFloat(Instrument):
         Profile = ncIN.variables[        var].data.copy()
         Qc      = ncIN.variables[var + "_QC"].data.copy()
         ncIN.close()
-
+        print "pippo"
         return Pres, Profile, Qc
 
 
@@ -127,10 +127,13 @@ class BioFloat(Instrument):
         Pres, Profile, Qc = self.read_raw(var)
 
         if var_mod is None:
+           print "var_mod is " + np.str(var_mod) 
            return Pres, Profile, Qc
 
         ii=(Pres >= 400) & (Pres <= 500) 
-        if (var_mod == "P_c"):
+        print "Before the conversion"
+        if (var_mod=='P_c'):
+            print "ENTER"
             bbp470 = Profile * ( 470.0/ 700)**0.78# [m-1]
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
             shift=Profile[ii].mean()

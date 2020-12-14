@@ -62,7 +62,7 @@ class CO2_socat_reader(DatasetExtractor):
 
         if var is None:
             Profilelist = list()
-            for myvar in ['temp','sal','fCO2','gvCO2']:
+            for myvar in ['temp','sal','fCO2']:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
             return Profilelist
         return self.DataExtractor.selector(var, T_int, region)

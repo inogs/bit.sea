@@ -118,7 +118,6 @@ class BioFloat(Instrument):
         Profile = ncIN.variables[        var].data.copy()
         Qc      = ncIN.variables[var + "_QC"].data.copy()
         ncIN.close()
-        print "pippo"
         return Pres, Profile, Qc
 
 
@@ -127,13 +126,11 @@ class BioFloat(Instrument):
         Pres, Profile, Qc = self.read_raw(var)
 
         if var_mod is None:
-           print "var_mod is " + np.str(var_mod) 
+#           print "var_mod is " + np.str(var_mod) 
            return Pres, Profile, Qc
 
         ii=(Pres >= 400) & (Pres <= 500) 
-        print "Before the conversion"
         if (var_mod=='P_c'):
-            print "ENTER"
             bbp470 = Profile * ( 470.0/ 700)**0.78# [m-1]
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
             shift=Profile[ii].mean()
@@ -364,12 +361,12 @@ if __name__ == '__main__':
     filename="/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/6901483/MR6901483_058.nc"
     F=BioFloat.from_file(filename)
 
-    print len(PROFILE_LIST)
+#    print len(PROFILE_LIST)
 
     for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
-        if Pres.min()>0:
-            print Pres.min()
+#        if Pres.min()>0:
+#            print Pres.min()
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

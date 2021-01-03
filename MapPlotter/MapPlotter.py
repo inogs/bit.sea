@@ -404,7 +404,9 @@ class MapPlotter():
 		Outputs:
 			> Colormap object
 		'''
-		return plt.get_cmap(cmap,ncol)
+		cmap = plt.get_cmap(cmap,ncol,)
+		cmap.set_bad(color='w',alpha=1.)
+		return cmap
 
 	def setColorbar(self,orientation='horizontal',extend='neither',shrink=1.0,aspect=20,
 		numticks=10,tick_format='%.2f',tick_font=None,label={}):

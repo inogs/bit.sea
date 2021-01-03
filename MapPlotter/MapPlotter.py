@@ -62,10 +62,10 @@ class MapPlotter():
 		'''
 		self._projection = getattr(ccrs,projection)(**kwargs)
 		# Class variables
-		self._fig = None
-		self._ax  = None
-		self._gl  = None
-		self._plt = None
+		self._fig  = None
+		self._ax   = None
+		self._gl   = None
+		self._plot = None
 
 	@property
 	def projection(self):
@@ -108,7 +108,7 @@ class MapPlotter():
 			# Figure params
 			'size'        : (8,6),
 			'dpi'         : 100,
-			'style'       : 'ggplot',
+			'style'       : None, #'ggplot'
 			# Axes params
 			'xlim'        : [-180,180],
 			'ylim'        : [-90,90],
@@ -181,6 +181,14 @@ class MapPlotter():
 		'''
 		plt.close()
 
+	@staticmethod
+	def fmin(f,x):
+		return (1.-f if x > 0 else 1.+f)*x
+		
+	@staticmethod
+	def fmax(f,x):
+		return (1.+f if x > 0 else 1.-f)*x
+
 	def save(self,filename,dpi=300,margin='tight'):
 		'''
 		Save figure to disk.
@@ -190,7 +198,7 @@ class MapPlotter():
 			> dpi:      Pixel depth (default: 300)
 			> margin;   Bbox margins
 		'''
-		if self._fig and self._ax and self._plot:
+		if self._fig and self._ax:# and self._plot:
 			self._fig.savefig(filename,dpi=dpi,bbox_inches=margin)
 
 	def clear():
@@ -248,8 +256,9 @@ class MapPlotter():
 		gl = None
 		if self._ax:
 			# Axes limits
-			self._ax.set_xlim(xlim)
-			self._ax.set_ylim(ylim)
+#			self._ax.set_xlim(xlim)
+#			self._ax.set_ylim(ylim)
+			self._ax.set_extent(xlim+ylim,crs=ccrs.PlateCarree())
 			# Grid lines
 			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
 			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))

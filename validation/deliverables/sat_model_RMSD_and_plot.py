@@ -31,11 +31,11 @@ def argument():
                                 required = True,
                                 help = 'Path of the mask file')
  
-    parser.add_argument(   '--starttime','-s',
+    parser.add_argument(   '--starttime','-st',
                                 type = str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
-    parser.add_argument(   '--endtime','-e',
+    parser.add_argument(   '--endtime','-et',
                                 type = str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
@@ -87,7 +87,7 @@ suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 #MY_YEAR = TimeInterval('20170101','20180101',"%Y%m%d")
 MY_YEAR = TimeInterval(START_TIME,END___TIME,"%Y%m%d")
-req_label='RMSD:2017'
+req_label='RMSD:2019'
 
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = model_TL.select(req)
@@ -114,10 +114,12 @@ for iFrame, k in enumerate(indexes):
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
     selection = ~nodata & coastmask
+    Model[~selection] = np.nan
+    Sat24[~selection] = np.nan
     tmp_COUNTS[iFrame,:,:][selection]=1
     M= matchup.matchup(Model,Sat24)
  
-    SD[iFrame,:,:] = ((M.Model-M.Ref)**2)
+    SD[iFrame,:,:][selection] = ((M.Model-M.Ref)**2)
     SD[iFrame,:,:][~selection]=np.nan
 
 COUNTS=np.sum(tmp_COUNTS,axis=0)

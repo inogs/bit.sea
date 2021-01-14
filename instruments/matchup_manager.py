@@ -180,6 +180,14 @@ class Matchup_Manager():
 
         Group_Matchup = matchup.matchup.ProfilesMatchup()
 
+        THRESHOLDS={'O2o': 40.0, \
+                'N1p': 0.3, \
+                'N3n': 4.0,  \
+                'N4n': 1.0,  \
+                'ALK': 200,  \
+                'DIC': 200,  \
+                 'pH': 0.25,  \
+               'pCO2': 200 }  # pCO2 up to 200m depth
 
         for p in Profilelist:
             assert p in self.PROFILE_LIST
@@ -205,12 +213,18 @@ class Matchup_Manager():
 
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
+ 
+                ii = (np.abs(MODEL_ON_SPACE_OBS - Profile) <= THRESHOLDS[model_varname])
 
-                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+               # Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS[ii], Profile[ii], Pres[ii], Qc[ii], p)
+
             else:
                 OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
                 QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+               # Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+                ii = (np.abs(ModelProfile[seaPoints]-OBS_ON_SPACE_MODEL) <= THRESHOLDS[model_varname])
+                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints][ii], OBS_ON_SPACE_MODEL[ii], nav_lev[seaPoints][ii], QC_ON_SPACE_MODEL[ii], p)
 
             Group_Matchup.extend(Matchup)
 

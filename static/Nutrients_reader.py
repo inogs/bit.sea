@@ -28,6 +28,9 @@ class NutrientsReader():
         id_dataset= find_index('BIOPT06',self.DataExtractor.CRUISES)
         bad = dataset==(id_dataset+1)
         selected[bad] = False
+        id_dataset= find_index('BOUSSOLE',self.DataExtractor.CRUISES)
+        bad = dataset==(id_dataset+1)
+        selected[bad] = False
 
         M.DATA = M.DATA[:,selected]
 

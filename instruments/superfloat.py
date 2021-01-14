@@ -135,6 +135,8 @@ class BioFloat(Instrument):
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
             shift=Profile[ii].mean()
             Profile = Profile - shift
+            ii=Profile<=0
+            Profile[ii] = 0.0
 
 #        if (var_mod == "POC"): 
 

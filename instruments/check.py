@@ -2,6 +2,7 @@ import numpy as np
 import netCDF4
 import os
 from commons.utils import addsep
+from validation.deliverables.float_OXY_saturation import oxy_sat
 
 class checkreport():
     def __init__(self, linestr, nObs,nExcl,reason, depthexc):
@@ -154,7 +155,53 @@ class check():
             FLAG = np.zeros((nP), np.int)
             FLAG[flag1_array] =1
             if self.verboselevel ==1 :
-                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_l.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_c.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                ncOUT = netCDF4.Dataset(outncfile,'w')
+                ncOUT.createDimension('depth',nP)
+
+                ncvar = ncOUT.createVariable('model','f',('depth', ))
+                ncvar[:]=MODEL
+                ncvar = ncOUT.createVariable('float','f',('depth', ))
+                ncvar[:]=REF
+                ncvar = ncOUT.createVariable('flag' ,'i',('depth', ))
+                ncvar[:]=FLAG
+
+                setattr(ncOUT, 'longitude', p.lon)
+                setattr(ncOUT, 'latitude' , p.lat)
+                ncOUT.close()
+        CR = checkreport(line, nP,nexcl, flag, np.nan)
+        return CR
+
+
+    def oxygen_check(self, model, ref, depth, p):
+        bad=(np.isnan(model)) | (np.isnan(ref))
+        MODEL = model[~bad]
+        REF   = ref [~bad]
+        DEPTH= depth[~bad]
+        nP = len(DEPTH)
+
+        REF_sat = oxy_sat(p)
+ 
+        mydiff = np.abs(REF[0]-REF_sat)
+        print "REF0"
+        print REF[0]
+        print "REF_sat"
+        print REF_sat
+        print "mydiff"
+        print mydiff
+        flag1 = (mydiff > 20)
+        nexcl = 0
+
+        line=""
+        flag=np.nan
+        if ( flag1) :
+            if flag1: flag=1
+            line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
+            nexcl=nP
+            FLAG = np.zeros((1), np.int)
+            FLAG[0] =1
+            if self.verboselevel ==1 :
+                outncfile="%s%s_%s.nc"  %(self.outdir + 'O2o.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
                 ncOUT = netCDF4.Dataset(outncfile,'w')
                 ncOUT.createDimension('depth',nP)
 
@@ -206,6 +253,13 @@ class check():
 
         if varname=='P_c':
             CR = self.phytoC_check(Model, Value, Pres, p)
+            if CR.line != '':
+                Pres  = np.array([],np.float32)
+                Value = np.array([],np.float32)
+                Qc    = np.array([],np.int)
+
+        if varname=='O2o':
+            CR = self.oxygen_check(Model, Value, Pres, p)
             if CR.line != '':
                 Pres  = np.array([],np.float32)
                 Value = np.array([],np.float32)

@@ -54,8 +54,9 @@ from float_OXY_saturation import *
 BASEDIR = addsep(args.basedir)
 OUTDIR = addsep(args.outdir)
 Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
-Check_obj_chl     = check.check(OUTDIR + "chla_check/")
-Check_obj_PhytoC = check.check(OUTDIR + "/PhytoC_check/")
+Check_obj_chl     = check.check(OUTDIR + "/chla_check/")
+Check_obj_phytoC = check.check(OUTDIR + "/phytoC_check/")
+Check_obj_oxygen = check.check(OUTDIR + "/oxygen_check/")
 
 
 TheMask=Mask(args.maskfile, loadtmask=False)
@@ -87,11 +88,12 @@ iz10 = TheMask.getDepthIndex(10.8)+1
 iz1000 = TheMask.getDepthIndex(1000)+1 # Max Index for depth 1000
 
 for ivar, var_mod in enumerate(VARLIST):
+#  if (var_mod == "P_c"):
     var = FLOATVARS[var_mod]
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
-    if var_mod == "O2o": Check_obj = None
-    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
+    if var_mod == "O2o": Check_obj = Check_obj_oxygen
+    if var_mod == "P_c": Check_obj = Check_obj_phytoC
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
@@ -108,7 +110,7 @@ for ivar, var_mod in enumerate(VARLIST):
             p=list_float_track[itime]
             if p.available_params.find(var)<0 : continue
 
-            Pres,Profile,Qc=p.read(var)
+          # Pres,Profile,Qc=p.read(var,var_mod=var_model) # IT IS NOT USED; LEFT JUST FOR CHECK
 
             try:
 

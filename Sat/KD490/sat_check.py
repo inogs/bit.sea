@@ -1,18 +1,65 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Apply check based on climatology to sat ORIG files for Kd490
+    Produces CHECKED files for each date at satellite resolution.
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--origdir', '-i',
+                                type = str,
+                                required = True,
+                                help = ''' ORIG sat directory'''
+                                )
+
+    parser.add_argument(   '--checkdir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' Base for CHECKED sat directory'''
+                                )
+
+    parser.add_argument(   '--climfile', '-c',
+                                type = str,
+                                required = True,
+                                help = ''' Climatology .nc file used to apply check on sat data'''
+                                )
+
+    parser.add_argument(   '--mesh', '-m',
+                                type = str,
+                                required = True,
+                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
+                                help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
+                                )
+
+
+    return parser.parse_args()
+
+
+args = argument()
+
+
+
 from commons.Timelist import TimeList
+from commons.utils import addsep
 from commons.time_interval import TimeInterval
+from postproc import masks
 import numpy as np
 import os
 
 from Sat import SatManager as Sat
 
-ORIGDIR  ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/ORIG/"
-CHECKDIR ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/CHECKED/"
-CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/KD490/Climatology_KD490.nc"
+#ORIGDIR  ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/ORIG/"
+ORIGDIR = addsep(args.origdir)
+#CHECKDIR ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/CHECKED/"
+CHECKDIR = addsep(args.checkdir)
+#CLIM_FILE="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/KD490/Climatology_KD490.nc"
+CLIM_FILE = args.climfile
+maskSat = getattr(masks,args.mesh)
 
 reset = False
 
 Timestart="19990101"
-Time__end="20160101"
+Time__end="20500101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 
@@ -59,7 +106,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     print filename
     print 'Rejection:  after check', counter_elim, ' values'
     print 'rejected for NAN in Climatology', counter_refNAN, ' values'
-    Sat.dumpGenericNativefile(outfile, CHL_OUT)
+    Sat.dumpGenericNativefile(outfile, CHL_OUT, "KD490",mesh=maskSat)
 
 
     

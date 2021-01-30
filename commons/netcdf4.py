@@ -158,9 +158,10 @@ def dimfile(filename, varname):
     dset = NC.Dataset(filename)
     var_obj=dset.variables[varname]
     ndims=len(var_obj.dimensions)
+    truedims = ndims
     if 'time' in var_obj.dimensions:
         truedims =ndims-1
-    else:
-        truedims=ndims
+    if 'time_counter' in var_obj.dimensions:
+        truedims =ndims-1     
     dset.close()
     return truedims

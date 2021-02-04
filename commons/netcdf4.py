@@ -80,6 +80,27 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude", jpj)
         ncOUT.createDimension("depth"   , jpk)
+
+        ncvar = ncOUT.createVariable('longitude','f', ('longitude',))
+        setattr(ncvar, 'units'        ,'degrees_east')
+        setattr(ncvar,'long_name'    ,'longitude')
+        setattr(ncvar, 'standard_name','longitude')
+        setattr(ncvar, 'axis'         ,'X')
+        setattr(ncvar, 'valid_min'    , mask.xlevels.min())
+        setattr(ncvar, 'valid_max'    , mask.xlevels.max())
+        setattr(ncvar, '_CoordinateAxisType',"Lon" )
+        ncvar[:] = mask.xlevels[0,:]
+
+        ncvar = ncOUT.createVariable( 'latitude','f', ('latitude',))
+        setattr(ncvar, 'units'        ,'degrees_north')
+        setattr(ncvar,'long_name'    ,'latitude')
+        setattr(ncvar,'standard_name','latitude')
+        setattr(ncvar, 'axis'         ,'Y')
+        setattr(ncvar,'valid_min'    ,  mask.ylevels.min())
+        setattr(ncvar, 'valid_max'    , mask.ylevels.max())
+        setattr(ncvar, '_CoordinateAxisType',"Lat" )
+        ncvar[:] = mask.ylevels[:,0]
+
         dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
         ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
         setattr(ncvar,'fillValue'    ,fillValue)
@@ -127,8 +148,8 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         setattr(ncvar,'long_name'    ,'longitude')
         setattr(ncvar, 'standard_name','longitude')
         setattr(ncvar, 'axis'         ,'X')
-        setattr(ncvar, 'valid_min'    , -5.5625)
-        setattr(ncvar, 'valid_max'    , 36.25)
+        setattr(ncvar, 'valid_min'    , mask.xlevels.min())
+        setattr(ncvar, 'valid_max'    , mask.xlevels.max())
         setattr(ncvar, '_CoordinateAxisType',"Lon" )
         ncvar[:] = mask.xlevels[0,:]
 
@@ -137,8 +158,8 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         setattr(ncvar,'long_name'    ,'latitude')
         setattr(ncvar,'standard_name','latitude')
         setattr(ncvar, 'axis'         ,'Y')
-        setattr(ncvar,'valid_min'    , 30.1875)
-        setattr(ncvar, 'valid_max'    , 45.9375)
+        setattr(ncvar,'valid_min'    , mask.ylevels.min())
+        setattr(ncvar, 'valid_max'    ,mask.ylevels.max())
         setattr(ncvar, '_CoordinateAxisType',"Lat" )
         ncvar[:] = mask.ylevels[:,0]
 

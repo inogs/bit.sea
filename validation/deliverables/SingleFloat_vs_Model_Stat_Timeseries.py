@@ -89,6 +89,7 @@ iz10 = TheMask.getDepthIndex(10.8)+1
 iz1000 = TheMask.getDepthIndex(1000)+1 # Max Index for depth 1000
 
 for ivar, var_mod in enumerate(VARLIST):
+#  if (var_mod == "P_l"):
     var = FLOATVARS[var_mod]
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
@@ -168,6 +169,8 @@ for ivar, var_mod in enumerate(VARLIST):
             if (var_mod == "O2o"):
                 A_float[itime,8] = oxy_sat(p)
                 
+                print gm1000.Ref
+                print gm1000.Depth
                 if len(gm1000.Ref) > 1:
                     A_float[itime,9] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
                     A_model[itime,9] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 

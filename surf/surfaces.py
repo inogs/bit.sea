@@ -131,9 +131,7 @@ def DCM2(chl,maskobj):
 
 def MWB(chl,maskobj):
     '''
-    Calculates of Mixed Winter Bloom depth
-    Uses 1-st and 2-nd derivative to find the maximum
-    Returns the chlorophyll concentration at DCM also
+    Calculates Mixed Winter Bloom depth
 
     '''
     _,jpj,jpi = maskobj.shape
@@ -162,6 +160,50 @@ def MWB(chl,maskobj):
     matrixMWB[~tmask] = np.nan
     matrixIMWB[~tmask] = np.nan
     return matrixMWB,matrixIMWB
+
+
+def MWB2(chl,maskobj):
+    '''
+    Calculates Mixed Winter Bloom depth
+    and the mean chl
+    '''
+    _,jpj,jpi = maskobj.shape
+    tmask = maskobj.mask_at_level(200)
+    indlev = maskobj.getDepthIndex(300)
+    DEPTHS = maskobj.bathymetry_in_cells()
+    matrixMWB = np.zeros((jpj,jpi))
+    matrixMWB[:,:] = np.nan
+    matrixIMWB = np.zeros((jpj,jpi))
+    matrixIMWB[:,:] = np.nan
+    matrixI9MWB = np.zeros((jpj,jpi))
+    matrixI9MWB[:,:] = np.nan
+    matrixCMWB = np.zeros((jpj,jpi))
+    matrixCMWB[:,:] = np.nan
+    for jj in range(jpj):
+        for ji in range(jpi):
+            if tmask[jj,ji]:
+                bathy_len = DEPTHS[jj,ji]
+                profile_len = min(bathy_len,indlev+1)
+                profile = chl[:profile_len,jj,ji]
+                depths = maskobj.zlevels[:profile_len]
+                for iid, dd in enumerate(profile):
+                    if (dd<=profile[0]*.1):
+                        MWB = depths[iid]
+                        matrixMWB[jj,ji] = MWB
+                        matrixIMWB[jj,ji] = iid
+                        break
+                for iic, cc in enumerate(profile):
+                    if (cc<=profile[0]*.9):
+                        #matrixCMWB[jj,ji] = np.nanmean(profile[:iic])
+                        matrixCMWB[jj,ji] = profile[0]
+                        matrixI9MWB[jj,ji] = iic
+                        break
+
+    matrixMWB[~tmask] = np.nan
+    matrixIMWB[~tmask] = np.nan
+    matrixCMWB[~tmask] = np.nan
+    matrixI9MWB[~tmask] = np.nan
+    return matrixMWB,matrixIMWB,matrixCMWB,matrixI9MWB
 
 
 def NITRCL(nit,maskobj):
@@ -378,14 +420,15 @@ def DIFFST(dff,maskobj):
                 bathy_len = DEPTHS[jj,ji]
                 profile_len = bathy_len
                 profile = dff[:profile_len,jj,ji]
+                profile[profile<1.e-3] = np.nan
                 depths = maskobj.zlevels[:profile_len]
                 idd = np.min([i200,profile_len])
-                imax = np.nanargmax(profile[:idd])
-                dabs = np.abs(profile-.01)
-                i10 = np.nanargmin(dabs[imax:idd])+imax
-                matrixMAX[jj,ji] = profile[imax]
-                matrixDLOW[jj,ji] = depths[i10]
-                matrixMEAN[jj,ji] = np.nanmean(profile[imax:i10])
+                if not np.all(np.isnan(profile[:idd])):
+                    imax = np.nanargmax(profile[:idd])
+                    i10 = np.where(np.isnan(profile[:idd])==False)[0][-1]
+                    matrixMAX[jj,ji] = profile[imax]
+                    matrixDLOW[jj,ji] = depths[i10]
+                    matrixMEAN[jj,ji] = np.nanmean(profile[:idd])
 
     matrixMAX[~tmask] = np.nan
     matrixMEAN[~tmask] = np.nan

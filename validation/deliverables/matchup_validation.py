@@ -26,7 +26,8 @@ import numpy as np
 from profiler_RA import Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
 from commons.mask import Mask
 import basins.V2 as OGS
-rom static.Nutrients_reader import NutrientsReader
+from static.climatology import DatasetInfo
+from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
 #from instruments.var_conversions import NUTRVARS as NUTRVARS
 #from instruments.var_conversions import CARBONVARS 
@@ -67,7 +68,10 @@ rows_names=[sub.name for sub in SUBLIST]
 column_names = [layer.string() for layer in LayerList]
 
 
-for modelvarname in ["N1p","N3n","N4n","N5s","O2o","DIC","ALK","pH","pCO2"]:
+#for modelvarname in ["N1p","N3n","N4n","N5s","O2o","DIC","ALK","pH","pCO2"]:
+# Choose here Nutrients or Carbonate System:
+for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
+#for modelvarname in ["DIC","ALK","pH","pCO2"]:
     var, Dataset = DatasetInfo(modelvarname)
     fname = OUTDIR + modelvarname
     STAT = np.zeros((nSub,nLayer,3),np.float32)*np.nan
@@ -93,6 +97,7 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o","DIC","ALK","pH","pCO2"]:
 
             ix,iy=TheMask.convert_lon_lat_to_indices(Lon[ip],Lat[ip])
             if (coastmask[iy,ix] == True):
+               print "Last depth in m is: "    
                print p.pres[-1]
                Profilelist_Coast.append(p) # point in COASTAL AREA
             else:

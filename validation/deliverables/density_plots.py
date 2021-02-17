@@ -4,6 +4,7 @@ def argument():
     Generates density plots
     for matchups with static nutrients dataset
     profiler_RA.py defines paths
+    Before running it, the profiler_RA is linked to the correct profiler
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -44,7 +45,7 @@ args = argument()
 
 import os
 import numpy as np
-import __init__
+#import __init__
 #from profiler_RA_N import *
 #from profiler_N4n import *
 #from profiler_RA_C import *
@@ -56,11 +57,7 @@ from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
 
 
-#import basins.OGS as OGS
 #from instruments.var_conversions import NUTRVARS, CARBONVARS , SOCAT_VARS
-#from static.Nutrients_reader import NutrientsReader
-#from static.Carbon_reader import CarbonReader as NutrientsReader
-
 #from static.Socat_reader import SocatReader
 
 N=NutrientsReader()
@@ -101,12 +98,10 @@ var, Dataset = DatasetInfo(modelvarname)
 
 #for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
 for sub in OGS.NRT3:
-  if (sub.name =="nwm"):
+#  if (sub.name =="nwm"):
     print sub.name
-#    Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
     Profilelist_OpenSea = [] # LIST of points in OPEN SEA area
     Profilelist_all=Dataset.Selector(var,T_INT,sub)
-#    Profilelist_all=N.Selector(CARBONVARS[modelvarname],T_INT,sub)
     nProfiles=len(Profilelist_all)
     print nProfiles
     if nProfiles==0: continue

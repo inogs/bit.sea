@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<vars_for_All_Statistics description="point profiles, subbasin statistic profiles, volume integrals">
+
+<native>
+<var name="N1p" ></var>
+<var name="N3n" ></var>
+<var name="N4n" ></var>
+<var name="N5s" ></var>
+<var name="O2o" ></var>
+</native>
+
+<aggregate>
+<aggvar name="P_l" formula="P_l = P1l + P2l + P3l + P4l" > </aggvar>
+<aggvar name="P_c" formula="P_c = P1c + P2c + P3c + P4c" > </aggvar>
+</aggregate>
+</vars_for_All_Statistics>
+
+
+
+<var_for_Some_Statistics>
+</var_for_Some_Statistics>
+
+
+<toArchive>
+</toArchive>
+
+
+<var2D>
+<vars_for_All>
+<native>
+</native>
+</vars_for_All>
+</var2D>
+
+</root>
+

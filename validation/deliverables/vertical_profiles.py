@@ -37,6 +37,7 @@ from profiler_RA import *
 import basins.OGS as OGS
 from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
+from static.climatology import DatasetInfo
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()

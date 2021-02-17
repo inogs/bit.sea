@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+<LayersMaps>
+
+<!--  Pc -->
+<plots var="P_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="PhytoC" longname="Phytoplankton biomass">
+<depth top= "0000" bottom="0200" levplot="0000" clim="[0,15]"> </depth>
+</plots>
+
+
+</LayersMaps>
+
+</root>

@@ -54,8 +54,10 @@ from static import climatology
 from commons.utils import addsep
 from matchup.statistics import matchup
 from commons.utils import writetable
+from commons import timerequestors
 
-LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
+#LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
+LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
@@ -69,6 +71,8 @@ z = -TheMask.zlevels
 z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
+Req=timerequestors.Generic_req(TI)
+#ind,ww=TL.select(Req) 
 
 def Layers_Mean(Pres,Values,LayerList):
     '''
@@ -119,7 +123,9 @@ column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD'
 for ivar, var in enumerate(VARLIST):
 #  if (ivar == 4) : #3 7 
     filename = INPUTDIR + var + ".pkl"
-    TIMESERIES,TL=read_pickle_file(filename)
+    TIMESERIES_complete,TL_complete=read_pickle_file(filename)
+    ind,ww=TL_complete.select(Req) 
+    TIMESERIES=TIMESERIES_complete[ind,:]
     print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
 #    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True)
@@ -197,7 +203,9 @@ for var in VARLIST:
        nLayers = nLayers3
 
     filename = INPUTDIR + var + ".pkl"
-    TIMESERIES,TL=read_pickle_file(filename)
+    TIMESERIES_complete,TL_complete=read_pickle_file(filename)
+    ind,ww=TL_complete.select(Req)
+    TIMESERIES=TIMESERIES_complete[ind,:]
     print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
     CLIM_REF_static,_ = climatology.get_climatology_open(var,SUBlist, LayerList_2, TheMask,basin_expand=True,QC=True)

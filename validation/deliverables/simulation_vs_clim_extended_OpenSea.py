@@ -42,6 +42,7 @@ from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from timeseries.plot import Hovmoeller_matrix
 from timeseries.plot import read_pickle_file, read_basic_info
+from commons import timerequestors
 import numpy as np
 from commons.mask import Mask
 from commons.submask import SubMask
@@ -52,6 +53,8 @@ OUTDIR=addsep(args.outdir)
 MODDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
+Req=timerequestors.Generic_req(TI)
+
 maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
 Mask8 = Mask(maskfile8)
 #TheMask= Mask(args.maskfile, loadtmask=False)
@@ -65,9 +68,10 @@ LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
 z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
+
 SUBLIST = basV2.P.basin_list
-SUBLIST2 = basV2.P.basin_list
-SUBLIST2.remove(SUBLIST2[6])
+#SUBLIST2 = basV2.P.basin_list
+#SUBLIST2.remove(SUBLIST2[6])
 
 N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList,TheMask,basin_expand=True)
 N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList,TheMask,basin_expand=True)
@@ -89,7 +93,9 @@ istat =  STAT_LIST.index('Mean')
 timeseries_DICT={}
 for var in VARLIST:
     filename=MODDIR + var + ".pkl"
-    TIMESERIES,_=read_pickle_file(filename)
+    TIMESERIES_complete,TL_complete=read_pickle_file(filename)
+    ind,ww=TL_complete.select(Req)
+    TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 #-------------------------------------------------
 
@@ -104,8 +110,8 @@ for iSub, sub in enumerate(basV2.P):
         datetimelist= [TL.Timelist[iTime] ]
         MEAN = np.zeros((jpk,), dtype=var_dype )
         for ivar, var in enumerate(VARLIST):
-            TIMESERIES=timeseries_DICT[var]
-            mean_profile = TIMESERIES[iTime,iSub,icoast,:,istat]
+            TIMESERIESvar=timeseries_DICT[var]
+            mean_profile = TIMESERIESvar[iTime,iSub,icoast,:,istat]
             #Mean_profiles,_,_ = Hovmoeller_matrix(datetimelist,[filename], var, iSub, coast=1, stat=0, depths=np.arange(jpk)) #72 nFiles
             #mean_profile = Mean_profiles[:,0]#.mean(axis=1)
             mean_profile[mean_profile==0]=np.nan
@@ -122,8 +128,8 @@ for iSub, sub in enumerate(basV2.P):
         MEAN = np.zeros((jpk,), dtype=var_dype )
 
     for ivar, var in enumerate(VARLIST):
-        TIMESERIES=timeseries_DICT[var]
-        mean_profile = TIMESERIES[:,iSub,icoast,:,istat].mean(axis=0)
+        TIMESERIESvar=timeseries_DICT[var]
+        mean_profile = TIMESERIESvar[:,iSub,icoast,:,istat].mean(axis=0)
         mean_profile[mean_profile==0]=np.nan
         MEAN[var] = mean_profile    
     fg2.profile_plotter(z,MEAN['P_l'],'k', axes[0], None,   label)
@@ -156,19 +162,25 @@ for iSub, sub in enumerate(basV2.P):
 
 
 # Figures 4.17 (Previously Fig4.19)
-try:
-    Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST, TheMask, LayerList)
-except:
-    print "no adr1 for ALK"
-    Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST2, TheMask, LayerList)
-#Ac__clim, Ac__std = get_climatology('ALK' , SUBLIST, LayerList)
-try:
-    DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, TheMask, LayerList)
-except:
-    print "no adr1 for DIC"
-    DIC_clim, DIC_std = get_climatology('DIC', SUBLIST2, TheMask, LayerList)
-pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, TheMask, LayerList)
-PH__clim, PH__std = get_climatology('pH' , SUBLIST, TheMask, LayerList)
+#try:
+#    Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST, TheMask, LayerList)
+#except:
+#    print "no adr1 for ALK"
+#    Ac__clim, Ac__std = get_climatology('Ac' , SUBLIST2, TheMask, LayerList)
+##Ac__clim, Ac__std = get_climatology('ALK' , SUBLIST, LayerList)
+#try:
+#    DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, TheMask, LayerList)
+#except:
+#    print "no adr1 for DIC"
+#    DIC_clim, DIC_std = get_climatology('DIC', SUBLIST2, TheMask, LayerList)
+#pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, TheMask, LayerList)
+#PH__clim, PH__std = get_climatology('pH' , SUBLIST, TheMask, LayerList)
+
+Ac__clim, Ac__std = get_climatology('ALK' , SUBLIST, LayerList, TheMask)
+DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList, TheMask)
+pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, LayerList, TheMask)
+PH__clim, PH__std = get_climatology('pH' , SUBLIST, LayerList, TheMask)
+
 
 VARLIST=['pCO2','DIC','Ac','pH']
 VARLIST=['pCO2','DIC','ALK','pH']
@@ -176,7 +188,9 @@ var_dype = [(var,np.float32) for var in VARLIST]
 timeseries_DICT={}
 for var in VARLIST:
     filename=MODDIR + var + ".pkl"
-    TIMESERIES,_=read_pickle_file(filename)
+    TIMESERIES_complete,TL_complete=read_pickle_file(filename)
+    ind,ww=TL_complete.select(Req)
+    TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 
 
@@ -190,8 +204,8 @@ for iSub, sub in enumerate(basV2.P):
         datetimelist= [TL.Timelist[iTime] ]
         MEAN = np.zeros((jpk,), dtype=var_dype )
         for ivar, var in enumerate(VARLIST):
-            TIMESERIES=timeseries_DICT[var]
-            mean_profile = TIMESERIES[iTime,iSub,icoast,:,istat]
+            TIMESERIESvar=timeseries_DICT[var]
+            mean_profile = TIMESERIESvar[iTime,iSub,icoast,:,istat]
             mean_profile[mean_profile==0]=np.nan
             MEAN[var] = mean_profile
         
@@ -205,8 +219,8 @@ for iSub, sub in enumerate(basV2.P):
         MEAN = np.zeros((jpk,), dtype=var_dype )
 
     for ivar, var in enumerate(VARLIST):
-        TIMESERIES=timeseries_DICT[var]
-        mean_profile = TIMESERIES[:,iSub,icoast,:,istat].mean(axis=0)
+        TIMESERIESvar=timeseries_DICT[var]
+        mean_profile = TIMESERIESvar[:,iSub,icoast,:,istat].mean(axis=0)
         mean_profile[mean_profile==0]=np.nan
         MEAN[var] = mean_profile    
     figure_generator.profile_plotter(z,MEAN['pCO2'],'k', axes[0], None,   label)

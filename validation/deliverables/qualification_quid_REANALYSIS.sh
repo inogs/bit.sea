@@ -2,23 +2,26 @@
 
 # QUID REANALYSIS
 # SECTION 4:
-export MASKFILE=/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_11/wrkdir/MODEL/meshmask.nc
+export MASKFILE=/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_22/wrkdir/MODEL/meshmask.nc
 # NEW FLOATS DATASET:
-export ONLINE_REPO=/gpfs/work/IscrC_REBIOMED/REANALISI_24/POSTPROC/validation/ONLINE
+#export ONLINE_REPO=/gpfs/work/IscrC_REBIOMED/REANALISI_24/POSTPROC/validation/ONLINE
+export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V6C/
 
 # INPUT AGGREGATE FREQ2 --> weekly
-INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_11/wrkdir/MODEL/AVE_FREQ_2/
-INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT/TMP/
+INPUTDIR=/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_22/wrkdir/MODEL/AVE_FREQ_2/
+INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_22/wrkdir/MODEL/AVE_FREQ_2/
+INPUT_YEAR_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/TEST22/YEARLY_averager/AVE_FREQ_2
+#INPUT_AGGR_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT/TMP/
   
 if [ 1 == 0 ]; then
 
-STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT/STAT_PROFILES/
+STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/TEST22/AVE_FREQ_2/STAT_PROFILES/
 SAT_DAILY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/DAILY/
 
 mkdir -p Fig4.1/ Fig4.7 Fig4.9 Fig4.10 Fig4.18 Fig4.19 Fig4.7bis
 
 
-COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 19990101 -e 20180101"
+COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 19990101 -e 20200101"
 
 mkdir -p LayerMaps
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS      # Fig4.1 CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
@@ -47,7 +50,8 @@ python averager_and_plot_map.py -i $INPUTDIR        -v O2o  -t mean $COMMONS_PAR
 python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_c  -t mean $COMMONS_PARAMS  # PHYC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> Not showed for lack of ref
 
 #CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN from SATELLITE:
-python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
+mkdir SAT_plot
+python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o SAT_plot/
 
 
 fi
@@ -65,13 +69,14 @@ python plot_timeseries_STD.py -o export_data_ScMYValidation_plan_open_sea_STD_CO
 
 # CHL-SURF-W-CLASS4-SIMG-BIAS-BASIN
 # CHL-SURF-W-CLASS4-SIMG-RMSD-BASIN
-python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o Fig4.3/offshore  # table4.1
-python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_coast_STD_CORR.pkl    -o Fig4.3/coast     # table4.2
-cp Fig4.3/offshore/table4.1.dat table4.1
-cp Fig4.3/coast/table4.1.dat    table4.2/table4.2.dat
+python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o Chla_SAT/offshore  # table4.1
+python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_coast_STD_CORR.pkl    -o Chla_SAT/coast  
+mv Chla_SAT/offshore/table4.1.dat Chla_SAT/table/table_CHLA_offshore.dat
+mv Chla_SAT/coast/table4.1.dat Chla_SAT/table/table_CHLA_coast.dat
+
 
 mkdir -p Fig4.8
-INTEGRALS_PPN=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT/INTEGRALS/PPN/
+INTEGRALS_PPN=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/TEST22/AVE_FREQ_2/INTEGRALS/PPN/
 python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
 
 
@@ -111,9 +116,10 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 # Figures 4.4a
 #mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8 
 mkdir -p Fig4.4 Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8
-BASEDIR=/gpfs/scratch/userexternal/lfeudale/REANALYSIS/REAN24/validation/TEST_11/PROFILATORE_Floats/
+BASEDIR=/gpfs/scratch/userexternal/lfeudale/REANALYSIS/REAN24/validation/TEST_22/PROFILATORE_Floats/
 NCDIR=tmp_nc
-OUTDIR=Fig4.4
+OUTDIR=Hovmoeller_plots #Fig4.4
+mkdir $NCDIR $OUTDIR
 echo python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
 python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
 echo python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR
@@ -155,22 +161,22 @@ cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
 
 OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
 TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ Fig4.16/
+mkdir -p $OUTFIGDIR $TABLE_DIR #table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ Fig4.16/
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
 cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.9/
 cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.12/
-cp $OUTFIGDIR/*P_l* Fig4.5
-cp $OUTFIGDIR/*N3n* Fig4.14
-cp $OUTFIGDIR/*O2o* Fig4.16
+#cp $OUTFIGDIR/*P_l* Fig4.5
+#cp $OUTFIGDIR/*N3n* Fig4.14
+#cp $OUTFIGDIR/*O2o* Fig4.16
 
 $OUTDIR/Dens_N1p 
 ######################### MATCHUP PUNTUALE ####################
 
 OUTDIR=matchup_validation/density_plots
 mkdir -p $OUTDIR/Dens_N1p $OUTDIR/Dens_N3n $OUTDIR/Dens_N4n $OUTDIR/Dens_N5s $OUTDIR/Dens_O2o
-ln -sf profiler_N.py profiler_RA.py
+ln -sf profiler_RA_N.py profiler_RA.py
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_N1p  -v N1p -m 0
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_N3n  -v N3n -m 0
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_N4n  -v N3n -m 0
@@ -178,8 +184,8 @@ python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_N5s  -v N5s -m 0
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_O2o  -v O2o -m 140
 
 mkdir -p $OUTDIR/Dens_DIC $OUTDIR/Dens_ALK $OUTDIR/Dens_pH $OUTDIR/Dens_pCO2
-ln -sf profiler_C.py profiler_RA.py
-python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_DIC -v DIC -m 1500 #2050
+ln -sf profiler_RA_C.py profiler_RA.py
+python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_DIC -v DIC -m 2150 #1500 #2050
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_ALK -v ALK -m 2350
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_pH -v pH -m 7.9
 python density_plots.py   -M $MASKFILE  -o $OUTDIR/Dens_pCO2 -v pCO2 -m 300
@@ -191,15 +197,18 @@ python matchup_validation.py -o $OUTDIR/validation_tables/Coast  -m $MASKFILE -a
 # CREATE PLOTS OF VERTICAL PROFILE MATCHUPS
 OUTDIR=matchup_validation 
 mkdir -p $OUTDIR/Vert_Prof/N1p $OUTDIR/Vert_Prof/N3p $OUTDIR/Vert_Prof/N4n $OUTDIR/Vert_Prof/N5s $OUTDIR/Vert_Prof/O2o $OUTDIR/Vert_Prof/DIC $OUTDIR/Vert_Prof/ALK $OUTDIR/Vert_Prof/pH $OUTDIR/Vert_Prof/pCO2
+ln -sf profiler_RA_N.py profiler_RA.py
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/N1p  -v N1p | grep corr > $OUTDIR/table.N1p_corr.dat
-python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/N3p  -v N3p | grep corr > $OUTDIR/table.N3p_corr.dat
+python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/N3n  -v N3n | grep corr > $OUTDIR/table.N3n_corr.dat
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/N4n  -v N4n | grep corr > $OUTDIR/table.N4n_corr.dat
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/N5s  -v N5s | grep corr > $OUTDIR/table.N5s_corr.dat
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/O2o  -v O2o | grep corr > $OUTDIR/table.O2o_corr.dat
+
+ln -sf profiler_RA_C.py profiler_RA.py
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/DIC  -v DIC | grep corr > $OUTDIR/table.DIC_corr.dat
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/ALK  -v ALK | grep corr > $OUTDIR/table.ALK_corr.dat
 python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/pH   -v pH  | grep corr > $OUTDIR/table.pH_corr.dat
-python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/pCO2 -v pCO2 | grep corr > $OUTDIR/table.pCO2_corr.dat/
+python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/pCO2 -v pCO2 | grep corr > $OUTDIR/table.pCO2_corr.dat
 
 #########################   static dataset climatology section ###################################
 # Fig. 4.11:
@@ -217,25 +226,29 @@ python vertical_profiles.py -m $MASKFILE -o $OUTDIR/Vert_Prof/pCO2 -v pCO2 | gre
 
 #STAT_PROFILES_MONTHLY_DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 # Figures 4.11 and 4.17 (previously named 4.19)
-#STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT/STAT_PROFILES/
-STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT_FREQ2_test11/STAT_PROFILES/
+STAT_PROFILES_DIR=/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/TEST22/AVE_FREQ_2/STAT_PROFILES/
 
-mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.17
+mkdir -p sim_vs_clim_profiles/ #Fig4.11 Fig4.17
 #python simulation_vs_clim.py -i $STAT_PROFILES_MONTHLY_DIR -o sim_vs_clim_profiles/ -s 20170101 -e 20180101 -m $MASKFILE
-python simulation_vs_clim_extended.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 19990101 -e 20190101 -m $MASKFILE
+python simulation_vs_clim_extended.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 19990101 -e 20200101 -m $MASKFILE
 cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11
 cp sim_vs_clim_profiles/Fig_4.17*png Fig4.17
 mkdir -p sim_vs_clim_profiles_OpenSea
-python simulation_vs_clim_extended_OpenSea.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles_OpenSea -s 19990101 -e 20190101 -m $MASKFILE
+python simulation_vs_clim_extended_OpenSea.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles_OpenSea -s 19990101 -e 20200101 -m $MASKFILE
+mkdir -p sim_vs_clim_profiles_OpenSea_1999_2016
+python simulation_vs_clim_extended_OpenSea.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles_OpenSea_1999_2016 -s 19990101 -e 20170101 -m $MASKFILE
 DIR=static_clim
 mkdir -p $DIR table4.6 table4.7 table4.10/ table4.11 table4.13/ table4.14
 # -------------------------------------------------------------------------
 
-python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 19990101 -e 20190101
+python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 19990101 -e 20200101
 # For just OPEN SEA:
 DIR=static_clim_OpenSea
 mkdir $DIR
-python static_clim_validation_OpenSea.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 19990101 -e 20190101
+python static_clim_validation_OpenSea.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 19990101 -e 20200101
+DIR=static_clim_OpenSea_1999_2016
+mkdir $DIR
+python static_clim_validation_OpenSea.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 19990101 -e 20170101
 
 # -------------------------------------------------------------------------
 #cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.6/

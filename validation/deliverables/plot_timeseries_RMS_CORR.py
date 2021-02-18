@@ -57,6 +57,7 @@ from basins import V2 as OGS
 nSUB = len(OGS.P.basin_list)
 
 for isub,sub in enumerate(OGS.P):
+  if (isub != 17): # DO NOT CONSIDER ATLANTIC SUBBASIN
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')

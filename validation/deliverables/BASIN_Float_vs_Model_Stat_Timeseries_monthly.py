@@ -63,9 +63,8 @@ layer300=Layer(0,350)
 layer1000=Layer(200,1000)
 
 VARLIST = ['P_l','N3n','O2o','P_c']
-Adj = [True,True,False]
 Adj = [True,True,True,True]
-extrap = [True,False,True,False]
+extrap = [True,False,False,False]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
@@ -114,7 +113,7 @@ for ivar, var_mod in enumerate(VARLIST):
 #                Pres,Profile,Qc=p.read(var,read_adjusted=adj)
                 if (var_mod=="P_c"):
                     Pres,Profile,Qc=p.read(var,var_mod="P_c")
-                else
+                else:
                     Pres,Profile,Qc=p.read(var) #,True)
 
 		if len(Pres) < 10 : continue
@@ -144,9 +143,9 @@ for ivar, var_mod in enumerate(VARLIST):
 
 		if (VARLIST[ivar] == "P_l"):
 		    Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
-		    Flo[ip,3] = find_WLB(gm200.Ref  ,gm200.Depth) # MLB
+		    Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
 		    Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
-                    Mod[ip,3] = find_WLB(gm200.Model,gm200.Depth) # MLB
+                    Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
 
 		if (VARLIST[ivar] == "N3n"):

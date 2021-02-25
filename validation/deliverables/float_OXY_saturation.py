@@ -1,7 +1,5 @@
 import numpy as np
 import math
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
 
 def oxy_sat(p):
     '''

@@ -87,6 +87,9 @@ if __name__ == "__main__":
     import numpy.ma as ma
     from basins import V2 as OGS
 
+    from commons.layer import Layer
+    from static.climatology import get_climatology
+
     from woa_N3n import woa_nitrate_correction
 
     DATESTART = "20190101"
@@ -107,6 +110,22 @@ if __name__ == "__main__":
 #    ax.plot(Prof,Pres,'b', N, Np,'r')
     ax.plot(Prof,Pres,'b',label="Original")
     ax.plot(N, Np,'r',label="Corrected [WOA]")
+
+
+# Check with CLIMATOLOGY:
+
+    SUBLIST = OGS.Pred.basin_list
+    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+    LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
+    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
+    z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
+
+    for iSub,sub in enumerate(SUBLIST):
+        if sub.is_inside(p.lon,p.lat):
+           print N3n_clim[iSub,:]
+           print sub.name
+           ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
+
     ax.invert_yaxis()
     ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
     fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE - " + p._my_float.time.strftime("%Y%m%d")

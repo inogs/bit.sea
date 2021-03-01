@@ -176,18 +176,83 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
 
     New_N=N-shift
 
+### PERFORM A "LINEAR CORRECTION"
+    P600=Np[(Np>=600)][0]
 
-    ii = (New_N < 0) & (Np < 200)
-    New_N[ii] = 0.05
-    ii = New_N > 0
+    New_profile = New_N.copy()
+    Shift_Surf = N[0]-max(0.05,New_N[0])
+    for iz, zz in enumerate(Np[(Np<=600)]):
+        New_profile[iz] = N[iz] - (Shift_Surf + (shift - Shift_Surf)*(Np[iz]-Np[0])/(P600-Np[0]))
+        New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
+        Nqc[iz]=8
+
+    ii = New_profile > 0
     Np = Np[ii]
-    New_N = New_N[ii]
+    New_profile = New_profile[ii]
     Nqc   =   Nqc[ii]
 
-    return Np, New_N, Nqc, t_lev, nit
+    return Np, New_profile, Nqc, t_lev, nit
 
 if __name__ == "__main__":
     timeobj=datetime(2014,12,9,8,45)
     lat=17.6;lon=-24.3;pres=180.;temp=16;psal=36.1;doxy=104 # test values
     print get_nitrate(timeobj, lat, lon, pres, temp, psal, doxy)
     
+    from commons.time_interval import TimeInterval
+    from commons.Timelist import TimeList
+    import matplotlib.pyplot as pl
+    import matplotlib.dates as mdates
+    import numpy.ma as ma
+    from basins import V2 as OGS
+    from instruments import superfloat as bio_float
+
+    from commons.layer import Layer
+    from static.climatology import get_climatology
+
+    DATESTART = "20190101"
+    DATE__END = "20191231"
+
+    T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
+    var="NITRATE"
+
+    Profilelist=bio_float.FloatSelector(var,T_INT,OGS.med)
+    p=Profilelist[100]
+
+    Pres, Prof, Qc= p.read(var,True)
+    DOXYp, DOXY, QcO= p.read("DOXY",True) 
+
+    # PERFORM THE CORRECTION:
+    Np, N, Qc, t_lev, nit = canyon_nitrate_correction(p, Pres, Prof, Qc, DOXYp, DOXY)
+
+
+    fig , ax = pl.subplots()
+#    ax.plot(Prof,Pres,'b', N, Np,'r')
+    ax.plot(Prof,Pres,'b',label="Original")
+    ax.plot(N, Np,'r',label="Corrected [Canyon]")
+
+# Check with CLIMATOLOGY:
+
+    SUBLIST = OGS.Pred.basin_list
+    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+    LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
+    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
+    z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
+
+    for iSub,sub in enumerate(SUBLIST):
+        if sub.is_inside(p.lon,p.lat):
+           print N3n_clim[iSub,:]
+           print sub.name
+           sub_name=sub.name
+           ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
+
+
+
+    ax.invert_yaxis()
+    ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
+    fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE CANYON- " + p._my_float.time.strftime("%Y%m%d")
+    ax.set_title(fig_title)
+    ax.legend()
+#    fig.show()
+    fig_name='FLOAT_Canyon_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d")  + '.png'
+    fig.savefig(fig_name)
+

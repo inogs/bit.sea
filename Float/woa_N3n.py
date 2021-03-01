@@ -66,16 +66,22 @@ def woa_nitrate_correction(p):
 
     New_N=N-shift
 
-    iisurf = (New_N < 0) & (Np < 200)
-    New_N[iisurf] = 0.05
+    P600=Np[(Np>=600)][0]
 
-# All the value profiles should be not negative
-    ii = New_N > 0
+### PERFORM A "LINEAR CORRECTION"
+    New_profile = New_N.copy()
+    Shift_Surf = N[0]-max(0.05,New_N[0])
+    for iz, zz in enumerate(Np[(Np<=600)]):
+        New_profile[iz] = N[iz] - (Shift_Surf + (shift - Shift_Surf)*(Np[iz]-Np[0])/(P600-Np[0]))
+        New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
+        Nqc[iz]=8
+
+    ii = New_profile > 0
     Np = Np[ii]
-    New_N = New_N[ii]
+    New_profile = New_profile[ii]
     Nqc   =   Nqc[ii]
 
-    return Np, New_N, Nqc
+    return Np, New_profile, Nqc
 
 
 if __name__ == "__main__":
@@ -99,7 +105,7 @@ if __name__ == "__main__":
     var="NITRATE"
 
     Profilelist=bio_float.FloatSelector(var,T_INT,OGS.med)
-    p=Profilelist[100]
+    p=Profilelist[50]
 
     Pres, Prof, Qc= p.read(var,True)
 
@@ -124,12 +130,14 @@ if __name__ == "__main__":
         if sub.is_inside(p.lon,p.lat):
            print N3n_clim[iSub,:]
            print sub.name
+           sub_name=sub.name
            ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
 
     ax.invert_yaxis()
     ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
-    fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE - " + p._my_float.time.strftime("%Y%m%d")
+    fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE - " + p._my_float.time.strftime("%Y%m%d") + " [" + sub_name + "]"
     ax.set_title(fig_title)
     ax.legend()
-    fig.show()
-
+#    fig.show()
+    fig_name='FLOAT_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d") + '_' + sub_name  + '.png'
+    fig.savefig(fig_name)

@@ -12,26 +12,7 @@ filewoa="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/ave.20
 
 Mask_WOA = Mask(MASKFILE_WOA)
 
-def woa_nitrate_correction(p):
-    '''
-    Calculates the nitrate value of WOA and correct by the bottom value
-    Argument:
-    * p * float profile object
-
-    Return:
-    * Pres  * numpy 1d array, corrected pressure
-    * Value *
-    * Qc    *
-    '''
-
-
-# Reading WOA
-    print '- Reading WOA -'
-
-#woa3D = {}
-#for var in WOAvar:
-#    filewoa = DIRWOA + 
-    print ' ... ' + filewoa
+def read_climatology_nitrate():
     dataset = netCDF4.Dataset(filewoa)
 
     lonwoa = dataset.variables['lon'][:].data
@@ -46,6 +27,22 @@ def woa_nitrate_correction(p):
     masknan = woa3D>10.e+30
     woa3D[masknan] = np.nan
     dataset.close()
+    return woa3D
+
+woa3D = read_climatology_nitrate()
+
+
+def woa_nitrate_correction(p):
+    '''
+    Calculates the nitrate value of WOA and correct by the bottom value
+    Argument:
+    * p * float profile object
+
+    Return:
+    * Pres  * numpy 1d array, corrected pressure
+    * Value *
+    * Qc    *
+    '''
 
 #             N3n_woa_mean = woa3D['N3n']['mn'][:nwoa1000,indxswoa[0],indxswoa[1]]
 #             N3n_woa_obja = woa3D['N3n']['an'][:nwoa1000,indxswoa[0],indxswoa[1]]
@@ -58,7 +55,7 @@ def woa_nitrate_correction(p):
     N3n_WOA_bottom = np.nanmean(N3n_WOA_prof_600_1000)
 
 # Find the "bottom" value of float nitrate [600m - 1000m mean]
-    Np, N, Nqc = p.read('NITRATE',True)
+    Np, N, Nqc = p.read('NITRATE',read_adjusted=True)
     ii = (Np>=600) & (Np<=1000) 
     N_Float_bottom=np.mean(N[ii])
 

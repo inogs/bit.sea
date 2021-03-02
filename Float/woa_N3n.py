@@ -1,16 +1,21 @@
 import numpy as np
 import os,sys
 import netCDF4
-from instruments import superfloat as bio_float
+from commons.utils import addsep
 from commons.mask import Mask
 
-MASKFILE_WOA="/gpfs/work/IscrC_REBIOMED/REANALISI_24/PREPROC/GLO-ATL/WOA/meshmask.nc"
+woa_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/"
+WOA_DIR=addsep(os.getenv("WOA_DIR", woa_dir))
+if not os.path.exists(WOA_DIR):
+    print WOA_DIR
+    raise ValueError("Environment variable WOA_DIR must be defined")
 
-#DIRWOA=addsep(args.inwoa)
-DIRWOA="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/"
-filewoa="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/ave.20000101-00:00:00.N3n.nc"
+maskfile = WOA_DIR + "meshmask.nc"
+filewoa=   WOA_DIR + "ave.20000101-00:00:00.N3n.nc"
 
-Mask_WOA = Mask(MASKFILE_WOA)
+Mask_WOA = Mask(maskfile)
+
+
 
 def read_climatology_nitrate():
     dataset = netCDF4.Dataset(filewoa)
@@ -21,15 +26,14 @@ def read_climatology_nitrate():
     levwoa1000 = levwoa[levwoa<=1000]
     nwoa1000 = len(levwoa1000)
     ind_woa600 = len(levwoa[levwoa<=600])
-    firstreading = False
 
     woa3D = dataset.variables["n_mn"][0].data
     masknan = woa3D>10.e+30
     woa3D[masknan] = np.nan
     dataset.close()
-    return woa3D
+    return woa3D, ind_woa600, nwoa1000
 
-woa3D = read_climatology_nitrate()
+woa3D, ind_woa600, nwoa1000 = read_climatology_nitrate()
 
 
 def woa_nitrate_correction(p):
@@ -78,12 +82,11 @@ def woa_nitrate_correction(p):
 
 
 if __name__ == "__main__":
-
+    from instruments import bio_float
     from commons.time_interval import TimeInterval
     from commons.Timelist import TimeList
     import matplotlib.pyplot as pl
-    import matplotlib.dates as mdates
-    import numpy.ma as ma
+
     from basins import V2 as OGS
 
     from commons.layer import Layer

@@ -71,12 +71,8 @@ def woa_nitrate_correction(p):
     for iz, zz in enumerate(Np[(Np<=600)]):
         New_profile[iz] = N[iz] - (Shift_Surf + (shift - Shift_Surf)*(Np[iz]-Np[0])/(P600-Np[0]))
         New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
-        Nqc[iz]=8
 
-    ii = New_profile > 0
-    Np = Np[ii]
-    New_profile = New_profile[ii]
-    Nqc   =   Nqc[ii]
+    Nqc[:]=8
 
     return Np, New_profile, Nqc
 

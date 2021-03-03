@@ -35,6 +35,33 @@ def read_climatology_nitrate():
 
 woa3D, ind_woa600, nwoa1000 = read_climatology_nitrate()
 
+def linear_shift(N_old,pres,qc,shift,p_bot=600):
+    '''
+    Perform a linar shift of nitrate profile along the vertical direction starting "for default" from 600m depth upward
+    Argument:
+    * N_old * Original nitrate profile
+    * qc    * original QC
+    * shift * shift calculated with WOA at bottom (mean 600-1000m)
+    * p_bot * depth from which starts the shift (for default is fixed to 600m)
+
+    Return:
+    * New_profile * Nitrate profile with a linear shift applied
+    * qc          * qc modified to 8 (that means interpolated value)
+    '''
+
+    N_new=N_old-shift
+
+    P600=pres[(pres>=p_bot)][0]
+    New_profile = N_new.copy()
+    Shift_Surf = N_old[0]-max(0.05,N_new[0])
+    for iz, zz in enumerate(pres[(pres<=p_bot)]):
+        New_profile[iz] = N_old[iz] - (Shift_Surf + (shift - Shift_Surf)*(pres[iz]-pres[0])/(P600-pres[0]))
+        New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
+
+    qc[:]=8
+
+    return New_profile, qc
+
 
 def woa_nitrate_correction(p):
     '''
@@ -65,18 +92,7 @@ def woa_nitrate_correction(p):
 
     shift = N_Float_bottom - N3n_WOA_bottom
 
-    New_N=N-shift
-
-    P600=Np[(Np>=600)][0]
-
-### PERFORM A "LINEAR CORRECTION"
-    New_profile = New_N.copy()
-    Shift_Surf = N[0]-max(0.05,New_N[0])
-    for iz, zz in enumerate(Np[(Np<=600)]):
-        New_profile[iz] = N[iz] - (Shift_Surf + (shift - Shift_Surf)*(Np[iz]-Np[0])/(P600-Np[0]))
-        New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
-
-    Nqc[:]=8
+    New_profile, Nqc = linear_shift(N,Np,Nqc,shift)
 
     return Np, New_profile, Nqc
 
@@ -101,39 +117,50 @@ if __name__ == "__main__":
     var="NITRATE"
 
     Profilelist=bio_float.FloatSelector(var,T_INT,OGS.med)
-    p=Profilelist[50]
+    print len(Profilelist)
+    p=Profilelist[310]
 
     Pres, Prof, Qc= p.read(var,True)
+    print len(Prof)
 
+    from commons.layer import Layer
+    from static.climatology import get_climatology
+
+    from woa_N3n import woa_nitrate_correction
+
+    DATESTART = "20190101"
+    DATE__END = "20191231"
+
+    if ((len(Prof)>5) & (Pres[-1]>600)):
     # PERFORM THE CORRECTION:
-    Np, N, Nqc = woa_nitrate_correction(p)
+       Np, N, Nqc = woa_nitrate_correction(p)
 
-    fig , ax = pl.subplots()
+       fig , ax = pl.subplots()
 #    ax.plot(Prof,Pres,'b', N, Np,'r')
-    ax.plot(Prof,Pres,'b',label="Original")
-    ax.plot(N, Np,'r',label="Corrected [WOA]")
+       ax.plot(Prof,Pres,'b',label="Original")
+       ax.plot(N, Np,'r',label="Corrected [WOA]")
 
 
 # Check with CLIMATOLOGY:
 
-    SUBLIST = OGS.Pred.basin_list
-    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
-    LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
-    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
-    z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
+       SUBLIST = OGS.Pred.basin_list
+       PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+       LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
+       N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
+       z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
-    for iSub,sub in enumerate(SUBLIST):
+       for iSub,sub in enumerate(SUBLIST):
         if sub.is_inside(p.lon,p.lat):
            print N3n_clim[iSub,:]
            print sub.name
            sub_name=sub.name
            ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
 
-    ax.invert_yaxis()
-    ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
-    fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE - " + p._my_float.time.strftime("%Y%m%d") + " [" + sub_name + "]"
-    ax.set_title(fig_title)
-    ax.legend()
+       ax.invert_yaxis()
+       ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
+       fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE - " + p._my_float.time.strftime("%Y%m%d") + " [" + sub_name + "]"
+       ax.set_title(fig_title)
+       ax.legend()
 #    fig.show()
-    fig_name='FLOAT_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d") + '_' + sub_name  + '.png'
-    fig.savefig(fig_name)
+       fig_name='FLOAT_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d") + '_' + sub_name  + '.png'
+       fig.savefig(fig_name)

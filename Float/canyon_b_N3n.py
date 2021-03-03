@@ -123,6 +123,8 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     * nit   * nitrate value at the target level
     '''
 
+    from Float.woa_N3n import linear_shift
+
     Tp, T, _=   p.read('TEMP', False)
     Sp, S, _  = p.read('PSAL', False)
 #    Np, N, Nqc = p.read('NITRATE',True)
@@ -141,7 +143,6 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
 
     iiOX = OXp>=t_lev
     iiT = Tp>=t_lev
-
 
     p900=Np[ii][0]
     N900=N[ii][0]
@@ -170,22 +171,14 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     psal=S900
     doxy=O900
 
+    # get the nitrate value at "900m" with CanyonB:
     nit=get_nitrate(d, lat, lon, pres, temp, psal, doxy)
 
     shift=N900-nit
-
-    New_N=N-shift
-
-### PERFORM A "LINEAR SHIFT CORRECTION"
-    P600=Np[(Np>=600)][0]
-
-    New_profile = New_N.copy()
-    Shift_Surf = N[0]-max(0.05,New_N[0])
-    for iz, zz in enumerate(Np[(Np<=600)]):
-        New_profile[iz] = N[iz] - (Shift_Surf + (shift - Shift_Surf)*(Np[iz]-Np[0])/(P600-Np[0]))
-        New_profile[iz]=max(0.05,New_profile[iz])  # Eliminate possible negative values
-
-    Nqc[:]=8
+    print "shift frim Canyon: " + str(shift)
+  
+    depth_bot=min(600,t_lev)
+    New_profile, Nqc = linear_shift(N,Np,Nqc,shift,p_bot=depth_bot)
 
     return Np, New_profile, Nqc, t_lev, nit
 
@@ -200,7 +193,7 @@ if __name__ == "__main__":
     import matplotlib.dates as mdates
     import numpy.ma as ma
     from basins import V2 as OGS
-    from instruments import superfloat as bio_float
+    from instruments import bio_float as bio_float
 
     from commons.layer import Layer
     from static.climatology import get_climatology
@@ -212,29 +205,33 @@ if __name__ == "__main__":
     var="NITRATE"
 
     Profilelist=bio_float.FloatSelector(var,T_INT,OGS.med)
-    p=Profilelist[100]
+    p=Profilelist[30]
 
     Pres, Prof, Qc= p.read(var,True)
+    print p.available_params
+    print p.ID()
+
     DOXYp, DOXY, QcO= p.read("DOXY",True) 
 
+    print len(DOXY)
+    if ((len(Prof)>5) & (len(DOXY)>5)):
     # PERFORM THE CORRECTION:
-    Np, N, Qc, t_lev, nit = canyon_nitrate_correction(p, Pres, Prof, Qc, DOXYp, DOXY)
+       Np, N, Qc, t_lev, nit = canyon_nitrate_correction(p, Pres, Prof, Qc, DOXYp, DOXY)
 
-
-    fig , ax = pl.subplots()
+       fig , ax = pl.subplots()
 #    ax.plot(Prof,Pres,'b', N, Np,'r')
-    ax.plot(Prof,Pres,'b',label="Original")
-    ax.plot(N, Np,'r',label="Corrected [Canyon]")
+       ax.plot(Prof,Pres,'b',label="Original")
+       ax.plot(N, Np,'r',label="Corrected [Canyon]")
 
 # Check with CLIMATOLOGY:
 
-    SUBLIST = OGS.Pred.basin_list
-    PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
-    LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
-    N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
-    z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
+       SUBLIST = OGS.Pred.basin_list
+       PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
+       LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
+       N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
+       z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
-    for iSub,sub in enumerate(SUBLIST):
+       for iSub,sub in enumerate(SUBLIST):
         if sub.is_inside(p.lon,p.lat):
            print N3n_clim[iSub,:]
            print sub.name
@@ -243,12 +240,12 @@ if __name__ == "__main__":
 
 
 
-    ax.invert_yaxis()
-    ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
-    fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE CANYON- " + p._my_float.time.strftime("%Y%m%d")
-    ax.set_title(fig_title)
-    ax.legend()
+       ax.invert_yaxis()
+       ax.set_ylabel("depth $[m]$",color = 'k', fontsize=10)
+       fig_title="Float ID " + np.str(p._my_float.wmo) + " NITRATE CANYON- " + p._my_float.time.strftime("%Y%m%d")
+       ax.set_title(fig_title)
+       ax.legend()
 #    fig.show()
-    fig_name='FLOAT_Canyon_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d")  + '.png'
-    fig.savefig(fig_name)
+       fig_name='FLOAT_Canyon_' + np.str(p._my_float.wmo) + '_' + p._my_float.time.strftime("%Y%m%d")  + '.png'
+       fig.savefig(fig_name)
 

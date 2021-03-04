@@ -2,6 +2,7 @@ import numpy as np
 from datetime import datetime
 import os,sys
 from commons.utils import addsep
+from mhelpers.linear_shift import linear_shift
 
 Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON-B/"
 basedir=addsep(os.getenv("CANYONB_TRAINING_DIR", Training_dir))
@@ -123,7 +124,7 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     * nit   * nitrate value at the target level
     '''
 
-    from Float.woa_N3n import linear_shift
+
 
     Tp, T, _=   p.read('TEMP', False)
     Sp, S, _  = p.read('PSAL', False)
@@ -178,7 +179,8 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     print "shift frim Canyon: " + str(shift)
   
     depth_bot=min(600,t_lev)
-    New_profile, Nqc = linear_shift(N,Np,Nqc,shift,p_bot=depth_bot)
+    New_profile  = linear_shift(N,Np,shift,p_bot=depth_bot)
+    Nqc[:] =8
 
     return Np, New_profile, Nqc, t_lev, nit
 

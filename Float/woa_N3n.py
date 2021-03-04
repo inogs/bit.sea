@@ -1,6 +1,6 @@
 import numpy as np
 import os,sys
-import netCDF4
+from commons import netcdf4
 from commons.utils import addsep
 from commons.mask import Mask
 from mhelpers.linear_shift import linear_shift
@@ -12,29 +12,25 @@ if not os.path.exists(WOA_DIR):
     raise ValueError("Environment variable WOA_DIR must be defined")
 
 maskfile = WOA_DIR + "meshmask.nc"
-filewoa=   WOA_DIR + "ave.20000101-00:00:00.N3n.nc"
 
 Mask_WOA = Mask(maskfile)
-
-
+levwoa = Mask_WOA.zlevels
+nwoa1000   = (levwoa<=1000).sum()
+ind_woa600 = (levwoa<= 600).sum()
 
 def read_climatology_nitrate():
-    dataset = netCDF4.Dataset(filewoa)
 
-    lonwoa = dataset.variables['lon'][:].data
-    latwoa = dataset.variables['lat'][:].data
-    levwoa = dataset.variables['depth'][:].data
-    levwoa1000 = levwoa[levwoa<=1000]
-    nwoa1000 = len(levwoa1000)
-    ind_woa600 = len(levwoa[levwoa<=600])
+    N3n = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.N3n.nc", "N3n")[0]
+    temp = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.votemper.nc", "votemper")[0]
+    sali = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.vosaline.nc", "vosaline")[0]
+    density = sw.dens(sali,temp,levwoa)
+    N3n = N3n * density/1000.
+    masknan = N3n>10.e+30
+    N3n[masknan] = np.nan
 
-    woa3D = dataset.variables["n_mn"][0].data
-    masknan = woa3D>10.e+30
-    woa3D[masknan] = np.nan
-    dataset.close()
-    return woa3D, ind_woa600, nwoa1000
+    return N3n
 
-woa3D, ind_woa600, nwoa1000 = read_climatology_nitrate()
+woa3D = read_climatology_nitrate()
 
 
 

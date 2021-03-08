@@ -42,7 +42,7 @@ import numpy as np
 
 
 
-def get_info(p,outdir):
+def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
@@ -106,9 +106,6 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     ncvar[:]=Qc
     ncOUT.close()
 
-def is_only_lov(pCor):
-    if pCor is None: return True
-    return not superfloat_generator.exist_variable('CHLA', pCor._my_float.filename)
 
 
 OUTDIR = addsep(args.outdir)
@@ -122,7 +119,7 @@ wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 for wmo in wmo_list:
     Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
-        outfile = get_info(pCor, OUTDIR)
+        outfile = get_outfile(pCor, OUTDIR)
         if superfloat_generator.exist_valid(outfile) & (not args.force): continue
         os.system('mkdir -p ' + os.path.dirname(outfile))
         Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)

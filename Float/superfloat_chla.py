@@ -32,7 +32,6 @@ args = argument()
 
 
 from instruments import bio_float
-from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
@@ -45,7 +44,7 @@ import numpy as np
 
 def get_info(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
+    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
 def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
@@ -56,6 +55,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     ncOUT = NC.netcdf_file(outfile,"w")
     ncOUT.createDimension("DATETIME",14)
     ncOUT.createDimension("NPROF", 1)
+
     ncOUT.createDimension('nTEMP', len(PresT))
     ncOUT.createDimension('nPSAL', len(PresT))
     ncOUT.createDimension('nCHLA', len(Pres ))    
@@ -71,7 +71,6 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
  
     
     ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
-    ncvar[:]=Temp
     setattr(ncvar, 'origin'     , metadata.origin)
     setattr(ncvar, 'file_origin', metadata.filename)
     setattr(ncvar, 'variable'   , 'TEMP')
@@ -116,56 +115,11 @@ OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
 R = Rectangle(-6,36,30,46)
 
-PROFILES_LOV =lovbio_float.FloatSelector('CHLA', TI, R)
-wmo_list= lovbio_float.get_wmo_list(PROFILES_LOV)
 
-
-
-for wmo in wmo_list:
-    print wmo
-    Profilelist = lovbio_float.filter_by_wmo(PROFILES_LOV, wmo)
-    for ip, pLov in enumerate(Profilelist):
-        pCor = bio_float.from_lov_profile(pLov, verbose=True)
-        is_only_LOV = is_only_lov(pCor)
-        if is_only_LOV:
-            outfile = get_info(pLov,OUTDIR)
-        else:
-            outfile = get_info(pCor,OUTDIR)
-        if superfloat_generator.exist_valid(outfile) & (not args.force) : continue
-        os.system('mkdir -p ' + os.path.dirname(outfile))
-
-        if is_only_LOV:
-            Pres, Profile, Qc = pLov.read('CHLA',read_adjusted=True)
-            if len(Pres)<5 :
-                print "few values in LOV for " + pLov._my_float.filename
-                continue
-            profile_for_data = pLov
-            if pCor is None:
-                profile_for_pos= pLov
-            else:
-                profile_for_pos= pCor
-            metadata = superfloat_generator.Metadata('lov', pLov._my_float.filename)
-
-        else:
-            #Pres, Profile,Qc = superfloat_generator.synthesis_profile(pLov, pCor)
-            Pres, Profile,Qc = superfloat_generator.treating_coriolis(pCor)
-            profile_for_data = pCor
-            profile_for_pos  = pCor
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-
-
-        if Pres is None: continue # no data
-
-        dumpfile(outfile, profile_for_pos, profile_for_data, Pres, Profile, Qc, metadata)
-
-
-print "**************** Profiles only Coriolis *******************"
-# Deve gestire i profili only_coriolis
 PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
 wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 for wmo in wmo_list:
-    print wmo
     Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for ip, pCor in enumerate(Profilelist):
         outfile = get_info(pCor, OUTDIR)

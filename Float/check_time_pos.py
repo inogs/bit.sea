@@ -38,19 +38,13 @@ if float_dataset=="SUPERFLOAT":
 if float_dataset == "FLOAT_LOVBIO":
     isLOV = True
     from instruments import lovbio_float
-if float_dataset == "FLOAT_BIO":
+if float_dataset in ["CORIOLIS", "FLOAT_BIO"]:
     from instruments import bio_float as lovbio_float
 
 
-mydtype= np.dtype([
-          ('file_name','S200'),
-          ('lat',np.float), # not np.float32, it performs a minor change
-          ('lon',np.float),
-          ('time','S17'),
-          ('parameters','S200')] )
 
 
-INDEX_FILE=np.loadtxt(args.inputfile,dtype=mydtype, delimiter=",",ndmin=1)
+INDEX_FILE=np.loadtxt(args.inputfile,dtype=lovbio_float.mydtype, delimiter=",",ndmin=1)
 nFiles=INDEX_FILE.size
 
 if isLOV:
@@ -137,7 +131,7 @@ if isLOV:
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + float_dataset + "/Float_Index.txt"
-is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
+#is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
 
 nFiles=INDEX_FILE.size
 PROFILE_LIST = []
@@ -148,10 +142,11 @@ for iFile in range(nFiles):
     filename         = INDEX_FILE['file_name'][iFile]
     available_params = INDEX_FILE['parameters'][iFile]
     float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+    parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
     
-    if not is_default_V4C :
-        filename = ONLINE_REPO + float_dataset + "/" + filename
-    thefloat = lovbio_float.BioFloat(lon,lat,float_time,filename,available_params)
+
+    filename = ONLINE_REPO + float_dataset + "/" + filename
+    thefloat = lovbio_float.BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
     PROFILE_LIST.append(lovbio_float.BioFloatProfile(float_time,lon,lat, thefloat,available_params))
     
 
@@ -186,7 +181,7 @@ for iFile in range(nFiles):
     if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
         good[iFile]=False
 
-np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s")
+np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s,%s")
 
 if args.erase:
     for filename in REMOVING_LIST:

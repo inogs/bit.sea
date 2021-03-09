@@ -29,7 +29,7 @@ def argument():
 args = argument()
 
 from instruments import bio_float
-from instruments import lovbio_float
+from Float import oxygen_saturation
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
@@ -85,7 +85,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
+        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
         ncOUT.createDimension("DATETIME",14)
         ncOUT.createDimension("NPROF", 1)
         ncOUT.createDimension('nTEMP', len(PresT))
@@ -151,13 +151,13 @@ force_writing_oxygen=args.force
 PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
 PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
-wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
+wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
+    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
 def read_doxy(pCor):
@@ -172,20 +172,35 @@ def read_doxy(pCor):
 for wmo in wmo_list:
     print wmo
     Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
-        outfile = get_outfile(pCor,OUTDIR)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
+    for ip, p in enumerate(Profilelist):
+        outfile = get_outfile(p,OUTDIR)
+        if p._my_float.status_var('DOXY')=='R': continue
 
+        writing_mode='w'
+        condition_to_write = ~superfloat_generator.exist_valid(outfile)
         if superfloat_generator.exist_valid(outfile):
             if not superfloat_generator.exist_variable('DOXY', outfile):
-                Pres, Value, Qc = read_doxy(pCor)
-                if Pres is not None: dump_oxygen_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                writing_mode='a'
+                condition_to_write = True
             else:
-                if force_writing_oxygen:
-                    Pres, Value, Qc = read_doxy(pCor)
-                    if Pres is not None: dump_oxygen_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                condition_to_write = False
+        if force_writing_oxygen: condition_to_write=True
+
+        if not condition_to_write: continue
+        Pres, Value, Qc = read_doxy(p)
+        if Pres is None: continue
+
+
+        if p._my_float.status_var('DOXY')=='D':
+            condition_to_write = True
+        else: # case 'A'
+            condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+
+
+        if condition_to_write:
+            metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
         else:
-            Pres, Value, Qc = read_doxy(pCor)
-            if Pres is not None: dump_oxygen_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+            print "Saturation Test not passed"
 

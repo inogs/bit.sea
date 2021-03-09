@@ -143,18 +143,6 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     os.system("mv " + outfile + ".tmp " + outfile)
 
 
-OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-force_writing_oxygen=args.force
-
-PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
-PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
-
-wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-
-
-
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
@@ -168,6 +156,19 @@ def read_doxy(pCor):
         return None, None, None
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
+
+
+OUTDIR = addsep(args.outdir)
+TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+R = Rectangle(-6,36,30,46)
+force_writing_oxygen=args.force
+
+PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
+PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
+
+wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+
+
 
 for wmo in wmo_list:
     print wmo

@@ -176,7 +176,7 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
     nit=get_nitrate(d, lat, lon, pres, temp, psal, doxy)
 
     shift=N900-nit
-    print "shift frim Canyon: " + str(shift)
+    print "shift from Canyon: " + str(shift)
   
     depth_bot=min(600,t_lev)
     New_profile  = linear_shift(N,Np,shift,p_bot=depth_bot)

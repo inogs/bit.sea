@@ -1,3 +1,4 @@
+import sys
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -9,27 +10,40 @@ def argument():
 
     parser.add_argument(   '--datestart','-s',
                                 type = str,
-                                required = True,
+                                required = False,
+			        default = 'NO_data',
                                 help = '''date in yyyymmss format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
-                                required = True,
+                                required = False,
+				default = 'NO_data',
                                 help = '''date in yyyymmss format''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
-                                required = True,
-                                default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
+                                required = True,                                
                                 help = 'path of the Superfloat dataset ')
     parser.add_argument(   '--force', '-f',
                                 action='store_true',
                                 help = """Overwrite existing files
                                 """)
 
+    parser.add_argument(   '--update_file','-u',
+                                type = str,
+                                required = False,
+			        default = 'NO_file',
+                                help = '''file with updated floats''')
+
     return parser.parse_args()
 
 args = argument()
 
+if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass either datastart and dataeend or the update_file")
 
+if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
+
+#sys.exit()
 
 from instruments import bio_float
 from commons.time_interval import TimeInterval
@@ -39,6 +53,7 @@ from commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
+import datetime
 
 
 
@@ -109,24 +124,55 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
 
 
 OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
+input_file=args.update_file
 
+if input_file == 'NO_file': 
+    TI = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
-PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
-wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    for wmo in wmo_list:
+        Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, pCor in enumerate(Profilelist):
+            outfile = get_outfile(pCor, OUTDIR)
+            if superfloat_generator.exist_valid(outfile) & (not args.force): continue
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            if Pres is None: continue # no data
+            dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
 
-for wmo in wmo_list:
-    Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
-        outfile = get_outfile(pCor, OUTDIR)
-        if superfloat_generator.exist_valid(outfile) & (not args.force): continue
-        os.system('mkdir -p ' + os.path.dirname(outfile))
+else:
+    mydtype= np.dtype([
+          ('file_name','S200'),
+	  ('date','S200'),
+          ('latitude',np.float32),
+          ('longitude',np.float32),
+	  ('ocean','S10'),
+	  ('profiler_type',np.int),
+	  ('institution','S10'),
+          ('parameters','S200'),
+	  ('parameter_data_mode','S100'),
+	  ('date_update','S200')] )
+
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    nFiles=INDEX_FILE.size
+
+    for iFile in range(nFiles):
+        timestr          = INDEX_FILE['date'][iFile]
+        lon              = INDEX_FILE['longitude' ][iFile]
+        lat              = INDEX_FILE['latitude' ][iFile]
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+	filename=filename.replace('coriolis/','').replace('profiles/','')        
+
+        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+	outfile = get_outfile(pCor, OUTDIR)
+	os.system('mkdir -p ' + os.path.dirname(outfile))
         Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
         if Pres is None: continue # no data
         dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
-
-
-# DRIFTS in 6900807 7900591
-    

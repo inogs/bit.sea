@@ -4,6 +4,7 @@ from commons import netcdf4
 from commons.utils import addsep
 from commons.mask import Mask
 from mhelpers.linear_shift import linear_shift
+import seawater as sw
 
 woa_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/"
 WOA_DIR=addsep(os.getenv("WOA_DIR", woa_dir))
@@ -18,15 +19,23 @@ levwoa = Mask_WOA.zlevels
 nwoa1000   = (levwoa<=1000).sum()
 ind_woa600 = (levwoa<= 600).sum()
 
+
 def read_climatology_nitrate():
 
     N3n = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.N3n.nc", "N3n")[0]
     temp = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.votemper.nc", "votemper")[0]
     sali = netcdf4.readfile(WOA_DIR + "ave.20000101-00:00:00.vosaline.nc", "vosaline")[0]
-    density = sw.dens(sali,temp,levwoa)
+    good = N3n<1.e+30
+    jpk, jpj, jpi = Mask_WOA.shape
+    Pres3D =np.zeros((jpk,jpj,jpi),np.float32)
+    density=np.zeros((jpk,jpj,jpi),np.float32)
+    for i in range(jpi):
+        for j in range(jpj):
+            Pres3D[:,j,i] = levwoa
+
+    density[good] = sw.dens(sali[good],temp[good],Pres3D[good])
     N3n = N3n * density/1000.
-    masknan = N3n>10.e+30
-    N3n[masknan] = np.nan
+    N3n[~good] = np.nan
 
     return N3n
 

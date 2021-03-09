@@ -3,7 +3,7 @@ import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of chla.
-    Reads from Coriolis and LOV datasets.
+    Reads from Coriolis dataset.
     It has to be called as the first one of the series of superfloat generators.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
@@ -11,12 +11,12 @@ def argument():
     parser.add_argument(   '--datestart','-s',
                                 type = str,
                                 required = False,
-			        default = 'NO_data',
+                                default = 'NO_data',
                                 help = '''date in yyyymmss format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
                                 required = False,
-				default = 'NO_data',
+                                default = 'NO_data',
                                 help = '''date in yyyymmss format''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
@@ -30,7 +30,7 @@ def argument():
     parser.add_argument(   '--update_file','-u',
                                 type = str,
                                 required = False,
-			        default = 'NO_file',
+                                default = 'NO_file',
                                 help = '''file with updated floats''')
 
     return parser.parse_args()
@@ -43,7 +43,7 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
-#sys.exit()
+
 
 from instruments import bio_float
 from commons.time_interval import TimeInterval
@@ -145,16 +145,16 @@ if input_file == 'NO_file':
 
 else:
     mydtype= np.dtype([
-          ('file_name','S200'),
-	  ('date','S200'),
-          ('latitude',np.float32),
-          ('longitude',np.float32),
-	  ('ocean','S10'),
-	  ('profiler_type',np.int),
-	  ('institution','S10'),
-          ('parameters','S200'),
-	  ('parameter_data_mode','S100'),
-	  ('date_update','S200')] )
+        ('file_name','S200'),
+        ('date','S200'),
+        ('latitude',np.float32),
+        ('longitude',np.float32),
+        ('ocean','S10'),
+        ('profiler_type',np.int),
+        ('institution','S10'),
+        ('parameters','S200'),
+        ('parameter_data_mode','S100'),
+        ('date_update','S200')] )
 
     INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
     nFiles=INDEX_FILE.size
@@ -167,11 +167,11 @@ else:
         available_params = INDEX_FILE['parameters'][iFile]
         parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
-	filename=filename.replace('coriolis/','').replace('profiles/','')        
+        filename=filename.replace('coriolis/','').replace('profiles/','')
 
         pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-	outfile = get_outfile(pCor, OUTDIR)
-	os.system('mkdir -p ' + os.path.dirname(outfile))
+        outfile = get_outfile(pCor, OUTDIR)
+        os.system('mkdir -p ' + os.path.dirname(outfile))
         Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
         metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
         if Pres is None: continue # no data

@@ -178,13 +178,9 @@ for wmo in wmo_list:
         if p._my_float.status_var('DOXY')=='R': continue
 
         writing_mode='w'
-        condition_to_write = ~superfloat_generator.exist_valid(outfile)
-        if superfloat_generator.exist_valid(outfile):
-            if not superfloat_generator.exist_variable('DOXY', outfile):
-                writing_mode='a'
-                condition_to_write = True
-            else:
-                condition_to_write = False
+        if superfloat_generator.exist_valid(outfile): writing_mode='a'
+
+        condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
         if force_writing_oxygen: condition_to_write=True
 
         if not condition_to_write: continue

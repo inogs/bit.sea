@@ -75,7 +75,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
             #setattr(ncvar,'missing_value',fillValue)
     else:
         ncOUT = NC.Dataset(outfile,'w')
-        
+
         jpk, jpj, jpi= mask.shape
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude", jpj)
@@ -100,6 +100,16 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         setattr(ncvar, 'valid_max'    , mask.ylevels.max())
         setattr(ncvar, '_CoordinateAxisType',"Lat" )
         ncvar[:] = mask.ylevels[:,0]
+
+        ncvar = ncOUT.createVariable('depth'   ,'f', ('depth',))
+        setattr(ncvar,'units'        ,'m')
+        setattr(ncvar,'long_name'    ,'depth')
+        setattr(ncvar,'standard_name','depth')
+        setattr(ncvar,'positive'     ,'down')
+        setattr(ncvar,'axis'         ,'Z')
+        setattr(ncvar,'valid_min'    , mask.zlevels.min())
+        setattr(ncvar,'valid_max'    , mask.zlevels.max())
+        ncvar[:] = TheMask.zlevels
 
         dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
         ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)

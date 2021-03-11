@@ -168,11 +168,14 @@ else:
         parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
-
-        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-        outfile = get_outfile(pCor, OUTDIR)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
-        Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        if Pres is None: continue # no data
-        dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
+        
+	if 'CHLA' in available_params:	
+        	pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+        	outfile = get_outfile(pCor, OUTDIR)
+        	os.system('mkdir -p ' + os.path.dirname(outfile))
+        	Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
+        	metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+        	if Pres is None: continue # no data
+        	dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
+	else:
+		continue

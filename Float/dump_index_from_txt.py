@@ -1,3 +1,25 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Executed usually just after float download, creates Float_Index.0.txt file,
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--inputfile','-i',
+                                type = str,
+                                required = True,
+                                help = 'e.g. Med_floats.txt')
+
+    parser.add_argument(   '--output_float_indexer','-o',
+                                type = str,
+                                required = True,
+                                help = '''float indexer rough file as
+                                /gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/FLOAT_BIO/Float_Indexer.0.txt''')
+
+
+    return parser.parse_args()
+
+args = argument()
 import numpy as np
 from datetime import datetime
 
@@ -15,7 +37,7 @@ mydtype= np.dtype([
 
 
 input_file="/gpfs/scratch/userexternal/gbolzon0/V7C/Med_floats.txt"
-CORIOLIS_INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",")
+CORIOLIS_INDEX_FILE=np.loadtxt(args.inputfile,dtype=mydtype, delimiter=",")
 
 nFiles = len(CORIOLIS_INDEX_FILE)
 
@@ -43,5 +65,5 @@ for ifile in range(nFiles):
     INDEX_FILE[ifile]['file_name'] = wmo + "/" + basename
     INDEX_FILE[ifile]['time'] = d.strftime('%Y%m%d-%H:%M:%S')
 
-np.savetxt('Float_Index_0.txt', INDEX_FILE, fmt="%s,%f,%f,%s,%s,%s")
+np.savetxt(args.output_float_indexer, INDEX_FILE, fmt="%s,%f,%f,%s,%s,%s")
     

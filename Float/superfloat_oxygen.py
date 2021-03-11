@@ -180,7 +180,7 @@ for wmo in wmo_list:
         writing_mode='w'
         if superfloat_generator.exist_valid(outfile): writing_mode='a'
 
-        condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
+        condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
         if force_writing_oxygen: condition_to_write=True
 
         if not condition_to_write: continue

@@ -2,9 +2,10 @@
 
 export PYTHONPATH=$PYTHONPATH:/gpfs/work/OGS20_PRACE_P/COPERNICUS/bit.sea
 export ONLINE_REPO=/gpfs/scratch/userexternal/gbolzon0/V7C/ONLINE
-DIR=/galileo/home/userexternal/gcoidess/test_float_download/
-LOCALDIR=/gpfs/scratch/userexternal/gbolzon0/V7C/TMP_CORIOLIS
+DIR=$ONLINE_REPO/CORIOLIS/download
+LOCALDIR=$ONLINE_REPO/CORIOLIS/download/tmp
 DIFF_FILE=$DIR/DIFF_floats.txt
+OPA_BITSEA=/gpfs/scratch/userexternal/gbolzon0/V7C/bit.sea
 mkdir -p $DIR
 
 #rename old syntetic_profile file and old output file
@@ -29,11 +30,11 @@ grep -v ",," $DIR/argo_synthetic-profile_index.txt | grep -v D.nc > $DIR/argo_sy
 
 #launch the reader -> obtain the mediterranean floater file
 
-python argo_reader.py -i $DIR/argo_synthetic-profile_index_CORR.txt -o $DIR/Med_floats.txt
+python $OPA_BITSEA/Float/argo_reader.py -i $DIR/argo_synthetic-profile_index_CORR.txt -o $DIR/Med_floats.txt
 
 #matching old vs new -> return a file called DIFF.txt in which there is the list of floats that are different between the two files
 
-python argo_difference.py -N $DIR/Med_floats.txt -O $DIR/Med_floats_OLD.txt -o $DIFF_FILE
+python $OPA_BITSEA/Float/argo_difference.py -N $DIR/Med_floats.txt -O $DIR/Med_floats_OLD.txt -o $DIFF_FILE
 
 
 

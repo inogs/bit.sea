@@ -8,11 +8,11 @@ def argument():
 
     parser.add_argument(   '--datestart','-s',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
@@ -23,10 +23,21 @@ def argument():
                                 action='store_true',
                                 help = """Overwrite existing files
                                 """)
-
+    parser.add_argument(   '--update_file','-u',
+                                type = str,
+                                required = False,
+                                default = 'NO_file',
+                                help = '''file with updated floats''')
     return parser.parse_args()
 
 args = argument()
+
+if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass either datastart and dataeend or the update_file")
+
+if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
+
 
 from instruments import bio_float
 from Float import oxygen_saturation
@@ -38,6 +49,7 @@ import os
 import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
+import datetime
 
 def remove_bad_sensors(Profilelist,var):
     '''
@@ -157,42 +169,102 @@ def read_doxy(pCor):
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
 
+input_file=args.update_file
+if input_file == 'NO_file':
+    OUTDIR = addsep(args.outdir)
+    TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    force_writing_oxygen=args.force
 
-OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-force_writing_oxygen=args.force
+    PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
+    PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
-PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
-PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
-
-wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 
 
-for wmo in wmo_list:
-    print wmo
-    Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, p in enumerate(Profilelist):
+    for wmo in wmo_list:
+         print wmo
+         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+	 for ip, p in enumerate(Profilelist):
+	     outfile = get_outfile(p,OUTDIR)
+	     if p._my_float.status_var('DOXY')=='R': continue
+
+	     writing_mode='w'
+	     if superfloat_generator.exist_valid(outfile): writing_mode='a'
+
+	     condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
+	     if force_writing_oxygen: condition_to_write=True
+
+	     if not condition_to_write: continue
+	     Pres, Value, Qc = read_doxy(p)
+	     if Pres is None: continue
+
+
+	     if p._my_float.status_var('DOXY')=='D':
+	         condition_to_write = True
+	     else: # case 'A'
+	         condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+
+
+	     if condition_to_write:
+	         metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
+	         os.system('mkdir -p ' + os.path.dirname(outfile))
+	         dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+	     else:
+	         print "Saturation Test not passed"
+else:
+    OUTDIR = addsep(args.outdir)
+#    force_writing_oxygen=args.force
+    mydtype= np.dtype([
+        ('file_name','S200'),
+        ('date','S200'),
+        ('latitude',np.float32),
+        ('longitude',np.float32),
+        ('ocean','S10'),
+        ('profiler_type',np.int),
+        ('institution','S10'),
+        ('parameters','S200'),
+        ('parameter_data_mode','S100'),
+        ('date_update','S200')] )
+
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    nFiles=INDEX_FILE.size
+
+    for iFile in range(nFiles):
+        timestr          = INDEX_FILE['date'][iFile]
+        lon              = INDEX_FILE['longitude' ][iFile]
+        lat              = INDEX_FILE['latitude' ][iFile]
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+        filename=filename.replace('coriolis/','').replace('profiles/','')
+
+
+	if 'DOXY' not in available_params: continue
+
+	p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+	wmo=p._my_float.wmo
+	print wmo
+	#OUT_O2o = ["6901510"]
+	OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
+
+	if wmo in OUT_O2o: continue
+
         outfile = get_outfile(p,OUTDIR)
         if p._my_float.status_var('DOXY')=='R': continue
 
         writing_mode='w'
         if superfloat_generator.exist_valid(outfile): writing_mode='a'
 
-        condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
-        if force_writing_oxygen: condition_to_write=True
-
-        if not condition_to_write: continue
         Pres, Value, Qc = read_doxy(p)
         if Pres is None: continue
-
 
         if p._my_float.status_var('DOXY')=='D':
             condition_to_write = True
         else: # case 'A'
             condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-
 
         if condition_to_write:
             metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
@@ -200,4 +272,3 @@ for wmo in wmo_list:
             dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
         else:
             print "Saturation Test not passed"
-

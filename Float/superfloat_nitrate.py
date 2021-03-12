@@ -8,11 +8,11 @@ def argument():
 
     parser.add_argument(   '--datestart','-s',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
@@ -23,10 +23,21 @@ def argument():
                                 action='store_true',
                                 help = """Overwrite existing files
                                 """)
+    parser.add_argument(   '--update_file','-u',
+                                type = str,
+                                required = False,
+                                default = 'NO_file',
+                                help = '''file with updated floats''')
 
     return parser.parse_args()
 
 args = argument()
+
+if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass either datastart and dataeend or the update_file")
+
+if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
 from instruments import bio_float
 from Float.canyon_b_N3n import canyon_nitrate_correction
@@ -40,6 +51,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 from commons.layer import Layer
 import seawater as sw
+import datetime
 
 import basins.V2 as basV2
 from static.climatology import get_climatology
@@ -129,32 +141,116 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
     os.system("mv " + outfile + ".tmp " + outfile)
 
 OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-
-
-PROFILES_COR =bio_float.FloatSelector('NITRATE', TI, R)
-wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-
 force_writing_nitrate=args.force
+input_file=args.update_file
 
-for wmo in wmo_list:
-    print wmo
-     # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
-    #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
-    Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
+if input_file == 'NO_file':
+    TI = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+
+
+    PROFILES_COR =bio_float.FloatSelector('NITRATE', TI, R)
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+
+
+    for wmo in wmo_list:
+        print wmo
+        # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
+	    #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
+        Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, pCor in enumerate(Profilelist):
+            outfile = get_outfile(pCor,OUTDIR)
+	    F=pCor._my_float
+	    writing_mode='w'
+	    if superfloat_generator.exist_valid(outfile): writing_mode='a'
+
+	    condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
+	    if force_writing_nitrate: condition_to_write=True
+
+	    metatata = superfloat_generator.Metadata('coriolis',F.filename)
+
+	    if not condition_to_write: continue
+	    if pCor._my_float.status_var('NITRATE')=='R': continue
+
+	    Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
+	    nP=len(Pres)
+	    if nP<5 :
+	        print "few values for " + F.filename
+	        continue
+	    if Pres[-1]<100:
+	        print "depth < 100 for "+ F.filename
+	        continue
+
+            if pCor._my_float.status_var('NITRATE')=='D':
+	        dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+
+
+	    if pCor._my_float.status_var('NITRATE')=='A':
+	        if superfloat_generator.exist_valid_variable('DOXY', outfile):
+	            DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
+		    os.system('mkdir -p ' + os.path.dirname(outfile))
+
+		    Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
+		    outOfClimatology = False
+		    for ilayer, layer in enumerate(LayerList):
+		        if (t_lev >= layer.top) & (t_lev < layer.bottom) :
+		            for iSub,sub in enumerate(SUBLIST):
+			        if sub.is_inside(pCor.lon,pCor.lat):
+	                            if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
+
+		    if outOfClimatology:
+		        print "Out of climatology for " + F.filename
+		        continue
+		    dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+		else:
+		    if Pres[-1]>600:
+		        Pres, Values, Qc = woa_nitrate_correction(pCor)
+		        dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+		    else:
+		        print "WOA correction not applicable for max(depth) < 600 m"
+
+else:
+    OUTDIR = addsep(args.outdir)
+#    force_writing_oxygen=args.force
+    mydtype= np.dtype([
+        ('file_name','S200'),
+        ('date','S200'),
+        ('latitude',np.float32),
+        ('longitude',np.float32),
+        ('ocean','S10'),
+        ('profiler_type',np.int),
+        ('institution','S10'),
+        ('parameters','S200'),
+        ('parameter_data_mode','S100'),
+        ('date_update','S200')] )
+
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    nFiles=INDEX_FILE.size
+
+    for iFile in range(nFiles):
+        timestr          = INDEX_FILE['date'][iFile]
+        lon              = INDEX_FILE['longitude' ][iFile]
+        lat              = INDEX_FILE['latitude' ][iFile]
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+        filename=filename.replace('coriolis/','').replace('profiles/','')
+
+
+        if 'NITRATE' not in available_params: continue
+
+        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+        wmo=pCor._my_float.wmo
+        print wmo
+
         outfile = get_outfile(pCor,OUTDIR)
         F=pCor._my_float
         writing_mode='w'
         if superfloat_generator.exist_valid(outfile): writing_mode='a'
 
-        condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
-        if force_writing_nitrate: condition_to_write=True
-
         metatata = superfloat_generator.Metadata('coriolis',F.filename)
 
-        if not condition_to_write: continue
         if pCor._my_float.status_var('NITRATE')=='R': continue
 
         Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
@@ -163,7 +259,7 @@ for wmo in wmo_list:
             print "few values for " + F.filename
             continue
         if Pres[-1]<100:
-            print "depth < 100 for "+ F.filename
+            print "few values for " + F.filename
             continue
 
         if pCor._my_float.status_var('NITRATE')=='D':
@@ -184,8 +280,8 @@ for wmo in wmo_list:
                                 if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
 
                 if outOfClimatology:
-                    print "Out of climatology for " + F.filename
-                    continue
+                        print "Out of climatology for " + F.filename
+                        continue
                 dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
             else:
                 if Pres[-1]>600:
@@ -193,4 +289,5 @@ for wmo in wmo_list:
                     dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
                 else:
                     print "WOA correction not applicable for max(depth) < 600 m"
+
 

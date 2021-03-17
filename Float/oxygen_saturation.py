@@ -8,6 +8,8 @@ def oxy_sat(p):
     argo float. Instead of the "real surface", for T and S we adopt
     the mean value of the first 5m.
     As input, it requires the profile object.
+    Returns:
+    * O2o * a concentration of oxygen in mmol/m3
     '''
     
 

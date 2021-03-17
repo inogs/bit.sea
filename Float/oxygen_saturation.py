@@ -1,5 +1,7 @@
 import numpy as np
 
+depth_threshold = 5.0 #m
+
 def oxy_sat(p):
     '''
     Calculate the oxygen at saturation with the formula from
@@ -10,13 +12,17 @@ def oxy_sat(p):
     As input, it requires the profile object.
     Returns:
     * O2o * a concentration of oxygen in mmol/m3
+            nan if there are no TEMP and PSAL values with pressure less than 5m.
     '''
     
 
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)#p._my_float.adjusted('TEMP'))
     PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)#p._my_float.adjusted('PSAL'))
 
-    ii = PresT<=5
+    ii = PresT<=depth_threshold
+    if ii.sum() == 0:
+        print "No TEMP values with pressure less than %f m " %(depth_threshold)
+        return np.nan
 
     temp=np.mean(Temp[ii]) 
     sal =np.mean(Sali[ii])
@@ -42,19 +48,27 @@ def oxy_check(Pres,Prof,p):
     * p * float profile object (needed for T and S inn the Oxy Sat calculation)
 
     Return:
-    * CR * Check Result wich is 0 ==> check passed
-                                1 ==> check failed
+    * CR *  logical value, True if the check is passed
+            False when oxy_Sat returns nan
+            False when min(Pres) < 5m
+    
+    
     '''
 
 
     Osat = oxy_sat(p)
+    if np.isnan(Osat): return False
 
     bad=(np.isnan(Prof))
     Prof_good = Prof[~bad]
     Pres_good = Pres[~bad]
- 
+
+    ii = Pres_good<=depth_threshold
+    if ii.sum() == 0 :
+        print "No DOXY values with pressure less than %f m " %(depth_threshold)
+        return False
 # Define O2o surface as the mean values in the first 5m from the sea surface:
-    Osurf=np.mean(Prof_good[Pres_good<=5])
+    Osurf=np.mean(Prof_good[ii])
 
     mydiff = np.abs(Osurf-Osat)
     

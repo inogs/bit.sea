@@ -336,9 +336,11 @@ class BioFloat(Instrument):
             lat              = INDEX_FILE['lat' ][iFile]
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
+
             if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
-                return BioFloat(lon,lat,float_time,filename,available_params)
+                return BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
         return None
 
 def profile_gen(lon,lat,float_time,filename,available_params,parameterdatamode):

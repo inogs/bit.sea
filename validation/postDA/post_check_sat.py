@@ -58,6 +58,7 @@ npSub = {}
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 1
 for sub in V2.Pred:
+    if 'atl' in sub.name: continue
     Nsub += 1
     #print sub.name
     sbmask         = SubMask(sub,maskobject=Sup_mask).mask

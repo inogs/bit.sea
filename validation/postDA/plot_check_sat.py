@@ -67,6 +67,7 @@ Npsub = {}
 # NpsubOpen = {}
 # NpsubAll = {}
 for sub in V2.P:
+    if 'atl' in sub.name: continue
     LISTmis[sub.name] = [[] for ll in range(4)]
     LISTst[sub.name] = [[] for ll in range(3)]
     filemasksub = SUBMASKDIR + 'masksub.' + sub.name + 'All.npy'
@@ -77,6 +78,7 @@ for sub in V2.P:
 for filemis in TLmis.filelist:
     misfmean = np.load(filemis)
     for isub,sub in enumerate(V2.P):
+        if 'atl' in sub.name: continue
         LISTmis[sub.name][0].append(misfmean[0,isub])
         LISTmis[sub.name][1].append(misfmean[1,isub])
         LISTmis[sub.name][2].append(misfmean[2,isub])
@@ -87,6 +89,7 @@ for statsfile in TLstats.filelist:
     vv = FS.variables['SUBstatistics_day'].data.copy()
     FS.close()
     for isub,sub in enumerate(V2.P):
+        if 'atl' in sub.name: continue
         LISTst[sub.name][0].append(vv[isub,5])
         LISTst[sub.name][1].append(vv[isub,6]+vv[isub,7])
         LISTst[sub.name][2].append(Npsub[sub.name])
@@ -97,6 +100,7 @@ DICTcol = {
 }
 
 for sub in V2.P:
+    if 'atl' in sub.name: continue
     #print sub.name
     plt.close('all')
     fig,axs = plt.subplots(3,1,sharex=True,figsize=[10,6])

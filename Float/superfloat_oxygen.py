@@ -228,7 +228,7 @@ else:
         ('parameter_data_mode','S100'),
         ('date_update','S200')] )
 
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):

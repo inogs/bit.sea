@@ -86,6 +86,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
  
     
     ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
+    ncvar[:] = Temp
     setattr(ncvar, 'origin'     , metadata.origin)
     setattr(ncvar, 'file_origin', metadata.filename)
     setattr(ncvar, 'variable'   , 'TEMP')

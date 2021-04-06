@@ -186,6 +186,10 @@ def exist_variable(variable, filename):
     ncIN.close()
     return variable in variables
 
+def exist_valid_variable(variable, filename):
+    if not exist_valid(filename): return False
+    return exist_variable(variable, filename)
+
 class Metadata():
     def __init__(self, origin, filename):
         self.origin = origin

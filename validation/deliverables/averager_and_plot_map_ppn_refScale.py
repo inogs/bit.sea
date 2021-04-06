@@ -208,3 +208,23 @@ for il, layer in enumerate(PLOT.layerlist):
     if (var == "ppn"): 
         ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + "_refScale.nc"
         netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
+
+        from basins import V2 as OGS
+        from commons.submask import SubMask
+        from basins.basin import ComposedBasin
+        from commons.utils import writetable
+        tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
+        OGSred = ComposedBasin('OGSred',[OGS.alb, \
+                    OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr, \
+                    OGS.adr, OGS.ion, OGS.lev , OGS.med], \
+                    'Gruped Subbasin for ppn analysis')
+        SUBlist = OGSred.basin_list
+        nSub   = len(OGSred.basin_list)
+        rows_names=[sub.name for sub in SUBlist]
+        ppn_submean = np.zeros((nSub,1),np.float32)*np.nan
+        for isub, sub in enumerate(OGSred):
+            S = SubMask(sub, maskobject=TheMask)
+            mask2d=S.mask[0,:,:]
+            ppn_submean[isub,0] = integrated_masked[mask2d].mean()
+        
+        writetable(tablefile,ppn_submean,rows_names,['mean'])

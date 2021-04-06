@@ -2,23 +2,27 @@
 #
 # Map Plotter Class
 #
-# Plot NETCDF Data using CARTOPY
+# Plot map Data using CARTOPY
+#
+# Fix Cartopy blowup errors:
+#	pip uninstall shapely
+#	pip install --no-binary :all: shapely
 #
 # Arnau Miro, OGS (2019)
-from __future__ import print_function
+from __future__ import print_function, division
 
-import io, requests, json
-import numpy as np, matplotlib, matplotlib.pyplot as plt
-import cartopy.crs as ccrs, cartopy.feature as cfeature
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import json, numpy as np, matplotlib, matplotlib.pyplot as plt
+import cartopy.crs as ccrs, cartopy.feature as cfeature, cartopy.io.img_tiles as cimgt
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 import netCDF4 as NC
+
 
 class MapPlotter():
 	'''
 	MAPPLOTTER class
 
-	Plot NETCDF data using CARTOPY. Therefore Cartopy must be installed
+	Plot data using CARTOPY. Therefore Cartopy must be installed
 	on your system.
 
 	Example usage:
@@ -58,17 +62,14 @@ class MapPlotter():
 		'''
 		self._projection = getattr(ccrs,projection)(**kwargs)
 		# Class variables
-		self._fig = None
-		self._ax  = None
-		self._gl  = None
-		self._plt = None
+		self._fig  = None
+		self._ax   = None
+		self._gl   = None
+		self._plot = None
 
 	@property
 	def projection(self):
 		return self._projection
-	@projection.setter
-	def projection(self,value):
-		self._projection = getattr(ccrs,value)
 
 	@staticmethod
 	def loadNC(fname,varname,fill_value=1e20,mask_value=np.nan):
@@ -107,11 +108,12 @@ class MapPlotter():
 			# Figure params
 			'size'        : (8,6),
 			'dpi'         : 100,
-			'style'       : 'ggplot',
+			'style'       : None, #'ggplot'
 			# Axes params
 			'xlim'        : [-180,180],
 			'ylim'        : [-90,90],
 			'max_div'     : 4,
+			'axis_format' : '.1f',
 			'top_label'   : False,
 			'bottom_label': True,
 			'right_label' : False,
@@ -121,6 +123,9 @@ class MapPlotter():
 			'features'    : ['coastline','continents','rivers','image'],
 			'res'         : '50m',
 			'img'         : None,
+			'img_format'  : 'png',
+			'map_zoom'    : 9,
+			'map_style'   : 'satellite',
 			# Title and labels
 			'title'       : [], # [title,kwargs]
 			'xlabel'      : [],
@@ -132,6 +137,9 @@ class MapPlotter():
 			'ncol'        : 256, 
 			'draw_cbar'   : True,
 			'orientation' : 'horizontal',
+			'extend'      : None,
+			'shrink'      : 1.0,
+			'aspect'      : 20.,
 			'bounds'      : [-1e30, 1e30], # [min,max]
 			'numticks'    : 10,
 			'tick_format' : '%.2f',
@@ -173,6 +181,14 @@ class MapPlotter():
 		'''
 		plt.close()
 
+	@staticmethod
+	def fmin(f,x):
+		return (1.-f if x > 0 else 1.+f)*x
+		
+	@staticmethod
+	def fmax(f,x):
+		return (1.+f if x > 0 else 1.-f)*x
+
 	def save(self,filename,dpi=300,margin='tight'):
 		'''
 		Save figure to disk.
@@ -182,7 +198,7 @@ class MapPlotter():
 			> dpi:      Pixel depth (default: 300)
 			> margin;   Bbox margins
 		'''
-		if self._fig and self._ax and self._plot:
+		if self._fig and self._ax:# and self._plot:
 			self._fig.savefig(filename,dpi=dpi,bbox_inches=margin)
 
 	def clear():
@@ -221,7 +237,7 @@ class MapPlotter():
 		'''
 		return plt.axes(projection=self._projection)
 
-	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],top=False,bottom=True,left=True,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
+	def createGridlines(self,xlim=[-180,180],ylim=[-90,90],axis_format='.1f',top=False,bottom=True,left=True,right=False,max_div=4,style={},gridlines_kwargs={'draw_labels':True,'linewidth':0}):
 		'''
 		Create gridlines for the current axes.
 
@@ -240,20 +256,23 @@ class MapPlotter():
 		gl = None
 		if self._ax:
 			# Axes limits
-			self._ax.set_xlim(xlim)
-			self._ax.set_ylim(ylim)
+#			self._ax.set_xlim(xlim)
+#			self._ax.set_ylim(ylim)
+			self._ax.set_extent(xlim+ylim,crs=ccrs.PlateCarree())
 			# Grid lines
-			gl = self._ax.gridlines(crs=self._projection,**gridlines_kwargs)
-			gl.xlocator       = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],max_div))
-			gl.ylocator       = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],max_div))
-			gl.xformatter     = LONGITUDE_FORMATTER
-			gl.yformatter     = LATITUDE_FORMATTER
-			gl.xlabels_top    = top
-			gl.xlabels_bottom = bottom
-			gl.xlabel_style   = style
-			gl.ylabels_left   = left
-			gl.ylabels_right  = right
-			gl.ylabel_style   = style
+			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
+			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))
+			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],(ylim[1]-ylim[0])/max_div))
+			gl.xformatter    = LongitudeFormatter(number_format=axis_format,
+												  degree_symbol='$^\circ$')
+			gl.yformatter    = LatitudeFormatter(number_format=axis_format,
+												 degree_symbol='$^\circ$')
+			gl.top_labels    = top
+			gl.bottom_labels = bottom
+			gl.xlabel_style  = style
+			gl.left_labels   = left
+			gl.right_labels  = right
+			gl.ylabel_style  = style
 		return gl
 
 	def setTitle(self,title,**kwargs):
@@ -291,6 +310,14 @@ class MapPlotter():
 		'''
 		if self._ax:
 			self._ax.set_ylabel(label,**kwargs)
+
+	def setAxisExtent(self,ext,projection='PlateCarree',**kwargs):
+		'''
+		Set the limits for the x and y axis
+		'''
+		if self._ax:
+			transform = getattr(ccrs,projection)(**kwargs)
+			self._ax.set_extent(ext,transform)
 
 	def drawCoastline(self,res='50m',color=(0,0,0,1),linewidth=.75):
 		'''
@@ -337,7 +364,7 @@ class MapPlotter():
 					edgecolor=color, facecolor='none', linewidth=linewidth)
 				)
 
-	def drawBackground(self,img=None):
+	def drawBackground(self,img=None,img_fmt='png',extent=[-180, 180, -90, 90],projection='PlateCarree',**kwargs):
 		'''
 		Draw a background image. If no image is provided it uses cartopy's stock image.
 
@@ -346,20 +373,38 @@ class MapPlotter():
 		'''
 		if self._ax:
 			if not img == None or img == '':
+				transform  = getattr(ccrs,projection)(**kwargs)
+				# Use the transform to correct the extent
+				if not projection == 'PlateCarree':
+					out = transform.transform_point(extent[0],extent[2],ccrs.PlateCarree())
+					extent[0],extent[2] = out[0],out[1]
+					out = transform.transform_point(extent[1],extent[3],ccrs.PlateCarree())
+					extent[1],extent[3] = out[0],out[1]
+				# Dependencies for images
+				from PIL import Image
+				Image.MAX_IMAGE_PIXELS = 18446744073709551616
 				# Detect if we are dealing with a URL or a path
 				if 'https://' in img or 'http://' in img:
-					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content)), origin='upper', 
-						transform=self._projection, extent=[-180, 180, -90, 90])
+					# Dependencies for URL
+					import io, requests
+					self._ax.imshow(plt.imread(io.BytesIO(requests.get(img).content),format=img_fmt), 
+						origin='upper', transform=transform, extent=extent)
 				else:
 					self._ax.imshow(plt.imread(img), origin='upper', 
-						transform=self._projection, extent=[-180, 180, -90, 90])
+						transform=transform, extent=extent)
 			else:
 				self._ax.stock_img()
+
+	def drawTileMap(self,zoom,style='satellite'):
+		'''
+		'''
+		tile = cimgt.GoogleTiles(style=style)
+		self._ax.add_image(tile,zoom)
 
 	def setColormap(self,cmap='coolwarm',ncol=256):
 		'''
 		Set the colormap.
-
+		
 		Inputs:
 			> cmap: Colormap name (default: 'coolwarm')
 				https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html
@@ -368,10 +413,12 @@ class MapPlotter():
 		Outputs:
 			> Colormap object
 		'''
-		return plt.get_cmap(cmap,ncol)
+		cmap = plt.get_cmap(cmap,ncol,)
+		cmap.set_bad(color='w',alpha=1.)
+		return cmap
 
-	def setColorbar(self,orientation='horizontal',extend='neither',numticks=10,tick_format='%.2f',tick_font=None,
-		label={}):
+	def setColorbar(self,orientation='horizontal',extend='neither',shrink=1.0,aspect=20,
+		numticks=10,tick_format='%.2f',tick_font=None,label={}):
 		'''
 		Set the colorbar.
 
@@ -388,7 +435,7 @@ class MapPlotter():
 		'''
 		cbar = None
 		if self._fig and self._plot:
-			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend)
+			cbar = self._fig.colorbar(self._plot,orientation=orientation,extend=extend,shrink=shrink,aspect=aspect)
 			cbar.set_label(**label)
 			if tick_font: cbar.ax.tick_params(labelsize=tick_font)
 			cbar.locator   = matplotlib.ticker.LinearLocator(numticks=numticks)
@@ -418,8 +465,8 @@ class MapPlotter():
 			self._ax  = params['ax']
 
 		# Axes grid lines
-		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],top=params['top_label'],
-			bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
+		self._gl = self.createGridlines(xlim=params['xlim'],ylim=params['ylim'],axis_format=params['axis_format'],
+		 	top=params['top_label'],bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
 			max_div=params['max_div'],style=params['grdstyle'],gridlines_kwargs=params['grdargs'])
 
 		# Title and axis labels
@@ -449,21 +496,25 @@ class MapPlotter():
 		if 'rivers' in params['features']:
 			self.drawRivers(res=params['res'])
 		if 'image' in params['features']:
-			self.drawBackground(img=params['img'])
+			self.drawBackground(img=params['img'],img_fmt=params['img_format'])
+		if 'tilemap' in params['features']:
+			self.drawTileMap(params['map_zoom'],style=params['map_style'])
 
 		return self._fig
 
-	def plot(self,lon,lat,data,params=None,clear=True):
+	def plot(self,lon,lat,data,params=None,clear=True,projection='PlateCarree',**kwargs):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
 
 		Inputs:
-			> lon:    Longitude vector or matrix
-			> lat:    Latitude vector or matrix
-			> data:   Data matrix
-			> params: Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> lon:        Longitude vector or matrix
+			> lat:        Latitude vector or matrix
+			> data:       Data matrix
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object
@@ -477,23 +528,28 @@ class MapPlotter():
 		cbar_max = params['bounds'][1] if params['bounds'][1] <= 1e20  else z_max
 
 		# Set extend
-		extend = 'neither'
-		if (cbar_min > z_min): extend = 'min'
-		if (cbar_max < z_max): extend = 'max'
-		if (cbar_min > z_min and cbar_max < z_max): extend = 'both'
+		if params['extend'] == None:
+			params['extend'] = 'neither'
+			if (cbar_min > z_min):                      params['extend'] = 'min'
+			if (cbar_max < z_max):                      params['extend'] = 'max'
+			if (cbar_min > z_min and cbar_max < z_max): params['extend'] = 'both'
 
 		# Plot
+		transform  = getattr(ccrs,projection)(**kwargs)
 		self._plot = self._ax.pcolormesh(lon,lat,data,
 					cmap=self.setColormap(cmap=params['cmap'],ncol=params['ncol']),
 					norm=matplotlib.colors.Normalize(cbar_min,cbar_max),
 					alpha=params['alpha'],
-					transform=self._projection
+					shading='auto',
+					transform=transform
 					 		 )
 
 		# Colorbar
 		if params['draw_cbar']:
 			self.setColorbar(orientation=params['orientation'],
-							 extend=extend,
+							 extend=params['extend'],
+							 shrink=params['shrink'],
+							 aspect=params['aspect'],
 							 numticks=params['numticks'],
 							 tick_format=params['tick_format'],
 							 tick_font=params['tick_font'],
@@ -502,20 +558,22 @@ class MapPlotter():
 
 		return self._fig
 
-	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None,clear=True):
+	def plot_from_file(self,filename,varname,lonname,latname,iTime=0,iDepth=0,params=None,clear=True,projection='PlateCarree',**kwargs):
 		'''
 		Plot function. Plots data given a NetCDF file and the names of the variables
 		as well as the current depth and time index.
 
 		Inputs:
-			> filename: NetCDF file path
-			> varname:  Name of the NetCDF variable to plot
-			> lonname:  Name of the longitude dimension
-			> latname:  Name of the latitude dimension
-			> iTime:    Time index for NetCDF (default: 0)
-			> iDepth:   Depth index for NetCDF (default: 0)
-			> params: Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> filename:   NetCDF file path
+			> varname:    Name of the NetCDF variable to plot
+			> lonname:    Name of the longitude dimension
+			> latname:    Name of the latitude dimension
+			> iTime:      Time index for NetCDF (default: 0)
+			> iDepth:     Depth index for NetCDF (default: 0)
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object
@@ -530,7 +588,7 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params,clear=clear)
+		return self.plot(lon,lat,data,params=params,clear=clear,projection=projection,**kwargs)
 
 	def plot_from_file_and_mask(self,filename,varname,maskfile,iTime=0,iDepth=0,
 		masklon='glamt',masklat='gphit',params=None,clear=True):
@@ -539,15 +597,17 @@ class MapPlotter():
 		the variables as well as the current depth and time index.
 
 		Inputs:
-			> filename: NetCDF file path
-			> varname:  Name of the NetCDF variable to plot
-			> maskfile: Path to the mask file
-			> iTime:    Time index for NetCDF (default: 0)
-			> iDepth:   Depth index for NetCDF (default: 0)
-			> masklon:  Name of the longitude dimension (default: 'glamt')
-			> masklat:  Name of the latitude dimension (default: 'gphit')
-			> params:   Optional parameter dictionary
-			> clear:    Clear axes before plotting
+			> filename:   NetCDF file path
+			> varname:    Name of the NetCDF variable to plot
+			> maskfile:   Path to the mask file
+			> iTime:      Time index for NetCDF (default: 0)
+			> iDepth:     Depth index for NetCDF (default: 0)
+			> masklon:    Name of the longitude dimension (default: 'glamt')
+			> masklat:    Name of the latitude dimension (default: 'gphit')
+			> params:     (Optional) parameter dictionary
+			> clear:      (Optional) Clear axes before plotting
+			> Projection: Type of projection that the data is
+						  using (default assumes PlateCarree)
 
 		Outputs:
 			> Figure object		
@@ -570,9 +630,9 @@ class MapPlotter():
 		else:
 			data = data[iDepth,:,:]
 		# Plot
-		return self.plot(lon,lat,data,params=params,clear=False)
+		return self.plot(lon,lat,data,params=params,clear=clear,projection=projection,**kwargs)
 
-	def scatter(self,xc,yc,params=None,clear=True,**kwargs):
+	def scatter(self,xc,yc,params=None,clear=True,marker=None,size=None,projection='PlateCarree',**kwargs):
 		'''
 		Main plotting function. Plots given the longitude, latitude and data.
 		An optional params dictionary can be inputted to control the plot.
@@ -589,6 +649,7 @@ class MapPlotter():
 		self.plot_empty(params=params,clear=clear)
 
 		# Plot
-		self._plot = self._ax.scatter(xc,yc,data,transform=self._projection,**kwargs)
+		transform  = getattr(ccrs,projection)(**kwargs)
+		self._plot = self._ax.scatter(xc,yc,transform=transform,marker=marker,s=size)
 
 		return self._fig

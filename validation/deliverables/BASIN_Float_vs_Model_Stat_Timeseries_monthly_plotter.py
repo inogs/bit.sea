@@ -51,7 +51,7 @@ from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from commons.utils import addsep
-from profiler import ALL_PROFILES,TL,BASEDIR
+from profiler_floats import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from basins.V2 import NRT3 as OGS
 from commons.time_interval import TimeInterval
@@ -59,7 +59,7 @@ from matchup.statistics import *
 from commons.utils import writetable
 from datetime import datetime
 from datetime import timedelta
-from profiler import *
+from profiler_floats import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -115,16 +115,16 @@ INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 #S = SubMask(basV2.lev1, maskobject=TheMask)
 
-VARLIST      = ['P_l','N3n','O2o']
-VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen']
+VARLIST      = ['P_l','N3n','O2o','P_c']
+VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen','PhytoC']
 nVar         = len(VARLIST)
 METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 
-METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
-METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','MLBmeanRef','MLBmeanMod','MLB_BIAS','MLB_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
+#METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','WBLmeanRef','WBLmeanMod','WBL_BIAS','WBL_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','N_POINTS']
+METRICS_ALL= ['CORR','INTmeanRef','INTmeanMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCM_BIAS','DCM_RMSD','WBLmeanRef','WBLmeanMod','WBL_BIAS','WBL_RMSD','NITmeanRef','NITmeanMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 
-METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
-METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','MLB_BIAS','MLB_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
+#METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','WBL_BIAS','WBL_RMSD','NIT_BIAS','NIT_RMSD','N_POINTS']
+METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','WBL_BIAS','WBL_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
@@ -146,6 +146,7 @@ A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
 A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
+# if ( var == "P_c"):
     TABLE_METRICS = np.zeros((nSub,26),np.float32)*np.nan #before 18 metrics
     TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
@@ -203,20 +204,20 @@ for ivar, var in enumerate(VARLIST):
         if (var == "P_l"):
 	    DCM_Ref = A_float[ivar,:,iSub,2]
 	    DCM_Mod = A_model[ivar,:,iSub,2]
-	    MLB_Ref = A_float[ivar,:,iSub,3]
-	    MLB_Mod = A_model[ivar,:,iSub,3]
+	    WBL_Ref = A_float[ivar,:,iSub,3]
+	    WBL_Mod = A_model[ivar,:,iSub,3]
             axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
 	    # FILTER OUT MAY TO NOV INCLUDED:
-	    MLB_Ref[4:11] = np.nan
-	    MLB_Mod[4:11] = np.nan
-            MLB_Ref[16:23] = np.nan
-            MLB_Mod[16:23] = np.nan
-            axes[3].plot(times,MLB_Ref,'--r',label='MLB REF')
-            axes[3].plot(times,MLB_Mod,'--b',label='MLB MOD')
+	    WBL_Ref[4:11] = np.nan
+	    WBL_Mod[4:11] = np.nan
+            WBL_Ref[16:23] = np.nan
+            WBL_Mod[16:23] = np.nan
+            axes[3].plot(times,WBL_Ref,'--r',label='WBL REF')
+            axes[3].plot(times,WBL_Mod,'--b',label='WBL MOD')
 
             axes[3].invert_yaxis()
-            axes[3].set_ylabel('DCM/MLB $[m]$',fontsize=15)
+            axes[3].set_ylabel('DCM/WBL $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
             axes[1].set_ylim([0,1.0])
 	    ax2.set_ylim([0,50])
@@ -233,10 +234,10 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,7] = m.bias()
             TABLE_METRICS[iSub,8] = m.RMSE()
 
-            TABLE_METRICS[iSub,9] = np.nanmean(MLB_Ref[ii])
-            TABLE_METRICS[iSub,10] = np.nanmean(MLB_Mod[ii])
-            good = ~np.isnan(MLB_Ref[ii]) &  ~np.isnan(MLB_Mod[ii])
-            m = matchup(MLB_Mod[ii][good],   MLB_Ref[ii][good])
+            TABLE_METRICS[iSub,9] = np.nanmean(WBL_Ref[ii])
+            TABLE_METRICS[iSub,10] = np.nanmean(WBL_Mod[ii])
+            good = ~np.isnan(WBL_Ref[ii]) &  ~np.isnan(WBL_Mod[ii])
+            m = matchup(WBL_Mod[ii][good],   WBL_Ref[ii][good])
             TABLE_METRICS[iSub,11] = m.bias()
             TABLE_METRICS[iSub,12] = m.RMSE()
 
@@ -290,7 +291,7 @@ for ivar, var in enumerate(VARLIST):
 
             TABLE_METRICS[iSub,21] = np.nanmean(O2oMaxRef[ii])
             TABLE_METRICS[iSub,22] = np.nanmean(O2oMaxMod[ii])
-            good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
+            good = ~np.isnan(O2oMaxRef[ii]) &  ~np.isnan(O2oMaxMod[ii])
             m = matchup(O2oMaxMod[ii][good],   O2oMaxRef[ii][good])
             TABLE_METRICS[iSub,23] = m.bias()
             TABLE_METRICS[iSub,24] = m.RMSE()
@@ -317,7 +318,7 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS_SHORT[:,12] = TABLE_METRICS[:,24]
     TABLE_METRICS_SHORT[:,13] = TABLE_METRICS[:,25]
 
-#    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd MLBmeanRef MLBmeanMod MLBbias MLBrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
+#    headerstring = " CORR INTmeanRef INTmeanMod INTbias INTrmsd DCMmeanRef DCMmeanMod DCMbias DCMrmsd WBLmeanRef WBLmeanMod WBLbias WBLrmsd NITmeanRef NITmeanMod NITbias NITrmsd N_points"
 #    np.savetxt(OUTDIR + var + '_tab_statistics.txt',TABLE_METRICS,fmt="%10.4f", delimiter="\t",header=headerstring)
 #    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")
 #    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f")

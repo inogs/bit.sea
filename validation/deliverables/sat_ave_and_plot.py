@@ -51,17 +51,17 @@ OUTPUTDIR = args.outdir
 
 
 
-TI = TimeInterval('20160101','20170101',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TI = TimeInterval('19990101','20171231',"%Y%m%d") # VALID FOR REANALYSIS RUN
-TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m")
+TI = TimeInterval('20190101','20200101',"%Y%m%d") # VALID FOR REANALYSIS RUN
+TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m%d")
+print TL.Timelist
 
 
-MY_YEAR = TimeInterval('19990101','20171231',"%Y%m%d") 
-req_label='Ave:2014-2016'
-req_label='Ave:2017'
-req_label='1999_2017'
+#MY_YEAR = TimeInterval('20190101','20200101',"%Y%m%d") 
+req_label='2019_2020'
+#req_label='201901'
 
-req = requestors.Generic_req(MY_YEAR)
+#req = requestors.Generic_req(MY_YEAR)
+req = requestors.Generic_req(TI)
 indexes,weights = TL.select(req)
 nFrames = len(indexes)
 SAT_3D=np.zeros((nFrames,jpj,jpi), np.float32)
@@ -69,8 +69,8 @@ SAT_3D=np.zeros((nFrames,jpj,jpi), np.float32)
 for iFrame, k in enumerate(indexes):
     t = TL.Timelist[k]
     inputfile = TL.filelist[k]
-    # CHL = Sat.readfromfile(inputfile,'CHL')
-    CHL = Sat.readfromfile(inputfile,'lchlm')
+    CHL = Sat.readfromfile(inputfile,'CHL')
+#    CHL = Sat.readfromfile(inputfile,'lchlm')
     SAT_3D[iFrame,:,:] = CHL
 
 Sat2d=Sat.averager(SAT_3D)
@@ -83,7 +83,7 @@ var = 'SATchl'
 
 #fig,ax     = mapplot({'varname':var, 'clim':[0,0.4], 'layer':layer, 'data':Sat2d, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-ax.set_xlim([-5,36])
+ax.set_xlim([-9,16])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
@@ -91,18 +91,19 @@ ax.ticklabel_format(fontsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-2,36,6))
+ax.xaxis.set_ticks(np.arange(-9,16,4))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
 title = "%s %s" % ('annual', var)
+title = "%s %s" % (req_label, var)
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)
 
 
 fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-ax.set_xlim([-5,36])
+ax.set_xlim([-9,16])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
@@ -110,11 +111,12 @@ ax.ticklabel_format(fontsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Maplog_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-2,36,6))
+ax.xaxis.set_ticks(np.arange(-9,16,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
 title = "%s %s" % ('annual', var)
+#title = "%s %s" % (req_label , var)
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)

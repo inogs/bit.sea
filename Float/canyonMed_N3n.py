@@ -6,11 +6,11 @@ from commons.utils import addsep
 
 
 
-Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON_B/CODES/CANYON_Training/"
-basedir=addsep(os.getenv("CANYONB_TRAINING_DIR", Training_dir))
+Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON_MED/CODES/CANYON_Training/"
+basedir=addsep(os.getenv("CANYONMED_TRAINING_DIR", Training_dir))
 if not os.path.exists(basedir):
     print basedir
-    raise ValueError("Environment variable CANYONB_TRAINING_DIR must be defined")
+    raise ValueError("Environment variable CANYONMED_TRAINING_DIR must be defined")
 
 presgrid=np.loadtxt(basedir + 'CY_doy_pres_limit.csv',delimiter="\t")
 poids=np.loadtxt(basedir + 'Fichier_poids_NO3_hidden_ascii20_17.sn')
@@ -25,7 +25,7 @@ Ecart=np.loadtxt(basedir + 'std_NO3.dat')
 
 def get_nitrate(timeobj,lat,lon, pres,temp, psal, doxy):
     '''
-    Calculates the nitrate value of canyon_b
+    Calculates the nitrate value of canyon_med
     Arguments:
     * timeobj * a datetime object
     * lat     * scalar value

@@ -11,12 +11,13 @@ from commons import timerequestors
 
 class DatasetExtractor():
     
-    def __init__(self,filename):
+    def __init__(self,filename, datasetname):
         ncIN=NC.netcdf_file(filename,'r')
         self.DATA     = ncIN.variables['DATA'].data.copy()
         self.UNITS    = ncIN.variables['UNITS'].data.copy()
         self.VARIABLES= ncIN.variables['VARIABLES'].data.copy()
         self.CRUISES  = ncIN.variables['Cruises'].data.copy()
+        self.datasetname = datasetname
         ncIN.close()
 
     def unique_rows(self,data, prec=5):
@@ -52,7 +53,7 @@ class DatasetExtractor():
             
             iddataset = int(dataset[inthisprofile][0])
             Cruise    = self.CRUISES[iddataset-1,:].tostring().strip()
-            LP = ContainerProfile(lon,lat,time,Depth,Values,Cruise)
+            LP = ContainerProfile(lon,lat,time,Depth,Values,Cruise, self.datasetname)
             Profilelist.append(LP)
         return Profilelist
 

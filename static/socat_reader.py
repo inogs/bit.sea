@@ -12,7 +12,7 @@ class CO2_socat_reader(DatasetExtractor):
         '''
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/CO2_socat/SOCAT_INFO_FCO2.nc"
         #self.filename="/Users/gbolzon/Documents/workspace/PY/GP/SOCAT_INFO_FCO2.nc"
-        self.DataExtractor = DatasetExtractor(self.filename)
+        self.DataExtractor = DatasetExtractor(self.filename,'Socat')
 
 
  
@@ -62,7 +62,7 @@ class CO2_socat_reader(DatasetExtractor):
 
         if var is None:
             Profilelist = list()
-            for myvar in ['temp','sal','fCO2','gvCO2']:
+            for myvar in ['temp','sal','fCO2']:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
             return Profilelist
         return self.DataExtractor.selector(var, T_int, region)

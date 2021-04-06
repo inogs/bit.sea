@@ -10,17 +10,19 @@ from instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
+CORIOLIS_DIR="FLOAT_BIO/"
+CORIOLIS_DIR="CORIOLIS/"
 mydtype= np.dtype([
           ('file_name','S200'),
           ('lat',np.float32),
           ('lon',np.float32),
           ('time','S17'),
-          ('parameters','S200')] )
+          ('parameters','S200'),
+          ('parameter_data_mode','S100')] )
 
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "FLOAT_BIO/Float_Index.txt"
-is_default_V4C= ONLINE_REPO == GSS_DEFAULT_LOC
+FloatIndexer=addsep(ONLINE_REPO) + CORIOLIS_DIR + "Float_Index.txt"
 
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
@@ -43,7 +45,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var,read_adjusted):
+    def read(self,var,read_adjusted=True):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -73,7 +75,7 @@ class BioFloat(Instrument):
 
     default_mean = None
 
-    def __init__(self,lon,lat,time,filename,available_params):
+    def __init__(self,lon,lat,time,filename,available_params,parameter_data_mode):
         self.lon = lon
         self.lat = lat
         self.time = time
@@ -83,7 +85,7 @@ class BioFloat(Instrument):
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
         self.DATA_MODE = None
-        self.PARAMETER_DATA_MODE = None
+        self.PARAMETER_DATA_MODE = parameter_data_mode
         self.PARAMETER = None
         self.N_PARAM   = None
 
@@ -100,7 +102,7 @@ class BioFloat(Instrument):
         self.N_PROF    = ncIN.dimensions['N_PROF']
         self.N_PARAM   = ncIN.dimensions['N_PARAM']
         self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
-        self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
+        #self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
         ncIN.close()
         _,_,nParams,_=self.PARAMETER.shape
         self.PARAMETERS=[]
@@ -155,12 +157,18 @@ class BioFloat(Instrument):
     def status_var(self,var):
         '''
         Argument: var, string
-        Returns: string, 'R', or 'A' (real or adjusted)
+        Returns: string, 'R', 'A' or 'D' (real time or adjusted, or delay mode)
         '''
-        if self.PARAMETER is None:
-            self.load_basics()
-        iParam = self._searchVariable_on_parameters(var);
-        return self.PARAMETER_DATA_MODE[0,iParam]
+        param_list=self.available_params.rsplit(" ")
+        iParam = param_list.index(var)
+        return self.PARAMETER_DATA_MODE[iParam]
+    def adjusted(self,var):
+        if self.status_var(var) in ['A','D'] : return True
+        return False
+#         if self.PARAMETER is None:
+#             self.load_basics()
+#         iParam = self._searchVariable_on_parameters(var);
+#         return self.PARAMETER_DATA_MODE[0,iParam]
 
     def read_very_raw(self,var):
         '''
@@ -328,15 +336,17 @@ class BioFloat(Instrument):
             lat              = INDEX_FILE['lat' ][iFile]
             thefilename      = INDEX_FILE['file_name'][iFile]
             available_params = INDEX_FILE['parameters'][iFile]
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-            if ONLINE_REPO + "FLOAT_BIO/" + thefilename == filename :
-                return BioFloat(lon,lat,float_time,filename,available_params)
+
+            if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
+                return BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
         return None
 
-def profile_gen(lon,lat,float_time,filename,available_params):
-    if not is_default_V4C:
-        filename = ONLINE_REPO + "FLOAT_BIO/" + filename
-    thefloat = BioFloat(lon,lat,float_time,filename,available_params)
+def profile_gen(lon,lat,float_time,filename,available_params,parameterdatamode):
+
+    filename = ONLINE_REPO + CORIOLIS_DIR + filename
+    thefloat = BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
     return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
 
 def FloatSelector(var, T, region):
@@ -360,6 +370,7 @@ def FloatSelector(var, T, region):
         lat              = INDEX_FILE['lat' ][iFile]
         filename         = INDEX_FILE['file_name'][iFile]
         available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
         if var is None :
@@ -369,7 +380,7 @@ def FloatSelector(var, T, region):
 
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
-                selected.append(profile_gen(lon, lat, float_time, filename, available_params))
+                selected.append(profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode))
                 #thefloat = BioFloat(lon,lat,float_time,filename,available_params)
                 #selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
 
@@ -442,31 +453,50 @@ def from_lov_profile(lov_profile, verbose=True):
 if __name__ == '__main__':
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
+    import sys
 
-    var = 'CHLA'
-    TI = TimeInterval('20150520','20190830','%Y%m%d')
+    var = 'NITRATE'
+    TI = TimeInterval('20150520','20220225','%Y%m%d')
     R = Rectangle(-6,36,30,46)
-
+    sum=0
     PROFILE_LIST=FloatSelector(var, TI, R)
     for ip, p in enumerate(PROFILE_LIST):
+        if p._my_float.status_var('NITRATE') =='D':
+            Pres, Value, Qc= p.read(var, read_adjusted=True)
+            print Pres.max()
+
+        continue
         F=p._my_float
-        F.load_basics()
-        if F.status_var('CHLA')=='R': print ip, 'R'
+        nP=len(Pres)
+        if nP<5 :
+            print "few values for " + F.filename
+            continue
+        if Pres[-1]<100:
+            print "depth < 100 for "+ F.filename
+            continue
+
+        if Pres.max()< 600:
+            print "superficiale", p.ID()
+            #sys.exit()
+
+        if F.status_var('NITRATE')=='D':
+            #if F.status_var('DOXY') =='R':
+            sum+=1
+            #print ip, F.filename,'R'
 
 #    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/6900807/MR6900807_225.nc"
 #    F=BioFloat.from_file(filename)
 #    F2=BioFloat.from_file("/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/FLOAT_BIO/6901765/MR6901765_001.nc")
-    import sys
-    sys.exit()
+
 
 
 
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)
         TheFloat = p._my_float
-        PN,N,Qc = TheFloat.read(var,    True)
-        PS,S,Qc = TheFloat.read('PSAL', True)
-        PT,T,Qc = TheFloat.read('TEMP', True)
+        PN,N,Qc = TheFloat.read(var,    read_adjusted=True, mean=meanObj)
+        #PS,S,Qc = TheFloat.read('PSAL', read_adjusted=True)
+        #PT,T,Qc = TheFloat.read('TEMP', read_adjusted=True)
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

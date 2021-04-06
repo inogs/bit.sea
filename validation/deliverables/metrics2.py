@@ -55,7 +55,7 @@ def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
         SI = np.nansum(BVF[:izmax,0]   * TheMask.zlevels[:izmax] * TheMask.dz[:izmax])
         return SI
 
-def find_WLB(Profile,Pres):  # Winter Layer Bloom (WLB)
+def find_WBL(Profile,Pres):  # Winter Bloom Layer (WBL)
         WLB = np.nan
         A = Profile
 	A_filtered=A[Pres<200]

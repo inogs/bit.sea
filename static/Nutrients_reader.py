@@ -14,7 +14,7 @@ class NutrientsReader():
         Reads the NetCDF Dataset
         '''
         self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
-        self.DataExtractor = DatasetExtractor(self.filename)
+        self.DataExtractor = DatasetExtractor(self.filename, 'Nutrients')
 
         # QC  section ----------------
         M = self.DataExtractor
@@ -26,6 +26,9 @@ class NutrientsReader():
         bad = dataset==(id_dataset+1)
         selected[bad] = False
         id_dataset= find_index('BIOPT06',self.DataExtractor.CRUISES)
+        bad = dataset==(id_dataset+1)
+        selected[bad] = False
+        id_dataset= find_index('BOUSSOLE',self.DataExtractor.CRUISES)
         bad = dataset==(id_dataset+1)
         selected[bad] = False
 

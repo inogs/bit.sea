@@ -38,7 +38,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var):
+    def read(self,var,var_mod=None):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -49,7 +49,7 @@ class BioFloatProfile(Profile):
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var)
+        return self._my_float.read(var,var_mod)
 
 
     def read_fitted(self,var, func):
@@ -108,7 +108,7 @@ class BioFloat(Instrument):
 
 
 
-    def read(self,var):
+    def read_raw(self,var):
         '''
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
@@ -118,7 +118,29 @@ class BioFloat(Instrument):
         Profile = ncIN.variables[        var].data.copy()
         Qc      = ncIN.variables[var + "_QC"].data.copy()
         ncIN.close()
+        return Pres, Profile, Qc
 
+
+    def read(self,var,var_mod=None):
+
+        Pres, Profile, Qc = self.read_raw(var)
+
+        if var_mod is None:
+#           print "var_mod is " + np.str(var_mod) 
+           return Pres, Profile, Qc
+
+        ii=(Pres >= 400) & (Pres <= 500) 
+        if (var_mod=='P_c'):
+            bbp470 = Profile * ( 470.0/ 700)**0.78# [m-1]
+            Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
+            shift=Profile[ii].mean()
+            Profile = Profile - shift
+            ii=Profile<=0
+            Profile[ii] = 0.0
+
+#        if (var_mod == "POC"): 
+
+     
         return Pres, Profile, Qc
 
 
@@ -341,12 +363,12 @@ if __name__ == '__main__':
     filename="/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/6901483/MR6901483_058.nc"
     F=BioFloat.from_file(filename)
 
-    print len(PROFILE_LIST)
+#    print len(PROFILE_LIST)
 
     for p in PROFILE_LIST[100:200]:
         Pres,V, Qc = p.read(var)
-        if Pres.min()>0:
-            print Pres.min()
+#        if Pres.min()>0:
+#            print Pres.min()
 
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:

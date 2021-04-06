@@ -56,6 +56,8 @@ TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR = LIST
 
 from basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
+  if (isub != 17):  # DO NOT CONSIDER ATLANTIC SUBBASIN
+#   if (sub.name != "adr1"):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')

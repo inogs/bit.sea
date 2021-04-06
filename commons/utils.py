@@ -170,12 +170,20 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
     '''
 
     headerstr="\t"
+    nrows,ncols=M.shape
     dtype = [('colnames','S20')]
-    for col_name in column_names_list:
-        dtype.append((col_name,np.float32))
+    if fmt.count("%") == 1:
+        fmtlist = [fmt for ii in range(ncols)]
+    else:
+        fmtlist = fmt.split()
+    typelist = []
+    for ii in range(ncols):
+        if 'f' in fmtlist[ii]: typelist.append(np.float32)
+        if 's' in fmtlist[ii]: typelist.append('S15')
+    for ii,col_name in enumerate(column_names_list):
+        dtype.append((col_name,typelist[ii]))
         headerstr = headerstr + col_name + "\t "
 
-    nrows,ncols=M.shape
     X = np.zeros((nrows,), dtype=dtype)
     for i in range(nrows):
         X['colnames'][i] = rows_names_list[i]

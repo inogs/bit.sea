@@ -54,3 +54,15 @@ Arguments:
 * -c CONF, --conf CONF     Configuration file path
 * -o OUT, --outfile OUT    Output file name
 * --dpi DPI                Output file DPI (default: 300)
+
+### Get cartopy
+
+Cartopy can be installed using the pip tool by doing:
+```bash
+pip install cartopy
+```
+Sometimes a segmentation fault can appear when running some projections. In that case the following fixes the issue:
+```bash
+pip uninstall shapely
+pip install --no-binary :all: shapely
+```

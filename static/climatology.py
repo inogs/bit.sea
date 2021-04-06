@@ -1,4 +1,6 @@
 from commons.time_interval import TimeInterval
+from commons import season
+from commons import timerequestors
 from Nutrients_reader import NutrientsReader
 from Carbon_reader import CarbonReader
 from instruments.var_conversions import NUTRVARS
@@ -25,7 +27,7 @@ def DatasetInfo(modelvarname):
     * var     * variable name to access dataset
     * dataset * NutrientsReader or Carbonreader object
     '''
-    if modelvarname in ['N1p','N3n','O2o','N5s']:
+    if modelvarname in ['N1p','N3n','O2o','N4n','N5s']:
         var =  NUTRVARS[modelvarname]
         dataset     = N
     if modelvarname in ['O3h', 'Ac', 'ALK'] :
@@ -40,7 +42,7 @@ def DatasetInfo(modelvarname):
     if modelvarname == 'pCO2' :
         var='pCO2'
         dataset = C
-    if modelvarname not in ['N1p','N3n','O2o','N5s','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
+    if modelvarname not in ['N1p','N3n','O2o','N4n','N5s','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
         raise ValueError("variable not in static dataset ")
     return var, dataset
 
@@ -68,27 +70,17 @@ def basin_expansion(sub, var):
     #assert var in ["N1p","N3n","N5s","O2o","O3c","O3h"]
     if var in ["pH", "PH", "pCO2"] : return sub
 
-    if (sub.name == "swm1"):
-        if var == "O2o":
-            return OGS.swm1
-        else:
-            return ComposedBasin('swm3', [OGS.alb, OGS.swm2], 'Neighbors of swm1')
-
     if (sub.name == "tyr1"):
-        if var in ["N5s","O2o","O3c","O3h"]: return OGS.tyr2
+        if var in ["O3c","O3h"]: return OGS.tyr2
         return OGS.tyr1
 
     if (sub.name == "adr1"):
-        if var in ["N3n", "O2o"]: return OGS.adr2
+        if var in ["N1p","N3n","N5s"]: return OGS.adr2
         return OGS.adr1
 
     if (sub.name == "ion1"):
-        if var in ["N3n", "O3c", "O3h"]: return ComposedBasin('ion4', [OGS.ion2, OGS.tyr2], 'Neighbors of ion1')
+        if var in ["N3n", "O3c", "O3h"]: return ComposedBasin('ion4', [OGS.swm2, OGS.ion2, OGS.tyr2], 'Neighbors of ion1')
         return OGS.ion1
-
-    if (sub.name == "lev3"):
-        if var in ["O3c","O3h"] : return ComposedBasin('lev5', [OGS.lev1, OGS.lev4], 'Neighbors of lev3')
-        return OGS.lev3
 
     return sub
 
@@ -119,10 +111,14 @@ def get_sub_indexes(sub_search):
 
 TI = TimeInterval("1997","2016","%Y")
 
-def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False):
+def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False,climseason=-1):
     '''
+    basin_expand=True: apply research of data in close sub-basins (see basin_expansion)
+    QC=True: exclude non-good subbasins (see QualityCheck)
+    climseason=-1 (deafult): any season choice
+    climseason=0,1,2,3: winter,spring,summer,autumn mean (standard seasons definition)
     Returns 
-    * CLIM * [nsub, nLayers] numpy array, a basic annual climatology
+    * CLIM * [nsub, nLayers] numpy array, a basic or seasonal climatology
     * STD  * [nsub, nLayers] numpy array, relative std values
     '''
     nSub    = len(subbasinlist)
@@ -131,8 +127,13 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
     var, Dataset = DatasetInfo(modelvarname)
     var_exp      = Internal_conversion(modelvarname)
+    if climseason==-1:
+        T_int = TI
+    if climseason in [0,1,2,3]:
+        S=season.season()
+        T_int = timerequestors.Clim_season(climseason,S)
     for isub, sub in enumerate(subbasinlist):
-        Profilelist =Dataset.Selector(var, TI, sub)
+        Profilelist =Dataset.Selector(var, T_int, sub)
         Pres  =np.zeros((0,),np.float32)
         Values=np.zeros((0,),np.float32)
         for p in Profilelist: 
@@ -174,9 +175,85 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     return CLIM, STD
 
 
+def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200, basin_expand=False, QC=False,climseason=-1):
+    '''
+    get climatolgy excluding coastal areas, it needs TheMask (a mask object)
+    limit depth for coastal areas (limdepth) is 200 by default
+    basin_expand=True: apply research of data in close sub-basins (see basin_expansion)
+    QC=True: exclude non-good subbasins (see QualityCheck)
+    climseason=-1 (deafult): any season choice
+    climseason=0,1,2,3: winter,spring,summer,autumn mean (standard seasons definition)
+    Returns 
+    * CLIM * [nsub, nLayers] numpy array, a basic or seasonal climatology
+    * STD  * [nsub, nLayers] numpy array, relative std values
+    '''
+    nSub    = len(subbasinlist)
+    nLayers = len(LayerList)
+    CLIM    = np.zeros((nSub, nLayers), np.float32)*np.nan
+    STD     = np.zeros((nSub, nLayers), np.float32)*np.nan
+    var, Dataset = DatasetInfo(modelvarname)
+    var_exp      = Internal_conversion(modelvarname)
+    mask200 = TheMask.mask_at_level(limdepth)
+
+    if climseason==-1:
+        T_int = TI
+    if climseason in [0,1,2,3]:
+        S=season.season()
+        T_int = timerequestors.Clim_season(climseason,S)
+    for isub, sub in enumerate(subbasinlist):
+        Profilelist =Dataset.Selector(var, T_int, sub)
+        Pres  =np.zeros((0,),np.float32)
+        Values=np.zeros((0,),np.float32)
+        for p in Profilelist: 
+            lonp = p.lon
+            latp = p.lat
+            ilon,ilat = TheMask.convert_lon_lat_to_indices(lonp,latp)
+            if mask200[ilat,ilon]:
+                pres, profile, _ = p.read(var)
+                Pres   = np.concatenate((Pres,pres))
+                Values = np.concatenate((Values,profile))
+        for ilayer, layer in enumerate(LayerList):
+            ii = (Pres>=layer.top) & (Pres<layer.bottom)
+            if (ii.sum()> 1 ) :
+                CLIM[isub, ilayer] = Values[ii].mean()
+                STD[isub, ilayer] = Values[ii].std()
+
+    if basin_expand:
+# 1. elimination nans by interpolation
+        nLayers=len(LayerList)
+        Layer_center=np.zeros((nLayers,),np.float32)
+        for i,l in enumerate(LayerList): Layer_center[i] = (l.top + l.bottom)/2
+        for isub, sub in enumerate(subbasinlist):
+            y = CLIM[isub,:]
+            nans= np.isnan(y)
+            z_good = Layer_center[~nans]
+            y_good = y[~nans]
+            if len(y_good) > 0:
+                CLIM[isub,:] = np.interp(Layer_center, z_good, y_good).astype(np.float32)
+# 2 apply expansion following Valeria's table
+        for isub, sub in enumerate(subbasinlist):
+            sub_search = basin_expansion(sub, var_exp)
+            INDEX_LIST=get_sub_indexes(sub_search)
+            print INDEX_LIST
+            CLIM[isub,:] = CLIM[INDEX_LIST,:].mean(axis=0)
+            STD [isub,:] =  STD[INDEX_LIST,:].mean(axis=0) # brutto ...
+    if QC:
+        for isub, sub in enumerate(subbasinlist):
+            is_good = QualityCheck(var_exp, sub)
+            if not is_good:
+                CLIM[isub,:] = np.nan
+                STD [isub,:] = np.nan
+
+    return CLIM, STD
+
+
+
+
 if __name__ == "__main__":
     from commons.layer import Layer
     PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list
     N1p_clim, N1p_std = get_climatology('N1p', SUBLIST, LayerList, basin_expand=True, QC=True)
+    N5s_clim, N5s_std = get_climatology('N5s', SUBLIST, LayerList, basin_expand=True, QC=True)
+    N4n_clim, N4n_std = get_climatology('N4n', SUBLIST, LayerList, basin_expand=True, QC=True)

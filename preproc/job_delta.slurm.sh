@@ -28,5 +28,3 @@ INGVMASK=/gpfs/work/IscrC_REBIOMED/REANALISI_24/PREPROC/MASK/ogstm/meshmask_INGV
 
 mpirun -np 40 python delta_t_from_uvw.py -i $INPUTDIR -o $OUTPUTDIR -m $INGVMASK
 
-#python decision_deltat.py -i $OUTPUTDIR
-

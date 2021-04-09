@@ -2,7 +2,12 @@ import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates timelist_a and timelist_s files
+    Generates a txt file for each forcing time
+    Example of name:
+       DeltaT_19990101-00:00:00.txt
+    Content:
+      900  703.634   37 138 298
+    ogstm.xx reads the first number, an integer which can be 600, 450, 360, 300
     ''')
     parser.add_argument(   '--inputdir', '-i',
                                 type = str,
@@ -15,7 +20,7 @@ def argument():
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 required = True,
-                                help = '/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/FORCINGS_CHECK/meshmask_INGV.nc')       
+                                help = '/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/FORCINGS_CHECK/meshmask_INGV.nc')
 
     return parser.parse_args()
 
@@ -49,6 +54,12 @@ for k in range(jpk):
     E2T[k,:,:] = TheMask.e2t
 
 
+def impose_deltat(deltaT):
+    if deltaT > 590: return 600
+    if deltaT > 440: return 450
+    if deltaT > 350: return 360
+    return 300
+
 
 
 TL=TimeList.fromfilenames(None, INPUTDIR, "U*nc", filtervar="U", prefix="U",hour=0)
@@ -59,7 +70,7 @@ Cmax=1.0
 
 
 nFrames=TL.nTimes
-mydtype=[('time','S8'), ('deltaT',np.float32),('K',np.int),('J',np.int),('I',np.int)]
+mydtype=[('Imposed_deltaT',np.int), ('deltaT',np.float32),('K',np.int),('J',np.int),('I',np.int)]
 
 FRAMES=range(nFrames)
 
@@ -84,13 +95,14 @@ for iframe in FRAMES[rank::nranks]:
     Fact = U/E1T + V/E2T + W/TheMask.e3t
     deltat = Cmax/Fact
     K,J,I = np.nonzero(deltat==deltat.min())
-    DELTAT[0]['deltaT']=deltat.min()
+    calculated_deltat = deltat.min()
+    DELTAT[0]['Imposed_deltaT']= impose_deltat(calculated_deltat)
+    DELTAT[0]['deltaT']=calculated_deltat
     DELTAT[0]['K']=K[0]
     DELTAT[0]['J']=J[0]
     DELTAT[0]['I']=I[0]
-    DELTAT[0]['time']=TL.Timelist[iframe].strftime("%Y%m%d")
-    outfile=OUTPUTDIR + "DeltaT_" + DELTAT[0]['time'] + ".txt"
-    np.savetxt(outfile, DELTAT,fmt="%s %10.3f %d %d %d")
+    outfile=OUTPUTDIR + "DeltaT_" + timestr + ".txt"
+    np.savetxt(outfile, DELTAT,fmt="%5d %10.3f %d %d %d")
     
 
 

@@ -55,9 +55,9 @@ for k in range(jpk):
 
 
 def impose_deltat(deltaT):
-    if deltaT > 590: return 600
-    if deltaT > 440: return 450
-    if deltaT > 350: return 360
+    if deltaT > 575: return 600
+    if deltaT > 435: return 450
+    if deltaT > 345: return 360
     return 300
 
 

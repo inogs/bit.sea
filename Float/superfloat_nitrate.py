@@ -181,14 +181,15 @@ if input_file == 'NO_file':
 	        print "depth < 100 for "+ F.filename
 	        continue
 
-            if pCor._my_float.status_var('NITRATE')=='D':
-	        dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+        os.system('mkdir -p ' + os.path.dirname(outfile))
+        if pCor._my_float.status_var('NITRATE')=='D':
+            dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
 
 
 	    if pCor._my_float.status_var('NITRATE')=='A':
 	        if superfloat_generator.exist_valid_variable('DOXY', outfile):
 	            DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
-		    os.system('mkdir -p ' + os.path.dirname(outfile))
+
 
 		    Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
 		    outOfClimatology = False
@@ -242,7 +243,6 @@ else:
 
         pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
         wmo=pCor._my_float.wmo
-        print wmo
 
         outfile = get_outfile(pCor,OUTDIR)
         F=pCor._my_float
@@ -262,6 +262,7 @@ else:
             print "few values for " + F.filename
             continue
 
+        os.system('mkdir -p ' + os.path.dirname(outfile))
         if pCor._my_float.status_var('NITRATE')=='D':
             dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
 
@@ -269,7 +270,7 @@ else:
         if pCor._my_float.status_var('NITRATE')=='A':
             if superfloat_generator.exist_valid_variable('DOXY', outfile):
                 DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
-                os.system('mkdir -p ' + os.path.dirname(outfile))
+
 
                 Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
                 outOfClimatology = False

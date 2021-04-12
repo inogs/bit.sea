@@ -246,7 +246,6 @@ else:
 
 	p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
 	wmo=p._my_float.wmo
-	print wmo
 	#OUT_O2o = ["6901510"]
 	OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
 

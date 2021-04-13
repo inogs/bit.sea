@@ -155,60 +155,58 @@ if input_file == 'NO_file':
 
     for wmo in wmo_list:
         print wmo
-        # should be filtered 6901653, 6901655, 6901657 6901649, 6901764 6903197 6901605
-	    #1529 1513 1511 1863 1862 1860 1864 1776 1775 0807 0591
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
-	    F=pCor._my_float
-	    writing_mode='w'
-	    if superfloat_generator.exist_valid(outfile): writing_mode='a'
+        F=pCor._my_float
+        writing_mode='w'
+        if superfloat_generator.exist_valid(outfile): writing_mode='a'
 
-	    condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
-	    if force_writing_nitrate: condition_to_write=True
+        condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
+        if force_writing_nitrate: condition_to_write=True
 
-	    metatata = superfloat_generator.Metadata('coriolis',F.filename)
+        metatata = superfloat_generator.Metadata('coriolis',F.filename)
 
-	    if not condition_to_write: continue
-	    if pCor._my_float.status_var('NITRATE')=='R': continue
+        if not condition_to_write: continue
+        if pCor._my_float.status_var('NITRATE')=='R': continue
 
-	    Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
-	    nP=len(Pres)
-	    if nP<5 :
-	        print "few values for " + F.filename
-	        continue
-	    if Pres[-1]<100:
-	        print "depth < 100 for "+ F.filename
-	        continue
+        Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
+        nP=len(Pres)
+        if nP<5 :
+            print "few values for " + F.filename
+            continue
+        if Pres[-1]<100:
+            print "depth < 100 for "+ F.filename
+            continue
 
         os.system('mkdir -p ' + os.path.dirname(outfile))
         if pCor._my_float.status_var('NITRATE')=='D':
             dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
 
 
-	    if pCor._my_float.status_var('NITRATE')=='A':
-	        if superfloat_generator.exist_valid_variable('DOXY', outfile):
-	            DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
+        if pCor._my_float.status_var('NITRATE')=='A':
+            if superfloat_generator.exist_valid_variable('DOXY', outfile):
+                DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
 
 
-		    Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
-		    outOfClimatology = False
-		    for ilayer, layer in enumerate(LayerList):
-		        if (t_lev >= layer.top) & (t_lev < layer.bottom) :
-		            for iSub,sub in enumerate(SUBLIST):
-			        if sub.is_inside(pCor.lon,pCor.lat):
-	                            if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
+            Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
+            outOfClimatology = False
+            for ilayer, layer in enumerate(LayerList):
+                if (t_lev >= layer.top) & (t_lev < layer.bottom) :
+                    for iSub,sub in enumerate(SUBLIST):
+                        if sub.is_inside(pCor.lon,pCor.lat):
+                            if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
 
-		    if outOfClimatology:
-		        print "Out of climatology for " + F.filename
-		        continue
-		    dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
-		else:
-		    if Pres[-1]>600:
-		        Pres, Values, Qc = woa_nitrate_correction(pCor)
-		        dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
-		    else:
-		        print "WOA correction not applicable for max(depth) < 600 m"
+            if outOfClimatology:
+                print "Out of climatology for " + F.filename
+                continue
+            dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+        else:
+            if Pres[-1]>600:
+                Pres, Values, Qc = woa_nitrate_correction(pCor)
+                dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
+            else:
+                print "WOA correction not applicable for max(depth) < 600 m"
 
 else:
     OUTDIR = addsep(args.outdir)

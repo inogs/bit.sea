@@ -125,35 +125,35 @@ def get_outfile(p,outdir):
 input_file=args.update_file
 if input_file == 'NO_file':
 
-OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-force_writing_par=args.force
+    OUTDIR = addsep(args.outdir)
+    TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    force_writing_par=args.force
 
-PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
+    PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 
-wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
+    wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
 
 
-for wmo in wmo_list:
-    print wmo
-    Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
-        outfile = get_outfile(pCor,OUTDIR)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
+    for wmo in wmo_list:
+        print wmo
+        Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, pCor in enumerate(Profilelist):
+            outfile = get_outfile(pCor,OUTDIR)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if superfloat_generator.exist_valid(outfile):
-            if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-            else:
-                if force_writing_par:
+            if superfloat_generator.exist_valid(outfile):
+                if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
                     Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
                     if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-        else:
-            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-            if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                else:
+                    if force_writing_par:
+                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+                        if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+            else:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+                if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 
 else:

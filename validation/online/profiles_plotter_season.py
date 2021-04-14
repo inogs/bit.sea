@@ -105,7 +105,8 @@ class plot_container():
             y = self.values[:,iSub,iCoast, idepth,0]
             datescurrentY = []
             for tt in self.timelist:
-                ddY = tt.replace(year=currentyear)
+                if (tt.month,tt.day) != (2,29):  
+                    ddY = tt.replace(year=currentyear)
                 datescurrentY.append(ddY)
             if ~np.isnan(y).all():
                 # ax.plot(self.timelist,y,self.plotargs, label=self.name)

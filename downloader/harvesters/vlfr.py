@@ -1,2 +1,0 @@
-username="poteau"
-password="poteau"

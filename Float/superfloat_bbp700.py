@@ -47,7 +47,7 @@ from commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
+import datetime
 
 
 def dump_bbp700_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
@@ -125,41 +125,40 @@ def get_outfile(p,outdir):
 input_file=args.update_file
 if input_file == 'NO_file':
 
-OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-force_writing_bbp=args.force
+    OUTDIR = addsep(args.outdir)
+    TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    force_writing_bbp=args.force
 
-PROFILES_COR =bio_float.FloatSelector('BBP700', TI, R)
+    PROFILES_COR =bio_float.FloatSelector('BBP700', TI, R)
 
-wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
+    wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
 
 
 
-for wmo in wmo_list:
-    print wmo
-    Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
-        outfile = get_outfile(pCor,OUTDIR)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
+    for wmo in wmo_list:
+        print wmo
+        Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, pCor in enumerate(Profilelist):
+            outfile = get_outfile(pCor,OUTDIR)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if superfloat_generator.exist_valid(outfile):
-            if not superfloat_generator.exist_variable('BBP700', outfile):
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-            else:
-                if force_writing_bbp:
+            if superfloat_generator.exist_valid(outfile):
+                if not superfloat_generator.exist_variable('BBP700', outfile):
                     Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                     if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-        else:
-            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-            if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                else:
+                    if force_writing_bbp:
+                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+                        if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+            else:
+                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+                if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 else:
 
     OUTDIR = addsep(args.outdir)
-#    force_writing_oxygen=args.force
     mydtype= np.dtype([
         ('file_name','S200'),
         ('date','S200'),
@@ -184,21 +183,19 @@ else:
         parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
-    
-        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-        outfile = get_outfile(pCor,OUTDIR)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
 
-        if superfloat_generator.exist_valid(outfile):
-            if not superfloat_generator.exist_variable('BBP700', outfile):
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+        if  'BBP700' in available_params:
+            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+            outfile = get_outfile(pCor,OUTDIR)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            if pCor._my_float.status_var('BBP700') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
             else:
-                if force_writing_bbp:
-                    Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                    if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-        else:
-            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-            if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            if Pres is None: continue # no data
+
+            writing_mode='w'
+            if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 

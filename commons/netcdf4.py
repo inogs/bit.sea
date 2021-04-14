@@ -109,7 +109,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         setattr(ncvar,'axis'         ,'Z')
         setattr(ncvar,'valid_min'    , mask.zlevels.min())
         setattr(ncvar,'valid_max'    , mask.zlevels.max())
-        ncvar[:] = TheMask.zlevels
+        ncvar[:] = mask.zlevels
 
         dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
         ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)

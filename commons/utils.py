@@ -143,7 +143,7 @@ def getcolor(ntimes,itime, colormap='gist_ncar'):
     c = getcolor(10,0)
     ax.plot(x,y,color=c)  
     '''
-    import pylab as pl
+    import matplotlib.pyplot as pl
     cmap = pl.cm.get_cmap(colormap)
     fact = float(itime)/ntimes
     rgba = cmap(fact)

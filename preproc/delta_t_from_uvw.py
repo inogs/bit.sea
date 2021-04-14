@@ -62,7 +62,7 @@ def impose_deltat(deltaT):
 
 
 
-TL=TimeList.fromfilenames(None, INPUTDIR, "U*nc", filtervar="U", prefix="U",hour=0)
+TL=TimeList.fromfilenames(None, INPUTDIR, "U*nc", prefix="U",hour=0)
 eps=1.e-08
 Cmax=1.0
 

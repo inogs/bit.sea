@@ -23,10 +23,21 @@ def argument():
                                 action='store_true',
                                 help = """Overwrite existing files
                                 """)
-
+    parser.add_argument(   '--update_file','-u',
+                                type = str,
+                                required = False,
+                                default = 'NO_file',
+                                help = '''file with updated floats''')
     return parser.parse_args()
 
 args = argument()
+
+if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass either datastart and dataeend or the update_file")
+
+if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
+
 
 from instruments import bio_float
 from instruments import lovbio_float
@@ -37,8 +48,7 @@ from commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
-
+import datetime
 
 def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     nP=len(Pres)
@@ -107,6 +117,13 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 
     os.system("mv " + outfile + ".tmp " + outfile)
 
+def get_outfile(p,outdir):
+    wmo=p._my_float.wmo
+    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
+    return filename
+
+input_file=args.update_file
+if input_file == 'NO_file':
 
 OUTDIR = addsep(args.outdir)
 TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
@@ -117,12 +134,6 @@ PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 
 wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
 
-
-
-def get_outfile(p,outdir):
-    wmo=p._my_float.wmo
-    filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
-    return filename
 
 for wmo in wmo_list:
     print wmo
@@ -143,4 +154,49 @@ for wmo in wmo_list:
         else:
             Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
             if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+
+
+else:
+
+    OUTDIR = addsep(args.outdir)
+    mydtype= np.dtype([
+        ('file_name','S200'),
+        ('date','S200'),
+        ('latitude',np.float32),
+        ('longitude',np.float32),
+        ('ocean','S10'),
+        ('profiler_type',np.int),
+        ('institution','S10'),
+        ('parameters','S200'),
+        ('parameter_data_mode','S100'),
+        ('date_update','S200')] )
+
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
+    nFiles=INDEX_FILE.size
+
+    for iFile in range(nFiles):
+        timestr          = INDEX_FILE['date'][iFile]
+        lon              = INDEX_FILE['longitude' ][iFile]
+        lat              = INDEX_FILE['latitude' ][iFile]
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+        filename=filename.replace('coriolis/','').replace('profiles/','')
+
+        if  'DOWNWELLING_PAR' in available_params:
+            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+            outfile = get_outfile(pCor,OUTDIR)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+            else:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            if Pres is None: continue # no data
+
+            writing_mode='w'
+            if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+
 

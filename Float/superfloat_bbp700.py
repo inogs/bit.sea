@@ -119,7 +119,7 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
+    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
 input_file=args.update_file

@@ -8,11 +8,11 @@ def argument():
 
     parser.add_argument(   '--datestart','-s',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,

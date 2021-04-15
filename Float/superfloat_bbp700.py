@@ -132,7 +132,7 @@ if input_file == 'NO_file':
 
     PROFILES_COR =bio_float.FloatSelector('BBP700', TI, R)
 
-    wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
 
 

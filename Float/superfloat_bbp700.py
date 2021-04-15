@@ -39,7 +39,7 @@ if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
 from instruments import bio_float
-from instruments import lovbio_float
+#from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator

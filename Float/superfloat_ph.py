@@ -196,5 +196,5 @@ else:
 
             writing_mode='w'
             if superfloat_generator.exist_valid(outfile): writing_mode='a'
-            dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+            dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 

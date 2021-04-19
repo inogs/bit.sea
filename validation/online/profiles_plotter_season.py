@@ -213,7 +213,7 @@ class figure_generator():
 datetoday = date.strptime(args.rundate,'%Y%m%d')
 
 year = datetoday.year
-LISTyear = np.arange(year-3,year+1)
+LISTyear = np.arange(year-2,year+1)
 
 PATH = {}
 for yy in LISTyear:

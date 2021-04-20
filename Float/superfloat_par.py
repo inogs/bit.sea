@@ -40,7 +40,6 @@ if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update
 
 
 from instruments import bio_float
-#from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
@@ -50,7 +49,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 
-def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
+def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
     if mode=='a':
         command = "cp %s %s.tmp" %(outfile,outfile)

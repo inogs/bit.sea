@@ -146,14 +146,23 @@ if input_file == 'NO_file':
 
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('BBP700', outfile):
-                    Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+                    if pCor._my_float.status_var('BBP700') in ['A', 'D']:
+                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
+                    else
+                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                     if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_bbp:
-                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+                        if pCor._my_float.status_var('BBP700') in ['A', 'D']:
+                            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
+                        else
+                            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                         if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+                if pCor._my_float.status_var('BBP700') in ['A', 'D']:
+                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
+                else
+                    Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
                 if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 else:

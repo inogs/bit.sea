@@ -145,14 +145,23 @@ if input_file == 'NO_file':
 
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
-                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+                    if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+                    else
+                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
                     if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_par:
-                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+                        if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+                        else
+                            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
                         if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+                if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+                else
+                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
                 if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 

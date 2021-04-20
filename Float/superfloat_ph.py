@@ -144,14 +144,23 @@ if input_file == 'NO_file':
 
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('PH_IN_SITU_TOTAL', outfile):
-                    Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+                    if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
+                        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
+                    else
+                        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                     if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_ph:
-                        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+                        if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
+                            Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
+                        else
+                            Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                         if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+                if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
+                    Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
+                else
+                    Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
                 if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 

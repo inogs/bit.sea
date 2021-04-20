@@ -144,26 +144,21 @@ if input_file == 'NO_file':
             metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
             os.system('mkdir -p ' + os.path.dirname(outfile))
 
+            if pCor._my_float.status_var('BBP700') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
+            else:
+                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+
+            if Pres is None: continue
+
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('BBP700', outfile):
-                    if pCor._my_float.status_var('BBP700') in ['A', 'D']:
-                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
-                    else
-                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                    if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                    dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_bbp:
-                        if pCor._my_float.status_var('BBP700') in ['A', 'D']:
-                            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
-                        else
-                            Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                        if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                        dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                if pCor._my_float.status_var('BBP700') in ['A', 'D']:
-                        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
-                else
-                    Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-                if Pres is not None: dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 else:
 

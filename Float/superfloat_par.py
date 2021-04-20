@@ -143,26 +143,21 @@ if input_file == 'NO_file':
             metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
             os.system('mkdir -p ' + os.path.dirname(outfile))
 
+            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+            else:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+            
+            if Pres is None: continue
+
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
-                    if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
-                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
-                    else
-                        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                    if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                    dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_par:
-                        if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
-                            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
-                        else
-                            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                        if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                        dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
-                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
-                else
-                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 
 else:

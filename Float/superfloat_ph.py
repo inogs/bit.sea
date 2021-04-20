@@ -142,26 +142,21 @@ if input_file == 'NO_file':
             metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
             os.system('mkdir -p ' + os.path.dirname(outfile))
 
+            if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
+            else:
+                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+
+            if Pres is None: continue
+
             if superfloat_generator.exist_valid(outfile):
                 if not superfloat_generator.exist_variable('PH_IN_SITU_TOTAL', outfile):
-                    if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
-                        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
-                    else
-                        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
-                    if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                    dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
                 else:
                     if force_writing_ph:
-                        if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
-                            Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
-                        else
-                            Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
-                        if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                        dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
             else:
-                if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
-                    Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
-                else
-                    Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
-                if Pres is not None: dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
 
 
 else:

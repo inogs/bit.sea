@@ -8,11 +8,11 @@ def argument():
 
     parser.add_argument(   '--datestart','-s',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--dateend','-e',
                                 type = str,
-                                required = True,
+                                required = False,
                                 help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
                                 type = str,
@@ -23,13 +23,23 @@ def argument():
                                 action='store_true',
                                 help = """Overwrite existing files
                                 """)
-
+    parser.add_argument(   '--update_file','-u',
+                                type = str,
+                                required = False,
+                                default = 'NO_file',
+                                help = '''file with updated floats''')
     return parser.parse_args()
 
 args = argument()
 
+if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass either datastart and dataeend or the update_file")
+
+if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
+    raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
+
+
 from instruments import bio_float
-from instruments import lovbio_float
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import superfloat_generator
@@ -37,10 +47,9 @@ from commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
+import datetime
 
-
-def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
+def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
     if mode=='a':
         command = "cp %s %s.tmp" %(outfile,outfile)
@@ -107,40 +116,90 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 
     os.system("mv " + outfile + ".tmp " + outfile)
 
-
-OUTDIR = addsep(args.outdir)
-TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-R = Rectangle(-6,36,30,46)
-force_writing_par=args.force
-
-PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
-
-wmo_list= lovbio_float.get_wmo_list(PROFILES_COR)
-
-
-
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/MR%s_%03d.nc" %(outdir,wmo, wmo,p._my_float.cycle)
+    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
-for wmo in wmo_list:
-    print wmo
-    Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-    for ip, pCor in enumerate(Profilelist):
-        outfile = get_outfile(pCor,OUTDIR)
-        metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        os.system('mkdir -p ' + os.path.dirname(outfile))
+input_file=args.update_file
+if input_file == 'NO_file':
 
-        if superfloat_generator.exist_valid(outfile):
-            if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+    OUTDIR = addsep(args.outdir)
+    TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    force_writing_par=args.force
+
+    PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
+
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+
+
+    for wmo in wmo_list:
+        print wmo
+        Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, pCor in enumerate(Profilelist):
+            outfile = get_outfile(pCor,OUTDIR)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+
+            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
             else:
-                if force_writing_par:
-                    Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-                    if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-        else:
-            Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-            if Pres is not None: dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+            
+            if Pres is None: continue
+
+            if superfloat_generator.exist_valid(outfile):
+                if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
+                    dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+                else:
+                    if force_writing_par:
+                        dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
+            else:
+                dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+
+
+else:
+
+    OUTDIR = addsep(args.outdir)
+    mydtype= np.dtype([
+        ('file_name','S200'),
+        ('date','S200'),
+        ('latitude',np.float32),
+        ('longitude',np.float32),
+        ('ocean','S10'),
+        ('profiler_type',np.int),
+        ('institution','S10'),
+        ('parameters','S200'),
+        ('parameter_data_mode','S100'),
+        ('date_update','S200')] )
+
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
+    nFiles=INDEX_FILE.size
+
+    for iFile in range(nFiles):
+        timestr          = INDEX_FILE['date'][iFile]
+        lon              = INDEX_FILE['longitude' ][iFile]
+        lat              = INDEX_FILE['latitude' ][iFile]
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+        filename=filename.replace('coriolis/','').replace('profiles/','')
+
+        if  'DOWNWELLING_PAR' in available_params:
+            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+            outfile = get_outfile(pCor,OUTDIR)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+            else:
+                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            if Pres is None: continue # no data
+
+            writing_mode='w'
+            if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+
 

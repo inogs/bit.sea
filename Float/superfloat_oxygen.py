@@ -184,35 +184,35 @@ if input_file == 'NO_file':
 
 
     for wmo in wmo_list:
-         print wmo
-         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-	 for ip, p in enumerate(Profilelist):
-	     outfile = get_outfile(p,OUTDIR)
-	     if p._my_float.status_var('DOXY')=='R': continue
+        print wmo
+        Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        for ip, p in enumerate(Profilelist):
+            outfile = get_outfile(p,OUTDIR)
+            if p._my_float.status_var('DOXY')=='R': continue
 
-	     writing_mode='w'
-	     if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            writing_mode='w'
+            if superfloat_generator.exist_valid(outfile): writing_mode='a'
 
-	     condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
-	     if force_writing_oxygen: condition_to_write=True
+            condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
+            if force_writing_oxygen: condition_to_write=True
 
-	     if not condition_to_write: continue
-	     Pres, Value, Qc = read_doxy(p)
-	     if Pres is None: continue
-
-
-	     if p._my_float.status_var('DOXY')=='D':
-	         condition_to_write = True
-	     else: # case 'A'
-	         condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+            if not condition_to_write: continue
+            Pres, Value, Qc = read_doxy(p)
+            if Pres is None: continue
 
 
-	     if condition_to_write:
-	         metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
-	         os.system('mkdir -p ' + os.path.dirname(outfile))
-	         dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-	     else:
-	         print "Saturation Test not passed"
+            if p._my_float.status_var('DOXY')=='D':
+                condition_to_write = True
+            else: # case 'A'
+                condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+
+
+            if condition_to_write:
+                metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
+                os.system('mkdir -p ' + os.path.dirname(outfile))
+                dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+            else:
+                print "Saturation Test not passed"
 else:
     OUTDIR = addsep(args.outdir)
 #    force_writing_oxygen=args.force
@@ -228,7 +228,7 @@ else:
         ('parameter_data_mode','S100'),
         ('date_update','S200')] )
 
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
@@ -242,16 +242,12 @@ else:
         filename=filename.replace('coriolis/','').replace('profiles/','')
 
 
-	if 'DOXY' not in available_params: continue
+        if 'DOXY' not in available_params: continue
+        p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+        wmo=p._my_float.wmo
+        OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
 
-	p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-	wmo=p._my_float.wmo
-	print wmo
-	#OUT_O2o = ["6901510"]
-	OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
-
-	if wmo in OUT_O2o: continue
-
+        if wmo in OUT_O2o: continue
         outfile = get_outfile(p,OUTDIR)
         if p._my_float.status_var('DOXY')=='R': continue
 

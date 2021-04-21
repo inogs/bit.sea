@@ -14,7 +14,7 @@ mydtype= np.dtype([
           ('lon',np.float32),
           ('time','S17'),
           ('parameters','S200')] )
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/"
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V7C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + "SUPERFLOAT/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)

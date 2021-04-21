@@ -105,7 +105,8 @@ class plot_container():
             y = self.values[:,iSub,iCoast, idepth,0]
             datescurrentY = []
             for tt in self.timelist:
-                ddY = tt.replace(year=currentyear)
+                if (tt.month,tt.day) != (2,29):  
+                    ddY = tt.replace(year=currentyear)
                 datescurrentY.append(ddY)
             if ~np.isnan(y).all():
                 # ax.plot(self.timelist,y,self.plotargs, label=self.name)
@@ -212,7 +213,7 @@ class figure_generator():
 datetoday = date.strptime(args.rundate,'%Y%m%d')
 
 year = datetoday.year
-LISTyear = np.arange(year-3,year+1)
+LISTyear = np.arange(year-2,year+1)
 
 PATH = {}
 for yy in LISTyear:

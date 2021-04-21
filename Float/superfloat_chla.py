@@ -86,6 +86,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
  
     
     ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
+    ncvar[:] = Temp
     setattr(ncvar, 'origin'     , metadata.origin)
     setattr(ncvar, 'file_origin', metadata.filename)
     setattr(ncvar, 'variable'   , 'TEMP')
@@ -156,7 +157,7 @@ else:
         ('parameter_data_mode','S100'),
         ('date_update','S200')] )
 
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=0)
+    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
@@ -169,13 +170,13 @@ else:
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
         
-	if 'CHLA' in available_params:	
-        	pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-        	outfile = get_outfile(pCor, OUTDIR)
-        	os.system('mkdir -p ' + os.path.dirname(outfile))
-        	Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
-        	metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-        	if Pres is None: continue # no data
-        	dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
-	else:
-		continue
+        if 'CHLA' in available_params:
+            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+            outfile = get_outfile(pCor, OUTDIR)
+            os.system('mkdir -p ' + os.path.dirname(outfile))
+            Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            if Pres is None: continue # no data
+            dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
+        else:
+            continue

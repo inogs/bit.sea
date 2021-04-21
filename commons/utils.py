@@ -4,7 +4,6 @@ from __future__ import print_function
 import os,sys
 import numpy as np
 import re
-import matplotlib.pyplot as pl
 """Helper functions"""
 
 def deblank(str):
@@ -144,6 +143,7 @@ def getcolor(ntimes,itime, colormap='gist_ncar'):
     c = getcolor(10,0)
     ax.plot(x,y,color=c)  
     '''
+    import matplotlib.pyplot as pl
     cmap = pl.cm.get_cmap(colormap)
     fact = float(itime)/ntimes
     rgba = cmap(fact)

@@ -18,7 +18,8 @@ def argument():
     
     parser.add_argument(   '--climafile','-c',
                                 type = str,
-                                required = True)
+                                default = None,
+                                required = False)
 
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
@@ -65,7 +66,8 @@ def weighted_var(Conc, Weight):
 
 
 modfile =args.modelfile
-climafile = args.climafile
+if args.climafile is not None:
+    climafile = args.climafile
 satfile=args.satfile
 outfile = args.outfile
 
@@ -81,6 +83,7 @@ SUB = np.zeros((jpj,jpi),dtype=dtype)
 
 for sub in OGS.Pred:
     SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
+    if 'atl' in sub.name: continue
     SUB['med'] = SUB['med'] | SUB[sub.name]
 
 
@@ -91,16 +94,15 @@ dtype = [(coast, np.bool) for coast in COASTNESS_LIST]
 COASTNESS = np.ones((jpj,jpi),dtype=dtype)
 COASTNESS['coast']     = ~mask200_2D
 COASTNESS['open_sea']  =  mask200_2D
-#COASTNESS['everywhere'] = True;
+
 
 De = DataExtractor(TheMask,filename=modfile,varname='P_l',dimvar=2)
-# Model = De.values[0,:,:]
 Model = De.values[:,:]
 
-Declim = DataExtractor(TheMask,filename=climafile,varname='P_l',dimvar=2)
-Clima = Declim.values[:,:]
+if args.climafile is not None:
+    Declim = DataExtractor(TheMask,filename=climafile,varname='P_l',dimvar=2)
+    Clima = Declim.values[:,:]
 try:
-#    Sat24 = Sat.readfromfile(satfile,'lchlm') # weekly
     Sat24 = Sat.readfromfile(satfile,'CHL') # weekly
 except:
     Sat24 = Sat.convertinV4format(Sat.readfromfile(satfile, 'CHL'))  # daily
@@ -145,14 +147,13 @@ for icoast, coast in enumerate(COASTNESS_LIST):
             BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast]  = M.RMSE()
             BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub,icoast] = M.bias()
             BGC_CLASS4_CHL_CORR_SURF_BASIN[isub,icoast] = M.correlation()
-                 
+
             weight = TheMask.area[selection]
             MODEL_MEAN[isub,icoast] = weighted_mean( M.Model,weight)
             SAT___MEAN[isub,icoast] = weighted_mean( M.Ref,  weight)
             MODEL_VARIANCE[isub,icoast] = weighted_var( M.Model,weight)
             SAT___VARIANCE[isub,icoast] = weighted_var( M.Ref,  weight)
-            # _,varianceCheck[isub,icoast] = M.variances()
-        
+
             Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat24[selection])) #add matchup based on logarithm
             BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[isub,icoast]  = Mlog.RMSE()
             BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[isub,icoast] = Mlog.bias()
@@ -163,13 +164,14 @@ for icoast, coast in enumerate(COASTNESS_LIST):
             MODEL_VARIANCE_LOG[isub,icoast] = weighted_var( Mlog.Model,weight)
             SAT___VARIANCE_LOG[isub,icoast] = weighted_var( Mlog.Ref,  weight)
 
-            Mclima = matchup.matchup(Model[selection]-Clima[selection],  \
-                                     Sat24[selection]-Clima[selection])
-            ANOMALY_CORR[isub,icoast] = Mclima.correlation()
-            
-            Mclima_log = matchup.matchup(np.log10(Model[selection])-np.log10(Clima[selection]), \
-                                         np.log10(Sat24[selection])-np.log10(Clima[selection]))
-            ANOMALY_CORR_LOG[isub,icoast] = Mclima_log.correlation()
+            if args.climafile is not None:
+                Mclima = matchup.matchup(Model[selection]-Clima[selection],  \
+                                        Sat24[selection]-Clima[selection])
+                ANOMALY_CORR[isub,icoast] = Mclima.correlation()
+
+                Mclima_log = matchup.matchup(np.log10(Model[selection])-np.log10(Clima[selection]), \
+                                            np.log10(Sat24[selection])-np.log10(Clima[selection]))
+                ANOMALY_CORR_LOG[isub,icoast] = Mclima_log.correlation()
         else:
             BGC_CLASS4_CHL_RMS_SURF_BASIN[isub,icoast] = np.nan
             BGC_CLASS4_CHL_BIAS_SURF_BASIN[isub,icoast]= np.nan
@@ -191,14 +193,13 @@ for icoast, coast in enumerate(COASTNESS_LIST):
             ANOMALY_CORR_LOG[isub,icoast] = np.nan
 
 
-
 ncOUT = NC.netcdf_file(outfile,'w')
 ncOUT.createDimension('nsub', nSUB)
 ncOUT.createDimension('ncoast', nCOAST)
-s='';
+s=''
 for sub in OGS.P: s =s+sub.name + ","
 setattr(ncOUT,'sublist',s)
-s='';
+s=''
 for coast in COASTNESS_LIST: s =s+coast + ","
 setattr(ncOUT,'coastlist',s)
 
@@ -248,11 +249,12 @@ ncvar[:] = MODEL_VARIANCE_LOG
 ncvar=ncOUT.createVariable('SAT___VARIANCE_LOG', 'f', ('nsub','ncoast'))
 ncvar[:] = SAT___VARIANCE_LOG
 
-ncvar=ncOUT.createVariable('ANOMALY_CORRELATION', 'f', ('nsub','ncoast'))
-ncvar[:] = ANOMALY_CORR
+if args.climafile is not None:
+    ncvar=ncOUT.createVariable('ANOMALY_CORRELATION', 'f', ('nsub','ncoast'))
+    ncvar[:] = ANOMALY_CORR
 
-ncvar=ncOUT.createVariable('ANOMALY_CORRELATION_LOG', 'f', ('nsub','ncoast'))
-ncvar[:] = ANOMALY_CORR_LOG
+    ncvar=ncOUT.createVariable('ANOMALY_CORRELATION_LOG', 'f', ('nsub','ncoast'))
+    ncvar[:] = ANOMALY_CORR_LOG
 
 ncOUT.close()
     

@@ -667,7 +667,7 @@ class TimeList():
         Merged_List=list(np.unique(Merged_List))
         return Merged_List
 
-    def find(self,datetimeObj):
+    def find(self,datetimeObj,returndiff=False):
         '''
         Finds the nearest
         Argument:
@@ -678,7 +678,10 @@ class TimeList():
         for i, d in enumerate(self.Timelist):
             diff=d-datetimeObj
             D[i]=np.abs(diff.total_seconds())
-        return D.argmin()
+        if returndiff:
+            return D.argmin(),D[D.argmin()]
+        else:
+            return D.argmin()
 
 
 

@@ -50,6 +50,7 @@ INCHECKDIR = addsep(args.statsdir)
 OUTDIR = addsep(args.outdir)
 SUBMASKDIR = addsep(args.submaskdir)
 
+V2.P.basin_list = V2.P.basin_list[:-1] # removing Atlantic
 
 TLmis = TimeList.fromfilenames(None,INDIR,'*.npy',
             prefix='',dateformat='%Y%m%d')

@@ -199,11 +199,26 @@ class BioFloat(Instrument):
            * origin      * string, "lov" or "Coriolis"
            * file_origin * string , path of the source file
         '''
+        class Info():
+            def __init__(self):
+                self.file_orig   = "None"
+                self.correction = "None"
+                self.shift      = "None"
+                self.status_var = 'n'
+            
+
+        info = Info()
+
         ncIN=NC.netcdf_file(self.filename,'r')
-        origin=ncIN.variables[var].origin
-        file_origin=ncIN.variables[var].file_origin
+        info.status_var=ncIN.variables[var].status_var
+        info.file_orig=ncIN.file_origin
+        
+        if var=='NITRATE':
+            info.shift=ncIN.variables[var].bottomshift
+            info.correction=ncIN.variables[var].correction
         ncIN.close()
-        return origin, file_origin
+        
+        return info
 
 
     def basicplot(self,Pres,profile):
@@ -360,8 +375,10 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/6901483/MR6901483_058.nc"
+    filename="/gpfs/scratch/userexternal/gbolzon0/V7C/DEBUG_SUPERFLOAT/ONLINE/SUPERFLOAT/6902969/SR6902969_001.nc"
     F=BioFloat.from_file(filename)
+    import sys
+    sys.exit()
 
 #    print len(PROFILE_LIST)
 

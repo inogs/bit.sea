@@ -55,6 +55,15 @@ import datetime
 
 import basins.V2 as basV2
 from static.climatology import get_climatology
+
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.correction = "None"
+        self.shift      = "None"
+        self.status_var = 'n'
+
+
 SUBLIST = basV2.P.basin_list
 LayerList=[Layer(400,600),Layer(600,800),Layer(800,1000)]
 N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
@@ -84,6 +93,8 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
         os.system(command)
     ncOUT = NC.netcdf_file(outfile + ".tmp",mode)
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+        setattr(ncOUT, 'origin'     , 'coriolis')
+        setattr(ncOUT, 'file_origin', metadata.filename)
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
         ncOUT.createDimension("DATETIME",14)
@@ -103,8 +114,6 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
 
         ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
         ncvar[:]=Temp
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'TEMP')
         setattr(ncvar, 'units'      , "degree_Celsius")
         ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
@@ -114,8 +123,6 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
 
         ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
         ncvar[:]=Sali
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'SALI')
         setattr(ncvar, 'units'      , "PSS78")
         ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
@@ -130,15 +137,67 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("NITRATE", 'f', ('nNITRATE',))
     ncvar[:]=Value
-    if not nitrate_already_existing:
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
-        setattr(ncvar, 'variable'   , 'SR_NO3_ADJUSTED')
-        setattr(ncvar, 'units'      , "mmol/m3")
+    setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'correction' , metadata.correction)
+    setattr(ncvar, 'bottomshift', metadata.shift)
+    setattr(ncvar, 'units'      , "mmol/m3")
     ncvar=ncOUT.createVariable("NITRATE_QC", 'f', ('nNITRATE',))
     ncvar[:]=Qc
     ncOUT.close()
     os.system("mv " + outfile + ".tmp " + outfile)
+
+
+
+def nitrate_algorithm(p, outfile, metadata, writing_mode):
+    F = p._my_float
+    if F.status_var('NITRATE')=='R': return
+
+    Pres, Value, Qc= p.read("NITRATE", read_adjusted=True)
+    nP=len(Pres)
+    if nP<5 :
+        print "few values for " + F.filename
+        return
+    if Pres[-1]<100:
+        print "few values for " + F.filename
+        return
+
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+    if p._my_float.status_var('NITRATE')=='D':
+        metadata.status_var = 'D'
+        dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+        return
+
+
+    if p._my_float.status_var('NITRATE')=='A':
+        metadata.status_var="A"
+        if superfloat_generator.exist_valid_variable('DOXY', outfile):
+            DOXYp, DOXY, _ = p.read('DOXY',read_adjusted=True)
+
+
+            Pres, Value, Qc, t_lev, nit, shift = canyon_nitrate_correction(p, Pres, Value, Qc, DOXYp, DOXY)
+            metadata.correction = "Canyon-b"
+            metadata.shift      = shift
+            outOfClimatology = False
+            for ilayer, layer in enumerate(LayerList):
+                if (t_lev >= layer.top) & (t_lev < layer.bottom) :
+                    for iSub,sub in enumerate(SUBLIST):
+                        if sub.is_inside(p.lon,p.lat):
+                            if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
+
+            if outOfClimatology:
+                    print "Out of climatology for " + F.filename
+                    return
+            dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+        else:
+            if Pres[-1]>600:
+                Pres, Value, Qc, shift = woa_nitrate_correction(p)
+                metadata.correction = 'WOA'
+                metadata.shift      = shift
+                dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+            else:
+                print "WOA correction not applicable for max(depth) < 600 m"
+
+
 
 OUTDIR = addsep(args.outdir)
 force_writing_nitrate=args.force
@@ -158,59 +217,17 @@ if input_file == 'NO_file':
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
-            F=pCor._my_float
-            writing_mode='w'
-            if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
             condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
             if force_writing_nitrate: condition_to_write=True
-
-            metadata = superfloat_generator.Metadata('coriolis',F.filename)
-
             if not condition_to_write: continue
-            if pCor._my_float.status_var('NITRATE')=='R': continue
 
-            Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
-            nP=len(Pres)
-            if nP<5 :
-                print "few values for " + F.filename
-                continue
-            if Pres[-1]<100:
-                print "depth < 100 for "+ F.filename
-                continue
-
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            if pCor._my_float.status_var('NITRATE')=='D':
-                dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
-
-
-            if pCor._my_float.status_var('NITRATE')=='A':
-                if superfloat_generator.exist_valid_variable('DOXY', outfile):
-                    DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
-
-
-                Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
-                outOfClimatology = False
-                for ilayer, layer in enumerate(LayerList):
-                    if (t_lev >= layer.top) & (t_lev < layer.bottom) :
-                        for iSub,sub in enumerate(SUBLIST):
-                            if sub.is_inside(pCor.lon,pCor.lat):
-                                if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
-
-                if outOfClimatology:
-                    print "Out of climatology for " + F.filename
-                    continue
-                dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
-            else:
-                if Pres[-1]>600:
-                    Pres, Values, Qc = woa_nitrate_correction(pCor)
-                    dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
-                else:
-                    print "WOA correction not applicable for max(depth) < 600 m"
+            metadata = Metadata(pCor._my_float.filename)
+            nitrate_algorithm(pCor, outfile, metadata, writing_mode)
 
 else:
     OUTDIR = addsep(args.outdir)
-#    force_writing_oxygen=args.force
     mydtype= np.dtype([
         ('file_name','S200'),
         ('date','S200'),
@@ -240,53 +257,11 @@ else:
         if 'NITRATE' not in available_params: continue
 
         pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-        wmo=pCor._my_float.wmo
 
         outfile = get_outfile(pCor,OUTDIR)
-        F=pCor._my_float
-        writing_mode='w'
-        if superfloat_generator.exist_valid(outfile): writing_mode='a'
+        writing_mode=superfloat_generator.writing_mode(outfile)
 
-        metatata = superfloat_generator.Metadata('coriolis',F.filename)
-
-        if pCor._my_float.status_var('NITRATE')=='R': continue
-
-        Pres, Value, Qc= pCor.read("NITRATE", read_adjusted=True)
-        nP=len(Pres)
-        if nP<5 :
-            print "few values for " + F.filename
-            continue
-        if Pres[-1]<100:
-            print "few values for " + F.filename
-            continue
-
-        os.system('mkdir -p ' + os.path.dirname(outfile))
-        if pCor._my_float.status_var('NITRATE')=='D':
-            dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
-
-
-        if pCor._my_float.status_var('NITRATE')=='A':
-            if superfloat_generator.exist_valid_variable('DOXY', outfile):
-                DOXYp, DOXY, _ = pCor.read('DOXY',read_adjusted=True)
-
-
-                Pres, Value, Qc, t_lev, nit = canyon_nitrate_correction(pCor, Pres, Value, Qc, DOXYp, DOXY)
-                outOfClimatology = False
-                for ilayer, layer in enumerate(LayerList):
-                    if (t_lev >= layer.top) & (t_lev < layer.bottom) :
-                        for iSub,sub in enumerate(SUBLIST):
-                            if sub.is_inside(pCor.lon,pCor.lat):
-                                if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
-
-                if outOfClimatology:
-                        print "Out of climatology for " + F.filename
-                        continue
-                dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
-            else:
-                if Pres[-1]>600:
-                    Pres, Values, Qc = woa_nitrate_correction(pCor)
-                    dump_nitrate_file(outfile, pCor, Pres, Value, Qc, metatata,mode=writing_mode)
-                else:
-                    print "WOA correction not applicable for max(depth) < 600 m"
+        metadata = Metadata(pCor._my_float.filename)
+        nitrate_algorithm(pCor, outfile, metadata,writing_mode)
 
 

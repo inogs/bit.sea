@@ -51,6 +51,11 @@ import numpy as np
 import seawater as sw
 import datetime
 
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.status_var = 'n'
+
 def remove_bad_sensors(Profilelist,var):
     '''
 
@@ -88,7 +93,7 @@ def convert_oxygen(p,doxypres,doxyprofile):
     density_on_zdoxy = np.interp(doxypres,Pres,density)
     return doxyprofile * density_on_zdoxy/1000.
 
-def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
+def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
     if mode=='a':
         command = "cp %s %s.tmp" %(outfile,outfile)
@@ -96,6 +101,8 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+        setattr(ncOUT, 'origin'     , 'coriolis')
+        setattr(ncOUT, 'file_origin', metadata.filename)
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
         ncOUT.createDimension("DATETIME",14)
@@ -116,8 +123,6 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
  
         ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
         ncvar[:]=Temp
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'TEMP')
         setattr(ncvar, 'units'      , "degree_Celsius")
         ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
@@ -127,8 +132,6 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
 
         ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
         ncvar[:]=Sali
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'SALI')
         setattr(ncvar, 'units'      , "PSS78")
         ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
@@ -143,11 +146,10 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("DOXY", 'f', ('nDOXY',))
     ncvar[:]=Value
-    if not doxy_already_existing:
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
-        setattr(ncvar, 'variable'   , 'DOXY')
-        setattr(ncvar, 'units'      , "mmol/m3")
+    #if not doxy_already_existing:
+    setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'variable'   , 'DOXY')
+    setattr(ncvar, 'units'      , "mmol/m3")
     ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
     ncvar[:]=Qc
     ncOUT.close()
@@ -168,6 +170,26 @@ def read_doxy(pCor):
         return None, None, None
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
+
+def doxy_algorithm(p, outfile, metadata,writing_mode):
+    Pres, Value, Qc = read_doxy(p)
+    if Pres is None: return
+
+
+    if p._my_float.status_var('DOXY')=='D':
+        metadata.status_var='D'
+        condition_to_write = True
+    else:
+        metadata.status_var='A'
+        condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+
+
+    if condition_to_write:
+        os.system('mkdir -p ' + os.path.dirname(outfile))
+        dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+    else:
+        print "Saturation Test not passed"
+
 
 input_file=args.update_file
 if input_file == 'NO_file':
@@ -190,29 +212,15 @@ if input_file == 'NO_file':
             outfile = get_outfile(p,OUTDIR)
             if p._my_float.status_var('DOXY')=='R': continue
 
-            writing_mode='w'
-            if superfloat_generator.exist_valid(outfile): writing_mode='a'
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
             condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
             if force_writing_oxygen: condition_to_write=True
-
             if not condition_to_write: continue
-            Pres, Value, Qc = read_doxy(p)
-            if Pres is None: continue
 
+            metadata = Metadata(p._my_float.filename)
+            doxy_algorithm(p,outfile, metadata,writing_mode)
 
-            if p._my_float.status_var('DOXY')=='D':
-                condition_to_write = True
-            else: # case 'A'
-                condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-
-
-            if condition_to_write:
-                metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
-                os.system('mkdir -p ' + os.path.dirname(outfile))
-                dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-            else:
-                print "Saturation Test not passed"
 else:
     OUTDIR = addsep(args.outdir)
 #    force_writing_oxygen=args.force
@@ -251,20 +259,6 @@ else:
         outfile = get_outfile(p,OUTDIR)
         if p._my_float.status_var('DOXY')=='R': continue
 
-        writing_mode='w'
-        if superfloat_generator.exist_valid(outfile): writing_mode='a'
-
-        Pres, Value, Qc = read_doxy(p)
-        if Pres is None: continue
-
-        if p._my_float.status_var('DOXY')=='D':
-            condition_to_write = True
-        else: # case 'A'
-            condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-
-        if condition_to_write:
-            metadata = superfloat_generator.Metadata('Coriolis', p._my_float.filename)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-        else:
-            print "Saturation Test not passed"
+        writing_mode=superfloat_generator.writing_mode(outfile)
+        metadata = Metadata(p._my_float.filename)
+        doxy_algorithm(p, outfile, metadata, writing_mode)

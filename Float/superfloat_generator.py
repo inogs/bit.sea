@@ -146,24 +146,7 @@ def synthesis_profile(pLov, pCor):
         CHL = CHL - shift
     return PresC, CHL, QcC
 
-def treating_coriolis(pCor):
-    if pCor._my_float.status_var('CHLA')=='A':
-        Pres,Value, Qc=pCor.read('CHLA', read_adjusted=True)
-        if len(Pres)<5:
-            print "few values in Coriolis for " + pCor._my_float.filename
-            return None, None, None
 
-        Pres, CHL, Qc = general_quenching(pCor, Pres, Value, Qc)
-        ii=(Pres >= 400) & (Pres <= 600)
-        if ii.sum() > 0:
-            shift = CHL[ii].mean()
-            CHL = CHL - shift
-        ii=CHL<=0
-        CHL[ii] = 0.005
-        return Pres, CHL, Qc
-    else:
-        print "R -- not dumped ", pCor._my_float.filename
-        return None, None, None
 
 def exist_valid(filename):
     '''Returns true if file exists and is a valid NetCDF file'''
@@ -189,6 +172,14 @@ def exist_variable(variable, filename):
 def exist_valid_variable(variable, filename):
     if not exist_valid(filename): return False
     return exist_variable(variable, filename)
+
+def writing_mode(filename):
+    '''
+    Returns 'a' for valid NetCDF files, else 'w' (overwrite)
+    '''
+    writingmode='w'
+    if exist_valid(filename): writingmode='a'
+    return writingmode
 
 class Metadata():
     def __init__(self, origin, filename):

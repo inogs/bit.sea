@@ -55,19 +55,25 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 
-
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.status_var = 'n'
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
-def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
+def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
     print "dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S")
     ncOUT = NC.netcdf_file(outfile,"w")
+    setattr(ncOUT, 'origin'     , 'coriolis')
+    setattr(ncOUT, 'file_origin', metadata.filename)
+
     ncOUT.createDimension("DATETIME",14)
     ncOUT.createDimension("NPROF", 1)
 
@@ -76,19 +82,17 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     ncOUT.createDimension('nCHLA', len(Pres ))    
     
     ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
-    ncvar[:]=p_pos.time.strftime("%Y%m%d%H%M%S")
+    ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
     ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
     ncvar[:]=0.0
     ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
-    ncvar[:] = p_pos.lon.astype(np.float64)
+    ncvar[:] = p.lon.astype(np.float64)
     ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
-    ncvar[:] = p_pos.lat.astype(np.float64)
+    ncvar[:] = p.lat.astype(np.float64)
  
     
     ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
     ncvar[:] = Temp
-    setattr(ncvar, 'origin'     , metadata.origin)
-    setattr(ncvar, 'file_origin', metadata.filename)
     setattr(ncvar, 'variable'   , 'TEMP')
     setattr(ncvar, 'units'      , "degree_Celsius")
 
@@ -99,8 +103,6 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     
     ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
     ncvar[:]=Sali
-    setattr(ncvar, 'origin'     , metadata.origin)
-    setattr(ncvar, 'file_origin', metadata.filename)
     setattr(ncvar, 'variable'   , 'SALI')
     setattr(ncvar, 'units'      , "PSS78")
 
@@ -111,8 +113,7 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
 
     ncvar=ncOUT.createVariable('CHLA','f',('nCHLA',))
     ncvar[:]=chl_profile
-    setattr(ncvar, 'origin'     , metadata.origin)
-    setattr(ncvar, 'file_origin', metadata.filename)
+    setattr(ncvar, 'status_var' , metadata.status_var)
     setattr(ncvar, 'variable'   , 'CHLA_ADJUSTED')
     setattr(ncvar, 'units'      , "milligram/m3")
 
@@ -122,7 +123,34 @@ def dumpfile(outfile,p_pos, p,Pres,chl_profile,Qc,metadata):
     ncvar[:]=Qc
     ncOUT.close()
 
+def treating_coriolis(pCor):
+    metadata = Metadata(pCor._my_float.filename)
+    metadata.status_var = pCor._my_float.status_var('CHLA')
+    if pCor._my_float.status_var('CHLA') in ['A','D'] :
+        Pres,Value, Qc=pCor.read('CHLA', read_adjusted=True)
+        if len(Pres)<5:
+            print "few values in Coriolis for " + pCor._my_float.filename
+            return None, None, None, metadata
 
+        Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
+        ii=(Pres >= 400) & (Pres <= 600)
+        if ii.sum() > 0:
+            shift = CHL[ii].mean()
+            CHL = CHL - shift
+        ii=CHL<=0
+        CHL[ii] = 0.005
+        return Pres, CHL, Qc, metadata
+    else:
+        print "R -- not dumped ", pCor._my_float.filename
+        return None, None, None, metadata
+
+def chla_algorithm(pCor,outfile):
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+
+    Pres, CHL, Qc, metadata = treating_coriolis(pCor)
+
+    if Pres is None: return # no data
+    dumpfile(outfile, pCor, Pres, CHL, Qc, metadata)
 
 OUTDIR = addsep(args.outdir)
 input_file=args.update_file
@@ -138,11 +166,8 @@ if input_file == 'NO_file':
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor, OUTDIR)
             if superfloat_generator.exist_valid(outfile) & (not args.force): continue
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            if Pres is None: continue # no data
-            dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
+            chla_algorithm(pCor,outfile)
+
 
 else:
     mydtype= np.dtype([
@@ -173,10 +198,5 @@ else:
         if 'CHLA' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
             outfile = get_outfile(pCor, OUTDIR)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            Pres, CHL, Qc= superfloat_generator.treating_coriolis(pCor)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            if Pres is None: continue # no data
-            dumpfile(outfile, pCor, pCor, Pres, CHL, Qc, metadata)
-        else:
-            continue
+            chla_algorithm(pCor, outfile)
+

@@ -49,6 +49,13 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.status_var = 'n'
+
+
+
 def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
     if mode=='a':
@@ -57,6 +64,8 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+        setattr(ncOUT, 'origin'     , 'coriolis')
+        setattr(ncOUT, 'file_origin', metadata.filename)
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
         ncOUT.createDimension("DATETIME",14)
@@ -77,8 +86,6 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
  
         ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
         ncvar[:]=Temp
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'TEMP')
         setattr(ncvar, 'units'      , "degree_Celsius")
         ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
@@ -88,8 +95,6 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
 
         ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
         ncvar[:]=Sali
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'SALI')
         setattr(ncvar, 'units'      , "PSS78")
         ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
@@ -104,12 +109,10 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("DOWNWELLING_PAR", 'f', ('nDOWNWELLING_PAR',))
     ncvar[:]=Value
-    if not par_already_existing:
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
-        setattr(ncvar, 'variable'   , 'DOWNWELLING_PAR')
-        setattr(ncvar, 'units'      , "microMoleQuanta/m^2/sec")
-        setattr(ncvar, 'longname'   , 'Downwelling photosynthetic available radiation')
+    setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'variable'   , 'DOWNWELLING_PAR')
+    setattr(ncvar, 'units'      , "microMoleQuanta/m^2/sec")
+    setattr(ncvar, 'longname'   , 'Downwelling photosynthetic available radiation')
     ncvar=ncOUT.createVariable("DOWNWELLING_PAR_QC", 'f', ('nDOWNWELLING_PAR',))
     ncvar[:]=Qc
     ncOUT.close()
@@ -120,6 +123,17 @@ def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
+
+
+def par_algorithm(p, outfile, metadata,writing_mode):
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+    metadata.status_var = pCor._my_float.status_var('DOWNWELLING_PAR')
+    if metadata.status_var in ['A', 'D']:
+        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
+    else:
+        Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+    if Pres is None: return
+    dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
 input_file=args.update_file
 if input_file == 'NO_file':
@@ -139,24 +153,14 @@ if input_file == 'NO_file':
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-
-            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
+            writing_mode=superfloat_generator.writing_mode(outfile)
             
-            if Pres is None: continue
+            condition_to_write = ~superfloat_generator.exist_valid_variable('DOWNWELLING_PAR',outfile)
+            if force_writing_par: condition_to_write=True
+            if not condition_to_write: continue
 
-            if superfloat_generator.exist_valid(outfile):
-                if not superfloat_generator.exist_variable('DOWNWELLING_PAR', outfile):
-                    dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-                else:
-                    if force_writing_par:
-                        dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-            else:
-                dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+            metadata = Metadata(pCor._my_float.filename)
+            par_algorithm(pCor, outfile, metadata, writing_mode)
 
 
 else:
@@ -190,16 +194,9 @@ else:
         if  'DOWNWELLING_PAR' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
             outfile = get_outfile(pCor,OUTDIR)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            if pCor._my_float.status_var('DOWNWELLING_PAR') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            if Pres is None: continue # no data
 
-            writing_mode='w'
-            if superfloat_generator.exist_valid(outfile): writing_mode='a'
-            dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
+            writing_mode=superfloat_generator.writing_mode(outfile)
+            par_algorithm(pCor, outfile, metadata, writing_mode)
 
 

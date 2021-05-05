@@ -74,7 +74,7 @@ def woa_nitrate_correction(p):
 
     New_profile = linear_shift(N,Np,shift)
     Nqc[:] = 8
-    return Np, New_profile, Nqc
+    return Np, New_profile, Nqc, shift
 
 
 if __name__ == "__main__":

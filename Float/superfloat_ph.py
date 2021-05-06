@@ -49,6 +49,11 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.status_var = 'n'
+
 def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
     if mode=='a':
@@ -57,6 +62,8 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+        setattr(ncOUT, 'origin'     , 'coriolis')
+        setattr(ncOUT, 'file_origin', metadata.filename)
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
         ncOUT.createDimension("DATETIME",14)
@@ -77,8 +84,6 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
  
         ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
         ncvar[:]=Temp
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'TEMP')
         setattr(ncvar, 'units'      , "degree_Celsius")
         ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
@@ -88,8 +93,6 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
 
         ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
         ncvar[:]=Sali
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'SALI')
         setattr(ncvar, 'units'      , "PSS78")
         ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
@@ -104,12 +107,10 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("PH_IN_SITU_TOTAL", 'f', ('nPH_IN_SITU_TOTAL',))
     ncvar[:]=Value
-    if not ph_already_existing:
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
-        setattr(ncvar, 'variable'   , 'PH_IN_SITU_TOTAL')
-        setattr(ncvar, 'units'      , "dimensionless")
-        setattr(ncvar, 'longname'   , 'sea_water_ph_reported_on_total_scale')
+    setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'variable'   , 'PH_IN_SITU_TOTAL')
+    setattr(ncvar, 'units'      , "dimensionless")
+    setattr(ncvar, 'longname'   , 'sea_water_ph_reported_on_total_scale')
     ncvar=ncOUT.createVariable("PH_IN_SITU_TOTAL_QC", 'f', ('nPH_IN_SITU_TOTAL',))
     ncvar[:]=Qc
     ncOUT.close()
@@ -121,10 +122,21 @@ def get_outfile(p,outdir):
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
+def ph_algorithm(pCor, outfile, metadata,writing_mode):
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+    metadata.status_var = pCor._my_float.status_var('PH_IN_SITU_TOTAL')
+    if metadata.status_var in ['A', 'D']:
+        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
+    else:
+        Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+    if Pres is None: return
+    dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+
+
 input_file=args.update_file
+OUTDIR = addsep(args.outdir)
 if input_file == 'NO_file':
 
-    OUTDIR = addsep(args.outdir)
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
     force_writing_ph=args.force
@@ -138,42 +150,19 @@ if input_file == 'NO_file':
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
-            if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
+            condition_to_write = ~superfloat_generator.exist_valid_variable('PH_IN_SITU_TOTAL',outfile)
+            if force_writing_par: condition_to_write=True
+            if not condition_to_write: continue
 
-            if Pres is None: continue
-
-            if superfloat_generator.exist_valid(outfile):
-                if not superfloat_generator.exist_variable('PH_IN_SITU_TOTAL', outfile):
-                    dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-                else:
-                    if force_writing_ph:
-                        dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-            else:
-                dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+            metadata = Metadata(pCor._my_float.filename)
+            ph_algorithm(pCor, outfile, metadata, writing_mode)
 
 
 else:
-
-    OUTDIR = addsep(args.outdir)
-    mydtype= np.dtype([
-        ('file_name','S200'),
-        ('date','S200'),
-        ('latitude',np.float32),
-        ('longitude',np.float32),
-        ('ocean','S10'),
-        ('profiler_type',np.int),
-        ('institution','S10'),
-        ('parameters','S200'),
-        ('parameter_data_mode','S100'),
-        ('date_update','S200')] )
-
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
+    
+    INDEX_FILE=superfloat_generator.read_float_update(input_file)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
@@ -189,15 +178,7 @@ else:
         if  'PH_IN_SITU_TOTAL' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
             outfile = get_outfile(pCor,OUTDIR)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            if pCor._my_float.status_var('PH_IN_SITU_TOTAL') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            if Pres is None: continue # no data
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
-            writing_mode='w'
-            if superfloat_generator.exist_valid(outfile): writing_mode='a'
-            dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
-
+            metadata = Metadata(pCor._my_float.filename)
+            ph_algorithm(pCor, outfile, metadata, writing_mode)

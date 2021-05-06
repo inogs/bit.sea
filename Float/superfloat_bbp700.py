@@ -48,6 +48,10 @@ import scipy.io.netcdf as NC
 import numpy as np
 import datetime
 
+class Metadata():
+    def __init__(self, filename):
+        self.filename = filename
+        self.status_var = 'n'
 
 def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
@@ -57,6 +61,8 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+	setattr(ncOUT, 'origin'     , 'coriolis')
+        setattr(ncOUT, 'file_origin', metadata.filename)
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
         ncOUT.createDimension("DATETIME",14)
@@ -77,8 +83,6 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
  
         ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
         ncvar[:]=Temp
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'TEMP')
         setattr(ncvar, 'units'      , "degree_Celsius")
         ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
@@ -88,8 +92,6 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
 
         ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
         ncvar[:]=Sali
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
         setattr(ncvar, 'variable'   , 'SALI')
         setattr(ncvar, 'units'      , "PSS78")
         ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
@@ -104,12 +106,10 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncvar[:]=Pres
     ncvar=ncOUT.createVariable("BBP700", 'f', ('nBBP700',))
     ncvar[:]=Value
-    if not bbp700_already_existing:
-        setattr(ncvar, 'origin'     , metadata.origin)
-        setattr(ncvar, 'file_origin', metadata.filename)
-        setattr(ncvar, 'variable'   , 'BBP700')
-        setattr(ncvar, 'units'      , "m-1")
-        setattr(ncvar, 'longname'   , 'Particle backscattering at 700 nanometers')
+    setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'variable'   , 'BBP700')
+    setattr(ncvar, 'units'      , "m-1")
+    setattr(ncvar, 'longname'   , 'Particle backscattering at 700 nanometers')
     ncvar=ncOUT.createVariable("BBP700_QC", 'f', ('nBBP700',))
     ncvar[:]=Qc
     ncOUT.close()
@@ -121,10 +121,21 @@ def get_outfile(p,outdir):
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
 
+def bbp_algorithm(pCor, outfile, metadata,writing_mode):
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+    metadata.status_var = pCor._my_float.status_var('BBP700')
+    if metadata.status_var in ['A', 'D']:
+        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
+    else:
+        Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+    if Pres is None: return
+    dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
+
+OUTDIR = addsep(args.outdir)
 input_file=args.update_file
+
 if input_file == 'NO_file':
 
-    OUTDIR = addsep(args.outdir)
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
     force_writing_bbp=args.force
@@ -133,48 +144,24 @@ if input_file == 'NO_file':
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
-
-
     for wmo in wmo_list:
         print wmo
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
-            if pCor._my_float.status_var('BBP700') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
+            condition_to_write = ~superfloat_generator.exist_valid_variable('BBP700',outfile)
+            if force_writing_par: condition_to_write=True
+            if not condition_to_write: continue
 
-            if Pres is None: continue
-
-            if superfloat_generator.exist_valid(outfile):
-                if not superfloat_generator.exist_variable('BBP700', outfile):
-                    dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-                else:
-                    if force_writing_bbp:
-                        dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='a')
-            else:
-                dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode='w')
+            metadata = Metadata(pCor._my_float.filename)
+            bbp_algorithm(pCor, outfile, metadata, writing_mode)
 
 else:
 
-    OUTDIR = addsep(args.outdir)
-    mydtype= np.dtype([
-        ('file_name','S200'),
-        ('date','S200'),
-        ('latitude',np.float32),
-        ('longitude',np.float32),
-        ('ocean','S10'),
-        ('profiler_type',np.int),
-        ('institution','S10'),
-        ('parameters','S200'),
-        ('parameter_data_mode','S100'),
-        ('date_update','S200')] )
+    INDEX_FILE=superfloat_generator.read_float_update(input_file)
 
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
@@ -190,15 +177,7 @@ else:
         if  'BBP700' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
             outfile = get_outfile(pCor,OUTDIR)
-            os.system('mkdir -p ' + os.path.dirname(outfile))
-            if pCor._my_float.status_var('BBP700') in ['A', 'D']:
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=True)
-            else:
-                Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
-            if Pres is None: continue # no data
+            writing_mode=superfloat_generator.writing_mode(outfile)
 
-            writing_mode='w'
-            if superfloat_generator.exist_valid(outfile): writing_mode='a'
-            dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
-
+            metadata = Metadata(pCor._my_float.filename)
+            bbp_algorithm(pCor, outfile, metadata, writing_mode)

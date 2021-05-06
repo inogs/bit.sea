@@ -182,9 +182,10 @@ def writing_mode(filename):
     return writingmode
 
 class Metadata():
-    def __init__(self, origin, filename):
-        self.origin = origin
+    def __init__(self, filename):
         self.filename = filename
+        self.status_var = 'n'
+
 
 def read_float_update(input_file):
     mydtype= np.dtype([

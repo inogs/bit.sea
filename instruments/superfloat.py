@@ -205,7 +205,8 @@ class BioFloat(Instrument):
                 self.correction = "None"
                 self.shift      = "None"
                 self.status_var = 'n'
-            
+            def __repr__(self):
+                return "status_var = %s" %(self.status_var) 
 
         info = Info()
 

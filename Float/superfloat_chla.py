@@ -170,19 +170,8 @@ if input_file == 'NO_file':
 
 
 else:
-    mydtype= np.dtype([
-        ('file_name','S200'),
-        ('date','S200'),
-        ('latitude',np.float32),
-        ('longitude',np.float32),
-        ('ocean','S10'),
-        ('profiler_type',np.int),
-        ('institution','S10'),
-        ('parameters','S200'),
-        ('parameter_data_mode','S100'),
-        ('date_update','S200')] )
+    INDEX_FILE=superfloat_generator.read_float_update(input_file)
 
-    INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):

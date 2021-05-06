@@ -125,7 +125,7 @@ def get_outfile(p,outdir):
     return filename
 
 
-def par_algorithm(p, outfile, metadata,writing_mode):
+def par_algorithm(pCor, outfile, metadata,writing_mode):
     os.system('mkdir -p ' + os.path.dirname(outfile))
     metadata.status_var = pCor._my_float.status_var('DOWNWELLING_PAR')
     if metadata.status_var in ['A', 'D']:
@@ -181,9 +181,9 @@ else:
         if  'DOWNWELLING_PAR' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
             outfile = get_outfile(pCor,OUTDIR)
-
-            metadata = superfloat_generator.Metadata('Coriolis', pCor._my_float.filename)
             writing_mode=superfloat_generator.writing_mode(outfile)
+
+            metadata = Metadata(pCor._my_float.filename)
             par_algorithm(pCor, outfile, metadata, writing_mode)
 
 

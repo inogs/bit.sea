@@ -5,7 +5,7 @@ import numpy as np
 import matchup.matchup
 import matplotlib.pyplot as pl
 import postproc
-import static
+
 
 
 class Matchup_Manager():
@@ -216,13 +216,13 @@ class Matchup_Manager():
  
                 ii = (np.abs(MODEL_ON_SPACE_OBS - Profile) <= THRESHOLDS[model_varname])
 
-               # Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+                # Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
                 Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS[ii], Profile[ii], Pres[ii], Qc[ii], p)
 
             else:
                 OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
                 QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-               # Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+                # Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
                 ii = (np.abs(ModelProfile[seaPoints]-OBS_ON_SPACE_MODEL) <= THRESHOLDS[model_varname])
                 Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints][ii], OBS_ON_SPACE_MODEL[ii], nav_lev[seaPoints][ii], QC_ON_SPACE_MODEL[ii], p)
 
@@ -499,11 +499,11 @@ class Matchup_Manager():
                     float_on_common_grid = float_on_common_grid - shift
 
                 if model_varname == 'P_c':
-                     bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
-                     float_on_common_grid = 12128 * bbp470 + 0.59
-                     shift=float_on_common_grid[ii].mean()
-                     print "P_c: adding a shift of " + np.str(shift)
-                     float_on_common_grid = float_on_common_grid - shift
+                    bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
+                    float_on_common_grid = 12128 * bbp470 + 0.59
+                    shift=float_on_common_grid[ii].mean()
+                    print "P_c: adding a shift of " + np.str(shift)
+                    float_on_common_grid = float_on_common_grid - shift
 
                 if model_varname == "EIR": #"PAR":
                     sec = p.time.hour*3600 + p.time.minute*60

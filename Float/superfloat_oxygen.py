@@ -195,7 +195,6 @@ input_file=args.update_file
 if input_file == 'NO_file':
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
-    force_writing_oxygen=args.force
 
     PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
     PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
@@ -214,14 +213,14 @@ if input_file == 'NO_file':
             writing_mode=superfloat_generator.writing_mode(outfile)
 
             condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
-            if force_writing_oxygen: condition_to_write=True
+            if args.force: condition_to_write=True
             if not condition_to_write: continue
 
             metadata = Metadata(p._my_float.filename)
             doxy_algorithm(p,outfile, metadata,writing_mode)
 
 else:
-#    force_writing_oxygen=args.force
+
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
     nFiles=INDEX_FILE.size
 

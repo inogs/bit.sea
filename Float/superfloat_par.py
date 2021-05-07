@@ -141,7 +141,6 @@ if input_file == 'NO_file':
 
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
-    force_writing_par=args.force
 
     PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 
@@ -156,7 +155,7 @@ if input_file == 'NO_file':
             writing_mode=superfloat_generator.writing_mode(outfile)
             
             condition_to_write = ~superfloat_generator.exist_valid_variable('DOWNWELLING_PAR',outfile)
-            if force_writing_par: condition_to_write=True
+            if args.force: condition_to_write=True
             if not condition_to_write: continue
 
             metadata = Metadata(pCor._my_float.filename)

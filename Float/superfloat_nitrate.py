@@ -200,7 +200,6 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
 
 
 OUTDIR = addsep(args.outdir)
-force_writing_nitrate=args.force
 input_file=args.update_file
 
 if input_file == 'NO_file':
@@ -220,7 +219,7 @@ if input_file == 'NO_file':
             writing_mode=superfloat_generator.writing_mode(outfile)
 
             condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
-            if force_writing_nitrate: condition_to_write=True
+            if args.force: condition_to_write=True
             if not condition_to_write: continue
 
             metadata = Metadata(pCor._my_float.filename)

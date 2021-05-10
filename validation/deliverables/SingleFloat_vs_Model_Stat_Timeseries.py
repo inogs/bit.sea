@@ -154,8 +154,8 @@ for ivar, var_mod in enumerate(VARLIST):
                     A_model[itime,7], A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth) # CM, DCM
             
                 if (p.time.month in [1,2,3] ):
-                    A_float[itime,3] = find_WLB(gm200.Ref  ,gm200.Depth) # WLB
-                    A_model[itime,3] = find_WLB(gm200.Model,gm200.Depth) # WLB
+                    A_float[itime,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
+                    A_model[itime,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
            # NITRACL1/NITRACL2 
             if (var_mod == "N3n"):

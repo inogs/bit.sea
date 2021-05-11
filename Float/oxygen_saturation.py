@@ -15,9 +15,12 @@ def oxy_sat(p):
             nan if there are no TEMP and PSAL values with pressure less than 5m.
     '''
     
-
-    PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)#p._my_float.adjusted('TEMP'))
-    PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)#p._my_float.adjusted('PSAL'))
+    if p.has_adjusted:
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)#p._my_float.adjusted('TEMP'))
+        PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)#p._my_float.adjusted('PSAL'))
+    else:
+        PresT, Temp, QcT = p.read('TEMP')
+        PresS, Sali, QcS = p.read('PSAL')
 
     ii = PresT<=depth_threshold
     if ii.sum() == 0:

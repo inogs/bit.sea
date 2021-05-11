@@ -89,7 +89,6 @@ iz10 = TheMask.getDepthIndex(10.8)+1
 iz1000 = TheMask.getDepthIndex(1000)+1 # Max Index for depth 1000
 
 for ivar, var_mod in enumerate(VARLIST):
-#  if (var_mod == "P_l"):
     var = FLOATVARS[var_mod]
     if var_mod == "N3n": Check_obj = Check_obj_nitrate
     if var_mod == "P_l": Check_obj = Check_obj_chl
@@ -163,8 +162,8 @@ for ivar, var_mod in enumerate(VARLIST):
                 A_float[itime,4] = find_NITRICL(gm300.Ref  ,gm300.Depth) # Nitricline
                 A_model[itime,4] = find_NITRICL(gm300.Model,gm300.Depth) # Nitricline
 
-                A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
-                A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
+                A_float[itime,6],_ = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
+                A_model[itime,6],_ = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
 
             if (var_mod == "O2o"):
                 A_float[itime,8] = oxy_sat(p)

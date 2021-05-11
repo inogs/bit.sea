@@ -1,4 +1,5 @@
 import numpy as np
+import seawater as sw
 
 def find_DCM(Chl_profile,zlev):
 
@@ -28,17 +29,27 @@ def find_DCM(Chl_profile,zlev):
 def MLD(Temperature,Pres):
         ''' Calculation of Mixed Layer Depth based on temperature difference of 0.2
         mld is defined as 
+        It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
         '''
+        th=10 #threshold of depth minimum
         MLD = np.nan
         T = Temperature
-        D1000=Pres[Pres<1000]
-        T1000=T[Pres<1000]
+        S = Salinity
+        D1000=Pres[(Pres<1000) & (Pres>th)] # CONSIDER VALUES above "th"5m
+        T1000=T[(Pres<1000) & (Pres>th)]
+        S1000=S[(Pres<1000) & (Pres>th)]
+        Dens1000=sw.dens(S1000,T1000,D1000)-1000 # DENSITY # SIGMA
+        PDens1000=sw.pden(S1000,T1000,D1000)-1000 # POTENTIAL DENSITY # SIGMA THETA
         for ip,p in enumerate(T1000):
-            abs_diff=abs(p-T1000[0])
+#            abs_diff=abs(p-T1000[0])
+#            if abs_diff > 0.2:
+            abs_diff=abs(p-np.mean(T[Pres<th]))
             if abs_diff > 0.2:
                         break
         MixedLayerDepth=D1000[ip]
-        return MixedLayerDepth
+        d_atMLD=Dens1000[ip]
+        pd_atMLD=PDens1000[ip]
+        return MixedLayerDepth, d_atMLD, pd_atMLD
 
 def t_p_cline(Profile,Pres):  # calculation of thermocline (Temp) - pycnocline (Dens)
         T = Profile
@@ -80,9 +91,13 @@ def find_NITRICL_dz(Profile,Pres):
                 return Pres[ip]
 
 def find_NITRICL_dz_max(Profile,Pres):
+         ''' This is the Nitrcl2 used for the calcuation in the QUID.
+             It can be used for nitracline and also pycnocline. Include 
+             also the variable value at that depth. ''' 
+ 
          dN = np.diff(Profile)/np.diff(Pres)
          ip = dN.argmax()
-         return Pres[ip]    
+         return Pres[ip], Profile[ip]    
  
 def find_OMZ(Profile,Pres):
          ii = (Pres>200) & (Pres<=1000)
@@ -97,3 +112,9 @@ def find_maxO2(Profile,Pres):
          j_maxO2=np.argmax(Pred)
          MaxO2=Pres[j_maxO2]
          return MaxO2
+
+def find_bot_Nit(Profile,Pres):
+# Find the bottom value of nitrato 
+         P600_800=Profile[(Pres>600) & (Pres<=800)]
+         Nit_bot=np.nanmean(P600_800)
+         return Nit_bot

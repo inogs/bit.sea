@@ -183,12 +183,6 @@ class check():
         REF_sat = oxy_sat(p)
  
         mydiff = np.abs(REF[0]-REF_sat)
-        print "REF0"
-        print REF[0]
-        print "REF_sat"
-        print REF_sat
-        print "mydiff"
-        print mydiff
         flag1 = (mydiff > 20)
         nexcl = 0
 

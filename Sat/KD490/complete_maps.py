@@ -23,11 +23,11 @@ def argument():
                         required=True,
                         help=" Path of monthly files")
 
-    parser.add_argument('--climafile', '-c',
+    parser.add_argument('--climadir', '-c',
                         type=str,
                         default=None,
                         required=True,
-                        help=" File of filled climatology")
+                        help=" Path of climatology")
 
     parser.add_argument('--outdir', '-o',
                         type=str,
@@ -60,7 +60,7 @@ fmt = '%Y%m%d'
 
 WEEKLY_DIR=addsep(args.weeklydir)
 MONTHLY_DIR=addsep(args.monthlydir)
-fileclim=args.climafile
+CLIMA_DIR=addsep(args.climadir)
 OUTDIR = addsep(args.outdir)
 OUTIND = addsep(args.outind)
 TheMask = Mask(args.maskfile)
@@ -69,10 +69,8 @@ _,jpj,jpi = TheMask.shape
 
 tmaskS = TheMask.mask[0,:,:]
 
-filelist = glob.glob(WEEKLY_DIR + '/*_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP*.nc')
+filelist = glob.glob(WEEKLY_DIR + '/*_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v02.nc')
 filelist.sort()
-
-Kc = NC4.Dataset(fileclim,'r') 
 
 # indexes to recontruct maps
 nmask = np.sum(tmaskS)
@@ -95,16 +93,14 @@ for infile in filelist:
     datec = os.path.basename(infile)[0:8]
     print(datec)
     K = NC4.Dataset(infile,'r')
-    #kext = np.array(K.variables['KD490'][0,:,:])
-    kext = np.array(K.variables['KD490'][:,:])
+    kext = np.array(K.variables['KD490'][0,:,:])
     maskk = (kext == -999.) & (tmaskS==1)
     nump = np.sum(maskk)
     print(nump)
     mstr = os.path.basename(infile)[0:6]
-    filemonth = MONTHLY_DIR + '/' + mstr + '_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v01.nc'
+    filemonth = MONTHLY_DIR + '/' + mstr + '_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v02.nc'
     Km = NC4.Dataset(filemonth,'r')
-    # kmnth = np.array(Km.variables['KD490'][0,:,:])
-    kmnth = np.array(Km.variables['KD490'][:,:])
+    kmnth = np.array(Km.variables['KD490'][0,:,:])
     kext[maskk] = kmnth[maskk]
 
     mask_cntrl = (kext == -999.) & (tmaskS==1)
@@ -112,17 +108,39 @@ for infile in filelist:
     if ncntrl>0 :
        print('need climatology')
        iclim = iclim+1
-    #    fileclim = CLIMA_DIR + '/KD490_Climatology_24_filled.nc'
+       fileclim = CLIMA_DIR + '/KD490_Climatology_24_filled.nc'
        fnex = 1
        dt = datetime.datetime.strptime(datec, fmt)
        tt = dt.timetuple()
        julian_day=tt.tm_yday
        if julian_day==366: julian_day=365
+       Kc = NC4.Dataset(fileclim,'r') 
        kclim = np.array(Kc.variables['Mean'][julian_day-1,:,:])
        kclim[kclim>1.e+19] = -999.
        kext[mask_cntrl] = kclim[mask_cntrl]
 
-    kext[tmaskS==0] = -999.
+       mask_cntrlc2 = (kext == -999.) & (tmaskS==1)
+       ncntrlc2 = np.sum(mask_cntrlc2)
+       mstr2 = os.path.basename(infile)[4:6]
+       if ncntrlc2 > 0:
+                 iclim = iclim+1
+                 filelistc = glob.glob('../CLIMA16/KextF_yyyy' + mstr2 + '*.nc')
+                 filelistc.sort()
+                 fnex = 1
+                 for infilec in filelistc:
+                     if os.path.basename(infilec)[12] == 1:
+                        fileclim2 = infilec
+                        fnex = 0
+                     if fnex: fileclim = filelistc[0]
+                 Kc2 = NC4.Dataset(fileclim,'r') 
+                 kclim2 = np.array(Kc2.variables['kextfact'])/1.3
+                 kclim2[kclim2>1.e+19] = -999.
+                 kext[mask_cntrlc2] = kclim2[mask_cntrlc2]
+
+                 mask_cntrlc3 = (kext == -999.) & (tmaskS==1)
+                 ncntrlc = np.sum(mask_cntrlc3)
+       else:
+             print('probs in climatology?')
     filenp = OUTDIR +'/' + os.path.basename(infile)[0:8] + '_compl.npy'
     #filenp = OUTDIR +'DAYS7_16compl/' + os.path.basename(infile)[0:8] + '_compl.npy'
     np.save(filenp,kext)

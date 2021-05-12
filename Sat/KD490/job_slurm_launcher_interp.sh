@@ -1,12 +1,15 @@
 #!/bin/bash
 
 #SBATCH --job-name=KID490_check
-#SBATCH -N5
-#SBATCH --ntasks-per-node=10
-#SBATCH --time=1:30:00
+#SBATCH -N15
+#SBATCH --ntasks-per-node=3
+#SBATCH --time=03:00:00
 #SBATCH --mem=115gb
-#SBATCH --account=OGS20_PRACE_P
-#SBATCH --partition=gll_usr_prod
+#SBATCH --account=OGS_prod_0
+#SBATCH -p gll_meteo_prod
+#SBATCH --dependency=afterany:8354394
+#SBATCH --qos=gll_qos_meteoogs
+
 
 cd $SLURM_SUBMIT_DIR
 
@@ -23,7 +26,7 @@ export PYTHONPATH=$PYTHONPATH:/gpfs/work/OGS20_PRACE_P/COPERNICUS/bit.sea
 date
 . ./profile.inc
 
-BASEDIR=/gpfs/scratch/userexternal/gcoidess/TMP_DOWNLOAD/KdProduct/
+BASEDIR=/gpfs/scratch/userexternal/gcoidess/SAT/KdProduct/
 
 
 WEEKLY_1KMDIR=$BASEDIR/WEEKLYAVE/

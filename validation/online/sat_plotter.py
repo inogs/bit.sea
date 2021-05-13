@@ -93,6 +93,7 @@ nSub=len(OGS.P.basin_list)
 
 
 for isub, sub in enumerate(OGS.P):
+    if sub.name == 'atl': continue
     print sub.name
     outfile=OUTFIG_DIR + "NRTvalidation_chlsup_" + sub.name + "_" + coast + ".png"
     #matplotlib.rc('xtick', labelsize=12)

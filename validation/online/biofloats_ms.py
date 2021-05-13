@@ -68,7 +68,9 @@ BIAS    = np.zeros((nVar,nSub,nDepth), np.float32)
 RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
+Init_time=datetime.datetime(2019,1,1)
 TI =R.time_interval
+if TI.start_time < Init_time : TI.start_time = Init_time
 TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
 
 ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
@@ -84,7 +86,7 @@ for ivar, var in enumerate(VARLIST):
 
         Matchup_object_list=[]
         for ip in range(nProfiles):
-            floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var)
+            floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var)
             Matchup_object_list.append(floatmatchup)
 
         for ilayer, layer in enumerate(LAYERLIST):

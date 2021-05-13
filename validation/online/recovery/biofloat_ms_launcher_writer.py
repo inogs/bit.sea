@@ -2,18 +2,18 @@ from commons.Timelist import TimeList, TimeInterval
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-TI = TimeInterval("20190701","20190915","%Y%m%d")
-DIR="/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/AVE/ANALYSIS"
+TI = TimeInterval("20190101","20210520","%Y%m%d")
+DIR="/gpfs/scratch/userexternal/gbolzon0/V7C/RECOVERY/AVE/"
 
 TL = TimeList.fromfilenames(TI, DIR, "*nc", filtervar="N3n")
 
-WEEKLY_REQS=TL.getWeeklyList(2)
-maskfile="/gpfs/work/OGS_prod_0/OPA/V5C/prod/wrkdir/2/MODEL/meshmask.nc"
-PROFILATORE="/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/PROFILATORE"
+WEEKLY_REQS=TL.getWeeklyList(4)
+maskfile="/gpfs/work/OGS_prod_0/OPA/V7C/prod/wrkdir/analysis/2/MODEL/meshmask.nc"
+PROFILATORE="/gpfs/work/OGS_prod_0/OPA/V7C/prod/inpdir/analysis/VALIDATION/FLOAT/PROFILATORE/"
 
 print "#! /bin/bash"
 
-dirname = "/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/FLOAT_WEEKLY_VALIDATION_ARCHIVE/"
+dirname = "/gpfs/scratch/userexternal/gbolzon0/V7C/FLOAT_WEEKLY_VALIDATION_ARCHIVE/"
 print "mkdir -p " + dirname
 
 for req in WEEKLY_REQS:

@@ -95,11 +95,11 @@ class TimeSeries(object):
         search_paths = self.get_runs(rundays)
         output = list()
         #For each directory
-        for directory in search_paths:
+        for time_obj, directory in search_paths:
             #Get the files list
-            file_list = glob(path.join(directory[1], self._glob_pattern))
+            file_list = glob(path.join(directory, self._glob_pattern))
             #Take the first seven days
-            t = directory[0] - timedelta(7)
+            t = time_obj - timedelta(8)
             #For each day
             for _ in range(7):
                 #For each filename

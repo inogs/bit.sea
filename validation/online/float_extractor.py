@@ -2,7 +2,7 @@ import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Creates ave files for aveScan profiler in chain validation
+    Creates a png and a NetCDF file for each float
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -30,12 +30,17 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = ''' Path of maskfile''')
-
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
-                                required = True,
-                                help = "profile dir")
+                                required = False,
+                                help = "directory to store png and NetCDF files")
+    parser.add_argument(   '--xml', '-x',
+                                type = str,
+                                default = 'VarDescriptor_valid_online.xml',
+                                required = False,
+                                help = "Var descriptor file, the default is bit.sea/postproc/VarDescriptor_valid_online.xml")
+
 
     return parser.parse_args()
 
@@ -67,7 +72,8 @@ TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="P_l")
 M = Matchup_Manager(Profilelist,TL,BASEDIR)
 
 profilerscript = BASEDIR + 'jobProfiler.sh'
-M.writefiles_for_profiling('VarDescriptor_valid_online.xml', profilerscript, aggregatedir=INPUTDIR) # preparation of data for aveScan
+M.writefiles_for_profiling(args.xml, profilerscript, aggregatedir=INPUTDIR) # preparation of data for aveScan
 M.dumpModelProfiles(profilerscript) # sequential launch of aveScan
 
-M.getFloatMatchups(Profilelist,TheMask.zlevels,args.outdir)
+if args.outdir:
+    M.getFloatMatchups(Profilelist,TheMask.zlevels,args.outdir)

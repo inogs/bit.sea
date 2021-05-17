@@ -107,7 +107,7 @@ ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 if args.basedir_clim is not None:
-    TLclim = TimeList.fromfilenames(TI, BASEDIR_CLIM + "/PROFILES", "ave*nc")
+    TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM + "/PROFILES", "ave*nc")
     Mclim = Matchup_Manager(ALL_PROFILES,TLclim,BASEDIR_CLIM)
 
 

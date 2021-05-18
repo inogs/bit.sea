@@ -74,7 +74,7 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
 #for modelvarname in ["DIC","ALK","pH","pCO2"]:
     var, Dataset = DatasetInfo(modelvarname)
     fname = OUTDIR + modelvarname
-    STAT = np.zeros((nSub,nLayer,3),np.float32)*np.nan
+    STAT = np.zeros((nSub,nLayer,7),np.float32)*np.nan
     NUMB = np.zeros((nSub,nLayer),np.int32)
     NPROF = np.zeros((nSub,1),np.int32)
     
@@ -120,6 +120,8 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
         Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
         for ilayer, layer in enumerate(LayerList):
             m_layer = Matchup_basin.subset(layer)
+            print "m_layer.Model"
+            print m_layer.Model
             npoints = m_layer.number()
             NUMB[isub,ilayer] = npoints
             if npoints>3:
@@ -127,6 +129,10 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
                 STAT[isub,ilayer,0]=m_layer.bias()
                 STAT[isub,ilayer,1]=m_layer.RMSE()
                 STAT[isub,ilayer,2]=m_layer.correlation()
+                STAT[isub,ilayer,3]=np.nanmean(m_layer.Model)
+                STAT[isub,ilayer,4]=np.nanmean(m_layer.Ref)
+                STAT[isub,ilayer,5]=np.nanstd(m_layer.Model)
+                STAT[isub,ilayer,6]=np.nanstd(m_layer.Ref)
 
     writetable(fname + ".bias.txt", STAT[:,:,0], rows_names, column_names, fmt='%5.3f\t')
     writetable(fname + ".rmse.txt", STAT[:,:,1], rows_names, column_names, fmt='%5.3f\t')
@@ -134,7 +140,10 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
     writetable(fname + ".numb.txt", NUMB       , rows_names, column_names, fmt='%1.0f\t')
     writetable(fname + ".nprofiles.txt", NPROF, rows_names, ["TOT PROFILES"], fmt='%2.0f\t')
 
-
+    writetable(fname + ".ModMEAN.txt", STAT[:,:,3], rows_names, column_names, fmt='%5.3f\t')
+    writetable(fname + ".RefMEAN.txt", STAT[:,:,4], rows_names, column_names, fmt='%5.3f\t')
+    writetable(fname + ".ModSTD.txt", STAT[:,:,5], rows_names, column_names, fmt='%5.3f\t')
+    writetable(fname + ".RefSTD.txt", STAT[:,:,6], rows_names, column_names, fmt='%5.3f\t')
 
 
 

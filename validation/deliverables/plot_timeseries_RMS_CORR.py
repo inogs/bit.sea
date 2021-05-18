@@ -48,6 +48,8 @@ BGC_CLASS4_CHL_BIAS_SURF_BASIN = LIST[2]
 BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
+MODEL_MEAN=LIST[3]
+SAT___MEAN=LIST[4]
 MODEL_STD = LIST[7]
 SAT___STD = LIST[8]
 BGC_CLASS4_CHL_CORR_SURF_BASIN= LIST[9]
@@ -57,7 +59,7 @@ from basins import V2 as OGS
 nSUB = len(OGS.P.basin_list)
 
 for isub,sub in enumerate(OGS.P):
-  if (isub != 17): # DO NOT CONSIDER ATLANTIC SUBBASIN
+#  if (isub != 17):
     print sub.name
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
@@ -100,6 +102,9 @@ BIAS_win = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
 RMSL_win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
 BIASLwin = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 
+MEAN_MOD_win = np.nanmean(MODEL_MEAN[ii,:],axis=0)
+MEAN_REF_win = np.nanmean(SAT___MEAN[ii,:],axis=0)
+
 STD_MOD_win = np.nanmean(MODEL_STD[ii,:],axis=0)
 STD_REF_win = np.nanmean(SAT___STD[ii,:],axis=0)
 CORR_win    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
@@ -112,12 +117,16 @@ BIAS_sum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
 RMSL_sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
 BIASLsum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 
+MEAN_MOD_sum = np.nanmean(MODEL_MEAN[ii,:],axis=0)
+MEAN_REF_sum = np.nanmean(SAT___MEAN[ii,:],axis=0)
+
 STD_MOD_sum = np.nanmean(MODEL_STD[ii,:],axis=0)
 STD_REF_sum = np.nanmean(SAT___STD[ii,:],axis=0)
 CORR_sum    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
 
 #mat = np.zeros((nSUB,8),np.float32)
-mat = np.zeros((nSUB,14),np.float32)
+#mat = np.zeros((nSUB,14),np.float32)
+mat = np.zeros((nSUB,18),np.float32)
 
 mat[:,0] = RMS__win
 mat[:,1] = RMS__sum
@@ -133,10 +142,16 @@ mat[:,10] = STD_MOD_sum
 mat[:,11] = STD_REF_sum
 mat[:,12] = CORR_win
 mat[:,13] = CORR_sum
+#----
+mat[:,14] = MEAN_MOD_win
+mat[:,15] = MEAN_REF_win
+mat[:,16] = MEAN_MOD_sum
+mat[:,17] = MEAN_REF_sum
 
 outfiletable = args.outdir+"/"+"table4.1.dat"
 rows_names=[sub.name for sub in OGS.P.basin_list]
 #column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum']
-column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum']
+#column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum']
+column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum','MEAN_MODwin','MEAN_SATwin','MEAN_MODsum','MEAN_SATsum']
 writetable(outfiletable, mat, rows_names, column_names, fmt='%5.3f\t')
 

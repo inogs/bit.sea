@@ -108,6 +108,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 if args.basedir_clim is not None:
     TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM + "/PROFILES", "ave*nc")
+    TLclim.inputFrequency = 'monthly'
     Mclim = Matchup_Manager(ALL_PROFILES,TLclim,BASEDIR_CLIM)
 
 

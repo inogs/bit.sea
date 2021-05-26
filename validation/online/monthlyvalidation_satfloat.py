@@ -1,0 +1,384 @@
+
+# Prepare Monthly Validation Report
+# to be sent to the PQ dashboard
+# for satellite.
+# Statistics are calulated operational in chain phase C3
+
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    plot something
+    ''',
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(   '--outdir', '-o',
+                            type = str,
+                            required =True,
+                            default = "./",
+                            help = ''' Output dir'''
+                            )
+
+    parser.add_argument(   '--inputsat', '-i',
+                            type = str,
+                            required = True,
+                            help = 'Input dir sat validation')
+
+    parser.add_argument(   '--inputfloat', '-t',
+                            type = str,
+                            required = True,
+                            help = 'Input dir float validation')
+
+    parser.add_argument(   '--year','-y',
+                                type = str,
+                                required = True,
+                                help = 'year')
+
+    parser.add_argument(   '--month','-m',
+                                type = str,
+                                required = True,
+                                help = 'month')
+
+    parser.add_argument(   '--productname','-p',
+                                type = str,
+                                required = True,
+                                help = 'product name to be used in filename')
+
+    return parser.parse_args()
+args = argument()
+
+
+import numpy as np
+import netCDF4 as NC
+import datetime
+# import os,sys
+# import glob
+# from commons.mask import Mask
+from basins import V2 as OGS
+# from commons.submask import SubMask
+from commons.utils import addsep
+#from datetime import datetime                                                   
+#from datetime import timedelta
+from commons.Timelist import TimeList
+from commons.time_interval import TimeInterval
+from commons import genUserDateList as DL
+from commons import timerequestors as requestors
+import calendar
+
+INDIRSAT = addsep(args.inputsat)
+INDIRFLOAT = addsep(args.inputfloat)
+OUTDIR = addsep(args.outdir)
+productname = args.productname
+YEAR = args.year
+nYEAR = np.int(YEAR)
+nMONTH = np.int(args.month)
+MONTH = '%02d' %nMONTH
+
+month_lastday = calendar.monthrange(nYEAR,nMONTH)[1]
+Ndates = month_lastday
+
+STARTTIME = YEAR + MONTH + '01'
+END__TIME = YEAR + MONTH + '%02d' %month_lastday
+
+AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59','days=1')
+
+
+TI = TimeInterval(STARTTIME,END__TIME)
+Month = STARTTIME[4:6]
+
+TLfloat = TimeList.fromfilenames(TI,INDIRFLOAT,"BioFloat_Weekly*nc", \
+                    prefix="BioFloat_Weekly_validation_", \
+                    dateformat='%Y%m%d')
+TLsat = {}
+
+LISTforecast = ['f%d' %ii for ii in range(1,4)]
+# LISTforecast.append('clima')
+LISTforecast.append('pers')
+Nforecast = len(LISTforecast)
+
+leadtimes = np.zeros((Nforecast,),np.int)
+for iforecast,ff in enumerate(LISTforecast):
+    if ff[0]=='f':
+        nday = np.int(ff[1])
+        leadtimes[iforecast] = 12+24*iforecast
+    if 'p' in ff:
+        leadtimes[iforecast] = -12
+
+
+for ff in LISTforecast:
+    TLsat[ff] = TimeList.fromfilenames(TI,INDIRSAT,"Validation_" + ff + "*", \
+                        prefix="Validation_" + ff + "_YYYYMMDD_on_daily_Sat.", \
+                        dateformat='%Y%m%d')
+
+# if TL['f1'].nTimes<Nforecast:
+#     raise NameError('Full sat validation not available in ' + INDIR)
+METRICS_NAMES = [
+    'number of data values',
+    'mean of product',
+    'mean of reference',
+    'mean squared error',
+    'variance of product',
+    'variance of reference',
+    'correlation',
+    'anomaly correlation',
+    ]
+
+
+
+##### SATLLITE ####
+
+LISTmetrics_SAT = [
+    'number',
+    'SAT___MEAN_LOG',
+    'MODEL_MEAN_LOG',
+    'SAT___VARIANCE_LOG',
+    'MODEL_VARIANCE_LOG',
+    'BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG',
+    'BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG',
+    'BGC_CLASS4_CHL_CORR_SURF_BASIN_LOG',
+    'ANOMALY_CORRELATION_LOG',
+    'SAT___MEAN',
+    'MODEL_MEAN',
+    'SAT___VARIANCE',
+    'MODEL_VARIANCE',
+    'BGC_CLASS4_CHL_RMS_SURF_BASIN',
+    'BGC_CLASS4_CHL_BIAS_SURF_BASIN',
+    'BGC_CLASS4_CHL_CORR_SURF_BASIN',
+    'ANOMALY_CORRELATION',
+]
+
+maxlenght_names = '%d' %(max(len(ww) for ww in LISTmetrics_SAT))
+
+DICTmetricnames = {}
+for tt in ['LOG','NOLOG']:
+    dtype = [(mname,'S'+maxlenght_names) for mname in METRICS_NAMES]
+    DICTmetricnames[tt] = np.zeros(1,dtype) 
+    if tt=='LOG':
+        stringlog = '_' + tt
+    else:
+        stringlog = ''
+    
+    DICTmetricnames[tt]['number of data values'] = 'number'
+    DICTmetricnames[tt]['mean of product']   = 'MODEL_MEAN' + stringlog
+    DICTmetricnames[tt]['mean of reference'] = 'SAT___MEAN' + stringlog
+    DICTmetricnames[tt]['mean squared error'] = 'BGC_CLASS4_CHL_RMS_SURF_BASIN' + stringlog
+    DICTmetricnames[tt]['variance of product']   = 'MODEL_VARIANCE' + stringlog
+    DICTmetricnames[tt]['variance of reference'] = 'SAT___VARIANCE' + stringlog
+    DICTmetricnames[tt]['correlation'] = 'BGC_CLASS4_CHL_CORR_SURF_BASIN' + stringlog
+    DICTmetricnames[tt]['anomaly correlation'] = 'ANOMALY_CORRELATION' + stringlog
+
+
+file1 = TLsat['f1'].filelist[0]
+M1 = NC.Dataset(file1,"r")
+M_AREAS = M1.sublist.encode().split(',')[:-1]
+AREA_NAMES = []
+indexAREAS = {}
+for sub in OGS.P.basin_list:
+    if 'atl' in sub.name: continue
+    AREA_NAMES.append(sub.extended_name)
+    indexAREAS[sub.extended_name] = M_AREAS.index(sub.name)
+
+ALLstring = AREA_NAMES[:]
+ALLstring.extend(METRICS_NAMES)
+max_strlenght = max(len(aa) for aa in ALLstring)
+
+
+Nmetrics = len(METRICS_NAMES)
+Nsub = len(AREA_NAMES)
+
+MetricsSAT = {}
+for tt in ['LOG','NOLOG']:
+    MetricsSAT[tt] = np.zeros((Ndates,Nforecast,Nmetrics,Nsub))
+    MetricsSAT[tt][:] = np.nan
+    TIMELIST = np.zeros((Ndates,),np.float32)
+
+
+    for idate,datef in enumerate(AllDates):
+        req = requestors.Daily_req(datef.year,datef.month,datef.day)
+        TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
+        for iforecast,ff in enumerate(LISTforecast):
+            ii = TLsat[ff].select_one(req)
+            if ii==None: continue
+            filef = TLsat[ff].filelist[ii]
+        
+            M = NC.Dataset(filef,"r")
+            for mm,metric in enumerate(METRICS_NAMES):
+                for isub,subname in enumerate(AREA_NAMES):
+                    varname = DICTmetricnames[tt][0][metric]
+                    MetricsSAT[tt][idate,iforecast,mm,isub] = M.variables[varname][indexAREAS[subname],1].data.copy()
+        
+    masknan = np.isnan(MetricsSAT[tt])
+    MetricsSAT[tt][masknan] = 1.e+20
+
+#### FLOAT #############
+
+# AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59','days=1')
+
+TLfloat = TimeList.fromfilenames(TI,INDIRFLOAT,"BioFloat_Weekly*nc", \
+                    prefix="BioFloat_Weekly_validation_", \
+                    dateformat='%Y%m%d')
+
+LISTmetrics_FLOAT = [
+    'nobs',
+    'refmean',
+    'modelmean',
+    'refvar',
+    'modelvar',
+    'rmse',
+    'bias',
+    'BGC_CLASS4_CHL_CORR_SURF_BASIN_LOG',
+    'anomaly_corr',
+    'corr',
+]
+
+maxlenght_mames = '%d' %(max(len(ww) for ww in LISTmetrics_FLOAT))
+
+dtype = [(mname,'S'+maxlenght_mames) for mname in METRICS_NAMES]
+DICTmetricnames = np.zeros(1,dtype)
+
+DICTmetricnames['number of data values'] = 'nobs'
+DICTmetricnames['mean of product']   = 'modelmean'
+DICTmetricnames['mean of reference'] = 'refmean'
+DICTmetricnames['mean squared error'] = 'rmse'
+DICTmetricnames['variance of product']   = 'modelvar'
+DICTmetricnames['variance of reference'] = 'refvar'
+DICTmetricnames['correlation']         = 'corr'
+DICTmetricnames['anomaly correlation'] = 'anomaly_corr'
+
+
+DICTsubbasins = {}
+for sub in OGS.P.basin_list:
+    if 'atl' in sub.name: continue
+    for subaggregate in OGS.NRT4.basin_list:
+        if subaggregate.name in sub.name:
+            DICTsubbasins[sub.name] = subaggregate.name
+
+file1 = TLfloat.filelist[0]
+M1 = NC.Dataset(file1,"r")
+M_AREAS = M1.sublist.encode().split(',')
+AREA_NAMES = []
+indexAREAS = {}
+for sub in OGS.P.basin_list:
+    if 'atl' in sub.name: continue
+    AREA_NAMES.append(sub.extended_name)
+    if 'aeg' in sub.name: continue
+    subaggregate_name = DICTsubbasins[sub.name]
+    indexAREAS[sub.extended_name] = M_AREAS.index(subaggregate_name)
+
+ALLstring = AREA_NAMES[:]
+ALLstring.extend(METRICS_NAMES)
+max_strlenght = max(len(aa) for aa in ALLstring)
+
+M_depths = M1.layerlist.encode().split(',')
+DEPTHSlist = []
+for layername in M_depths:
+    top,bottom_m = layername.split('-')
+    if np.float(top)>150 : continue
+    bottom = np.float(bottom_m[:-1])
+    DEPTHSlist.append(bottom)
+Ndepths = len(DEPTHSlist)
+
+Nmetrics = len(METRICS_NAMES)
+Nsub = len(AREA_NAMES)
+
+MetricsFLOAT = np.zeros((Ndates,Ndepths,Nmetrics,Nsub))
+MetricsFLOAT[:] = np.nan
+TIMELIST = np.zeros((Ndates,),np.float32)
+
+
+
+for idate,datef in enumerate(AllDates):
+    # req = requestors.Daily_req(datef.year,datef.month,datef.day)
+    TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
+    ii,diffseconds = TLfloat.find(datef,returndiff=True)
+    if diffseconds/24/3600>3.5: continue
+    filef = TLfloat.filelist[ii]
+    
+    M = NC.Dataset(filef,"r")
+    for mm,metric in enumerate(METRICS_NAMES):
+        for isub,subname in enumerate(AREA_NAMES):
+            if subname=='Aegean Sea': continue
+            varname = DICTmetricnames[0][metric]
+            MetricsFLOAT[idate,:,mm,isub] = M.variables[varname][0,indexAREAS[subname],:Ndepths].data.copy()
+
+masknan = np.isnan(MetricsFLOAT)
+MetricsFLOAT[masknan] = 1.e+20
+
+outfile = 'product_quality_stats_' + productname + '_' + STARTTIME + '_' + END__TIME + '.nc'
+outfilepath = OUTDIR + outfile
+S=NC.Dataset(outfilepath,"w")
+
+S.createDimension("time"         ,None)
+S.createDimension("string_length",max_strlenght)
+S.createDimension("areas"        ,len(AREA_NAMES))
+S.createDimension("metrics"      ,len(METRICS_NAMES))
+S.createDimension("depths"       ,Ndepths)
+S.createDimension("surface"      ,1)
+S.createDimension("forecasts"    ,len(leadtimes))
+
+
+ncvar = S.createVariable("area_names",'c',('areas','string_length'))
+x=np.array(ALLstring,dtype=str)
+ncvar[:] = x.view('S1').reshape(x.size,-1)[:Nsub,:]
+setattr(S.variables['area_names'],"long_name"  ,"area names")
+setattr(S.variables['area_names'],"description","region over which statistics are aggregated")
+
+ncvar = S.createVariable("metric_names",'c',('metrics','string_length'))
+ncvar[:] = x.view('S1').reshape(x.size,-1)[Nsub:,:]
+setattr(S.variables['metric_names'],"long_name","metric names")
+
+ncvar = S.createVariable("forecasts",'f',('forecasts',))
+ncvar[:] = leadtimes
+setattr(S.variables['forecasts'],"long_name","forecast lead time")
+setattr(S.variables['forecasts'],"units"    ,"hours")
+
+ncvar = S.createVariable("depths",'f',('depths',))
+ncvar[:]=np.array(DEPTHSlist)
+setattr(S.variables['depths'],"long_name"  ,"depths")
+setattr(S.variables['depths'],"positive"   ,"down")
+setattr(S.variables['depths'],"units"      ,"m")
+setattr(S.variables['depths'],"description","depth of the base of the vertical layer over which statistics are aggregated")
+
+ncvar = S.createVariable("time",'f',('time',))
+ncvar[:]=TIMELIST
+setattr(S.variables['time'],"long_name"    ,"validity time")
+setattr(S.variables['time'],"standard_name","time")
+setattr(S.variables['time'],"units"        ,"days since 1970-01-01")
+setattr(S.variables['time'],"axis"         ,"T")
+
+for tt in ['LOG','NOLOG']:
+    if tt=='LOG':
+        stringlog = '_' + tt
+    else:
+        stringlog = ''
+    statsname = 'stats_surface_chlorophyll' + stringlog.lower()
+    if tt=='LOG':
+        parametername = 'log of Surface Chlorophyll'
+    else:
+        parametername = "Surface Chlorophyll"
+    ncvar=S.createVariable(statsname,'f',('time','forecasts','surface','metrics','areas'),fill_value=1.e+20)
+    ncvar[:,:,0,:,:] = MetricsSAT[tt]
+    # setattr(S.variables[statsname], "_FillValue","1.e+20" )
+    setattr(S.variables[statsname], "parameter",parametername)
+    setattr(S.variables[statsname], "reference","Satellite observations from OC-TAC")
+    setattr(S.variables[statsname], "units"    ,"log(mg Chl*m^-3)")
+
+statsname = 'stats_profile_chlorophyll'
+parametername = "Chlorophyll"
+ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas'),fill_value=1.e+20)
+ncvar[:,:,:,:,:] = np.nan
+ncvar[:,0,:,:,:] = MetricsFLOAT
+# setattr(S.variables[statsname], "_FillValue","1.e+20" )
+setattr(S.variables[statsname], "parameter",parametername)
+setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "units"    ,"mg Chl*m^-3")
+
+setattr(S,"contact","service.med.ogs@ogs.trieste.it")
+setattr(S,"product",productname)
+setattr(S,"start_date",STARTTIME)
+setattr(S,"end_date"  ,END__TIME)
+setattr(S,"filename"  ,outfile)
+S.close()    
+    
+
+    # print('EOB')

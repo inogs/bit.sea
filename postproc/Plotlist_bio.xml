@@ -168,10 +168,10 @@
 
 <!--  Zc -->
 <plots var="Z_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="ZooC" longname="Zooplankton biomass">
-<depth top= "0000" bottom="0010"  clim="[0,10]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[0,10]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[0,10]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[0,10]"> </depth>
+<depth top= "0000" bottom="0010"  clim="[0,30]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,30]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,30]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,30]"> </depth>
 <depth top= "0100" bottom="0150"  clim="[0,10]"> </depth>
 <depth top= "0150" bottom="0300"  clim="[0,10]"> </depth>
 <depth top= "0300" bottom="0600"  clim="[0,10]"> </depth>
@@ -184,14 +184,14 @@
 
 <!--  N4n -->
 <plots var="N4n" units="mmolN/m3" plotunits="mmol m$^{-3}$" name="NH4" longname='Ammonium'>
-<depth top= "0000" bottom="0010"  clim="[0,2]"> </depth>
-<depth top= "0010" bottom="0030"  clim="[0,2]"> </depth>
-<depth top= "0030" bottom="0060"  clim="[0,2]"> </depth>
-<depth top= "0060" bottom="0100"  clim="[0,2]"> </depth>
-<depth top= "0100" bottom="0150"  clim="[0,2]"> </depth>
-<depth top= "0150" bottom="0300"  clim="[0,2]"> </depth>
-<depth top= "0300" bottom="0600"  clim="[0,2]"> </depth>
-<depth top= "0600" bottom="1000"  clim="[0,2]"> </depth>
+<depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,1]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,1]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,1]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,1]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,1]"> </depth>
 <depth top= "1000" bottom="1500"  clim="[0,1]"> </depth>
 <depth top= "1500" bottom="2000"  clim="[0,1]"> </depth>
 <depth top= "2000" bottom="2500"  clim="[0,1]"> </depth>
@@ -216,7 +216,7 @@
 
 <!--  flCO2 -->
 <plots var="CO2airflux" units="mmol/m2/d" plotunits="mmol m$ ^{-2}$ d$^{-1}$" name="fluxCO2" longname="CO2 air-sea flux">
-<depth top= "0000" bottom="0001"  clim="[-20,20]"> </depth>
+<depth top= "0000" bottom="0010"  clim="[-20,20]"> </depth>
 </plots>
 
 

@@ -1,20 +1,19 @@
-
-# Prepare Monthly Validation Report
-# to be sent to the PQ dashboard
-# for satellite.
-# Statistics are calulated operational in chain phase C3
-
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    plot something
+    Prepares Monthly Validation Report,
+    a NetCDF file whose name is like this
+    product_quality_stats_MEDSEA_ANALYSISFORECAST_BGC_006_014_20210501_20210531.nc
+    to be sent to the PQ dashboard
+    for satellite and float.
+    Statistics are calulated operational in chain phase C3.
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
 
     parser.add_argument(   '--outdir', '-o',
                             type = str,
-                            required =True,
+                            required =False,
                             default = "./",
                             help = ''' Output dir'''
                             )
@@ -27,7 +26,7 @@ def argument():
     parser.add_argument(   '--inputfloat', '-t',
                             type = str,
                             required = True,
-                            help = 'Input dir float validation')
+                            help = 'Input dir float validation, where outputs of biofloats_ms_MVR.py are stored')
 
     parser.add_argument(   '--year','-y',
                                 type = str,
@@ -39,10 +38,6 @@ def argument():
                                 required = True,
                                 help = 'month')
 
-    parser.add_argument(   '--productname','-p',
-                                type = str,
-                                required = True,
-                                help = 'product name to be used in filename')
 
     return parser.parse_args()
 args = argument()
@@ -51,14 +46,8 @@ args = argument()
 import numpy as np
 import netCDF4 as NC
 import datetime
-# import os,sys
-# import glob
-# from commons.mask import Mask
 from basins import V2 as OGS
-# from commons.submask import SubMask
 from commons.utils import addsep
-#from datetime import datetime                                                   
-#from datetime import timedelta
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 from commons import genUserDateList as DL
@@ -68,12 +57,11 @@ import calendar
 INDIRSAT = addsep(args.inputsat)
 INDIRFLOAT = addsep(args.inputfloat)
 OUTDIR = addsep(args.outdir)
-productname = args.productname
 YEAR = args.year
 nYEAR = np.int(YEAR)
 nMONTH = np.int(args.month)
 MONTH = '%02d' %nMONTH
-
+productname = "MEDSEA_ANALYSISFORECAST_BGC_006_014"
 month_lastday = calendar.monthrange(nYEAR,nMONTH)[1]
 Ndates = month_lastday
 
@@ -92,7 +80,6 @@ TLfloat = TimeList.fromfilenames(TI,INDIRFLOAT,"BioFloat_Weekly*nc", \
 TLsat = {}
 
 LISTforecast = ['f%d' %ii for ii in range(1,4)]
-# LISTforecast.append('clima')
 LISTforecast.append('pers')
 Nforecast = len(LISTforecast)
 
@@ -110,8 +97,6 @@ for ff in LISTforecast:
                         prefix="Validation_" + ff + "_YYYYMMDD_on_daily_Sat.", \
                         dateformat='%Y%m%d')
 
-# if TL['f1'].nTimes<Nforecast:
-#     raise NameError('Full sat validation not available in ' + INDIR)
 METRICS_NAMES = [
     'number of data values',
     'mean of product',
@@ -212,7 +197,6 @@ for tt in ['LOG','NOLOG']:
 
 #### FLOAT #############
 
-# AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59','days=1')
 
 TLfloat = TimeList.fromfilenames(TI,INDIRFLOAT,"BioFloat_Weekly*nc", \
                     prefix="BioFloat_Weekly_validation_", \
@@ -249,7 +233,7 @@ DICTmetricnames['anomaly correlation'] = 'anomaly_corr'
 DICTsubbasins = {}
 for sub in OGS.P.basin_list:
     if 'atl' in sub.name: continue
-    for subaggregate in OGS.NRT4.basin_list:
+    for subaggregate in OGS.MVR.basin_list:
         if subaggregate.name in sub.name:
             DICTsubbasins[sub.name] = subaggregate.name
 
@@ -288,7 +272,6 @@ TIMELIST = np.zeros((Ndates,),np.float32)
 
 
 for idate,datef in enumerate(AllDates):
-    # req = requestors.Daily_req(datef.year,datef.month,datef.day)
     TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
     ii,diffseconds = TLfloat.find(datef,returndiff=True)
     if diffseconds/24/3600>3.5: continue
@@ -358,7 +341,6 @@ for tt in ['LOG','NOLOG']:
         parametername = "Surface Chlorophyll"
     ncvar=S.createVariable(statsname,'f',('time','forecasts','surface','metrics','areas'),fill_value=1.e+20)
     ncvar[:,:,0,:,:] = MetricsSAT[tt]
-    # setattr(S.variables[statsname], "_FillValue","1.e+20" )
     setattr(S.variables[statsname], "parameter",parametername)
     setattr(S.variables[statsname], "reference","Satellite observations from OC-TAC")
     setattr(S.variables[statsname], "units"    ,"log(mg Chl*m^-3)")
@@ -368,17 +350,15 @@ parametername = "Chlorophyll"
 ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas'),fill_value=1.e+20)
 ncvar[:,:,:,:,:] = np.nan
 ncvar[:,0,:,:,:] = MetricsFLOAT
-# setattr(S.variables[statsname], "_FillValue","1.e+20" )
+
 setattr(S.variables[statsname], "parameter",parametername)
 setattr(S.variables[statsname], "reference","BGC-Argo floats")
 setattr(S.variables[statsname], "units"    ,"mg Chl*m^-3")
 
-setattr(S,"contact","service.med.ogs@ogs.trieste.it")
+setattr(S,"contact","service.med.ogs@inogs.it")
 setattr(S,"product",productname)
 setattr(S,"start_date",STARTTIME)
 setattr(S,"end_date"  ,END__TIME)
 setattr(S,"filename"  ,outfile)
-S.close()    
-    
+S.close()
 
-    # print('EOB')

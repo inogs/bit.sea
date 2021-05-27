@@ -21,24 +21,17 @@ def argument():
     parser.add_argument(   '--inputsat', '-i',
                             type = str,
                             required = True,
-                            help = 'Input dir sat validation')
+                            help = 'Input dir sat validation, where f1, f2, f3 and pers files are stored')
 
     parser.add_argument(   '--inputfloat', '-t',
                             type = str,
                             required = True,
                             help = 'Input dir float validation, where outputs of biofloats_ms_MVR.py are stored')
 
-    parser.add_argument(   '--year','-y',
-                                type = str,
-                                required = True,
-                                help = 'year')
-
     parser.add_argument(   '--month','-m',
                                 type = str,
                                 required = True,
-                                help = 'month')
-
-
+                                help = 'month in yyyymm format')
     return parser.parse_args()
 args = argument()
 
@@ -57,16 +50,15 @@ import calendar
 INDIRSAT = addsep(args.inputsat)
 INDIRFLOAT = addsep(args.inputfloat)
 OUTDIR = addsep(args.outdir)
-YEAR = args.year
-nYEAR = np.int(YEAR)
-nMONTH = np.int(args.month)
-MONTH = '%02d' %nMONTH
+
+nYEAR=int(args.month[0:4])
+nMONTH=int(args.month[4:6])
 productname = "MEDSEA_ANALYSISFORECAST_BGC_006_014"
 month_lastday = calendar.monthrange(nYEAR,nMONTH)[1]
 Ndates = month_lastday
 
-STARTTIME = YEAR + MONTH + '01'
-END__TIME = YEAR + MONTH + '%02d' %month_lastday
+STARTTIME = args.month + '01'
+END__TIME = args.month + '%02d' %month_lastday
 
 AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59','days=1')
 

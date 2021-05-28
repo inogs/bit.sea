@@ -34,13 +34,13 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-from commons import V6C_timing
+from commons import V7C_timing as timing
 if args.phys:
-    print V6C_timing.find_best_forcing(args.date)
+    print timing.find_best_forcing(args.date)
 if args.bgc:
-    print V6C_timing.find_best_bgc(args.date)
+    print timing.find_best_bgc(args.date)
 if args.dir:
-    print V6C_timing.find_best_dir(args.date)
+    print timing.find_best_dir(args.date)
 if args.maps:
-    for thedir in V6C_timing.list_for_maps(args.date):
+    for thedir in timing.list_for_maps(args.date):
         print thedir + "/POSTPROC/AVE_FREQ_1/maps.tar"

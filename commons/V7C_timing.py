@@ -90,7 +90,7 @@ def find_best_forcing(datestr,dateformat="%Y%m%d"):
     if d.hour==0: d += timedelta(hours=12)
     mtype, rundate= find_best(d)
     thedir=find_best_dir(datestr)
-    forcing="%s/CMCC_PHYS/mfs_eas5-%s-%s-%s-"  %(thedir, rundate.strftime("%Y%m%d"), d.strftime("%Y%m%d"), letter(mtype))
+    forcing="%s/CMCC_PHYS/mfs_eas6-%s-%s-%s-"  %(thedir, rundate.strftime("%Y%m%d"), d.strftime("%Y%m%d"), letter(mtype))
     return forcing
 def find_best_bgc(datestr,dateformat="%Y%m%d"):
     thedir=find_best_dir(datestr)

@@ -164,9 +164,12 @@ for il,ll in enumerate(CHLlist):
     arraymis = np.array(LISTchl[3+il])
     for mreq in MonthList:
         mind,_ = TL['P_l'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arraymis[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntot,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arraymis[maskm]))
+        else:
+            LISTmonthly.append(np.nan)
 
     plt.plot(MonthlyTL,LISTmonthly,color=DICTcol[ll],label=ll)
     plt.plot(MonthlyTL[-1],LISTmonthly[-1],'o', \
@@ -183,11 +186,14 @@ arrayobs = np.array(LISTchl[2])
 arrayobsexc = np.array(LISTchl[5])
 for mreq in MonthList:
     mind,_ = TL['P_l'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
-    maskm[mind] = True
-    percused = np.nansum(arrayobs[maskm])/  \
-        (np.nansum(arrayobs[maskm])+np.nansum(arrayobsexc[maskm])) * 100.
-    LISTpercm.append(percused)
+    if len(mind)>0:
+        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm[mind] = True
+        percused = np.nansum(arrayobs[maskm])/  \
+            (np.nansum(arrayobs[maskm])+np.nansum(arrayobsexc[maskm])) * 100.
+        LISTpercm.append(percused)
+    else:
+        LISTpercm.append(np.nanmean)
 
 plt.bar(MonthlyTL,LISTpercm,width=10,label='% Used obs ')
 plt.legend(loc='upper left')
@@ -200,12 +206,15 @@ arrayprof = np.array(LISTchl[1])
 arrayprofexc = np.array(LISTchl[6])
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
-    maskm[mind] = True
-    nexcprofm = np.nansum(arrayprofexc[maskm])
-    nprofm = np.nansum(arrayprof[maskm])
-    LISTprofN.append(nprofm)
-    LISTprofexcN.append(nexcprofm)
+    if len(mind)>0:
+        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm[mind] = True
+        nexcprofm = np.nansum(arrayprofexc[maskm])
+        nprofm = np.nansum(arrayprof[maskm])
+        LISTprofN.append(nprofm)
+        LISTprofexcN.append(nexcprofm)
+    else:
+        LISTprofexcN.append(np.nan)
 
 plt.bar(MonthlyTL,np.array(LISTprofN)+np.array(LISTprofexcN),\
     width=10,label='N profiles')
@@ -230,9 +239,12 @@ for il,ll in enumerate(NITlist):
     arraymis = np.array(LISTnit[3+il])
     for mreq in MonthList:
         mind,_ = TL['N3n'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arraymis[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntot,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arraymis[maskm]))
+        else :
+            LISTmonthly.append(np.nan)
 
     plt.plot(MonthlyTL,LISTmonthly,color=DICTcol[ll],label=ll)
     plt.plot(MonthlyTL[-1],LISTmonthly[-1],'o', \
@@ -246,11 +258,14 @@ plt.sca(axs[1])
 LISTpercm = []
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
-    maskm[mind] = True
-    percused = np.nansum(np.array(LISTnit[2])[maskm])*1./  \
-        (np.nansum(np.array(LISTnit[2])[maskm])+np.nansum(np.array(LISTnit[6])[maskm])) * 100.
-    LISTpercm.append(percused)
+    if len(mind)>0:
+        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm[mind] = True
+        percused = np.nansum(np.array(LISTnit[2])[maskm])*1./  \
+            (np.nansum(np.array(LISTnit[2])[maskm])+np.nansum(np.array(LISTnit[6])[maskm])) * 100.
+        LISTpercm.append(percused)
+    else :
+        LISTpercm.append(np.nan)
 
 plt.bar(MonthlyTL,LISTpercm,width=10,label='% Used obs ')
 plt.legend(loc='upper left')
@@ -262,12 +277,15 @@ LISTprofexcN = []
 
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
-    maskm[mind] = True
-    nprofm = np.nansum(np.array(LISTnit[1])[maskm])
-    nexcprofm = np.nansum(np.array(LISTnit[7])[maskm])
-    LISTprofN.append(nprofm)
-    LISTprofexcN.append(nexcprofm)
+    if len(mind)>0:
+        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm[mind] = True
+        nprofm = np.nansum(np.array(LISTnit[1])[maskm])
+        nexcprofm = np.nansum(np.array(LISTnit[7])[maskm])
+        LISTprofN.append(nprofm)
+        LISTprofexcN.append(nexcprofm)
+    else :
+        LISTprofexcN.append(np.nan)
 
 plt.bar(MonthlyTL,np.array(LISTprofN)+np.array(LISTprofexcN),\
     width=10,label='N profiles')
@@ -461,9 +479,13 @@ for il,ll in enumerate(CHLlist):
     arrayrms = np.array(RMSDchl[1+il])
     for mreq in MonthList:
         mind,_ = TLq['P_l'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntotq,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        else:
+            LISTmonthly.append(np.nan)
+
 
     plt.bar(MonthlyTL,LISTmonthly,width=10,label=txtlabel)
     plt.bar(MonthlyTL[-1],LISTmonthly[-1],width=10,color='red')
@@ -491,9 +513,12 @@ for il,ll in enumerate(NITlist):
     arrayrms = np.array(RMSDnit[1+il])
     for mreq in MonthList:
         mind,_ = TLq['N3n'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntotq,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        else:
+            LISTmonthly.append(np.nan)
 
     plt.bar(MonthlyTL,LISTmonthly,width=10,label=txtlabel)
     plt.bar(MonthlyTL[-1],LISTmonthly[-1],width=10,color='red')
@@ -521,9 +546,13 @@ for il,ll in enumerate(CHLlist):
     arrayrms = np.array(BIASchl[1+il])
     for mreq in MonthList:
         mind,_ = TLq['P_l'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntotq,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        else:
+            LISTmonthly.append(np.nan)
+
 
     plt.bar(MonthlyTL,LISTmonthly,width=10,label=txtlabel)
     plt.bar(MonthlyTL[-1],LISTmonthly[-1],width=10,color='red')
@@ -551,9 +580,12 @@ for il,ll in enumerate(NITlist):
     arrayrms = np.array(BIASnit[1+il])
     for mreq in MonthList:
         mind,_ = TLq['N3n'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
-        maskm[mind] = True
-        LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        if len(mind)>0:
+            maskm = np.zeros(Ntotq,dtype=np.bool)
+            maskm[mind] = True
+            LISTmonthly.append(np.nanmean(arrayrms[maskm]))
+        else:
+            LISTmonthly.append(np.nan)
 
     plt.bar(MonthlyTL,LISTmonthly,width=10,label=txtlabel)
     plt.bar(MonthlyTL[-1],LISTmonthly[-1],width=10,color='red')

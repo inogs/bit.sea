@@ -70,6 +70,7 @@ TLmis = TimeList.fromfilenames(None, INDADIR,  \
 for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
     date8 = datemis.strftime('%Y%m%d')
     misfmean = np.zeros((4,Nsub))
+    misfmean[:] = np.nan
     De = DataExtractor(TheMask,filename=misfile,varname='misfchl',dimvar=2)
     chlmisf = De.values
     chlmisf[chlmisf>1.e+19] = np.nan
@@ -77,12 +78,15 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
 
     for isub,sub in enumerate(V2.P):
         chlsub = chlmisf[SUB[sub.name]]
-        misfmean[0,isub] = (np.nanmean(chlsub**2))**.5
+        if np.all(np.isnan(chlsub))==False:
+            misfmean[0,isub] = (np.nanmean(chlsub**2))**.5
         misfmean[3,isub] = np.float(np.sum(np.isfinite(chlsub)))/npSub[sub.name]
         chlsub = chlmisf[SUB[sub.name] & (mask200==True)]
-        misfmean[1,isub] = (np.nanmean(chlsub**2))**.5
+        if np.all(np.isnan(chlsub))==False:
+            misfmean[1,isub] = (np.nanmean(chlsub**2))**.5
         chlsub = chlmisf[SUB[sub.name] & (mask200==False)]
-        misfmean[2,isub] = (np.nanmean(chlsub**2))**.5
+        if np.all(np.isnan(chlsub))==False:
+            misfmean[2,isub] = (np.nanmean(chlsub**2))**.5
 
     fileout = OUTDIR + date8 + '_meanmisf.npy'
     np.save(fileout,misfmean)

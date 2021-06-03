@@ -146,7 +146,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
                     bias = np.nanmean(misint)
                     LISTmeanmis[0].append(rmsd)
                     LISTmeanmis[1].append(bias)
-            if len(LISTmeanmis)>0:
+            if len(LISTmeanmis[0])>0:
                 meanmis = np.nanmean(LISTmeanmis[0])
                 meanbias = np.nanmean(LISTmeanmis[1])
             else:

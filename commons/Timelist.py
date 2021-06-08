@@ -582,7 +582,7 @@ class TimeList():
             return REQ_LIST
         if self.inputFrequency == 'hourly':
             for t in self.Timelist:
-                REQ_LIST.append(requestors.hourly_req(t.year,t.month,t.day,t.hour))
+                REQ_LIST.append(requestors.Hourly_req(t.year,t.month,t.day,t.hour))
             return REQ_LIST
         if self.inputFrequency == 'daily':
             for t in self.Timelist:

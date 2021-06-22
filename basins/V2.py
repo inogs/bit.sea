@@ -86,6 +86,13 @@ mid3 = ComposedBasin('mid3', [adr1,adr2,ion1,ion2,ion3] , 'Central Mediterranean
 med3 = ComposedBasin('MED3', [eas3,wes3,mid3,med])
 #med3 = ComposedBasin('MED3', [eas3,wes3,mid3])
 
+# Mediterranean Sea divided in 4 subregions: --> for density-nitrate rel. analysis
+eas4 = ComposedBasin('East', [lev1,lev2,lev3,lev4,aeg] , 'Eastern Mediterranean Sea')
+wes4 = ComposedBasin('West', [alb,nwm,swm1,swm2] , 'Western Mediterranean Sea')
+midw4 = ComposedBasin('midW ', [tyr1,tyr2,ion1] , 'Mid West Mediterranean Sea')
+mide4 = ComposedBasin('midE ', [adr1,adr2,ion2,ion3] ,'Mid East Mediterranean Sea')
+med4 = ComposedBasin('MED4', [eas4,wes4,midw4,mide4])
+
 Pred = ComposedBasin('Pr',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,atl])
 P    = ComposedBasin('P',[alb ,swm1,swm2,nwm,tyr1,tyr2,adr1,adr2,aeg,ion1,ion2,ion3,lev1,lev2,lev3,lev4,med,atl])
 

@@ -499,8 +499,8 @@ class Matchup_Manager():
                     float_on_common_grid = float_on_common_grid - shift
 
                 if model_varname == 'P_c':
-                    bbp470 = float_on_common_grid * ( 470.0/ 700)** 0.78# [m-1]
-                    float_on_common_grid = 12128 * bbp470 + 0.59
+                    bbp470 = float_on_common_grid * ( 470.0/700)**(-0.78)# [m-1]
+                    float_on_common_grid = 12128 * bbp470 + 0.59   # Griff et al. 2015
                     shift=float_on_common_grid[ii].mean()
                     print "P_c: adding a shift of " + np.str(shift)
                     float_on_common_grid = float_on_common_grid - shift

@@ -279,11 +279,11 @@ class Hourly_req():
         self.month  = month
         self.day    = day
         self.hour   = hour
-        centertime     = datetime.datetime(self.year,self.month,self.day,self.hour)
+        self.centertime     = datetime.datetime(self.year,self.month,self.day,self.hour)
         delta = datetime.timedelta(hours=delta_hours)
 
-        self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
-        self.string  = centertime.strftime("%Y%m%d-%H%M%S")
+        self.time_interval = TimeInterval.fromdatetimes(self.centertime-delta/2, self.centertime+delta/2)
+        self.string  = self.centertime.strftime("%Y%m%d-%H%M%S")
         self.delta_hours = delta_hours
     def __repr__(self):
         return "Hourly requestor object: " + self.string + "  delta :  " + str(self.delta_hours)  + " hours"

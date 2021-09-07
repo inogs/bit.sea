@@ -1,3 +1,4 @@
+from __future__ import print_function
 import timerequestors as requestors
 import genUserDateList as DL
 import os,glob
@@ -119,7 +120,7 @@ class TimeList():
                     External_filelist.append(pathfile)
                     External_timelist.append(actualtime)
             except:
-                print "Warning: " + datestr + " does not exist!"
+                print("Warning: " + datestr + " does not exist!")
 
         TimeListObj = TimeList(datetimelist,forceFrequency=forceFrequency)
         filenamelist.sort()
@@ -159,7 +160,7 @@ class TimeList():
         '''
         if len(self.Timelist)<2:
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
-            print "Frequency cannot be calculated in " + self.inputdir + timestr
+            print("Frequency cannot be calculated in " + self.inputdir + timestr)
             return None
 
         DIFFS = np.zeros((self.nTimes-1),np.float64)
@@ -230,7 +231,7 @@ class TimeList():
         for it, t in enumerate(self.Timelist):
             if requestor.time_interval.contains(t):
                 return it
-        print "Time not found"
+        print("Time not found")
         return None
 
     def selectWeeklyGaussWeights(self,requestor,std):
@@ -342,7 +343,6 @@ class TimeList():
                         weights.append(weight)
                 return SELECTION , np.array(weights)
             if self.inputFrequency == 'monthly':
-                #print "Not time aggregation"
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -447,7 +447,7 @@ class TimeList():
         REQ_LIST=[]
         t = self.Timelist[0]
         starting_centered_day = datetime.datetime(t.year,t.month,t.day)
-        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=1")
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , days=1)
         for t in TL:
             d = requestors.Daily_req(t.year,t.month,t.day)
             indexes,_ = self.select(d)
@@ -474,7 +474,7 @@ class TimeList():
 
         starting_centered_day = self.timeinterval.start_time + datetime.timedelta(days=PossibleShifts[index])
 
-        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=7")
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , days=7)
         REQ_LIST=[]
         for t in TL:
             m = requestors.Weekly_req(t.year,t.month,t.day)
@@ -552,7 +552,6 @@ class TimeList():
                 req = requestors.Season_req(season[0],season[1],seasonobj)
 
                 if (req.time_interval.start_time >= firstSeason.time_interval.start_time) & (req.time_interval.end_time <=lastSeason.time_interval.end_time):
-                    #print "appended", season
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
 
@@ -686,18 +685,18 @@ class TimeList():
 
 
 if __name__ == '__main__':
-    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=17")
+    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", days=17)
     TTL     = TimeList(Days17)
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
 
-    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)
     ii,w = TL.select(Sec_req)
 
-    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Hourly_req=requestors.Hourly_req(2018,3,5,12,delta_hours=2)
     ii,w = TL.select(Hourly_req)
@@ -712,20 +711,20 @@ if __name__ == '__main__':
     intersection=[ k for k in ii if k in jj]
 
 
-    TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=10")
+    TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", days=10)
     TTL     = TimeList(TenDays)
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
-        # print "\nii = ", ii, "\nw = ", weights
+        # print("\nii = ", ii, "\nw = ", weights)
 
-    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
+    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", years=1)
     TLY = TimeList(yearly)
     REQSY=TLY.getOwnList()
     r=REQSY[0]
     ii,weights = TLY.select(r)
 
-    monthly=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "months=1")
+    monthly=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", months=1)
     TLM = TimeList(monthly)
     for iSeas in range(4):
         m = requestors.Clim_season(iSeas,seasonobj)
@@ -735,7 +734,7 @@ if __name__ == '__main__':
         m = requestors.Clim_month(imonth)
         TLM.select(m)
 
-    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
+    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", days=1)
     TL = TimeList(daily)
     REQS=TL.getOwnList()
     r=REQS[0]

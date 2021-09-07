@@ -1,4 +1,6 @@
+from __future__ import print_function
 from datetime import datetime,timedelta
+
 
 def last_day(d, day_name):
     '''
@@ -110,7 +112,7 @@ def list_for_maps(datestr,dateformat="%Y%m%d"):
 
 if __name__=="__main__":
 
-    print list_for_maps("20200512")
+    print(list_for_maps("20200512"))
 
     from commons import genUserDateList as DL
     DAYS=DL.getTimeList("20200505-12:00:00", "20200525-12:00:00", "days=1")
@@ -122,6 +124,6 @@ if __name__=="__main__":
 
         a= "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
         forcingT=find_best_forcing(datestr)
-        print a + " " + forcingT
+        print(a + " " + forcingT)
         
 

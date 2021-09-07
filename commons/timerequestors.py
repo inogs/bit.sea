@@ -26,7 +26,7 @@ class Clim_season():
         Example:
 
         req = Clim_season(2,seasonObj)
-        print req.string
+        print(req.string)
         
         
         '''
@@ -99,7 +99,6 @@ class Clim_Interval_req():
         self.hour   = hour
         centertime     = datetime.datetime(2001,self.month,self.day,self.hour)
         delta = datetime.timedelta(days)
-        #exec 'delta= relativedelta(' + deltastr + ')'
         self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
         self.string  = centertime.strftime("Climatological Interval requestor %m%d")
         self.deltadays = days
@@ -141,7 +140,7 @@ class Weekly_req():
     Example:
 
     req=Weekly_req(2015,3,5)
-    print r.isoweekday
+    print(r.isoweekday)
     '''
     def __init__(self,year,month,day):
         self.year   = year
@@ -203,7 +202,7 @@ class Season_req():
         Example:
 
         req = Season_req(2012,2,seasonObj)
-        print req.longname
+        print(req.longname)
         '''
         self.year   = year
         self.season = num_season
@@ -263,7 +262,6 @@ class Interval_req():
         self.hour   = hour
         centertime     = datetime.datetime(self.year,self.month,self.day,self.hour)
         delta = datetime.timedelta(days)
-        #exec 'delta= relativedelta(' + deltastr + ')'
         self.time_interval = TimeInterval.fromdatetimes(centertime-delta/2, centertime+delta/2)
         self.string  = centertime.strftime("%Y%m%d")
         self.deltadays = days

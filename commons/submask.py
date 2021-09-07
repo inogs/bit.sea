@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
     for sub in V2.Pred.basin_list:
         S=SubMask(sub,maskobject=TheMask)
-#         print sub.name
+
 #         fig,ax = mapplot({'data':S.mask[0,:,:], 'clim':[0,1]}, mask=TheMask)
 #         ax.set_xlim([-9, 36])
 #         ax.set_ylim([30, 46])        

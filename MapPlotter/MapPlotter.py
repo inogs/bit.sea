@@ -14,6 +14,7 @@ from __future__ import print_function, division
 import json, numpy as np, matplotlib, matplotlib.pyplot as plt
 import cartopy.crs as ccrs, cartopy.feature as cfeature, cartopy.io.img_tiles as cimgt
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 import netCDF4 as NC
 
@@ -256,17 +257,17 @@ class MapPlotter():
 		gl = None
 		if self._ax:
 			# Axes limits
-#			self._ax.set_xlim(xlim)
-#			self._ax.set_ylim(ylim)
-			self._ax.set_extent(xlim+ylim,crs=ccrs.PlateCarree())
+			self._ax.set_xlim(xlim)
+			self._ax.set_ylim(ylim)
+			#self._ax.set_extent(xlim+ylim,crs=ccrs.PlateCarree())
 			# Grid lines
-			gl = self._ax.gridlines(crs=ccrs.PlateCarree(),**gridlines_kwargs)
+			gl = self._ax.gridlines(crs=self._projection,**gridlines_kwargs)
 			gl.xlocator      = matplotlib.ticker.FixedLocator(np.arange(xlim[0],xlim[1],(xlim[1]-xlim[0])/max_div))
 			gl.ylocator      = matplotlib.ticker.FixedLocator(np.arange(ylim[0],ylim[1],(ylim[1]-ylim[0])/max_div))
-			gl.xformatter    = LongitudeFormatter(number_format=axis_format,
-												  degree_symbol='$^\circ$')
-			gl.yformatter    = LatitudeFormatter(number_format=axis_format,
-												 degree_symbol='$^\circ$')
+			#gl.xformatter    = LongitudeFormatter(number_format=axis_format,degree_symbol='$^\circ$')
+			#gl.yformatter    = LatitudeFormatter(number_format=axis_format,degree_symbol='$^\circ$')
+			gl.xformatter     = LONGITUDE_FORMATTER
+			gl.yformatter     = LATITUDE_FORMATTER
 			gl.top_labels    = top
 			gl.bottom_labels = bottom
 			gl.xlabel_style  = style
@@ -653,3 +654,71 @@ class MapPlotter():
 		self._plot = self._ax.scatter(xc,yc,transform=transform,marker=marker,s=size)
 
 		return self._fig
+
+
+if __name__ == "__main__":
+
+	## DATA PATHS ##
+	fname    = '/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_22/wrkdir/MODEL/AVE_FREQ_1/ave.20100101-12:00:00.N3n.nc'
+	varname  = 'N3n'
+	maskfile = '/gpfs/work/IscrC_REBIOMED/REANALISI_24/PREPROC/MASK/gdept_3d/ogstm/meshmask.nc'
+	idepth   = 0
+	outfile  = 'example_MapPlotter_1.png'
+	outdpi   = 300
+	from commons.mask import Mask
+	from commons.dataextractor import DataExtractor
+
+	TheMask = Mask(maskfile)
+	data = DataExtractor(TheMask,fname, varname).values
+	data[~TheMask.mask] = np.nan
+
+	# Instance MapPlotter class
+	# This is needed in order to access the projection
+	plotter = MapPlotter(projection='PlateCarree')
+
+	# Create matplotlib figures
+	fig  = plt.figure(figsize=(8,6),dpi=300,facecolor='w',edgecolor='k')
+	ax   = fig.add_subplot(1,1,1,projection=plotter.projection)
+
+	# Create basic parameters dictionary
+	params  = plotter.defaultParams()
+	# Set figure and axes
+	params['fig']      = fig
+	params['ax']       = ax
+	# Limits for the plot
+	params['xlim']     = [-6, 37]
+	params['ylim']     = [30, 46]
+	# Which features need to be plotted?
+	params['features'] = ['coastline','continents','rivers','image']
+	params['img']      = 'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73726/world.topo.bathy.200406.3x5400x2700.png'
+	# A bit of formatting on the title and axis
+	params['title']    = ['Temperature Map',{'weight':'bold','style':'italic'}]
+	params['xlabel']   = ['Longitude (deg)']
+	params['ylabel']   = ['Latitude (deg)']
+	# A bit of formatting on the colorbar
+	params['cmap']     = 'jet'
+	params['bounds']   = [10,30]
+	params['label']    = {'label':'Temperature (deg C)','weight':None,'style':None}
+	params['style']    = 'ggplot'
+
+	#self._fig = self.createFigure(sz=params['size'],dpi=params['dpi'],style=params['style'])
+	#self._ax  = self.createAxes()
+	plotter._ax = ax
+	plotter._fig = fig
+	gl =plotter.createGridlines(xlim=params['xlim'],ylim=params['ylim'],top=params['top_label'],
+	bottom=params['bottom_label'],right=params['right_label'],left=params['left_label'],
+	max_div=params['max_div'],style=params['grdstyle'],gridlines_kwargs=params['grdargs'])
+
+	plotter.drawBackground(img=params['img'])
+	plotter.drawCoastline(res=params['res'])
+	plotter.drawContinentBorders(res=params['res'])
+	plotter.drawRivers(res=params['res'])
+
+	plot_obj= ax.pcolormesh(TheMask.xlevels,TheMask.ylevels,data[0,:],cmap=plotter.setColormap(cmap=params['cmap'],ncol=params['ncol']), norm=matplotlib.colors.Normalize(0,5),alpha=params['alpha'],transform=plotter._projection)
+	fig.savefig(outfile)
+	# Plot
+	#plotter.plot_from_file_and_mask(fname,varname,maskfile,iDepth=idepth,params=params)
+
+	# Save and show
+	#plotter.save(outfile,dpi=outdpi)
+	#plotter.show()

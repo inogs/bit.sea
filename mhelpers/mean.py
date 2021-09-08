@@ -55,7 +55,7 @@ class Mean(object):
         l = len(values)
         if l==0:
             return False
-        if not isinstance(values[0], (int, long, float, complex, np.float32)):
+        if not isinstance(values[0], (int, float, complex, np.float32)):
             raise TypeError()
         if l == 1 or self._i == 0:
             return False
@@ -81,9 +81,9 @@ class GaussianMean(Mean):
             - *ValueError* if interval or sigma are negative or if they cannot
               be converted to a number.
         """
-        if isinstance(interval, (int, long )):
+        if isinstance(interval, int ):
             self._i = interval
-        elif isinstance(int(interval), (int, long)):
+        elif isinstance(int(interval), int):
             self._i = int(interval)
         if self._i < 0:
             raise ValueError("interval should be positive")
@@ -156,9 +156,9 @@ class MovingAverage(Mean):
         Raises:
             - ValueError if interval is negative.
         """
-        if isinstance(interval, (int, long )):
+        if isinstance(interval, int):
             self._i = interval
-        elif isinstance(int(interval), (int, long)):
+        elif isinstance(int(interval), int):
             self._i = int(interval)
         if self._i < 0:
             raise ValueError("interval should be positive")

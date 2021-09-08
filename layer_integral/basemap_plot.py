@@ -1,6 +1,25 @@
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as pl
 import numpy as np
+from basins.region import Rectangle
+import matplotlib.font_manager as font_manager
+from mapplot import is_in_boxes, set_font, set_invisible
+
+xlim=[-6.5,36.5]
+ylim=[30,46]
+xC=(xlim[0]+xlim[1])/2
+yC=(ylim[0]+ylim[1])/2
+
+
+map_obj = Basemap(projection='merc',lat_0=xC,lon_0=yC,\
+                                  llcrnrlon = xlim[0], \
+                                  llcrnrlat = ylim[0], \
+                                  urcrnrlon = xlim[1], \
+                                  urcrnrlat = ylim[1], \
+                                  area_thresh=None, \
+                                  resolution='i')
+
+
 UNIT_LABELS_DICT=  {'fluxCO2'       : 'mmol C m'  + u'\u207B' + u'\u00B2' +'d' + u'\u207B' + u'\u00B9' ,\
                     'fluxco2'       : 'mg C m'    + u'\u207B' + u'\u00B2' +'d' + u'\u207B' + u'\u00B9' ,\
                     'mmolAlk/m3'    : 'mmol Eq m' + u'\u207B' + u'\u00B3'                              ,\
@@ -112,3 +131,86 @@ def do_plot(myplot,matrixToPlot,maskObj):
     cbar = map.colorbar(cs,location='bottom',size="5%",pad="2%")
     cbar.ax.tick_params(labelsize=5)
     return fig
+
+def mapplot(map_dict, maskobj, fig, ax, ncolors=256, colormap='viridis'):
+    """
+    map_dict={'data': map2d, 'clim': [0,1], 'title': mystring }
+    """
+    background_color=(.9, .9, .9)
+    cmap=pl.get_cmap(colormap,ncolors)
+
+#    font=FontProperties()
+    font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Bold.ttf', size='xx-large', weight='bold')
+    font_prop13 = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=13)
+    # font.set_name('TitilliumWeb')
+    if (fig is None) or (ax is None):
+        fig , ax = pl.subplots()
+        fig.set_size_inches(10,10*map_obj.ymax/map_obj.xmax * (.85/.85))
+
+    else:
+        fig.clf()
+        fig.add_axes(ax)
+
+    ax.set_position([.10, .10, .85, .85])
+    R1 = Rectangle(28.90338, 34.88078, 37.28154, 39.795254)#anatolia
+    R2 = Rectangle(7.86973,11.0276,45.1554,46 )#nord italia
+    R3 = Rectangle(11.7043,12.3246,42.3872,43.5016)# centro italia
+    R4 = Rectangle(-0.532455,0.369799,40.9977,41.8014)# catalunya
+    R5 = Rectangle(-6,-3.57754,39.011,42.0531)# centro spagna
+    R6 = Rectangle(20.332,21.6854,40.3991,41.4642) #albania
+    R7 = Rectangle(35.1627,35.9522,30.7444,33.0422)# israel
+    R8 = Rectangle(28.2831,28.9034,45.1951,45.7487)# moldavia
+    R9 = Rectangle(19.0258,19.588,42.0524,42.3803)# Skadarko Jezero
+    R10 = Rectangle(27.7687,28.845,40.0348,40.2938)# 3 laghi vicino bursa, turchia
+    R11 = Rectangle(29.2417,30.0876,39.9683,40.6135)# terzo lago
+    R12 = Rectangle(31.7135,32.3184,31.0228,31.5918)#nilo
+    RECTANGLE_LIST=[R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11] # R12]
+    POLY=map_obj.coastpolygons
+    for polygon in POLY:
+        x,y=polygon
+        ax.fill(x,y,color=background_color)
+        if not is_in_boxes(x[0], y[0], RECTANGLE_LIST, map_obj):
+            ax.plot(x,y,linewidth=0.7, color="0.4")
+
+
+    vmin, vmax = map_dict['clim']
+    map2d=map_dict['data']
+    Zm = np.ma.masked_invalid(map2d)
+    cs=map_obj.pcolormesh(maskobj.xlevels, maskobj.ylevels, Zm,cmap=cmap,latlon='true',vmin=vmin,vmax=vmax, shading="flat", ax=ax)
+    parallels = np.arange(32.,46.,4)
+    h_dict=map_obj.drawparallels(parallels,labels=[1,0,0,1],linewidth=0.5, fontsize=13, dashes=[1,2], ax=ax)
+    #set_font(h_dict, font_prop13)
+    h_dict = map_obj.drawparallels(parallels,labels=[1,0,0,1],fontsize=13, dashes=[6,900],ax=ax)
+    set_invisible(h_dict)
+    # draw meridians
+    meridians = np.arange(-4.,40,4.)
+    set_font(map_obj.drawmeridians(meridians,labels=[0,0,0,1],linewidth=0.5,fontsize=13, dashes=[1,2],ax=ax), font_prop13 ) #dashes=[6,900])
+    set_invisible(map_obj.drawmeridians(meridians,labels=[0,0,0,1],fontsize=13, dashes=[6,900],ax=ax))
+
+    nticks = 6
+    cbar_ticks_list = np.linspace(vmin, vmax, nticks).tolist()
+    cbar_ticks_labels = ["%g" % (t,)  for t in cbar_ticks_list ]
+
+
+    cbar = map_obj.colorbar(cs,location='right',size="5%",pad="2%", ticks=cbar_ticks_list)
+    cbar.ax.set_yticklabels(cbar_ticks_labels, fontproperties=font_prop13)
+
+
+    t=ax.set_xlabel('Longitude',size= 'xx-large',fontweight='bold',labelpad = 20)#).set_fontsize(15)
+    t.set_font_properties(font_prop)
+    t=ax.set_ylabel('Latitude',size= 'xx-large',fontweight='bold',labelpad = 40)#).set_fontsize(15)
+    t.set_font_properties(font_prop)
+
+    ax.set_position([.10, .10, .85, .85])
+    #title_1 = "%s, %s "  % (map_dict['longname'],map_dict['units'])
+    #title_2 = "%s" %  map_dict['layer'].__repr__()
+    #title_3 = "%s" % (map_dict['date']).strftime('%d - %m - %Y')
+    #t1=ax.annotate(title_1 ,xy=(0.00,1.02), xycoords='axes fraction' , horizontalalignment='left')
+    t2=ax.annotate(map_dict['title'] ,xy=(0.50,1.02), xycoords='axes fraction' , horizontalalignment='center')
+    #t3=ax.annotate(title_3 ,xy=(1.00,1.02), xycoords='axes fraction' , horizontalalignment='right')
+    #t1.set_font_properties(font_prop13)
+    t2.set_font_properties(font_prop13)
+    #t3.set_font_properties(font_prop13)
+
+
+    return fig, ax

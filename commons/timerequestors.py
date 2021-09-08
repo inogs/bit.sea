@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from time_interval import TimeInterval
+from commons.time_interval import TimeInterval
 
 class Clim_season():
     '''

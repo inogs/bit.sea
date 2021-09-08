@@ -180,7 +180,7 @@ class BioFloat(Instrument):
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
 
-        if ncIN.variables.has_key(var + "_ADJUSTED"):
+        if (var + "_ADJUSTED") in ncIN.variables.keys():
             M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
             QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
         else:
@@ -339,11 +339,11 @@ class BioFloat(Instrument):
         '''
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile]
+            timestr          = INDEX_FILE['time'][iFile].decode()
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile]
-            available_params = INDEX_FILE['parameters'][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile].decode()
+            available_params = INDEX_FILE['parameters'][iFile].decode()
             parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
@@ -373,11 +373,11 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile]
+        timestr          = INDEX_FILE['time'][iFile].decode()
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
         parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
@@ -445,7 +445,7 @@ def from_lov_profile(lov_profile, verbose=True):
         DELTA_TIMES[k] = deltat.total_seconds()
     min_DeltaT = np.abs(DELTA_TIMES).min()
     if min_DeltaT > 3600*3 :
-        if verbose: print "no Coriolis file corresponding to "  + lov_profile._my_float.filename
+        if verbose: print("no Coriolis file corresponding to "  + lov_profile._my_float.filename)
         return None
     F = (A['lon'] - lov_profile.lon)**2 + (A['lat'] - lov_profile.lat)**2 +  DELTA_TIMES**2
     iFile = F.argmin()
@@ -471,21 +471,21 @@ if __name__ == '__main__':
     for ip, p in enumerate(PROFILE_LIST):
         if p._my_float.status_var('NITRATE') =='D':
             Pres, Value, Qc= p.read(var, read_adjusted=True)
-            print Pres.max()
+            print(Pres.max())
 
         continue
         F=p._my_float
         nP=len(Pres)
         if nP<5 :
-            print "few values for " + F.filename
+            print( "few values for " + F.filename)
             continue
         if Pres[-1]<100:
-            print "depth < 100 for "+ F.filename
+            print("depth < 100 for "+ F.filename)
             continue
 
         if Pres.max()< 600:
-            print "superficiale", p.ID()
-            #sys.exit()
+            print("superficiale", p.ID())
+           #sys.exit()
 
         if F.status_var('NITRATE')=='D':
             #if F.status_var('DOXY') =='R':
@@ -509,4 +509,3 @@ if __name__ == '__main__':
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:
         sublist = filter_by_wmo(PROFILE_LIST, wmo)
-

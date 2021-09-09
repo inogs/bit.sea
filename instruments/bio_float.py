@@ -3,10 +3,10 @@ import numpy as np
 import datetime
 import os
 from commons.utils import addsep
-from var_conversions import FLOATVARS as conversion
+from instruments.var_conversions import FLOATVARS as conversion
 import matplotlib.pyplot as pl
 
-from instrument import Instrument, Profile
+from instruments.instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 

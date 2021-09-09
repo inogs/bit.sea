@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from taylorDiagram import TaylorDiagram
-from targetDiagram import TargetDiagram
+from matchup.taylorDiagram import TaylorDiagram
+from matchup.targetDiagram import TargetDiagram
 from matplotlib.cm import ScalarMappable as ScalarMappable
 
 class matchup(object):

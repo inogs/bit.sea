@@ -105,7 +105,7 @@ rank   = 0
 nranks = 1
 isParallel = False
     
-if rank==0 : print "list      " ,args.avelist, "filtered by", filtervar
+if rank==0 : print("list      " ,args.avelist, "filtered by", filtervar)
 def wp(data, wt, percentiles):
     """Compute weighted percentiles. 
     If the weights are equal, this is the same as normal percentiles. 
@@ -141,7 +141,7 @@ def wp(data, wt, percentiles):
     sw = np.take(wt, i, axis=0) 
     aw = np.add.accumulate(sw) 
     if not aw[-1] > 0: 
-        raise ValueError, "Nonpositive weight sum" 
+        raise ValueError("Nonpositive weight sum")
     w = (aw-0.5*sw)/aw[-1] 
     spots = np.searchsorted(w, percentiles) 
     o = [] 
@@ -308,7 +308,7 @@ def getColumnIntegrals(var, objfileI):
             if np.any(smask[0,:,:]):
                 INTEGRALS[isub,icoast,iDepth,iStat] = Int_Cdz[smask[0,:,:]].mean(axis=None)
             else:
-                print "getColumnIntegrals: no data found in ", sub, coast
+                print("getColumnIntegrals: no data found in ", sub, coast)
     ncvar    = objfileI.createVariable(var, 'f', ('sub','coast','depth','stat'))
     ncvar[:] = INTEGRALS  
       
@@ -452,7 +452,7 @@ def create_ave_headers(datestr):
 
     if os.path.exists(ave__profiles):
         ncOUT__profiles=NC4.Dataset(ave__profiles,'a')
-        print "appending in ", ave__profiles
+        print("appending in ", ave__profiles)
     else:
         ncOUT__profiles = NC4.Dataset(ave__profiles,'w')
         ncOUT__profiles.createDimension("sub"       ,len(SUBlist))
@@ -465,7 +465,7 @@ def create_ave_headers(datestr):
 
     if os.path.exists(ave_integrals):
         ncOUT_integrals=NC4.Dataset(ave_integrals,'a')
-        print "appending in ", ave_integrals
+        print("appending in ", ave_integrals)
     else:
         ncOUT_integrals=NC4.Dataset(ave_integrals,'w')
         ncOUT_integrals.createDimension("sub"       ,len(SUBlist))
@@ -536,13 +536,13 @@ OUTPUT_DIR_PPN  = BASEDIR + 'INTEGRALS/PPN/'
 
 if rank==0 : 
     RD.printStatus() 
-    print "INPUT_AVEDIR", INPUT_AVEDIR
+    print("INPUT_AVEDIR", INPUT_AVEDIR)
  
     for DIR in [OUTPUT_DIR_INT, OUTPUT_DIR_MPR, OUTPUT_DIR_PPN, TMPDIR]:
         if doStatistics:    os.system("mkdir -p " + DIR)
     for DIR in [OUTPUT_DIR_PRO, TMPDIR]:
         if doPointProfiles: os.system("mkdir -p " + DIR)
-    print INPUT_AVEDIR + args.avelist
+    print(INPUT_AVEDIR + args.avelist)
     
 aveLIST = glob.glob(INPUT_AVEDIR + args.avelist)
 if not filtervar is None:
@@ -580,7 +580,7 @@ for ip in PROCESSES[rank::nranks]:
         ncOUT__profiles,ncOUT_integrals = create_tmp_headers(datestr,var)
 
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
-    print "rank %03d scans %s on %s" %(rank,var,os.path.basename(filename))
+    print("rank %03d scans %s on %s" %(rank,var,os.path.basename(filename)))
     vartoread = var
 
     if ('RST' in os.path.basename(filename)) and (not('before' in os.path.basename(filename))):
@@ -608,7 +608,7 @@ for ip in PROCESSES[rank::nranks]:
         
     
 if isParallel : comm.Barrier()    
-if rank == 0: print "RICOSTRUZIONE FILES"
+if rank == 0: print("RICOSTRUZIONE FILES")
 
 for avefile in aveLIST[rank::nranks]:
     F = GB_lib.filename_manager(avefile)
@@ -656,14 +656,14 @@ for avefile in aveLIST[rank::nranks]:
     
     
    
-if rank==0 : print "RICOSTRUZIONE FINITA"
+if rank==0 : print("RICOSTRUZIONE FINITA")
 if isParallel: comm.Barrier() 
 
 var = 'ppn'
 if var not in VARLIST or not doStatistics : sys.exit()
 
 for avefile in aveLIST[rank::nranks]:
-    print avefile
+    print(avefile)
     F=GB_lib.filename_manager(avefile)
     filename = F.get_filename(avefile, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
     VAR  = DataExtractor(TheMask,filename,var,dimvar=3).values 

@@ -4,9 +4,9 @@ import datetime
 import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
-from instrument import Instrument, Profile
+from instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
-from var_conversions import FLOATVARS as conversion
+from instruments.var_conversions import FLOATVARS as conversion
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -262,11 +262,11 @@ class BioFloat(Instrument):
 
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile]
+            timestr          = INDEX_FILE['time'][iFile].decode()
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile]
-            available_params = INDEX_FILE['parameters'][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile].decode()
+            available_params = INDEX_FILE['parameters'][iFile].decode()
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
             if filename.endswith(thefilename):
                 return BioFloat(lon,lat,float_time,filename,available_params)
@@ -294,11 +294,11 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile]
+        timestr          = INDEX_FILE['time'][iFile].decode()
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
         filename = ONLINE_REPO + "SUPERFLOAT/" + filename
 

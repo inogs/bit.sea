@@ -1,5 +1,5 @@
 import numpy as np
-import var_conversions
+from instruments import var_conversions
 class Profile(object):
     def read(self,var):
         raise NotImplementedError

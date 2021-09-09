@@ -79,7 +79,7 @@ class TaylorDiagram(object):
         self.ax = ax.get_aux_axes(tr)   # Polar coordinates
 
         # Add reference point and stddev contour
-        print "Reference std:", self.refstd
+        print("Reference std:", self.refstd)
         l, = self.ax.plot([0], self.refstd, 'k*',
                           ls='', ms=10, label=label)
         t = NP.linspace(0, NP.pi/2)

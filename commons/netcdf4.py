@@ -8,7 +8,7 @@ def lon_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['lon','longitude','x']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -18,7 +18,7 @@ def lat_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['lat','latitude','y']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -28,7 +28,7 @@ def depth_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['depth','z']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -65,7 +65,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
         print("appending ", varname, " in ", outfile)
-        variable_exist= ncOUT.variables.has_key(varname)
+        variable_exist= varname in ncOUT.variables.keys()
         if variable_exist:
             ncvar=ncOUT.variables[varname]
         else:
@@ -139,7 +139,7 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
         print("appending ", varname, " in ", outfile)
-        variable_exist= ncOUT.variables.has_key(varname)
+        variable_exist= varname in ncOUT.variables.keys()
         if variable_exist:
             ncvar2d=ncOUT.variables[varname]
         else:

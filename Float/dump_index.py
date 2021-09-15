@@ -87,14 +87,14 @@ def file_header_content(filename,VARLIST, avail_params=None):
     try:
         ncIN = NC.netcdf_file(filename,'r')
     except:
-        print "Not valid NetDCF file: " + filename
+        print("Not valid NetDCF file: " + filename)
         return
 
     lon=ncIN.variables['LONGITUDE'].data[0]
     lat=ncIN.variables['LATITUDE'].data[0]
     BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
     if BadPosition:
-        print "Bad position in file : " + filename
+        print("Bad position in file : " + filename)
         ncIN.close()
         return
 
@@ -122,7 +122,7 @@ def get_sensor_list(wmo,LINES):
             A=np.loadtxt(d,dtype=mydtype,delimiter=',')
             return str(A['parameters'])
     else:
-        print wmo + " not in CORIOLIS"
+        print(wmo + " not in CORIOLIS")
         return 'DOXY NITRATE CHLA PRES PSAL TEMP'
 
 
@@ -155,7 +155,7 @@ for DIR in DIRLIST:
                 if line is not None:
                     if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     LINES.append(line+"\n")
-                    if is_provided_indexer: print "added " + line
+                    if is_provided_indexer: print("added " + line)
 
 
 F = file(FloatIndexer,'w')

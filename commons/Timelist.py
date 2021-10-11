@@ -177,8 +177,8 @@ class TimeList():
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
         if (days > 26) & (days < 32) :
             return "monthly"
-        if (days < 1 ) & ( days > 1./24.):
-            return "hourly"
+        if (days < 1 ) & ( days >= 1./24.):
+            return "hours=%d" %int(days*24)
         if (days < 1./24 ) :
             return "seconds=%d" % int(days*24.*3600.)
         if (days > 364 ) & (days < 367): 
@@ -571,17 +571,17 @@ class TimeList():
         Not useful for time aggregation, but to get requestors in order to match with observations'''
 
         REQ_LIST=[]
-        if self.inputFrequency == 'seconds=900':
+        if self.inputFrequency.startswith('seconds='):
+            pos=self.inputFrequency.find("=")
+            nSeconds=int(self.inputFrequency[pos+1:])
             for t in self.Timelist:
-                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,900))
+                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,nSeconds))
             return REQ_LIST
-        if self.inputFrequency == 'seconds=1800':
+        if self.inputFrequency.startswith('hours'):
+            pos=self.inputFrequency.find("=")
+            nHours=int(self.inputFrequency[pos+1:])
             for t in self.Timelist:
-                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,1800))
-            return REQ_LIST
-        if self.inputFrequency == 'hourly':
-            for t in self.Timelist:
-                REQ_LIST.append(requestors.Hourly_req(t.year,t.month,t.day,t.hour))
+                REQ_LIST.append(requestors.Hourly_req(t.year,t.month,t.day,t.hour, delta_hours=nHours))
             return REQ_LIST
         if self.inputFrequency == 'daily':
             for t in self.Timelist:
@@ -691,6 +691,9 @@ if __name__ == '__main__':
     for req in MyReqList:
         ii,weights = TTL.select(req)
 
+    H2 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", hours=2)
+    TL     = TimeList(H2)
+    REQS = TL.getOwnList()
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)

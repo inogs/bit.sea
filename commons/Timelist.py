@@ -17,11 +17,17 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
     if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
-    if (freqString[:5]=='days='):
-        ndays=int(freqString[5:])
+    if freqString.startswith('days'):
+        pos=freqString.find("=")
+        ndays=int(freqString[pos+1:])
         req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,days=ndays)
-    if (freqString[:8]=='seconds='):
-        nseconds=int(freqString[8:])
+    if freqString.startswith('hours'):
+        pos=freqString.find("=")
+        nhours=int(freqString[pos+1:])
+        req = requestors.Hourly_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour, delta_hours=nhours)
+    if freqString.startswith('seconds='):
+        pos=freqString.find("=")
+        nseconds=int(freqString[pos+1:])
         req = requestors.seconds_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour,currentDate.minute, delta_seconds=nseconds) 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 

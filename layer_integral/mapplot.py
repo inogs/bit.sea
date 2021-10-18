@@ -104,10 +104,10 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
     #ax.text(35, 46, 'OGS Echo Group',
     #     fontsize=60, color='gray',
     #     ha='right', va='top', alpha=0.3, rotation=18)
-    if map_dict.has_key('layer'):
+    if  'layer' in map_dict.keys():
         title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     else:
-        if map_dict.has_key('date'):
+        if 'date' in map_dict.keys():
             title = "%s %s" % (map_dict['date'], map_dict['varname'])
             fig.suptitle(title)
     return fig, ax

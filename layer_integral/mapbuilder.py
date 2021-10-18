@@ -11,7 +11,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
+from layer_integral.mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
 import datetime
 import matplotlib.pyplot as pl
 
@@ -136,7 +136,7 @@ class MapBuilder(object):
 #        for f in self.__netcdffileslist: 
 #            for p in self.__plotlist:
             msg = "rank %d works on %s %s" %(rank,filename,var)
-            print msg
+            print(msg)
             de = DataExtractor(self._mask, filename=filename, varname=p.varname)
 
             for i,l in enumerate(p.layerlist):

@@ -126,7 +126,7 @@ class Matchup_Manager():
 
         M = ncIN.variables[var].data.copy()
 
-        iProfile = ncIN.CruiseIndex.rsplit(", ").index(wmo)
+        iProfile = ncIN.CruiseIndex.decode().rsplit(", ").index(wmo)
         ncIN.close()
         Profile = M[iProfile,:]
 

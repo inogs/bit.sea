@@ -36,11 +36,11 @@ def argument():
 args = argument()
 from commons import V7C_timing as timing
 if args.phys:
-    print timing.find_best_forcing(args.date)
+    print(timing.find_best_forcing(args.date))
 if args.bgc:
-    print timing.find_best_bgc(args.date)
+    print(timing.find_best_bgc(args.date))
 if args.dir:
-    print timing.find_best_dir(args.date)
+    print(timing.find_best_dir(args.date))
 if args.maps:
     for thedir in timing.list_for_maps(args.date):
-        print thedir + "/POSTPROC/AVE_FREQ_1/maps.tar"
+        print(thedir + "/POSTPROC/AVE_FREQ_1/maps.tar")

@@ -34,12 +34,12 @@ def array_of_indices_for_slicing(xcoarse, xfine):
         try:
             istart, iend = get_2_indices_for_slicing(xfine, bordoW, bordoE, istart)
         except:
-            print "*******************************************************"
-            print "Warning: out of bounds."
-            print "We will use the previous istart, iend values"
-            print "COARSE GRID: Cell center, %f, West bound, %f East bound %f "  %(centrocella, bordoW, bordoE)
-            print "FINE  GRID:  ends at: ", xfine.max()
-            print "*******************************************************"
+            print("*******************************************************")
+            print("Warning: out of bounds.")
+            print("We will use the previous istart, iend values")
+            print("COARSE GRID: Cell center, %f, West bound, %f East bound %f "  %(centrocella, bordoW, bordoE))
+            print("FINE  GRID:  ends at: ", xfine.max())
+            print("*******************************************************")
         I_START[ji] = istart
         I_END[ji]   = iend
     return I_START, I_END

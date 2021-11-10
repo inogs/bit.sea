@@ -24,7 +24,7 @@ def oxy_sat(p):
 
     ii = PresT<=depth_threshold
     if ii.sum() == 0:
-        print "No TEMP values with pressure less than %f m " %(depth_threshold)
+        print("No TEMP values with pressure less than %f m " %(depth_threshold))
         return np.nan
 
     temp=np.mean(Temp[ii]) 
@@ -33,7 +33,7 @@ def oxy_sat(p):
     ts = np.log( ( 298.15 - temp) / ( temp + 273.15 ) )
     ts2 = ts * ts 
 
-    lnk = 2.00856 + 3.22400 *ts + 3.99063 *ts2 + 4.80299 *ts *ts2 + 9.78188 * 10**(-01) * ts2 *ts2 + 1.71069*ts2 *ts2 *ts +  sal  * (-6.24097 * 10**(-03) -6.93498 * 10**(-03) * ts -6.90358 * 10**(-03) * ts2 -4.29155 * 10**(-03) *ts *ts2) -3.11680 * 10**(-7)  *sal *sal
+    lnk = 2.00856 + 3.22400 *ts + 3.99063 *ts2 + 4.80299 *ts *ts2 + 9.78188 * 1.e-1 * ts2 *ts2 + 1.71069*ts2 *ts2 *ts +  sal  * (-6.24097 * 1.e-3 -6.93498 * 1.e-3 * ts -6.90358 * 1.e-3 * ts2 -4.29155 * 1.e-3 *ts *ts2) -3.11680 * 1e-7  *sal *sal
     o2sat_ml= np.exp(lnk)  # oxygen saturation in ml / l
 
     o2sat_mmol=  o2sat_ml * 1000 / 22.391  # Oxygen saturation in (mmol/m3)  % ICES conversion volume of 1 mole O2 at STP
@@ -68,7 +68,7 @@ def oxy_check(Pres,Prof,p):
 
     ii = Pres_good<=depth_threshold
     if ii.sum() == 0 :
-        print "No DOXY values with pressure less than %f m " %(depth_threshold)
+        print("No DOXY values with pressure less than %f m " %(depth_threshold))
         return False
 # Define O2o surface as the mean values in the first 5m from the sea surface:
     Osurf=np.mean(Prof_good[ii])
@@ -100,10 +100,10 @@ if __name__ == "__main__":
     Pres, Prof, Qc= p.read(var,read_adjusted=True)
     CR=oxy_check(Pres,Prof,p)
 
-    print "DOXY check is " + str(CR)
+    print("DOXY check is " + str(CR))
 
     if not CR:
                Prof=np.nan*np.ones_like(Prof)
                Qc=4*np.ones_like(Qc)
-               print "Exclude WMO " + np.str(p._my_float.wmo) + " - " + p._my_float.time.strftime("%Y%m%d")
+               print("Exclude WMO " + np.str(p._my_float.wmo) + " - " + p._my_float.time.strftime("%Y%m%d"))
 

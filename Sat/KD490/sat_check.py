@@ -74,7 +74,7 @@ for filename in TL_orig.filelist:
 if somecheck:
     MEAN,STD = Sat.readClimatology(CLIM_FILE)
 else:
-    print "All checks done"
+    print ("All checks done")
 
 for iTime, filename in enumerate(TL_orig.filelist):
     outfile = CHECKDIR + os.path.basename(filename)
@@ -103,9 +103,9 @@ for iTime, filename in enumerate(TL_orig.filelist):
     counter_elim = outOfRange.sum(axis = None)
     CHL_OUT[outOfRange] = Sat.fillValue 
     
-    print filename
-    print 'Rejection:  after check', counter_elim, ' values'
-    print 'rejected for NAN in Climatology', counter_refNAN, ' values'
+    print (filename)
+    print ('Rejection:  after check', counter_elim, ' values')
+    print ('rejected for NAN in Climatology', counter_refNAN, ' values')
     Sat.dumpGenericNativefile(outfile, CHL_OUT, "KD490",mesh=maskSat)
 
 

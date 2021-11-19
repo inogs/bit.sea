@@ -130,7 +130,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print "dumping nitrate on " + outfile
+    print("dumping nitrate on " + outfile)
     nitrate_already_existing="nNITRATE" in ncOUT.dimensions.keys()
     if not nitrate_already_existing: ncOUT.createDimension('nNITRATE', nP)
     ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
@@ -155,10 +155,10 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
     Pres, Value, Qc= p.read("NITRATE", read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
-        print "few values for " + F.filename
+        print("few values for " + F.filename)
         return
     if Pres[-1]<100:
-        print "few values for " + F.filename
+        print("few values for " + F.filename)
         return
 
     os.system('mkdir -p ' + os.path.dirname(outfile))
@@ -185,7 +185,7 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
                             if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
 
             if outOfClimatology:
-                    print "Out of climatology for " + F.filename
+                    print("Out of climatology for " + F.filename)
                     return
             dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
         else:
@@ -195,7 +195,7 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
                 metadata.shift      = shift
                 dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
             else:
-                print "WOA correction not applicable for max(depth) < 600 m"
+                print("WOA correction not applicable for max(depth) < 600 m")
 
 
 
@@ -212,7 +212,7 @@ if input_file == 'NO_file':
 
 
     for wmo in wmo_list:
-        print wmo
+        print(wmo)
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)

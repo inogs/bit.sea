@@ -63,16 +63,16 @@ for req in MONTHLY_reqs:
 
     if conditionToSkip: continue
 
-    print outfile
+    print (outfile)
     ii, w = TLCheck.select(req)
     nFiles = len(ii)
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
-        print '  ... %s of %s' %(iFrame+1,len(ii))
+        print ('  ... %s of %s' %(iFrame+1,len(ii)))
         inputfile = TLCheck.filelist[j]
         CHL = Sat.readfromfile(inputfile,'KD490')
         M[iFrame,:,:] = CHL
-    print ' average ...'
+    print (' average ...')
     Kext_OUT = Sat.averager(M)
-    print ' write ' + outpathfile
+    print (' write ' + outpathfile)
     Sat.dumpGenericNativefile(outpathfile, Kext_OUT,"KD490",mesh=maskSat)

@@ -106,16 +106,16 @@ for req in TIME_reqs[rank::nranks]:
         nDates = len(weekdates)
     
         if nFiles>nDates:
-            print 'Not skipping ' + req.string
+            print('Not skipping ' + req.string)
         else:
             conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
             if conditionToSkip: continue
 
-    print outfile
+    print(outfile)
     dateweek = []
     if nFiles < 3 : 
-        print req
-        print "less than 3 files"
+        print(req)
+        print("less than 3 files")
         filedates = DIRDATES + req.string + 'weekdates.txt'
         print(filedates)
         np.savetxt(filedates,dateweek,fmt='%s')
@@ -136,4 +136,4 @@ for req in TIME_reqs[rank::nranks]:
     print(filedates)
     np.savetxt(filedates,dateweek,fmt='%s')
 
-    print "\trequest ", counter, " of ", MySize, " done by rank ", rank
+    print("\trequest ", counter, " of ", MySize, " done by rank ", rank)

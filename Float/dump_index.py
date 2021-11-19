@@ -124,6 +124,16 @@ def get_sensor_list(wmo,LINES):
     else:
         print(wmo + " not in CORIOLIS")
         return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+def is_SR_to_reject(filename, filenames):
+    isSR=os.path.basename(filename).startswith('SR')
+    if isSR:
+        SDfilename=filename.replace('SR','SD')
+        if SDfilename in filenames:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 LOC=addsep(args.inputdir)
@@ -139,6 +149,7 @@ for DIR in DIRLIST:
     filenames.sort()
     for filename in filenames:
         if filename[-4:]!='D.nc':
+            if is_SR_to_reject(filename, filenames): continue
             if filename in FILELIST:
                 ind=FILELIST.index(filename)
                 timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")

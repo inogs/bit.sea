@@ -102,5 +102,5 @@ for filename in TL.filelist[rank::nranks]:
     Sat.dumpGenericNativefile(outfile, Mout, 'KD490', maskOut)
     netcdf3.write_2d_file(usedPoints, 'Points', outfile, Mout)
 
-    print "\tfile ", counter, " of ", MySize, " done by rank ", rank
+    print ("\tfile ", counter, " of ", MySize, " done by rank ", rank)
 

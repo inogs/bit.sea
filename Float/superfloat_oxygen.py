@@ -139,7 +139,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print "dumping oxygen on " + outfile
+    print("dumping oxygen on " + outfile)
     doxy_already_existing="nDOXY" in ncOUT.dimensions.keys()
     if not doxy_already_existing : ncOUT.createDimension('nDOXY', nP)
     ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
@@ -166,7 +166,7 @@ def read_doxy(pCor):
     Pres, Value, Qc = pCor.read('DOXY',read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
-        print "few values for " + pCor._my_float.filename
+        print("few values for " + pCor._my_float.filename)
         return None, None, None
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
@@ -188,7 +188,7 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         os.system('mkdir -p ' + os.path.dirname(outfile))
         dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
     else:
-        print "Saturation Test not passed"
+        print("Saturation Test not passed")
 
 OUTDIR = addsep(args.outdir)
 input_file=args.update_file
@@ -204,7 +204,7 @@ if input_file == 'NO_file':
 
 
     for wmo in wmo_list:
-        print wmo
+        print(wmo)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, p in enumerate(Profilelist):
             outfile = get_outfile(p,OUTDIR)

@@ -174,9 +174,9 @@ for iTime, filename in enumerate(TL_orig.filelist):
     maskreject[outOfRange] = 1
     
     if exit_condition==False:
-        print 'Done check with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')'
-        print 'Rejection:  after check', counter_elim, ' values'
-        print 'rejected for NAN in Climatology', counter_refNAN, ' values'
+        print('Done check with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')')
+        print('Rejection:  after check', counter_elim, ' values')
+        print('rejected for NAN in Climatology', counter_refNAN, ' values')
         Sat.dumpGenericNativefile(outfile, CHL_OUT, "CHL",mesh=maskSat)
         Sat.dumpGenericNativefile(rejfile, maskreject, "RejInd",mesh=maskSat)
 
@@ -259,6 +259,6 @@ for iTime, filename in enumerate(TL_orig.filelist):
             # pickle.dump(stats_day,fid)
             # fid.close()
 
-        print 'Done statistics with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')'
-        print '   ---------------------------------------------------   '
+        print('Done statistics with ', filename, '  (',iTime+1,' of ', len(TL_orig.filelist), ')')
+        print('   ---------------------------------------------------   ')
 

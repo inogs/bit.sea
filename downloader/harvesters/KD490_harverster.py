@@ -18,8 +18,7 @@ ftp_url = 'nrt.cmems-du.eu'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-#relative_path = "download/"
-relative_path = "${ONLINE_REPO}/SAT/KD490/1Km/DT/DAILY/ORIG/"
+relative_path = "SAT/KD490/1Km/DT/DAILY/ORIG/"
 
 class KD490_Harvester(HarvesterInterface):
     """

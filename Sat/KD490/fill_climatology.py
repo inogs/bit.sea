@@ -57,7 +57,7 @@ CLIMNN_FILLED=np.ones_like(CLIMNN)*-999
 
 
 for julian in range(365):
-    print julian
+    print (julian)
     #climNN=CLIMNN[julian,:,start_i:]
     climNN=CLIMNN[julian,:,:]
     goods  = (~np.isnan(climNN) & tmask)

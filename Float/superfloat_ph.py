@@ -100,7 +100,7 @@ def dump_ph_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print "dumping ph on " + outfile
+    print("dumping ph on " + outfile)
     ph_already_existing="nPH_IN_SITU_TOTAL" in ncOUT.dimensions.keys()
     if not ph_already_existing : ncOUT.createDimension('nPH_IN_SITU_TOTAL', nP)
     ncvar=ncOUT.createVariable("PRES_PH_IN_SITU_TOTAL", 'f', ('nPH_IN_SITU_TOTAL',))
@@ -145,7 +145,7 @@ if input_file == 'NO_file':
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
     for wmo in wmo_list:
-        print wmo
+        print(wmo)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)

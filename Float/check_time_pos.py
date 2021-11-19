@@ -164,14 +164,14 @@ for wmo in WMOS:
         nProfiles = len(Profile_list)
         for ip in range(1,nProfiles):
             if TIMELIST[ip] <= TIMELIST[ip-1]:
-                print "\nPROBLEM in ", wmo, ip
+                print("\nPROBLEM in ", wmo, ip)
                 REMOVING_LIST.append(Profile_list[ip]._my_float.filename)
                 Profile_list.remove(Profile_list[ip])
                 nProfiles = len(Profile_list)
                 for k in range(-1,2):
                     IP = ip+k
                     if IP > nProfiles-1 : continue
-                    print IP, Profile_list[IP]._my_float.filename, TIMELIST[IP]
+                    print(IP, Profile_list[IP]._my_float.filename, TIMELIST[IP])
                 break
 
 
@@ -186,7 +186,7 @@ np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s,%s")
 if args.erase:
     for filename in REMOVING_LIST:
         command = "rm -f  " + filename
-        print command
+        print(command)
         os.system(command)
 
 

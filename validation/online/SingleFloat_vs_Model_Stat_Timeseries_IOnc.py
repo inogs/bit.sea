@@ -32,7 +32,7 @@ class ncreader():
         self.nTimes = ncIN.dimensions['time']
         self.nStats = ncIN.dimensions['nStats']
 
-        self.STATLIST=ncIN.statlist.split(",")
+        self.STATLIST=ncIN.statlist.decode().split(",")
 
         self.model = ncIN.variables['model'].data.copy()
         self.float   = ncIN.variables['float'   ].data.copy()

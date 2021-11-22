@@ -75,13 +75,39 @@ def get_level_depth(TheMask,lev):
     ix,_ = min(data, key=lambda t: t[1])
     return ix
 
+def multicolor_ylabel(ax,list_of_strings,list_of_colors,axis='x',anchorpad=0,**kw):
+    """this function creates axes labels with multiple colors
+    ax specifies the axes object where the labels should be drawn
+    list_of_strings is a list of all of the text items
+    list_if_colors is a corresponding list of colors for the strings
+    axis='x', 'y', or 'both' and specifies which label(s) should be drawn"""
+    from matplotlib.offsetbox import AnchoredOffsetbox, TextArea, HPacker, VPacker
+
+    # x-axis label
+    if axis=='x' or axis=='both':
+        boxes = [TextArea(text, textprops=dict(color=color, ha='left',va='bottom',**kw)) 
+                    for text,color in zip(list_of_strings,list_of_colors) ]
+        xbox = HPacker(children=boxes,align="center",pad=0, sep=5)
+        anchored_xbox = AnchoredOffsetbox(loc=3, child=xbox, pad=anchorpad,frameon=False,bbox_to_anchor=(0.2, -0.09),
+                                          bbox_transform=ax.transAxes, borderpad=0.)
+        ax.add_artist(anchored_xbox)
+
+    # y-axis label
+    if axis=='y' or axis=='both':
+        boxes = [TextArea(text, textprops=dict(color=color, ha='left',va='bottom',rotation=90,**kw)) 
+                     for text,color in zip(list_of_strings[::-1],list_of_colors) ]
+        ybox = VPacker(children=boxes,align="center", pad=0, sep=0)
+        anchored_ybox = AnchoredOffsetbox(loc=3, child=ybox, pad=anchorpad, frameon=False, bbox_to_anchor=(-0.075, -0.02), 
+                                          bbox_transform=ax.transAxes, borderpad=0.)
+        ax.add_artist(anchored_ybox)
+
 
 INDIR = addsep(args.indir)
 OUTDIR = addsep(args.outdir)
 BASEDIR = addsep(args.basedir)
 TheMask=Mask(args.maskfile, loadtmask=False)
 
-Graphic_DeltaT = relativedelta(months=24)
+Graphic_DeltaT = relativedelta(months=18)
 datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
 timestart = datestart.strftime("%Y%m%d")
 
@@ -111,11 +137,10 @@ depths=np.linspace(0,300,121)
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
-    wmo_list=bio_float.get_wmo_list(Profilelist)
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
-        print OUTFILE
+        print(OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
 
@@ -151,7 +176,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print(var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)
@@ -194,32 +219,34 @@ for ivar, var_mod in enumerate(VARLIST):
         ax6.plot(times,  ref,'.b',label='REF INTEG')
         ax6.plot(times,model,'b',label='MOD INTEG')
 
-        ax5.plot(times,  surf_ref,'.b',label='FLOAT') #'REF SURF')
-        ax5.plot(times,  surf_model,'b',label='MODEL') #'MOD SURF')
-        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
+        ax5.plot(times,  surf_ref,'.b',label='Surf FLO') #'REF SURF')
+        ax5.plot(times,  surf_model,'b',label='Surf MOD') #'MOD SURF')
+        legend = ax5.legend(loc='upper left', fontsize=12, fancybox=True, framealpha=0.5) #shadow=True
         if ( var_mod == "P_l" ):
             ax6.set_ylabel('INTG 0-200 \n $[mg{\  } m^{-3}]$',fontsize=15)
-            ax5.set_ylabel('SURF\n $[mg{\  } m^{-3}]$',fontsize=15)
+#            ax5.set_ylabel('SURF\n $[mg{\  } m^{-3}]$',fontsize=15)
+            ax5.set_ylabel('$[mg{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,0.5)
             xmax=ax5.get_xlim()[1]
             ymean=np.mean(ax5.get_ylim())
-            ax5.text(xmax, ymean, "Chl Max", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+#            ax5.text(xmax, ymean, "Chl Max", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
             ax6.set_ylim(0,0.22)
             model_dcm, ref_dcm =A.plotdata(var_mod,'DCM', only_good=False)
             model_mld, ref_mld =A.plotdata(var_mod,'z_01',only_good=False)
             model_cm,  ref_cm  =A.plotdata(var,'CM',only_good=False)
-            ax5.plot(times,  ref_cm,'.r',label='CM REF')
-            ax5.plot(times,model_cm,'r',label='CM MOD')
+            ax5.plot(times,  ref_cm,'.r',label='ChlMax FLO')
+            ax5.plot(times,model_cm,'r',label='ChlMax MOD')
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='MWB REF') # vertically Mixed Winter Bloom depth | WINTER LAYER BLOOM
-            ax8.plot(times,model_mld,'r',label='MWB MOD')
-            ax8.set_ylabel('DCM $[m]$',fontsize=15)
+            ax8.plot(times, ref_mld,'.r',label='WBL REF') # vertically Mixed Winter Bloom depth | WINTER BLOOM LAYER
+            ax8.plot(times,model_mld,'r',label='WBL MOD')
+#            ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]
             ymean=np.mean(ax8.get_ylim())
-            ax8.text(xmax, ymean, "MWB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+#            ax8.text(xmax, ymean, "WBL", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+            multicolor_ylabel(ax8,('DCM','/','WBL','$[m]$'),('k','r','k','b'),axis='y',size=14) #,weight='bold')
 
 
         if ( var_mod == "O2o" ):
@@ -229,17 +256,19 @@ for ivar, var_mod in enumerate(VARLIST):
             model_OMZ , ref_OMZ = A.plotdata(var_mod,'OMZ', only_good=False)
             model_maxO2, ref_maxO2 = A.plotdata(var_mod,'max_O2', only_good=False)
 
-            ax5.plot(times, ref_Osat, '.r',label='O2sat (FLOAT)') #'REF OXY at SATURATION'
+            ax5.plot(times, ref_Osat, '.r',label='O2sat (FLO)') #'REF OXY at SATURATION'
 
-            ax8.plot(times, ref_OMZ, '.r',label='OMZ Ref') #'REF OMZ
-            ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
-            ax8.plot(times, ref_maxO2 , '.b',label='O2max Ref') #'REF maxO2
-            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ FLO') #'REF OMZ
+            ax8.plot(times, model_OMZ, 'r',label='OMZ MOD') #'Model OMZ
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max FLO') #'REF maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max MOD') #'Mod maxO2
             ax8.set_ylim(1000,0)
-            legend = ax8.legend(loc='upper left', shadow=True, fontsize=10)
+            legend = ax8.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5)# shadow=True
 
 
-        legend = ax5.legend(loc='upper left', shadow=True, fontsize=12)
+        legend = ax5.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5) #shadow=True
+
+
 
                         
         if ( var_mod == "N3n" ):
@@ -257,7 +286,9 @@ for ivar, var_mod in enumerate(VARLIST):
                 ax8.plot(times,  ref_nit,'.b',label='REF')
                 ax8.plot(times,model_nit,'b',label='MOD')
                 ax8.invert_yaxis()
-                ax8.set_ylabel('NITRCL 1/2 $[m]$',fontsize=15)
+                #ax8.set_ylabel('NITRCL 1/2 $[m]$',fontsize=15)
+              #\  ax8.set_ylabel('NITRCL   {\textcolor{'r'}{1}/2 $[m]$',fontsize=15)
+                multicolor_ylabel(ax8,('NITRICL','1','/','2','$[m]$'),('k','r','k','b','k'),axis='y',size=13) 
                 ax8.plot(times, ref_nit2,'.r',label='dNit REF')
                 ax8.plot(times,model_nit2,'r',label='dNit MOD') 
             else: 
@@ -273,7 +304,7 @@ for ivar, var_mod in enumerate(VARLIST):
             ax5.set_xticklabels([])
             ax6.set_xticklabels([])
         except:
-            print "nans in figure"
+            print("nans in figure")
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)

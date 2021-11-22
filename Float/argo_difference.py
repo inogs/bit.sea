@@ -33,14 +33,14 @@ DIFF=[]
 
 for line in NEW:
     if line not in OLD:
-	DIFF.append(line)
+        DIFF.append(line)
 
 
 LINES=[]
 for line in DIFF:
     LINES.append(line + '\n')
 
-F = file(outputfile,'w')
+F = open(outputfile,'wt')
 F.writelines(LINES)
 F.close()
 

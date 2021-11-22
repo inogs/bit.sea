@@ -18,10 +18,8 @@ def argument():
 args = argument()
 
 
-import scipy.io.netcdf as NC
-import numpy as np
-import matplotlib.pyplot as pl
 
+import numpy as np
 from basins.region import Rectangle
 from basins import V2
 
@@ -50,7 +48,7 @@ INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=0,skiprows=9
 name_file=INDEX_FILE['file_name']
 list_name=[] 
 for name in name_file:           
-    list_name.append(name.startswith('coriolis'))
+    list_name.append(name.decode().startswith('coriolis'))
 
 Coriolis=INDEX_FILE[list_name]
 
@@ -60,25 +58,27 @@ R = Rectangle(-6,36,30,46)
 Mediterr=V2.med
 
 lat_lon_list=[]
-#for idx in Coriolis:  
-#    ...:     lat_lon_list.append(R.is_inside(lat=idx['latitude'], lon=idx['longitude']))
 
 for ele in Coriolis:
     lat_lon_list.append(Mediterr.is_inside(lat=ele['latitude'], lon=ele['longitude']))
 
-MED_FLOAT=Coriolis[lat_lon_list]
+
+mydtype= np.dtype([
+    ('file_name','U200'),
+    ('date','U200'),
+    ('latitude',np.float32),
+    ('longitude',np.float32),
+    ('ocean','U10'),
+    ('profiler_type',np.int),
+    ('institution','U10'),
+    ('parameters','U200'),
+    ('parameter_data_mode','U100'),
+    ('date_update','U200')] )
+
+nFloat_med = sum(lat_lon_list)
+MED_FLOAT = np.zeros((nFloat_med,), dtype=mydtype)
+MED_FLOAT[:]=Coriolis[lat_lon_list]
+
+
 
 np.savetxt(output_file, MED_FLOAT, fmt="%s,%s,%f,%f,%s,%d,%s,%s,%s,%s")
-
-
-#THIRD FILTER BIOGEOCHEMICAL
-
-#bioge_list=[]
-#for bg in MED_FLOAT:
-#    bioge_list.append(bg['parameters'] != 'PRES TEMP PSAL')
-
-#BIOGE = MED_FLOAT[bioge_list]
-
-
-#np.savetxt('bgc.txt', BIOGE, fmt="%s,%s,%f,%f,%s,%d,%s,%s,%s,%s")
-

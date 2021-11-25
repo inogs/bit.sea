@@ -78,11 +78,11 @@ def find_index(thestring, STRINGLIST):
     '''
     nStrings = STRINGLIST.shape[0]
     for istring in range(nStrings):
-        strippedstring=STRINGLIST[istring,:].tostring().strip()
-        if strippedstring == thestring: break
+        strippedstring=STRINGLIST[istring,:].tobytes().strip()
+        if strippedstring.decode() == thestring: break
     else:
         print(thestring + " Not Found")
-        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tostring().strip() for istring in range(nStrings)]))
+        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tobytes().strip().decode() for istring in range(nStrings)]))
     return istring
 
 def die(why, exit_code=1, print_usage=True):

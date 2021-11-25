@@ -230,12 +230,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile]
+        timestr          = INDEX_FILE['date'][iFile].decode()
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 

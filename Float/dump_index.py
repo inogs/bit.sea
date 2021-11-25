@@ -36,7 +36,7 @@ import scipy.io.netcdf as NC
 import datetime
 import os,glob
 import numpy as np
-from StringIO import StringIO
+from io import StringIO
 from commons.utils import addsep
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
@@ -98,7 +98,7 @@ def file_header_content(filename,VARLIST, avail_params=None):
         ncIN.close()
         return
 
-    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tostring()
+    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tobytes().decode()
     juld = ncIN.variables['JULD'].data[0]
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
@@ -169,7 +169,7 @@ for DIR in DIRLIST:
                     if is_provided_indexer: print("added " + line)
 
 
-F = file(FloatIndexer,'w')
+F = open(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
 os.chdir(HERE)

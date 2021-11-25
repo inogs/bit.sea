@@ -7,7 +7,7 @@ from mhelpers.linear_shift import linear_shift
 Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON-B/"
 basedir=addsep(os.getenv("CANYONB_TRAINING_DIR", Training_dir))
 if not os.path.exists(basedir):
-    print basedir
+    print(basedir)
     raise ValueError("Environment variable CANYONB_TRAINING_DIR must be defined")
 
 inwgts=np.loadtxt(basedir + 'wgts_NO3.txt')
@@ -186,7 +186,7 @@ def canyon_nitrate_correction(p, Np, N, Nqc, OXp, OX):
 if __name__ == "__main__":
     timeobj=datetime(2014,12,9,8,45)
     lat=17.6;lon=-24.3;pres=180.;temp=16;psal=36.1;doxy=104 # test values
-    print get_nitrate(timeobj, lat, lon, pres, temp, psal, doxy)
+    print(get_nitrate(timeobj, lat, lon, pres, temp, psal, doxy))
     
     from commons.time_interval import TimeInterval
     from commons.Timelist import TimeList
@@ -209,12 +209,12 @@ if __name__ == "__main__":
     p=Profilelist[30]
 
     Pres, Prof, Qc= p.read(var,True)
-    print p.available_params
-    print p.ID()
+    print(p.available_params)
+    print(p.ID())
 
     DOXYp, DOXY, QcO= p.read("DOXY",True) 
 
-    print len(DOXY)
+    print(len(DOXY))
     if ((len(Prof)>5) & (len(DOXY)>5)):
     # PERFORM THE CORRECTION:
        Np, N, Qc, t_lev, nit = canyon_nitrate_correction(p, Pres, Prof, Qc, DOXYp, DOXY)
@@ -234,8 +234,8 @@ if __name__ == "__main__":
 
        for iSub,sub in enumerate(SUBLIST):
         if sub.is_inside(p.lon,p.lat):
-           print N3n_clim[iSub,:]
-           print sub.name
+           print(N3n_clim[iSub,:])
+           print(sub.name)
            sub_name=sub.name
            ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
 

@@ -16,7 +16,7 @@ ftp_url = 'nrt.cmems-du.eu'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT/MULTISENSOR/1Km/DT/DAILY/ORIG/"
+relative_path = "SAT/CHL/MULTISENSOR/1Km/DT/DAILY/ORIG/"
 
 
 class Sat_ms1kmDT_Harvester(HarvesterInterface):

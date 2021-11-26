@@ -1,6 +1,6 @@
 from commons import calculated_depths
 import numpy as np
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import os
 
 
@@ -154,7 +154,7 @@ def exist_valid(filename):
         return False
     good = True
     try:
-        ncIN = NC.netcdf_file(filename,'r')
+        ncIN = NC.Dataset(filename,'r')
     except:
         good = False
     if good:
@@ -164,7 +164,7 @@ def exist_valid(filename):
         return False
 
 def exist_variable(variable, filename):
-    ncIN = NC.netcdf_file(filename,'r')
+    ncIN = NC.Dataset(filename,'r')
     variables=ncIN.variables.keys()
     ncIN.close()
     return variable in variables

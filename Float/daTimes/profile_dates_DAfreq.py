@@ -81,7 +81,8 @@ for dateref in TL:
     for wmo in WMOlist:
         SubProfilelist_1 = biofloat.filter_by_wmo(PROFILESdateref,wmo)
         for i in SubProfilelist_1:
-            _, Profile, _ = i.read(var,read_adjusted[var])   #Profile.shape,Profile.size, np.mean(Profile)
+            Pres, Profile, _ = i.read(var,read_adjusted[var])   #Profile.shape,Profile.size, np.mean(Profile)
+            if((Pres < 200).sum() <= 5): continue
             if(Profile.size!=0) : Goodlist.append(i)
 
         if (Goodlist!=[]):

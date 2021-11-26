@@ -44,7 +44,7 @@ fid.close()
 
 dateDAfloatvar = {}
 for varfloat in LIStvarfloat:
-    print varfloat
+    print(varfloat)
     dateDAfloatvar[varfloat] = []
     fid = open(DIR + 'daTimes_float_' + varfloat,'r')
     for line in fid:

@@ -61,8 +61,7 @@ read_adjusted = {
 }
 
 
-TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', \
-                    'days=' + np.str(DAfreq))
+TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', days=DAfreq)
 
 
 DAfloatdates = []
@@ -92,7 +91,7 @@ for dateref in TL:
     if (Goodlist!=[]):
         dateDA = datetime.datetime(dateref.year, \
                 dateref.month,dateref.day,hourDA,00)
-        print dateDA
+        print(dateDA)
                                    
         DAfloatdates.append(datetime.datetime.strftime(dateDA,'%Y%m%d-%H:%M:%S'))
     else:

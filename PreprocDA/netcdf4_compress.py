@@ -31,7 +31,7 @@ from commons.utils import addsep
 INPUTDIR = addsep(args.inputdir)
 OUTDIR   = addsep(args.outdir)
 TheMask = Mask(args.maskfile,loadtmask=False)
-jk = TheMask.getDepthIndex(350.0)
+jk = TheMask.getDepthIndex(300.0)
 filelist=glob.glob(INPUTDIR + "eof*nc")
 filelist.sort()
 

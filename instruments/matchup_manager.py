@@ -485,20 +485,8 @@ class Matchup_Manager():
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
-                ii=(zlevels_out >= 400) & (zlevels_out <= 500)
 
-                if model_varname=='POC':
-                    float_on_common_grid = float_on_common_grid *  52779.37 - 3.57 # Bellacicco 2019
-                    shift=float_on_common_grid[ii].mean()
-                    print( "POC: adding a shift of " + np.str(shift))
-                    float_on_common_grid = float_on_common_grid - shift
 
-                if model_varname == 'P_c':
-                    bbp470 = float_on_common_grid * ( 470.0/700)**(-0.78)# [m-1]
-                    float_on_common_grid = 12128 * bbp470 + 0.59   # Griff et al. 2015
-                    shift=float_on_common_grid[ii].mean()
-                    print( "P_c: adding a shift of " + np.str(shift))
-                    float_on_common_grid = float_on_common_grid - shift
 
                 if model_varname == "EIR": #"PAR":
                     sec = p.time.hour*3600 + p.time.minute*60

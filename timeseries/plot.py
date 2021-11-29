@@ -45,7 +45,7 @@ def read_basic_info(stat_profile_file):
     return SUBLIST, COASTLIST, STAT_LIST
 
 def read_pickle_file(filename):
-    print filename
+    print(filename)
     fid =open(filename,'r')
     [TIMESERIES,TL] = pickle.load(fid)
     fid.close()

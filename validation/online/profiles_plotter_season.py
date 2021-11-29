@@ -246,7 +246,7 @@ for var in VARLIST[rank::nranks] :
 
     for iSub, sub in enumerate(V2.P):
         outfile = "%sProfiles.%s.%s.png" %(OUTDIR,var,sub.name)
-        print outfile
+        print(outfile)
 
         FigureGenerator=figure_generator()
         fig, axes= FigureGenerator.gen_structure(var, sub.name,LEVELS,datetoday)

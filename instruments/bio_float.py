@@ -194,7 +194,7 @@ class BioFloat(Instrument):
         Qc          =    QC[iProf,:]
         ncIN.close()
         
-        return Pres, Profile,Profile_adj, Qc
+        return Pres, Profile,Profile_adj, Qc.astype(np.int)
 
     def read_raw(self,var,read_adjusted=True):
         '''
@@ -212,21 +212,21 @@ class BioFloat(Instrument):
         if read_adjusted:
             rawProfile = rawProfile_adj
         else:
-            for i in range(len(rawQc)): rawQc[i]='2' # to force goodQc = True
+            for i in range(len(rawQc)): rawQc[i]=2 # to force goodQc = True
 
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
-        goodQc     = (rawQc == '2' ) | (rawQc == '1' )
+        goodQc     = (rawQc == 2 ) | (rawQc == 1 )
         badProfile = np.isnan(rawProfile)
         bad = badPres | badProfile #| (~goodQc )
 
 
         Pres    =    rawPres[~bad]
         Profile = rawProfile[~bad]
-        Qc      =     (rawQc[~bad]).astype(np.int)
+        Qc      =      rawQc[~bad]
 
         uniquePres,index=np.unique(Pres,return_index=True)
         uniqueProfile =  Profile[index]
@@ -463,9 +463,21 @@ if __name__ == '__main__':
     from commons.time_interval import TimeInterval
     import sys
 
-    var = 'NITRATE'
-    TI = TimeInterval('20150520','20220225','%Y%m%d')
+    var = 'BBP700'
+    TI = TimeInterval('20150101','20220225','%Y%m%d')
     R = Rectangle(-6,36,30,46)
+
+    PROFILE_LIST=FloatSelector(var, TI, R)
+    nP = len(PROFILE_LIST)
+    MAX=np.zeros((nP,))
+    MIN=np.zeros((nP,))
+    for ip, p in enumerate(PROFILE_LIST):
+        Pres, Value, Qc= p.read(var, read_adjusted=False)
+        if len(Pres)>5:
+            MIN[ip]=Value.min()
+            MAX[ip]=Value.max()
+    sys.exit()
+
     sum=0
     PROFILE_LIST=FloatSelector(var, TI, R)
     for ip, p in enumerate(PROFILE_LIST):

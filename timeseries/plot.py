@@ -46,7 +46,7 @@ def read_basic_info(stat_profile_file):
 
 def read_pickle_file(filename):
     print(filename)
-    fid =open(filename,'r')
+    fid =open(filename,'rb')
     [TIMESERIES,TL] = pickle.load(fid)
     fid.close()
     return TIMESERIES, TL

@@ -321,12 +321,14 @@ class BioFloat(Instrument):
         fig, ax = f.plot(pres,profile)
         fig, ax = f.plot(pres,profile,fig,ax)
         fig, ax = f.plot(pres,profile,fig,ax, linestyle = 'dashed', linewidth = 2, color='green')
+        fig, ax = f.plot(pres,profile,fig,ax, linestyle = 'None',   marker = '.',  color='green')
 
         '''
         if (fig is None) or (ax is None):
             fig , ax = pl.subplots()
         ax.plot(profile,Pres, **kwargs)
         if not ax.yaxis_inverted(): ax.invert_yaxis()
+        ax.grid()
         return fig,ax
 
     def profiles(self, var, mean=None):

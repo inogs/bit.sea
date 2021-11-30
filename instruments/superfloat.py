@@ -126,23 +126,24 @@ class BioFloat(Instrument):
         Pres, Profile, Qc = self.read_raw(var)
 
         if var_mod is None:
-#           print "var_mod is " + np.str(var_mod) 
            return Pres, Profile, Qc
 
-        ii=(Pres >= 400) & (Pres <= 500) 
+        ii=(Pres >= 400) & (Pres <= 500)
         if (var_mod=='P_c'):
             bbp470 = Profile * ( 470.0/ 700)**(-0.78)# [m-1]
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
-            shift=Profile[ii].mean()
-            Profile = Profile - shift
-            ii=Profile<=0
-            Profile[ii] = 0.0
+            if ii.sum() > 0 :
+                shift=Profile[ii].mean()
+                Profile = Profile - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
 
         if (var_mod == "POC"):
             POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
-            shift=POC[ii].mean()
-            print( "POC: adding a shift of " + np.str(shift))
-            Profile = Profile - shift
+            if ii.sum() > 0 :
+                shift=POC[ii].mean()
+                print( "POC: adding a shift of " + np.str(shift))
+                Profile = Profile - shift
 
      
         return Pres, Profile, Qc

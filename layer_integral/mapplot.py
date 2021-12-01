@@ -362,7 +362,7 @@ def mapplot_medeaf_V5C(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=No
     vmin, vmax = map_dict['clim']
     map2d=map_dict['data']
     Zm = np.ma.masked_invalid(map2d)
-    cs=map_obj.pcolormesh(maskobj.xlevels, maskobj.ylevels, Zm,cmap=cmap,latlon='true',vmin=vmin,vmax=vmax, shading="flat", ax=ax)    
+    cs=map_obj.pcolormesh(maskobj.xlevels, maskobj.ylevels, Zm,cmap=cmap,latlon='true',vmin=vmin,vmax=vmax, shading="nearest", ax=ax)
 
     parallels = np.arange(32.,46.,4)
     h_dict=map_obj.drawparallels(parallels,labels=[1,0,0,1],linewidth=0.5, fontsize=13, dashes=[1,2], ax=ax)

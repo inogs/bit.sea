@@ -193,7 +193,7 @@ class BioFloat(Instrument):
         Pres        =  PRES[iProf,:]
         Qc          =    QC[iProf,:]
         ncIN.close()
-        
+
         return Pres, Profile,Profile_adj, Qc.astype(np.int)
 
     def read_raw(self,var,read_adjusted=True):
@@ -346,7 +346,7 @@ class BioFloat(Instrument):
             lat              = INDEX_FILE['lat' ][iFile]
             thefilename      = INDEX_FILE['file_name'][iFile].decode()
             available_params = INDEX_FILE['parameters'][iFile].decode()
-            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
             if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
@@ -380,7 +380,7 @@ def FloatSelector(var, T, region):
         lat              = INDEX_FILE['lat' ][iFile]
         filename         = INDEX_FILE['file_name'][iFile].decode()
         available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
         if var is None :
@@ -470,6 +470,7 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
+
     nP = len(PROFILE_LIST)
     MAX=np.zeros((nP,))
     MIN=np.zeros((nP,))

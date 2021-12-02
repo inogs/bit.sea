@@ -46,7 +46,7 @@ END___TIME = TL['P_l'].Timelist[-1]
 
 TI = TimeInterval(START_TIME.strftime('%Y%m%d'),END___TIME.strftime('%Y%m%d'))
 
-MonthlyTL = DL.getTimeList(START_TIME,END___TIME,'months=1')
+MonthlyTL = DL.getTimeList(START_TIME,END___TIME,months=1)
 Ntot = TL['P_l'].nTimes
 
 mmTL = TimeList(MonthlyTL)
@@ -55,13 +55,13 @@ MonthList = mmTL.getOwnList()
 
 LISTchl = [[] for ii in range(7)]
 for dd in TL['P_l'].filelist:
-    ll = np.load(dd, allow_pickle=True)
+    ll = np.load(dd, allow_pickle=True,encoding="latin1")
     for ii in range(7):
         LISTchl[ii].append(ll[ii])
     
 LISTnit = [[] for ii in range(8)]
 for dd in TL['N3n'].filelist:
-    ll = np.load(dd, allow_pickle=True)
+    ll = np.load(dd, allow_pickle=True,encoding="latin1")
     for ii in range(8):
         LISTnit[ii].append(ll[ii])
     
@@ -193,7 +193,7 @@ for mreq in MonthList:
             (np.nansum(arrayobs[maskm])+np.nansum(arrayobsexc[maskm])) * 100.
         LISTpercm.append(percused)
     else:
-        LISTpercm.append(np.nanmean)
+        LISTpercm.append(np.nan)
 
 plt.bar(MonthlyTL,LISTpercm,width=10,label='% Used obs ')
 plt.legend(loc='upper left')
@@ -215,6 +215,7 @@ for mreq in MonthList:
         LISTprofexcN.append(nexcprofm)
     else:
         LISTprofexcN.append(np.nan)
+        LISTprofN.append(np.nan)
 
 plt.bar(MonthlyTL,np.array(LISTprofN)+np.array(LISTprofexcN),\
     width=10,label='N profiles')
@@ -286,6 +287,7 @@ for mreq in MonthList:
         LISTprofexcN.append(nexcprofm)
     else :
         LISTprofexcN.append(np.nan)
+        LISTprofN.append(np.nan)
 
 plt.bar(MonthlyTL,np.array(LISTprofN)+np.array(LISTprofexcN),\
     width=10,label='N profiles')
@@ -318,7 +320,7 @@ Nlayers_nit = len(NITlist)
 RMSDchl = [[] for ii in range(1+Nlayers_chl)]
 BIASchl = [[] for ii in range(1+Nlayers_chl)]
 for dd in TLq['P_l'].filelist:
-    ll = np.load(dd, allow_pickle=True)
+    ll = np.load(dd, allow_pickle=True,encoding="latin1")
     RMSDchl[0].append(ll[0])
     BIASchl[0].append(ll[0])
     for ii in range(Nlayers_chl):
@@ -329,7 +331,7 @@ Nchl = len(RMSDchl[0])
 RMSDnit = [[] for ii in range(1+Nlayers_nit)]
 BIASnit = [[] for ii in range(1+Nlayers_nit)]
 for dd in TLq['N3n'].filelist:
-    ll = np.load(dd, allow_pickle=True)
+    ll = np.load(dd, allow_pickle=True, encoding="latin1")
     RMSDnit[0].append(ll[0])
     BIASnit[0].append(ll[0])
     for ii in range(Nlayers_nit):

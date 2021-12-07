@@ -48,6 +48,7 @@ os.system("mkdir -p " + localdir)
 FILELIST=glob.glob(INPUTDIR + "*png")
 os.chdir(localdir)
 for filename in FILELIST[rank::nranks]:
+    print(rank,filename) 
     os.system("ln -fs " + filename)
 
 os.system(BINDIR + "pngquant *png")

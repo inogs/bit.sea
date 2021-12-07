@@ -72,8 +72,8 @@ class timelistcontainer():
         ncIN = NC.netcdf_file(filename,'r')
         self.nSUB = ncIN.dimensions['nsub']
         self.nCOAST = ncIN.dimensions['ncoast']
-        self.SUBLIST = ncIN.sublist[:-1].split(",")
-        self.COASTLIST=ncIN.coastlist[:-1].split(",")
+        self.SUBLIST = ncIN.sublist[:-1].decode().split(",")
+        self.COASTLIST=ncIN.coastlist[:-1].decode().split(",")
         ncIN.close()
 
     def read_validation_file(self,filename):

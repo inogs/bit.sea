@@ -119,7 +119,7 @@ def ncreader(filename):
     f = NC.netcdf_file(filename, 'r')
     Lon= f.variables['longitude'].data.copy()
     Lat= f.variables['latitude'].data.copy()
-    time = datetime.datetime.strptime(f.time,"%Y%m%d-%H:%M:%S")
+    time = datetime.datetime.strptime(f.time.decode(),"%Y%m%d-%H:%M:%S")
     for var in VARLIST:
         A= f.variables[var + "_model"].data.copy()
         A[A > 1.e+19] =np.nan
@@ -178,7 +178,7 @@ analysis_forecast_basenames.sort()
 only_analyis_basenames      = [os.path.basename(filename) for filename in ONLY_ANALYSIS_LIST]
 only_analyis_basenames.sort()
 
-print xmlfile
+print(xmlfile)
 dump_xml(xmlfile)
 
 
@@ -202,7 +202,7 @@ plotvarname = [r'Chl  $[ mg/m^3]$',
 
 for filename in analysis_forecast_basenames:
     if filename in only_analyis_basenames:
-        print filename, " matches analysis and forecast"
+        print (filename, " matches analysis and forecast")
         analyis_file = ACTUAL_DIR + filename
         forecastfile = PREVIOUS_DIR + filename
         float_f, mod_f, time, lon, lat = ncreader(forecastfile)
@@ -227,7 +227,7 @@ for filename in analysis_forecast_basenames:
         
         
     else:
-        print filename, " matches only analyis"
+        print (filename, " matches only analyis")
         #copy the previous *png
         pngfile = PREVIOUS_DIR + filename[:-3] +  ".png"
         command = "cp " + pngfile + " " + OUTDIR

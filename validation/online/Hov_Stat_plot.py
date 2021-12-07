@@ -137,6 +137,7 @@ depths=np.linspace(0,300,121)
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
+    wmo_list=bio_float.get_wmo_list(Profilelist) 
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
@@ -187,14 +188,14 @@ for ivar, var_mod in enumerate(VARLIST):
 
         # PLOT HOVMOELLER OF FLOAT
         if (var_mod == 'P_l'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
         if (var_mod == 'O2o'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=160,vmax=250)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=160,vmax=250)
         if (var_mod == 'N3n'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
 
         ax3.invert_yaxis()
         ax4.invert_yaxis()

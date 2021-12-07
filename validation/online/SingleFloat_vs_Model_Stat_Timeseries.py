@@ -50,7 +50,7 @@ from basins import V2 as OGS
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from instruments import check
-from surf.oxy_saturation import oxy_sat
+from Float.oxygen_saturation import oxy_sat
 
 
 
@@ -62,7 +62,7 @@ Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 
 TheMask=Mask(args.maskfile, loadtmask=False)
 
-Graphic_DeltaT = relativedelta(months=24)
+Graphic_DeltaT = relativedelta(months=18)
 datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
 timestart = datestart.strftime("%Y%m%d")
 
@@ -100,7 +100,7 @@ for ivar, var_mod in enumerate(VARLIST):
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
         OUTFILE = "%s%s_%s.nc" %(OUTDIR, var_mod, wmo )
-        print OUTFILE
+        print (OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         nTime = len(list_float_track)
         A_float = np.zeros(( nTime, nStat), np.float32 ) * np.nan
@@ -119,12 +119,12 @@ for ivar, var_mod in enumerate(VARLIST):
                 GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 
             except:
-                print p.ID()  + " not found in " + BASEDIR
+                print (p.ID()  + " not found in " + BASEDIR)
                 continue
 
 
             if GM.number() == 0 :
-                print p.ID() + " excluded"
+                print (p.ID() + " excluded")
                 continue
             gm200 = GM.subset(layer)
             gm300 = GM.subset(layer300)

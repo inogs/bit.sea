@@ -67,7 +67,7 @@ class season:
         """
         return self.numbers_season
 
-    def get_season_dates(self,season_num):
+    def get_season_dates(self,season_num, year=2000):
         """
         Given season number, return the range of season dates (start and end)
         and the name of season.
@@ -79,6 +79,11 @@ class season:
             end_date = self.SEASON_LIST[0] + relativedelta(years = 1)
         else:
             end_date= self.SEASON_LIST[season_num+1]
+
+        if year != self._reference_year:
+            delta_years = year - self._reference_year
+            start_date  += relativedelta(years=delta_years)
+            end_date    += relativedelta(years=delta_years)
         TI = TimeInterval.fromdatetimes(start_date, end_date)
 
         season_name = self.SEASON_LIST_NAME[season_num]

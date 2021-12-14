@@ -198,9 +198,9 @@ class figure_generator():
         currenty = datetoday.year
         seasonObj = season.season()
         seasonind = seasonObj.findseason(datetoday)
-        seasdates,_ = seasonObj.get_season_dates(seasonind)
-        seas_start = seasdates.start_time.replace(year=currenty)
-        seas_end   = seasdates.end_time.replace(year=currenty)
+        seasdates,_ = seasonObj.get_season_dates(seasonind, year=currenty)
+        seas_start = seasdates.start_time
+        seas_end   = seasdates.end_time
 
         datelastDA = datetoday-timedelta(days=2)
 

@@ -44,7 +44,6 @@ args = argument()
 
 import matplotlib
 matplotlib.use('Agg')
-import os,sys
 from commons.mask import Mask
 from commons.Timelist import TimeList, TimeInterval
 from basins.region import Rectangle
@@ -54,13 +53,13 @@ import numpy as np
 import numpy.ma as ma
 from commons.utils import addsep
 import matplotlib.pyplot as pl
+from matplotlib import cm
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotter
-import plotter_oxy
 from instruments import check
 Check_obj = check.check("", verboselevel=0)
 
@@ -134,6 +133,8 @@ nVar = len(VARLIST)
 bt=300
 depths=np.linspace(0,300,121)
 
+my_cmap=cm.get_cmap('viridis',24)
+
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
@@ -188,14 +189,14 @@ for ivar, var_mod in enumerate(VARLIST):
 
         # PLOT HOVMOELLER OF FLOAT
         if (var_mod == 'P_l'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=0.40,cmap=my_cmap)
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=0.40,cmap=my_cmap)
         if (var_mod == 'O2o'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=160,vmax=250)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=160,vmax=250,cmap=my_cmap)
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=160,vmax=250,cmap=my_cmap)
         if (var_mod == 'N3n'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4,cmap=my_cmap)
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4,cmap=my_cmap)
 
         ax3.invert_yaxis()
         ax4.invert_yaxis()
@@ -287,8 +288,6 @@ for ivar, var_mod in enumerate(VARLIST):
                 ax8.plot(times,  ref_nit,'.b',label='REF')
                 ax8.plot(times,model_nit,'b',label='MOD')
                 ax8.invert_yaxis()
-                #ax8.set_ylabel('NITRCL 1/2 $[m]$',fontsize=15)
-              #\  ax8.set_ylabel('NITRCL   {\textcolor{'r'}{1}/2 $[m]$',fontsize=15)
                 multicolor_ylabel(ax8,('NITRICL','1','/','2','$[m]$'),('k','r','k','b','k'),axis='y',size=13) 
                 ax8.plot(times, ref_nit2,'.r',label='dNit REF')
                 ax8.plot(times,model_nit2,'r',label='dNit MOD') 
@@ -319,8 +318,6 @@ for ivar, var_mod in enumerate(VARLIST):
 
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
-        ticklabs = cbar.ax.get_yticklabels()
-        cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
 
         if var_mod == 'OXY':
             xlabels=ax7.get_xticklabels()
@@ -328,7 +325,6 @@ for ivar, var_mod in enumerate(VARLIST):
             xlabels = ax8.get_xticklabels()
 
 
-#        xlabels = ax8.get_xticklabels()
         pl.setp(xlabels, rotation=30, fontsize=15)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
@@ -336,8 +332,6 @@ for ivar, var_mod in enumerate(VARLIST):
         ax5.xaxis.grid(True)
         ax6.xaxis.grid(True)
         ax7.xaxis.grid(True)
-#        ax8.xaxis.grid(True)
 
         fig.savefig(OUTFILE)
         pl.close(fig)
-

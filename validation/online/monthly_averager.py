@@ -65,7 +65,7 @@ for var in VARLIST[rank::nranks]:
     #if var=='pH': var='PH'
 
     outfile = OUTPUTDIR + "ave." + req.string + "01-12:00:00." + var + ".nc"
-    print outfile
+    print(outfile)
     filelist=[]
     for k in indexes:
         t = TL.Timelist[k]

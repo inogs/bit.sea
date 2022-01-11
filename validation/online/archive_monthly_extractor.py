@@ -2,8 +2,7 @@ import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Extracts files from archive,
-    for V3C version where bio and phys files are stored in the same directory.
+    Extracts files from archive, in V8C by a linking of ave*nc
     '''
     ,formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(   '--arcdir', '-a',
@@ -39,7 +38,7 @@ TI=req.time_interval
 
 
 for var in ['P_l','O2o','N3n','P_c','N1p','ppn','pH','O3c','CO2airflux', 'pCO2','N4n','O3h','N5s','Z_c']:
-    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
+    T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc")
     T_bio.extract_analysis(LOC, command="ln -fs $INFILE $OUTFILE", remove_ext=False)
 
 

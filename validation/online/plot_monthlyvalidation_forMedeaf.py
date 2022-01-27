@@ -1,11 +1,9 @@
-# Plot results of Monthly Validation Report 
-# taken from MVR file sent to CMEMS.
-# For sat and float
-
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    plot something
+    Plot results of Monthly Validation Report
+    taken from MVR file sent to CMEMS.
+    For sat and float
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -44,7 +42,7 @@ OUTDIR = addsep(args.outdir)
 
 
 TLmvr = TimeList.fromfilenames(None,INDIR,'product_quality*nc',
-                        prefix='product_quality_stats_MEDSEA_ANALYSIS_FORECAST_BIO_006_014_',
+                        prefix='product_quality_stats_MEDSEA_ANALYSISFORECAST_BGC_006_014_',
                         dateformat='%Y%m%d')
 
 dates = []
@@ -60,7 +58,7 @@ DICTvardim = {
 }
 
 for ii,filein in enumerate(TLmvr.filelist):
-    print filein
+    print(filein)
     MVR = NC.Dataset(filein,'r')
     datesmonth = MVR.variables['time'][:].data.copy()
     dates.extend(list(datesmonth))
@@ -70,8 +68,8 @@ for ii,filein in enumerate(TLmvr.filelist):
     floatstats.extend(list(floatstats_month))
     if ii==0:
         DICTdim_sat = {}
-        dimlist = [dd.encode() for dd in MVR.variables['stats_surface_chlorophyll'].dimensions]
-        for iid,dd in enumerate(dimlist):
+        dimtuple = MVR.variables['stats_surface_chlorophyll'].dimensions
+        for iid,dd in enumerate(dimtuple):
             if 'surf' in dd:
                 DICTdim_sat[dd] = ['surface',iid]
                 continue
@@ -86,8 +84,8 @@ for ii,filein in enumerate(TLmvr.filelist):
                 DICTdim_sat[dd] = [vLIST,iid] 
         
         DICTdim_float = {}
-        dimlist = [dd.encode() for dd in MVR.variables['stats_profile_chlorophyll'].dimensions]
-        for iid,dd in enumerate(dimlist):
+        dimtuple = MVR.variables['stats_profile_chlorophyll'].dimensions
+        for iid,dd in enumerate(dimtuple):
             varname = DICTvardim[dd]
             vv = MVR.variables[varname][:].data.copy()
             if 'float' in vv.dtype.name: 

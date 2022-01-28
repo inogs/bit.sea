@@ -75,13 +75,14 @@ for ii,filein in enumerate(TLmvr.filelist):
                 continue
             varname = DICTvardim[dd]
             vv = MVR.variables[varname][:].data.copy()
-            if 'float' in vv.dtype.name: 
+            if vv.dtype.kind=='f':
                 DICTdim_sat[dd] = [vv,iid]
-            if 'string' in vv.dtype.name: 
+            if vv.dtype.kind=='S':
                 vLIST = []
                 for iiv in range(vv.shape[0]):
-                    vLIST.append(''.join(vv[iiv,:]))
+                    vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
                 DICTdim_sat[dd] = [vLIST,iid] 
+
         
         DICTdim_float = {}
         dimtuple = MVR.variables['stats_profile_chlorophyll'].dimensions
@@ -95,8 +96,9 @@ for ii,filein in enumerate(TLmvr.filelist):
                 for iiv in range(vv.shape[0]):
                     vLIST.append(''.join(vv[iiv,:]))
                 DICTdim_float[dd] = [vLIST,iid] 
-    # break
 
+import sys
+sys.exit(0)
 
 array_floatstats = np.array(floatstats)
 array_floatstats[array_floatstats>1.e+19] = np.nan

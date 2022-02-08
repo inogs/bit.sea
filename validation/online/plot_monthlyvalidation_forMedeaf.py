@@ -58,7 +58,7 @@ DICTvardim = {
 }
 
 for ii,filein in enumerate(TLmvr.filelist):
-    print(filein)
+    #print(filein)
     MVR = NC.Dataset(filein,'r')
     datesmonth = MVR.variables['time'][:].data.copy()
     dates.extend(list(datesmonth))
@@ -75,9 +75,9 @@ for ii,filein in enumerate(TLmvr.filelist):
                 continue
             varname = DICTvardim[dd]
             vv = MVR.variables[varname][:].data.copy()
-            if vv.dtype.kind=='f':
+            if vv.dtype.kind=='f': 
                 DICTdim_sat[dd] = [vv,iid]
-            if vv.dtype.kind=='S':
+            if vv.dtype.kind=='S': 
                 vLIST = []
                 for iiv in range(vv.shape[0]):
                     vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
@@ -89,16 +89,14 @@ for ii,filein in enumerate(TLmvr.filelist):
         for iid,dd in enumerate(dimtuple):
             varname = DICTvardim[dd]
             vv = MVR.variables[varname][:].data.copy()
-            if 'float' in vv.dtype.name: 
+            if vv.dtype.kind=='f': 
                 DICTdim_float[dd] = [vv,iid]
-            if 'string' in vv.dtype.name: 
+            if vv.dtype.kind=='S': 
                 vLIST = []
                 for iiv in range(vv.shape[0]):
-                    vLIST.append(''.join(vv[iiv,:]))
+                    vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
                 DICTdim_float[dd] = [vLIST,iid] 
 
-import sys
-sys.exit(0)
 
 array_floatstats = np.array(floatstats)
 array_floatstats[array_floatstats>1.e+19] = np.nan
@@ -153,13 +151,13 @@ indsub = DICTdim_sat['areas'][1]
 
 noforecasts = ['number of data values','mean of reference','variance of reference']
 for isub,subname in enumerate(DICTdim_sat['areas'][0]):
-    print (subname)
-    print ('...........SAT.....')
+    #print (subname)
+    #print ('...........SAT.....')
     fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)
     for iim,mm in enumerate(DICTdim_sat['metrics'][0]):
-        print (mm)
+        #print (mm)
         nax = DICTvargroup[mm]
-        ix_ax = nax/2
+        ix_ax = np.int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         plt.sca(axs[ix_ax,iy_ax])
         for iif,ff in enumerate(DICTdim_sat['forecasts'][0]):
@@ -177,8 +175,8 @@ for isub,subname in enumerate(DICTdim_sat['areas'][0]):
                 indsub: isub,
                 DICTdim_sat['forecasts'][1]: iif,
             }
-            selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_sat.keys()))]
-            plt.plot(dates_datetime,array_satstats[selection],
+            selection_sat = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_sat.keys()))]
+            plt.plot(dates_datetime,array_satstats[tuple(selection_sat)],
                             color=cmap(iim),
                             linestyle=linestyle,
                             alpha=DICTalpha[ff],
@@ -207,13 +205,13 @@ indsub = DICTdim_sat['areas'][1]
 LISTalpha_depth = [1-x*2/10. for x in range(len(DICTdim_float['depths'][0]))]
 
 for sub in OGS.MVR.basin_list:
-    print (sub.name)
-    print ('..........FLOAT......')
+    #print (sub.name)
+    #print ('..........FLOAT......')
     fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)
     for iim,mm in enumerate(DICTdim_sat['metrics'][0]):
-        print (mm)
+        #print (mm)
         nax = DICTvargroup[mm]
-        ix_ax = nax/2
+        ix_ax = np.int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         plt.sca(axs[ix_ax,iy_ax])
         label = mm
@@ -222,14 +220,6 @@ for sub in OGS.MVR.basin_list:
                 label = mm
             if iid>0:
                 label = None
-            DICTind = {
-                indmetrics: 0,
-                indsub: DICTsubgroup_index[sub.name],
-                DICTdim_sat['forecasts'][1]: 0,
-                DICTdim_float['depths'][1]: iid,
-            }
-            selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
-            # if np.nansum(array_floatstats[selection])==0: continue
 
 
             DICTind = {
@@ -239,7 +229,7 @@ for sub in OGS.MVR.basin_list:
                 DICTdim_float['depths'][1]: iid,
             }
             selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
-            plt.plot(dates_datetime,array_floatstats[selection],
+            plt.plot(dates_datetime,array_floatstats[tuple(selection)],
                             color=cmap(iim),
                             alpha=LISTalpha_depth[iid],
                             label=label)

@@ -17,7 +17,7 @@ WEEKLYDIR_24=$WEEKLYbase/WEEKLY_24/
 MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
 mkdir -p $WEEKLYDIR_24
 
-echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m Mesh24 -M $MASKFILE --inmesh SAT1km_mesh
+echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m $MASKFILE --inmesh SAT1km_mesh
 
 
 ##############################
@@ -37,7 +37,7 @@ WEEKLYDIR_24=$WEEKLYbase/WEEKLY_24/
 MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
 mkdir -p $WEEKLYDIR_24
 
-echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m Mesh24 -M $MASKFILE --inmesh SAT1km_mesh
+echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m $MASKFILE --inmesh SAT1km_mesh
 
 ##############################
 echo 10 DAYS AVERAGE
@@ -56,7 +56,7 @@ WEEKLYDIR_24=$WEEKLYbase/TENDAY_24/
 MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS24_REA/meshmask.nc
 mkdir -p $WEEKLYDIR_24
 
-echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m Mesh24 -M $MASKFILE --inmesh SAT1km_mesh
+echo mpirun -np 32 python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m $MASKFILE --inmesh SAT1km_mesh
 
 ##############################
 

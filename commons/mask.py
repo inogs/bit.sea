@@ -85,7 +85,21 @@ class Mask(object):
     @property
     def zlevels(self):
         return self._zlevels
-
+    @property
+    def lon(self):
+        return self._xlevels[0,:]
+    @property
+    def lat(self):
+        return self._ylevels[:,0]
+    @property
+    def jpi(self):
+        return self._shape[2]
+    @property
+    def jpj(self):
+       return self._shape[1]
+    @property
+    def jpk(self):
+        return self._shape[0]
     @property
     def dz(self):
         return self._dz

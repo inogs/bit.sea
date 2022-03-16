@@ -1,12 +1,20 @@
 #! /bin/bash
 
+INPUTDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/NRT/DAILY/CHECKED
+MASKFILE=/g100_work/OGS_prodC/MIT/V1M-dev/V1/devel/wrkdir/POSTPROC/meshmask.nc
+
+echo python interpolator.py -i $INPUTDIR -o ./ --inmesh SAT1km_mesh -m $MASKFILE
+
+
+exit 0
+
 PYPATH=/pico/home/usera07ogs/a07ogs00/OPA/V2C/HOST/pico/lib/python2.7/site-packages/
 export PYTHONPATH=$PYTHONPATH:$PYPATH
  
 #WEEKLY_1KMDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_1km_Friday/
 #WEEKLY_16DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_16_Friday/
 #MASKFILE=/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc
-#mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16DIR -inmesh SAT1km_mesh -m V4mesh -M $MASKFILE
+#mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16DIR -inmesh SAT1km_mesh -m $MASKFILE
 
 
 CHECKED_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/DAILY/CHECKED/
@@ -33,7 +41,7 @@ MASKFILE=/gpfs/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc
 
 
 mkdir -p $WEEKLY_16_DIR
-echo mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16_DIR -inmesh SAT1km_mesh -m V4mesh -M $MASKFILE
+echo mpirun -np 10 python interpolator.py -i $WEEKLY_1KMDIR -o $WEEKLY_16_DIR -inmesh SAT1km_mesh -m $MASKFILE
 
 
 exit 0

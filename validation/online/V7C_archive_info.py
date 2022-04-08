@@ -30,6 +30,14 @@ def argument():
                                 action='store_true',
                                 required = False,
                                 help = 'enables ordered printout of maps.tar')
+    parser.add_argument(   '--analysis_already_run',
+                                action='store_true',
+                                required = False,
+                                help = 'True if we are sure that analysis of today is already archived')
+    parser.add_argument(   '--forecast_already_run',
+                                action='store_true',
+                                required = False,
+                                help = 'True if we are sure that forecast of today is already archived')    
     
     return parser.parse_args()
 
@@ -42,5 +50,5 @@ if args.bgc:
 if args.dir:
     print(timing.find_best_dir(args.date))
 if args.maps:
-    for thedir in timing.list_for_maps(args.date):
+    for thedir in timing.list_for_maps(args.date, args.analysis_already_run, args.forecast_already_run):
         print(thedir + "/POSTPROC/AVE_FREQ_1/maps.tar")

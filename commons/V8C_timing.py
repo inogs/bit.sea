@@ -1,7 +1,7 @@
 from __future__ import print_function
 from datetime import datetime,timedelta
 
-def round(timeobj):
+def timeround(timeobj):
     return datetime.strptime(timeobj.strftime("%Y%m%d"), "%Y%m%d")
 
 def last_analysis_rundate(d, analysis_day='tuesday', sure_an_already_run=False):
@@ -21,7 +21,7 @@ def last_analysis_rundate(d, analysis_day='tuesday', sure_an_already_run=False):
                     delta_day -= 7
                 else:
                     delta_day = target_day - d.isoweekday()
-    return round(d + timedelta(days=delta_day))
+    return timeround(d + timedelta(days=delta_day))
 
 def next_day(d, day_name):
     days_of_week = ['sunday','monday','tuesday','wednesday',
@@ -32,30 +32,34 @@ def next_day(d, day_name):
     return d + timedelta(days=delta_day)
 
 
-
-def two_important_dates(sure_an_already_run, sure_fc_already_run):
+def get_last_analysis_day(sure_an_already_run=False, today=datetime.now()):
     '''
-    Returns:
-    * end_analysis_date     * datetime object 
-    * last_forecast_rundate * datetime object
+    Argument:
+    * sure_an_already_run * logical, true if we are sure that last analysis is already archived
+    Returns
+    * last_analysis_day * datetime object
     '''
-    
-    today   =  datetime.now()
-    today   = datetime(2022,4,6,5,12)
-    if sure_fc_already_run:
-        last_forecast_rundate=round(today)
-    else:
-        last_forecast_rundate =  round(today - timedelta(days=1))
     Last_rundate_analysis=last_analysis_rundate(today, sure_an_already_run=sure_an_already_run)
-    #print("Last date analysis : ", Last_rundate_analysis)
-    date__end=Last_rundate_analysis - timedelta(days=1)
-    return date__end, last_forecast_rundate
+    return Last_rundate_analysis - timedelta(days=1)
+
+def get_last_forecast_rundate(sure_fc_already_run=False, today=datetime.now()):
+    '''
+    Argument:
+    * sure_fc_already_run * logical, true if we are sure that last forecast is already archived
+    Returns
+    * last_forecast rundate * datetime object
+    '''
+    if sure_fc_already_run:
+        last_forecast_rundate=timeround(today)
+    else:
+        last_forecast_rundate =  timeround(today - timedelta(days=1))
+    return last_forecast_rundate
 
 
 
 def find_best(d, analisis_end_date, last_forecast_rundate):
     '''
-     V6C archive directory for a specific date
+     V8C archive directory for a specific date
     The corresponding ave files in that directory are the best choice for that date,
     and correspond to DU content.
     Arguments:
@@ -91,7 +95,8 @@ def find_best_dir(datestr, dateformat="%Y%m%d", sure_an_already_run=True, sure_f
     analysis/20200505
     forecast/20200507'''
     
-    analysis_end_date, last_forecast_rundate=two_important_dates(sure_an_already_run, sure_fc_already_run)
+    analysis_end_date = get_last_analysis_day(sure_an_already_run)
+    last_forecast_rundate=get_last_forecast_rundate(sure_fc_already_run)
 
     d=datetime.strptime(datestr,dateformat)
     if d.hour==0: d += timedelta(hours=12)
@@ -124,7 +129,7 @@ def list_for_maps(datestr,dateformat="%Y%m%d",sure_an_already_run=False, sure_fc
     for deltadays in range(-10,11):
         d=timeobj + timedelta(days=deltadays)
         thedir=find_best_dir(d.strftime("%Y%m%d"), sure_an_already_run=sure_an_already_run, sure_fc_already_run=sure_fc_already_run)
-        print(d, thedir)
+        #print(d, thedir)
         if thedir not in DIRS:
             DIRS.append(thedir)
     return DIRS
@@ -133,14 +138,16 @@ def list_for_maps(datestr,dateformat="%Y%m%d",sure_an_already_run=False, sure_fc
 
 if __name__=="__main__":
    
-    #d = datetime(2022,4,5)
-    #analysis_end_date,yest=two_important_dates(sure_an_already_run=True)
+    d = datetime(2022,4,5)
+    analysis_end_date = get_last_analysis_day(sure_an_already_run=True, today=datetime(2022,4,6,5,12))
+    last_fc_date = get_last_analysis_day()
+
     
-    #print(analysis_end_date)
-    #print (find_best(d,analysis_end_date,yest))
+    print(analysis_end_date)
+    print (find_best(d,analysis_end_date,last_fc_date))
 
     print(list_for_maps("20220406", sure_an_already_run=False, sure_fc_already_run=True))
-    
+
     import sys
     sys.exit()
 

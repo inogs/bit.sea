@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser('''
-    Prints V6C archive info for a specific date
+    Prints V8C archive info for a specific date
     The corresponding files are the best choice for that date,
     and correspond to DU content.
     
@@ -42,7 +42,7 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-from commons import V7C_timing as timing
+from commons import V8C_timing as timing
 if args.phys:
     print(timing.find_best_forcing(args.date))
 if args.bgc:
@@ -50,5 +50,5 @@ if args.bgc:
 if args.dir:
     print(timing.find_best_dir(args.date))
 if args.maps:
-    for thedir in timing.list_for_maps(args.date, args.analysis_already_run, args.forecast_already_run):
+    for thedir in timing.list_for_maps(args.date, sure_an_already_run=args.analysis_already_run, sure_fc_already_run=args.forecast_already_run):
         print(thedir + "/POSTPROC/AVE_FREQ_1/maps.tar")

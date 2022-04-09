@@ -112,10 +112,12 @@ def letter(mtype):
     if mtype=='Forecast' : return 'f'
     if mtype=='Analysis' : return 'a'
 
-def find_best_forcing(datestr,dateformat="%Y%m%d"):
+def find_best_forcing(datestr,dateformat="%Y%m%d", sure_an_already_run=False, sure_fc_already_run=False):
     d=datetime.strptime(datestr,dateformat)
     if d.hour==0: d += timedelta(hours=12)
-    mtype, rundate= find_best(d,analysis_end_date)
+    analysis_end_date = get_last_analysis_day(sure_an_already_run)
+    last_forecast_rundate=get_last_forecast_rundate(sure_fc_already_run)
+    mtype, rundate= find_best(d,analysis_end_date, last_forecast_rundate)
     thedir=find_best_dir(datestr)
     forcing="%s/CMCC_PHYS/mfs_eas6v8-%s-%s-%s-"  %(thedir, rundate.strftime("%Y%m%d"), d.strftime("%Y%m%d"), letter(mtype))
     return forcing
@@ -149,18 +151,18 @@ if __name__=="__main__":
     print(list_for_maps("20220406", sure_an_already_run=False, sure_fc_already_run=True))
 
     import sys
-    sys.exit()
+#    sys.exit()
 
     from commons import genUserDateList as DL
-    DAYS=DL.getTimeList("20200505-12:00:00", "20200525-12:00:00", "days=1")
+    DAYS=DL.getTimeList("20200505-12:00:00", "20200525-12:00:00", days=1)
 
     for d in DAYS:
         weekday=d.isoweekday()
-        mtype, rundate= find_best(d,analysis_end_date)
+        mtype, rundate= find_best(d,analysis_end_date, last_fc_date)
         datestr=d.strftime("%Y%m%d")
 
         a= "%s %s %s from run of %s"  %(datestr , weekday, mtype,  rundate.strftime("%Y%m%d"))
-        forcingT=find_best_forcing(datestr)
+        forcingT=find_best_forcing(datestr,sure_an_already_run=False, sure_fc_already_run=True)
         print(a + " " + forcingT)
         
 

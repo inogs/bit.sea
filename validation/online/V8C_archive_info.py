@@ -44,7 +44,7 @@ def argument():
 args = argument()
 from commons import V8C_timing as timing
 if args.phys:
-    print(timing.find_best_forcing(args.date))
+    print(timing.find_best_forcing(args.date,sure_an_already_run=args.analysis_already_run, sure_fc_already_run=args.forecast_already_run))
 if args.bgc:
     print(timing.find_best_bgc(args.date))
 if args.dir:

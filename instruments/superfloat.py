@@ -144,6 +144,8 @@ class BioFloat(Instrument):
                 shift=POC[ii].mean()
                 print( "POC: adding a shift of " + np.str(shift))
                 Profile = Profile - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
 
      
         return Pres, Profile, Qc

@@ -324,7 +324,7 @@ class TimeList():
             SELECTION=[]
             weights = []
 
-            if self.inputFrequency in  ['daily','hourly',"seconds=900", "seconds=1800"] :
+            if (self.inputFrequency in  ['daily',"seconds=900", "seconds=1800"] ) | (self.inputFrequency.startswith("hours")):
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)

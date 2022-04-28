@@ -206,7 +206,7 @@ class TimeList():
             SELECTION=[]
             weights  =[]
 
-            if self.inputFrequency == "daily":
+            if (self.inputFrequency == [ "daily"]) | (self.inputFrequency.startswith("hours")):
                 for it, t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)

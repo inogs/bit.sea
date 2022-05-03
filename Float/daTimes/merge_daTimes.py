@@ -32,6 +32,7 @@ DIR=addsep(args.daTimes_dir)
 
 LIStvarfloat = ['P_l']
 LIStvarfloat = ['N3n','P_l']
+LIStvarfloat = ['N3n','P_l','O2o']
 
 # Merge with satellite DA dates 
 
@@ -44,7 +45,6 @@ fid.close()
 
 dateDAfloatvar = {}
 for varfloat in LIStvarfloat:
-    print(varfloat)
     dateDAfloatvar[varfloat] = []
     fid = open(DIR + 'daTimes_float_' + varfloat,'r')
     for line in fid:

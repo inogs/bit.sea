@@ -31,7 +31,7 @@ from commons.utils import file2stringlist
 import numpy as np
 from commons.utils import addsep
 
-def dump_template(ORIG, outfile,SAT_OBS,ARGO,ASS_P_l,ASS_N3n):
+def dump_template(ORIG, outfile,SAT_OBS,ARGO,ASS_P_l,ASS_N3n,ASS_O2o):
     LINES=[]
     for line in ORIG:
         newline=line
@@ -39,7 +39,15 @@ def dump_template(ORIG, outfile,SAT_OBS,ARGO,ASS_P_l,ASS_N3n):
         if (line.find("@@ARGO@@")   != -1):   newline=line.replace("@@ARGO@@"   ,  ARGO)
         if (line.find("@@ASS_P_l@@") != -1):  newline=line.replace("@@ASS_P_l@@",np.str(np.int(ASS_P_l)+np.int(SAT_OBS)))
         if (line.find("@@ASS_N3n@@") != -1):  newline=line.replace("@@ASS_N3n@@",ASS_N3n)
-        if (line.find("@@ASS_P_lN3n@@") != -1):  newline=line.replace("@@ASS_P_lN3n@@",np.str(np.int(ASS_P_l)-np.int(ASS_N3n)))
+        if (line.find("@@ASS_O2o@@") != -1):  newline=line.replace("@@ASS_O2o@@",ASS_O2o)
+        ASS_P_lN3n = '0'
+        if (ASS_P_l=='1') and (ASS_N3n=='0') :
+            ASS_P_lN3n = '1'
+        if (line.find("@@ASS_P_lN3n@@") != -1):  newline=line.replace("@@ASS_P_lN3n@@",np.str(np.int(ASS_P_lN3n)))
+        ASS_N3nO2o = '0'
+        if (ASS_N3n=='1') or (ASS_O2o=='1') :
+            ASS_N3nO2o = '1'
+        if (line.find("@@ASS_N3nO2o@@") != -1):  newline=line.replace("@@ASS_N3nO2o@@",np.str(np.int(ASS_N3nO2o)))
         LINES.append(newline + "\n")
     fid=open(filename,"w")
     fid.writelines(LINES)
@@ -52,9 +60,10 @@ ORIG          = file2stringlist(args.template)
 dateDA        = file2stringlist(args.ref_daTimes)
 dateDAsat     = file2stringlist(args.daTimes_sat)
 
-dateDAfloat    = file2stringlist(DIR + "daTimes_float_N3nP_l")
+dateDAfloat    = file2stringlist(DIR + "daTimes_float_N3nP_lO2o")
 dateDAfloatP_l = file2stringlist(DIR + "daTimes_float_P_l")
 dateDAfloatN3n = file2stringlist(DIR + "daTimes_float_N3n")
+dateDAfloatO2o = file2stringlist(DIR + "daTimes_float_O2o")
 
 
 for d in dateDA:
@@ -63,6 +72,6 @@ for d in dateDA:
     SAT_OBS = str(int(d in dateDAsat))
     ASS_P_l = str(int(d in dateDAfloatP_l))
     ASS_N3n = str(int(d in dateDAfloatN3n))
-    dump_template(ORIG, filename, SAT_OBS, ARGO, ASS_P_l, ASS_N3n)
-
+    ASS_O2o = str(int(d in dateDAfloatO2o))
+    dump_template(ORIG, filename, SAT_OBS, ARGO, ASS_P_l, ASS_N3n, ASS_O2o)
 

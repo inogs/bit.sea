@@ -17,7 +17,7 @@ class checkreport():
 
 
 class check():
-    def __init__(self,OUTDIR, verboselevel=1):
+    def __init__(self,OUTDIR, verboselevel=1, threshold_nitrate=1):
         '''
         if verboselevel = 1, a NetCDF will be printed out
         else, no files will be dumped
@@ -28,6 +28,8 @@ class check():
             self.outdir=addsep(OUTDIR)
             os.system("mkdir -p " + OUTDIR)
         self.verboselevel=verboselevel
+        self.threshold_nitrate = threshold_nitrate
+
 
     def nitrate_check(self, model, ref, depth, p):
     
@@ -38,7 +40,7 @@ class check():
         nP = len(DEPTH)
     
         mydiff = np.abs(MODEL-REF)
-        flag1_array = (mydiff > 2)  & (DEPTH<=50)
+        flag1_array = (mydiff > self.threshold_nitrate)  & (DEPTH<=50)
         flag2_array = (mydiff > 2)  & (DEPTH>=250) & (DEPTH<=600)
         flag1 = flag1_array.sum() > 5
         flag2 = flag2_array.sum() > 5

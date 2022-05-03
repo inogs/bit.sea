@@ -38,7 +38,7 @@ class check():
         nP = len(DEPTH)
     
         mydiff = np.abs(MODEL-REF)
-        flag1_array = (mydiff > 1)  & (DEPTH<=50)
+        flag1_array = (mydiff > 2)  & (DEPTH<=50)
         flag2_array = (mydiff > 2)  & (DEPTH>=250) & (DEPTH<=600)
         flag1 = flag1_array.sum() > 5
         flag2 = flag2_array.sum() > 5

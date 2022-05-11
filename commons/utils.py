@@ -171,7 +171,7 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
 
     headerstr="\t"
     nrows,ncols=M.shape
-    dtype = [('colnames','S20')]
+    dtype = [('colnames','U20')]
     if fmt.count("%") == 1:
         fmtlist = [fmt for ii in range(ncols)]
     else:
@@ -277,3 +277,7 @@ def nan_compare(array_with_nan,operator, value):
     if operator=='<=' : out[~ii] = array_with_nan[~ii] <= value
     return out
 
+if __name__ == '__main__':
+    A=np.random.randn(3,2)
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'])
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'],fmt='%5.3f\t')

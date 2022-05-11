@@ -41,7 +41,7 @@ def argument():
 
 args = argument()
 
-fid = open(args.open_sea_file)
+fid = open(args.open_sea_file,'rb')
 LIST = pickle.load(fid)
 fid.close()
 #TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
@@ -58,7 +58,7 @@ from basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
   if (isub != 17):  # DO NOT CONSIDER ATLANTIC SUBBASIN
 #   if (sub.name != "adr1"):
-    print sub.name
+    print (sub.name)
     fig, ax = pl.subplots()
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
     ax.fill_between(TIMES,SAT___MEAN[:,isub]-SAT____STD[:,isub],SAT___MEAN[:,isub]+SAT____STD[:,isub],color='palegreen')
@@ -76,7 +76,7 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('ytick', labelsize=12)
     ax.tick_params(axis='both', labelsize=12)
     pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
-    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()

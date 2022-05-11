@@ -48,7 +48,7 @@ from commons.utils import addsep
 import matplotlib.pyplot as pl
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
+from validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import datetime
 import plotter
 import plotter_oxy
@@ -98,14 +98,14 @@ depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
 #  if (var_mod =="O2o"):
-   if (var_mod =="P_c"):
+#   if (var_mod =="P_c"):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
-        print OUTFILE
+        print (OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         if ( var_mod == 'P_c'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)
@@ -119,7 +119,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.xaxis.grid(True)
 
         nP = len(list_float_track)
-        print nP
+        print (nP)
         if nP <2 : continue
 
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
@@ -129,16 +129,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
         for ip, p in enumerate(list_float_track):
             try:
                 Pres,Prof,Qc=p.read(var,var_mod=var_mod)
-                print "HERE1"
-                print Prof
-                print "HERE2"
+                print (Prof)
             except:
-                print var_mod
+                print (var_mod)
                 timelabel_list.append(p.time)
                 continue
             ii = Pres<=bt
             if ii.sum() < 2 :
-                print "less than 2 points"
+                print ("less than 2 points")
                 timelabel_list.append(p.time)
                 continue
 
@@ -147,14 +145,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
             try:
               GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
             except:
-                print "except"
+                print ("except")
                 continue
 
             if GM.number()> 0:
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print (var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)
@@ -194,8 +192,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
         times = timelabel_list
 
         model, ref =           A.plotdata(var_mod,'Int_0-200', only_good=False)
-        print "ref"
-        print ref
+        print ("ref")
+        print (ref)
         if np.isnan(ref).all(): continue
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
@@ -294,7 +292,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax5.set_xticklabels([])
             ax6.set_xticklabels([])
         except:
-            print "nans in figure"
+            print ("nans in figure")
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)

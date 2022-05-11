@@ -35,11 +35,11 @@ import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS
 from commons.utils import addsep
-from profiler_floats import TL
+from profiler import TL
 import scipy.io.netcdf as NC
 from commons.utils import writetable
 from datetime import datetime
-from profiler_floats import *
+from profiler import *
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -51,9 +51,9 @@ class ncreader():
         self.nVAR = ncIN.dimensions['var']
         self.nSUB = ncIN.dimensions['sub']
         self.nDEPTH  = ncIN.dimensions['depth']
-        self.SUBLIST = ncIN.sublist.split(",")
-        self.LAYERLIST=ncIN.layerlist.split(",")
-        self.VARLIST = ncIN.varlist.split(",")
+        self.SUBLIST = ncIN.sublist.decode().split(",")
+        self.LAYERLIST=ncIN.layerlist.decode().split(",")
+        self.VARLIST = ncIN.varlist.decode().split(",")
         self.npoints = ncIN.variables['npoints'].data.copy()
         self.bias    = ncIN.variables['bias'   ].data.copy()
         self.rmse    = ncIN.variables['rmse'   ].data.copy()
@@ -62,7 +62,6 @@ class ncreader():
         isub = self.SUBLIST.index(sub)
         idepth= self.LAYERLIST.index(depth)
         return VAR[ivar,:, isub,idepth]
-
 
 
 DATAfile = ncreader(inputfile)
@@ -94,17 +93,17 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     ax.plot(times,bias1,'m.-', label='bias')
     ax.plot(times,rmse1,'k.-', label='rmse')
     if longvar == 'Chlorophyll' : 
-	ax.set_ylim([-0.4, 0.4])
-	ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+        ax.set_ylim([-0.4, 0.4])
+        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 #	ax.ticklabel_format(axis='both', fontsize=20)
     if longvar == 'PhytoC' :
        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 
     if longvar == 'Nitrate'     : 
-	ax.set_ylim([-5, 5])
-	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
+        ax.set_ylim([-5, 5])
+        ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     if longvar == 'Oxygen'      :
-	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
+        ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     #if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
         
 #    ax.set_ylabel('bias, rmse mg/m$^3$')
@@ -141,7 +140,7 @@ for ivar, var in enumerate(VARLIST):
     for isub, sub in enumerate(SUBLIST):
         for ilayer, layer in enumerate(LAYERLIST):
             outfile = "%s%s.%s.%s.png" % (OUT_FIGDIR,var,sub.name,layer.longname())
-            print outfile
+            print (outfile)
             fig,bias,rmse,ax,ax2  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse

@@ -38,7 +38,7 @@ args = argument()
 
 
 
-fid = open(args.inputfile)
+fid = open(args.inputfile,'rb')
 LIST = pickle.load(fid)
 fid.close()
 
@@ -60,7 +60,7 @@ nSUB = len(OGS.P.basin_list)
 
 for isub,sub in enumerate(OGS.P):
 #  if (isub != 17):
-    print sub.name
+    print (sub.name)
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
     ax.plot(TIMES,BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
@@ -72,7 +72,7 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
     pl.ylim(-0.3, 0.3)
-    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()

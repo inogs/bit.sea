@@ -51,7 +51,7 @@ from instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from commons.utils import addsep
-from profiler_floats import ALL_PROFILES,TL,BASEDIR
+#from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from basins.V2 import NRT3 as OGS
 from commons.time_interval import TimeInterval
@@ -59,7 +59,7 @@ from matchup.statistics import *
 from commons.utils import writetable
 from datetime import datetime
 from datetime import timedelta
-from profiler_floats import *
+from profiler import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
@@ -124,7 +124,7 @@ METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 METRICS_ALL=['CORR','INTmeanRef','INTmeanMod','INTstdRef','INTstdMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCMstdRef','DCMstdMod','DCM_BIAS','DCM_RMSD','WBLmeanRef','WBLmeanMod','WBLstdRef','WBLstdMod','WBL_BIAS','WBL_RMSD','NITmeanRef','NITmeanMod','NITstdRef','NITstdMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZstdRef','OMZstdMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMaxRef_std','O2oMaxMod_std','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 
 nm=len(METRICS_ALL)
-print nm
+print (nm)
 METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','WBL_BIAS','WBL_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
@@ -151,17 +151,17 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS = np.zeros((nSub,nm),np.float32)*np.nan #before 18 metrics
     TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
-	OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
+        OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
         S = SubMask(SubBasin, maskobject=TheMask)
-	fig, axes = fig_setup(S,SubBasin.name)
+        fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
-	    Int_Ref = A_float[ivar,:,iSub,0]
-	    Int_Mod = A_model[ivar,:,iSub,0]
-	    axes[1].plot(times, Int_Ref,'r',label='REF INTEG')
+            Int_Ref = A_float[ivar,:,iSub,0]
+            Int_Mod = A_model[ivar,:,iSub,0]
+            axes[1].plot(times, Int_Ref,'r',label='REF INTEG')
             axes[1].plot(times,Int_Mod,'b',label='MOD INTEG')
             
-	    TABLE_METRICS[iSub,1] = np.nanmean(Int_Ref[ii])
-	    TABLE_METRICS[iSub,2] = np.nanmean(Int_Mod[ii])
+            TABLE_METRICS[iSub,1] = np.nanmean(Int_Ref[ii])
+            TABLE_METRICS[iSub,2] = np.nanmean(Int_Mod[ii])
             TABLE_METRICS[iSub,3] = np.nanstd(Int_Ref[ii])
             TABLE_METRICS[iSub,4] = np.nanstd(Int_Mod[ii])
 
@@ -190,31 +190,31 @@ for ivar, var in enumerate(VARLIST):
 
         axes[1].set_xticklabels([])
 
-	if ((np.isnan(corr)).all() == False ): 
-	    axes[2].plot(times,corr,'k')
+        if ((np.isnan(corr)).all() == False ): 
+            axes[2].plot(times,corr,'k')
             axes[2].set_ylabel('CORR',fontsize=15)
             axes[2].set_xticklabels([])
-	    axes[2].set_ylim([0.2,1])
+            axes[2].set_ylim([0.2,1])
             TABLE_METRICS[iSub,0] = np.nanmean(corr[ii])
 
-	ax2 = axes[2].twinx()
+        ax2 = axes[2].twinx()
         numP = A_float[ivar,:,iSub,6]
         ax2.bar(times,numP,width=7, color='g', alpha=0.3, label='n points',align='center')
-	ax2.set_ylabel(' # Points')
+        ax2.set_ylabel(' # Points')
         ax2.set_ylim([0,numP.max() +2])
-	ax2.legend(loc=1)
-	TABLE_METRICS[iSub,37] = np.mean(numP[ii])
+        ax2.legend(loc=1)
+        TABLE_METRICS[iSub,37] = np.mean(numP[ii])
  
         if (var == "P_l"):
-	    DCM_Ref = A_float[ivar,:,iSub,2]
-	    DCM_Mod = A_model[ivar,:,iSub,2]
-	    WBL_Ref = A_float[ivar,:,iSub,3]
-	    WBL_Mod = A_model[ivar,:,iSub,3]
+            DCM_Ref = A_float[ivar,:,iSub,2]
+            DCM_Mod = A_model[ivar,:,iSub,2]
+            WBL_Ref = A_float[ivar,:,iSub,3]
+            WBL_Mod = A_model[ivar,:,iSub,3]
             axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
 	    # FILTER OUT MAY TO NOV INCLUDED:
-	    WBL_Ref[4:11] = np.nan
-	    WBL_Mod[4:11] = np.nan
+            WBL_Ref[4:11] = np.nan
+            WBL_Mod[4:11] = np.nan
             WBL_Ref[16:23] = np.nan
             WBL_Mod[16:23] = np.nan
             axes[3].plot(times,WBL_Ref,'--r',label='WBL REF')
@@ -224,12 +224,12 @@ for ivar, var in enumerate(VARLIST):
             axes[3].set_ylabel('DCM/WBL $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
             axes[1].set_ylim([0,1.0])
-	    ax2.set_ylim([0,50])
+            ax2.set_ylim([0,50])
             axes[3].set_ylim([160,40])
 
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-	    legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
 
             TABLE_METRICS[iSub,7] = np.nanmean(DCM_Ref[ii])
             TABLE_METRICS[iSub,8] = np.nanmean(DCM_Mod[ii])
@@ -254,8 +254,8 @@ for ivar, var in enumerate(VARLIST):
 
 
         if (var == "N3n"):
-	    Nit_Ref = A_float[ivar,:,iSub,4]
-	    Nit_Mod = A_model[ivar,:,iSub,4]
+            Nit_Ref = A_float[ivar,:,iSub,4]
+            Nit_Mod = A_model[ivar,:,iSub,4]
             axes[3].plot(times,Nit_Ref,'r',label='REF')
             axes[3].plot(times,Nit_Mod,'b',label='MOD')
             axes[3].invert_yaxis()
@@ -267,7 +267,7 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,22] = np.nanstd(Nit_Mod[ii])
             good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
             m = matchup(Nit_Mod[ii][good],   Nit_Ref[ii][good])
-	    TABLE_METRICS[iSub,23] = m.bias()
+            TABLE_METRICS[iSub,23] = m.bias()
             TABLE_METRICS[iSub,24] = m.RMSE()
 #        else:
             axes[3].plot(times,  np.ones_like(times))
@@ -290,7 +290,7 @@ for ivar, var in enumerate(VARLIST):
             axes[3].invert_yaxis()
             axes[3].set_ylabel('MAX OXY depth $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
-	    legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
 
@@ -316,9 +316,12 @@ for ivar, var in enumerate(VARLIST):
 
         if ( (np.isnan(corr)).all() == True ) : continue
         fig.savefig(OUTFILE)
-	plt.close(fig)
+        plt.close(fig)
 
     row_names   =[sub.name for sub in OGS.basin_list]
+    print (row_names)
+#    import sys
+#    sys.exit()
 
     TABLE_METRICS_SHORT[:,0] = TABLE_METRICS[:,0]
     TABLE_METRICS_SHORT[:,1] = TABLE_METRICS[:,5]

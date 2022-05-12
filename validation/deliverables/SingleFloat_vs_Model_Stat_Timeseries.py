@@ -98,7 +98,7 @@ for ivar, var_mod in enumerate(VARLIST):
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
         OUTFILE = "%s%s_%s.nc" %(OUTDIR, var_mod, wmo )
-        print OUTFILE
+        print (OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         nTime = len(list_float_track)
         A_float = np.zeros(( nTime, nStat), np.float32 ) * np.nan
@@ -117,12 +117,12 @@ for ivar, var_mod in enumerate(VARLIST):
                 GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 
             except:
-                print p.ID()  + " not found in " + BASEDIR
+                print (p.ID()  + " not found in " + BASEDIR)
                 continue
 
 
             if GM.number() == 0 :
-                print p.ID() + " excluded"
+                print (p.ID() + " excluded")
                 continue
             gm200 = GM.subset(layer)
             gm300 = GM.subset(layer300)
@@ -168,8 +168,8 @@ for ivar, var_mod in enumerate(VARLIST):
             if (var_mod == "O2o"):
                 A_float[itime,8] = oxy_sat(p)
                 
-                print gm1000.Ref
-                print gm1000.Depth
+                print (gm1000.Ref)
+                print (gm1000.Depth)
                 if len(gm1000.Ref) > 1:
                     A_float[itime,9] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
                     A_model[itime,9] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 

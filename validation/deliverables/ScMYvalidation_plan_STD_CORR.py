@@ -83,14 +83,14 @@ outfile  = args.outfile
 Timestart=DATESTART
 Time__end=DATE__END
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-print TI
+print (TI)
 dateformat ="%Y%m%d"
 #dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
-print sat_TL.Timelist  
-print " " 
-print model_TL.Timelist
+print (sat_TL.Timelist)
+print (" ")
+print (model_TL.Timelist)
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 
@@ -101,7 +101,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    print sub.name
+    print (sub.name)
     sbmask         = SubMask(sub,maskobject=Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
@@ -126,7 +126,7 @@ BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
 surf_layer = Layer(0,10)
 
 for itime, modeltime in enumerate(model_TL.Timelist):
-    print modeltime
+    print (modeltime)
     CoupledList = sat_TL.couple_with([modeltime])
     sattime = CoupledList[0][0]
     satfile = REF_DIR + sattime.strftime(dateformat) + suffix

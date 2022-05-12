@@ -1,7 +1,7 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Calculates Chl statistics on matchups of Model and Sat.
+    Calculates Chl of Kd statistics on matchups of Model and Sat.
     Main result are
     - BGC_CLASS4_CHL_RMS_SURF_BASIN
     - BGC_CLASS4_CHL_BIAS_SURF_BASIN
@@ -37,9 +37,16 @@ def argument():
                                 required = True,
                                 choices = ['coast','open_sea','everywhere'],
                                 help = 'definition of mask to apply to the statistics')
-
-
-
+    parser.add_argument(   '--layer', '-l',
+                                type = int,
+                                required = True,
+                                help = 'Layer of the model, in meters. Usually 10m for chl')
+    parser.add_argument(   '--var', '-v',
+                                type = str,
+                                required = True,
+                                choices = ['chl','kd'],
+                                help = ''' model var name'''
+                                )
     return parser.parse_args()
 
 
@@ -51,7 +58,7 @@ from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
 import numpy as np
 import os
-import Sat.SatManager as Sat
+import Sat.SatManager as Satmodule
 import matchup.matchup as matchup
 from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
@@ -77,20 +84,21 @@ MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
-
-#Timestart="20170101"
-#Time__end="20180101"
+if (args.var=='kd') :
+    modvarname = "kd490"
+    satvarname = "KD490"
+else:
+    modvarname = "P_l"
+    satvarname = "CHL"
 Timestart=DATESTART
 Time__end=DATE__END
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 print (TI)
 dateformat ="%Y%m%d"
-#dateformat ="%Y%m_d"
+
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
-print (sat_TL.Timelist)
-print (" ")
-print (model_TL.Timelist)
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc", filtervar=modvarname)
+
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 
@@ -123,7 +131,7 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
 
 # This is the surface layer choosen to match satellite chl data
-surf_layer = Layer(0,10)
+surf_layer = Layer(0,args.layer)
 
 for itime, modeltime in enumerate(model_TL.Timelist):
     print (modeltime)
@@ -132,25 +140,22 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     satfile = REF_DIR + sattime.strftime(dateformat) + suffix
     modfile = model_TL.filelist[itime]
 
-    De         = DataExtractor(TheMask,filename=modfile, varname='P_l')
+    De         = DataExtractor(TheMask,filename=modfile, varname=modvarname)
     Model      = MapBuilder.get_layer_average(De, surf_layer)
-    #ncIN = NC.netcdf_file(modfile,'r')
-    #Model = ncIN.variables['P_i'].data[0,0,:,:].copy()#.astype(np.float64)
-    #Model = ncIN.variables['lchlm'].data.copy()
-    #ncIN.close()
-
-    Sat16 = Sat.readfromfile(satfile,var='CHL') #.astype(np.float64)
+    Sat = Satmodule.readfromfile(satfile,var=satvarname)
 
 
-    cloudsLand = (np.isnan(Sat16)) | (Sat16 > 1.e19) | (Sat16<0)
+
+    cloudsLand = (np.isnan(Sat)) | (Sat > 1.e19) | (Sat<0)
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
     selection = ~nodata & coastmask
-    M = matchup.matchup(Model[selection], Sat16[selection])
+    M = matchup.matchup(Model[selection], Sat[selection])
 
     for isub, sub in enumerate(OGS.P):
         selection = SUB[sub.name] & (~nodata) & coastmask
-        M = matchup.matchup(Model[selection], Sat16[selection])
+        if selection.sum() == 0: continue
+        M = matchup.matchup(Model[selection], Sat[selection])
         BGC_CLASS4_CHL_RMS_SURF_BASIN[itime,isub]  = M.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN[itime,isub] = M.bias()
         BGC_CLASS4_CHL_CORR_SURF_BASIN[itime,isub] = M.correlation()
@@ -158,7 +163,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
         MODEL_MEAN[itime,isub] , MODEL__STD[itime,isub] = weighted_mean( M.Model,weight)
         SAT___MEAN[itime,isub] , SAT____STD[itime,isub] = weighted_mean( M.Ref,  weight)
 
-        Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat16[selection])) #add matchup based on logarithm
+        Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat[selection])) #add matchup based on logarithm
         BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[itime,isub]  = Mlog.RMSE()
         BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[itime,isub] = Mlog.bias()
 

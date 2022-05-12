@@ -2,13 +2,26 @@
 
 # QUID REANALYSIS
 # SECTION 4:
+. ../online/profile.inc
 export MASKFILE=/g100_work/OGS_prod100/OPA/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
 export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/
 
          INPUTDIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_02/wrkdir/MODEL/AVE_FREQ_2/ #compressed/
    INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_02/wrkdir/POSTPROC/out/AVE_FREQ_2/TMP/
 STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_02/wrkdir/POSTPROC/out/AVE_FREQ_2/STAT_PROFILES/
-#SAT_MONTHLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/MONTHLY_24/
+
+
+SAT_KD_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY_24/
+SAT_CHLWEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/DT/WEEKLY_4_24
+KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_03/wrkdir/POSTPROC/out/AVE_FREQ_3/KD_WEEKLY
+LAYER=0 #m
+opa_prex_or_die "python ScMYvalidation_plan_STD_CORR.py -v kd -s $SAT_KD_WEEKLY_DIR -i $KD_MODEL_DIR -m $MASKFILE -c open_sea -l $LAYER -o kd490_open_sea.pkl"
+opa_prex_or_die "python plot_timeseries_STD.py -v kd -i kd490_open_sea.pkl -o ./Fig/ "
+exit 0
+
+LAYER=10
+opa_prex_or_die "python ScMYvalidation_plan_STD_CORR.py -v chl -s $SAT_CHLWEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea -l $LAYER  -o chl_open_sea.pkl"
+opa_prex_or_die "python plot_timeseries_STD.py -v chl -i chl_open_sea.pkl -o ./Fig4.2/ "
 
 OUTDIR=spaghettiplots
 mkdir -p $OUTDIR
@@ -48,9 +61,7 @@ cp LayerMaps/*DIC* Fig4.19/
 #python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
 mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2
-#SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/DT/WEEKLY_1_24/  --> WEEKLY_4_24? Thursday?	
-SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/DT/WEEKLY_4_24
-#SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MULTISENSOR_1km/WEEKLY_24_Friday
+
 OUTDIR=TMP_week/
 # Create files with matchup of CHL vals, bias, rmsd between data and sar
 python ScMYvalidation_plan_STD_CORR.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl

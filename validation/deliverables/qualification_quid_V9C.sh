@@ -15,12 +15,12 @@ SAT_KD_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/
 SAT_CHLWEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/DT/WEEKLY_4_24
 KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_03/wrkdir/POSTPROC/out/AVE_FREQ_3/KD_WEEKLY
 LAYER=0 #m
-opa_prex_or_die "python ScMYvalidation_plan_STD_CORR.py -v kd -s $SAT_KD_WEEKLY_DIR -i $KD_MODEL_DIR -m $MASKFILE -c open_sea -l $LAYER -o kd490_open_sea.pkl"
+opa_prex_or_die "python ScMYvalidation_plan.py -v kd -s $SAT_KD_WEEKLY_DIR -i $KD_MODEL_DIR -m $MASKFILE -c open_sea -l $LAYER -o kd490_open_sea.pkl"
 opa_prex_or_die "python plot_timeseries_STD.py -v kd -i kd490_open_sea.pkl -o ./Fig/ "
 exit 0
 
 LAYER=10
-opa_prex_or_die "python ScMYvalidation_plan_STD_CORR.py -v chl -s $SAT_CHLWEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea -l $LAYER  -o chl_open_sea.pkl"
+opa_prex_or_die "python ScMYvalidation_plan.py -v chl -s $SAT_CHLWEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea -l $LAYER  -o chl_open_sea.pkl"
 opa_prex_or_die "python plot_timeseries_STD.py -v chl -i chl_open_sea.pkl -o ./Fig4.2/ "
 
 OUTDIR=spaghettiplots
@@ -64,8 +64,8 @@ mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2
 
 OUTDIR=TMP_week/
 # Create files with matchup of CHL vals, bias, rmsd between data and sar
-python ScMYvalidation_plan_STD_CORR.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl
-python ScMYvalidation_plan_STD_CORR.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast_STD_CORR.pkl
+python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl
+python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast_STD_CORR.pkl
 
 # Plot for the timeseries for both model and Sat with theyr spatial STD fpr each subbasin
 python plot_timeseries_STD.py -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -c export_data_ScMYValidation_plan_coast_STD_CORR.pkl -O ./Fig4.2/

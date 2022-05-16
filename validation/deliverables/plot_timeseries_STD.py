@@ -53,7 +53,7 @@ model_label=' MODEL'
 if (args.var =="chl"):
     var_label = "CHL [mg/m$^3$]"
 else:
-    var_label = "KD"
+    var_label = "KD [m$^{-1}$]"
 
 
 for isub,sub in enumerate(OGS.P):

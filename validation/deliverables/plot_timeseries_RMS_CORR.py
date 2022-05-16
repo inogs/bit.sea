@@ -3,17 +3,13 @@
 # CMEMS-Med-QUID-006-008-V2-V1.0.docx
 # Figure IV.3 and table IV.1
 
-
-import pickle
-import matplotlib.pyplot as pl
-import matplotlib.dates as mdates
-import sys
-import numpy as np
 import argparse
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    plot somethings
+    Plot timeseries fo BIAS and RMSE for QUID
+    CMEMS-Med-QUID-006-008-V2-V1.0.docx
+    Figure IV.3 and table IV.1
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -30,17 +26,37 @@ def argument():
                             required = True,
                             default = 'export_data_ScMYValidation_plan.pkl',
                             help = 'Input pickle file')
+    parser.add_argument(   '--var', '-v',
+                                type = str,
+                                required = True,
+                                choices = ['chl','kd'],
+                                help = ''' model var name'''
+                                )
+
 
 
     return parser.parse_args()
 
 args = argument()
 
+import pickle
+import matplotlib.pyplot as pl
+import matplotlib.dates as mdates
+import sys
+import numpy as np
+from commons.utils import addsep
 
-
+OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')
 LIST = pickle.load(fid)
 fid.close()
+
+model_label=' MODEL'
+
+if (args.var =="chl"):
+    var_label = "CHL [mg/m$^3$]"
+else:
+    var_label = "KD"
 
 TIMES                          = LIST[0]
 BGC_CLASS4_CHL_RMS_SURF_BASIN  = LIST[1]
@@ -59,12 +75,12 @@ from basins import V2 as OGS
 nSUB = len(OGS.P.basin_list)
 
 for isub,sub in enumerate(OGS.P):
-#  if (isub != 17):
+    if (sub.name == 'atl') : continue
     print (sub.name)
     fig, ax = pl.subplots()
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
     ax.plot(TIMES,BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
-    ax.set_ylabel(sub.name.upper() + ' - CHL [mg/m$^3$]').set_fontsize(14)
+    ax.set_ylabel(sub.name.upper() + ' - ' + var_label).set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()
     ltext  = leg.get_texts()
@@ -81,7 +97,7 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ylabels, fontsize=10)
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
-    outfilename=args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
+    outfilename="%s%s-RMS-BIAS_%s.png"  %(OUTDIR, args.var, sub.name) #  args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
     pl.close(fig)
 
@@ -148,7 +164,8 @@ mat[:,15] = MEAN_REF_win
 mat[:,16] = MEAN_MOD_sum
 mat[:,17] = MEAN_REF_sum
 
-outfiletable = args.outdir+"/"+"table4.1.dat"
+outfiletable = OUTDIR + "table4.1_" + args.var + ".dat"
+print (outfiletable)
 rows_names=[sub.name for sub in OGS.P.basin_list]
 #column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum']
 #column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum']

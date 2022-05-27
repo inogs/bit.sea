@@ -130,7 +130,7 @@ def Hovmoeller_matrix_from_SP(datetime_list, file_list, varname, subbasin, coast
     Reads directly from STAT_PROFILES
     '''
     dlabels=None
-    if isinstance(depths, (int, long)):
+    if isinstance(depths, (int,)):
         pass
     elif isinstance(depths, (list, tuple)):
         dlabels = np.array(depths)
@@ -195,7 +195,7 @@ def plot_Hovmoeller_diagram(file_list, varname, subbasin, coast=CoastEnum.open_s
     if (fig is None) or (ax is None):
         fig , ax = plt.subplots()
     dlabels = None
-    if isinstance(depths, (int, long)):
+    if isinstance(depths, (int, )):
         pass
     elif isinstance(depths, (list, tuple)):
         dlabels = np.array(depths)

@@ -29,7 +29,7 @@ def is_number(val):
         - True if val is a number type.
         - False if val is not a number type.
     """
-    return isinstance(val, (int, long, float, complex, np.float32))
+    return isinstance(val, (int, float, complex, np.float32))
 
 def get_date_string(s):
     """Finds a date in YYYYMMDD format into a bigger string.

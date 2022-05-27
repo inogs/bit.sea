@@ -145,7 +145,7 @@ req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year)
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="."+var)
 if TL.inputFrequency is None:
     TL.inputFrequency='monthly'
-    print "inputFrequency forced to monthly because of selection of single time"
+    print ("inputFrequency forced to monthly because of selection of single time")
 
 req = requestors.Generic_req(TI)
 indexes,weights = TL.select(req)
@@ -159,9 +159,9 @@ for k in indexes:
     filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
     filelist.append(filename)
 # ----------------------------------------------------------
-print "time averaging ..."
+print ("time averaging ...")
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)
-print "... done."
+print ("... done.")
 for il, layer in enumerate(PLOT.layerlist):
     z_mask = PLOT.depthfilters[il]
     z_mask_string = "-%04gm" %z_mask

@@ -196,9 +196,9 @@ def mapplotlog(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, 
             ax.set_xlim([-6, 36])
             ax.set_ylim([30, 46])
 
-    if map_dict.has_key('layer'):  ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
-    if map_dict.has_key('date'):   ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
-    if map_dict.has_key('varname'):ax.text(-7,40,map_dict['varname'],ha='left',va='center')
+    if 'layer' in map_dict.keys():  ax.text(-7,44,map_dict['layer'].__repr__()  ,ha='left',va='center')
+    if 'date'  in map_dict.keys():   ax.text(-7,42,map_dict['date']   ,ha='left',va='center')
+    if 'varname' in map_dict.keys():ax.text(-7,40,map_dict['varname'],ha='left',va='center')
     ax.set_position(actualpos)
     ax.axes.get_xaxis().set_visible(True)
     ax.axes.get_yaxis().set_visible(True)
@@ -208,10 +208,10 @@ def mapplotlog(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, 
     #ax.text(35, 46, 'OGS Echo Group',
     #     fontsize=60, color='gray',
     #     ha='right', va='top', alpha=0.3, rotation=18)
-    if map_dict.has_key('layer'):
+    if 'layer' in map_dict.keys():
         title = "%s %s %s" % (map_dict['date'], map_dict['varname'], map_dict['layer'].__repr__())
     else:
-        if map_dict.has_key('date'):
+        if 'date'  in map_dict.keys():
             title = "%s %s" % (map_dict['date'], map_dict['varname'])
             fig.suptitle(title)
     return fig, ax

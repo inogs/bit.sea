@@ -170,6 +170,7 @@ class Mask(object):
         lon = float(lon)
         lat = float(lat)
         ip,jp = self.convert_lon_lat_to_indices(lon,lat)
+        if self.mask[0,jp,ip] : return ip, jp
         #Matrixes of indexes of the Mask
         Ilist = np.arange(self.shape[2])
         II = np.tile(Ilist,(self.shape[1],1))
@@ -179,8 +180,10 @@ class Mask(object):
         JJmask = JJ[self.mask[0,:,:]]
         #Find distances from wet points
         distind = (ip-IImask)**2+(jp-JJmask)**2
-        #Limit to distance < maxradius
+        if maxradius is None :
+            maxradius = distind.min()
         indd = distind<=maxradius
+        #Limit to distance < maxradius)
         ipnarr = IImask[indd]
         jpnarr = JJmask[indd]
         #Assign the nearest wet points 
@@ -192,7 +195,7 @@ class Mask(object):
             return newip,newjp
         #If there aren't wet points with distance < maxradius, assign the non-wet point
         else:
-            print('WARNING: Using terrain point indexes')
+            print('WARNING: Using terrain point indexes, put min_radius=',distind.min(), ' or min_radius=None')
             return ip,jp
 
 
@@ -342,7 +345,13 @@ class Mask(object):
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices
     filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
-    TheMask = Mask(filename,zlevelsvar='gdepw', xlevelsmatvar='glamf')
+    TheMask = Mask('/g100_work/OGS21_PRACE_P/CLIMA_100/meshmask.nc')
+    lat=33.25925
+    lon=11.18359
+    print(TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2))
+    import sys
+    sys.exit()
+    #TheMask = Mask(filename,zlevelsvar='gdepw', xlevelsmatvar='glamf')
     print(TheMask.is_regular())
 
     lon = 18.1398

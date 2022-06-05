@@ -195,7 +195,7 @@ class Mask(object):
             return newip,newjp
         #If there aren't wet points with distance < maxradius, assign the non-wet point
         else:
-            print('WARNING: Using terrain point indexes, put min_radius=',distind.min(), ' or min_radius=None')
+            print('WARNING: Using terrain point indexes, put maxradius=',distind.min(), ' or maxradius=None')
             return ip,jp
 
 

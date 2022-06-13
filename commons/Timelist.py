@@ -299,7 +299,7 @@ class TimeList():
             return SELECTION , np.array(weights)
 
         if isinstance(requestor,requestors.Hourly_req):
-            assert self.inputFrequency in [ 'hourly', "seconds=900", "seconds=1800"]
+            assert (self.inputFrequency in [ "seconds=900", "seconds=1800"]) | (self.inputFrequency.startswith("hours"))
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -700,6 +700,8 @@ if __name__ == '__main__':
     H2 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", hours=2)
     TL     = TimeList(H2)
     REQS = TL.getOwnList()
+    import sys
+    sys.exit()
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)

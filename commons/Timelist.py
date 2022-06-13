@@ -310,7 +310,7 @@ class TimeList():
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
-            assert self.inputFrequency in ["hourly","daily", "seconds=900", "seconds=1800"] # it does not matter how many hours
+            assert (self.inputFrequency in ["daily", "seconds=900", "seconds=1800"])| (self.inputFrequency.startswith("hours"))
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):

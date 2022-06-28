@@ -1,9 +1,10 @@
-import scipy.io.netcdf as NC
+import netCDF4
 import numpy as np
 import datetime
 import os
 from commons.utils import addsep
 from instruments.var_conversions import FLOATVARS as conversion
+import matplotlib
 import matplotlib.pyplot as pl
 
 from instruments.instrument import Instrument, Profile
@@ -98,16 +99,17 @@ class BioFloat(Instrument):
         else:
             return False
     def load_basics(self):
-        ncIN = NC.netcdf_file(self.filename,'r')
-        self.N_PROF    = ncIN.dimensions['N_PROF']
-        self.N_PARAM   = ncIN.dimensions['N_PARAM']
-        self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
-        #self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
+
+        ncIN = netCDF4.Dataset(self.filename,'r')
+        self.N_PROF    = ncIN.dimensions['N_PROF'].size
+        self.N_PARAM   = ncIN.dimensions['N_PARAM'].size
+        self.PARAMETER = np.array(ncIN.variables['PARAMETER'])
+
         ncIN.close()
         _,_,nParams,_=self.PARAMETER.shape
         self.PARAMETERS=[]
         for iParam in range(nParams):
-            Param_name=self.PARAMETER[0,0,iParam,:].tostring().replace(' ',"")
+            Param_name=self.PARAMETER[0,0,iParam,:].tobytes().decode().replace(' ',"")
             self.PARAMETERS.append(Param_name)
 
     def _searchVariable_on_parameters(self, var):
@@ -124,8 +126,8 @@ class BioFloat(Instrument):
     def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
         fillvalue = varObj._FillValue
-        M = varObj.data.copy()
-        if varObj.typecode()=='c':
+        M = np.array(varObj)
+        if varObj.datatype=='S1':
             M[M==fillvalue] = '0'
         else:
             M[M==fillvalue] = np.NaN;
@@ -145,7 +147,7 @@ class BioFloat(Instrument):
         return res
 
     def __merge_var_with_adjusted(self, ncObj,var):
-        N_PROF= ncObj.dimensions['N_PROF']
+        N_PROF= ncObj.dimensions['N_PROF'].size
         M     = self.__fillnan(ncObj, var)
         M_ADJ = self.__fillnan(ncObj, var + "_ADJUSTED")
         M_RES = M
@@ -173,28 +175,26 @@ class BioFloat(Instrument):
     def read_very_raw(self,var):
         '''
         Reads data from file
-        Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
+        Returns 5 numpy arrays: Pres, Profile, Profile_adjusted, Qc, Qc_adjusted
         '''
         iProf = 0 #self._searchVariable_on_parameters(var)
-        ncIN=NC.netcdf_file(self.filename,'r')
+        ncIN=netCDF4.Dataset(self.filename,'r')
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
+        M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+        QC      = self.__fillnan(ncIN, var +"_QC")
+        QC_adj  = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
 
-        if (var + "_ADJUSTED") in ncIN.variables.keys():
-            M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
-            QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
-        else:
-            M_ADJ   = np.zeros_like(PRES)*np.nan
-            QC      = np.zeros_like(PRES)*np.nan
         M       = self.__fillnan(ncIN, var )
 
         Profile     =     M[iProf,:]
         Profile_adj = M_ADJ[iProf,:]
         Pres        =  PRES[iProf,:]
         Qc          =    QC[iProf,:]
+        Qc_adj      =QC_adj[iProf,:]
         ncIN.close()
 
-        return Pres, Profile,Profile_adj, Qc.astype(np.int)
+        return Pres, Profile,Profile_adj, Qc.astype(np.int32), Qc_adj.astype(np.int32)
 
     def read_raw(self,var,read_adjusted=True):
         '''
@@ -206,22 +206,19 @@ class BioFloat(Instrument):
           read_adjusted (logical)
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
-        rawPres, rawProfile, rawProfile_adj, rawQc = self.read_very_raw(var)
+        rawPres, rawProfile, rawProfile_adj, rawQc, rawQc_adj = self.read_very_raw(var)
 
-        
         if read_adjusted:
             rawProfile = rawProfile_adj
-        else:
-            for i in range(len(rawQc)): rawQc[i]=2 # to force goodQc = True
+            rawQc      = rawQc_adj
 
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
-        goodQc     = (rawQc == 2 ) | (rawQc == 1 )
         badProfile = np.isnan(rawProfile)
-        bad = badPres | badProfile #| (~goodQc )
+        bad = badPres | badProfile
 
 
         Pres    =    rawPres[~bad]
@@ -266,7 +263,7 @@ class BioFloat(Instrument):
         if pres.size ==0:
             return pres, prof, qc
 
-        good = (qc==1) | (qc ==2 ) | (qc==8)
+        good = (qc==1) | (qc ==2 ) | (qc==5) | (qc==8)
         pres = pres[good]
         prof = prof[good]
         qc   =   qc[good]
@@ -465,6 +462,17 @@ if __name__ == '__main__':
     from commons.time_interval import TimeInterval
     import sys
 
+    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/CORIOLIS/6902902/SR6902902_456.nc'
+    F = BioFloat.from_file(f)
+
+    Pres, values, valuesa, Qc, Qca =F.read_very_raw('TEMP')
+    fig,ax =F.plot(Pres,values,'b')
+
+    Pres, values, Qc=F.read('TEMP', read_adjusted=False)
+    ax.plot(values,Pres,'r.')
+    fig.savefig('prova.png')
+
+    sys.exit()
     var = 'BBP700'
     TI = TimeInterval('20150101','20220225','%Y%m%d')
     R = Rectangle(-6,36,30,46)

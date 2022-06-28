@@ -1,4 +1,4 @@
-import scipy.io.netcdf as NC
+import netCDF4
 import numpy as np
 import datetime
 import os
@@ -113,10 +113,10 @@ class BioFloat(Instrument):
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
-        ncIN=NC.netcdf_file(self.filename,'r')
-        Pres    = ncIN.variables['PRES_'+var].data.copy()
-        Profile = ncIN.variables[        var].data.copy()
-        Qc      = ncIN.variables[var + "_QC"].data.copy()
+        ncIN = netCDF4.Dataset(self.filename,'r')
+        Pres    = np.array(ncIN.variables['PRES_'+var])
+        Profile = np.array(ncIN.variables[        var])
+        Qc      = np.array(ncIN.variables[var + "_QC"])
         ncIN.close()
         return Pres, Profile, Qc
 
@@ -217,7 +217,7 @@ class BioFloat(Instrument):
 
         info = Info()
 
-        ncIN=NC.netcdf_file(self.filename,'r')
+        ncIN=netCDF4.Dataset(self.filename,'r')
         info.status_var=ncIN.variables[var].status_var
         info.file_orig=ncIN.file_origin
         
@@ -383,8 +383,9 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gpfs/scratch/userexternal/gbolzon0/V7C/DEBUG_SUPERFLOAT/ONLINE/SUPERFLOAT/6902969/SR6902969_001.nc"
+    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SUPERFLOAT/7900563/SR7900563_140.nc"
     F=BioFloat.from_file(filename)
+    Pres,V, Qc = F.read(var)
     import sys
     sys.exit()
 

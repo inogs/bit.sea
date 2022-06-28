@@ -127,12 +127,12 @@ def treating_coriolis(pCor):
     metadata = Metadata(pCor._my_float.filename)
     metadata.status_var = pCor._my_float.status_var('CHLA')
     if pCor._my_float.status_var('CHLA') in ['A','D'] :
-        Pres,Value, Qc=pCor.read('CHLA', read_adjusted=True)
+        Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
             print("few values in Coriolis for " + pCor._my_float.filename)
             return None, None, None, metadata
 
-        Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
+        #Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
         ii=(Pres >= 400) & (Pres <= 600)
         if ii.sum() > 0:
             shift = CHL[ii].mean()

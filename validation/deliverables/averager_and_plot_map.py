@@ -197,7 +197,8 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.set_ylim([30,46])
     ax.set_xlabel('Lon').set_fontsize(11)
     ax.set_ylabel('Lat').set_fontsize(12)
-    ax.ticklabel_format(fontsize=10)
+#    ax.ticklabel_format(fontsize=10)
+    ax.tick_params(axis='x', labelsize=10)
     ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 
     ax.xaxis.set_ticks(np.arange(-2,36,6))

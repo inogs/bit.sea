@@ -1,5 +1,7 @@
 import pandas as pd 
 import numpy as np
+import copy
+import sys 
 
 def check_data(LIST, day):
     if not LIST:
@@ -13,12 +15,13 @@ def check_lenght_timeseries(df):
        Method: it uses pandas datetime to count days of timeseries  
 
        """
-    df.dropna(inplace=True)
-    df.sort_values(by=['time'])
-    df['TIME']  =  pd.to_datetime(df.time)
-    df.date = pd.to_datetime(df.time)
-    min_d = df.date.min()
-    max_d = df.date.max()
+    df1=df.copy()
+    df1.dropna(inplace=True)
+    df1.sort_values(by=['time'])
+    df1['TIME']  =  pd.to_datetime(df1.time)
+    df1.date = pd.to_datetime(df1.time)
+    min_d = df1.date.min()
+    max_d = df1.date.max()
     duration = max_d-min_d
     days = duration.days
     return(days>365)
@@ -35,11 +38,12 @@ def nans_check(df, namecol):
     return(df.ix[list_index].VAR.isna().sum()  < df.shape[0]/2)
 
 def lenght_timeseries(df, namecol):
-    df.dropna(inplace=True)
-    df.sort_values(by=[namecol])
-    df[namecol]  =  pd.to_datetime(df[namecol])
-    min_d = df[namecol].min()
-    max_d = df[namecol].max()
+    df1=df.copy()
+    df1.dropna(inplace=True)
+    df1.sort_values(by=[namecol])
+    df1[namecol]  =  pd.to_datetime(df1[namecol])
+    min_d = df1[namecol].min()
+    max_d = df1[namecol].max()
     duration = max_d-min_d
     days = duration.days
     return(days ,min_d , max_d)

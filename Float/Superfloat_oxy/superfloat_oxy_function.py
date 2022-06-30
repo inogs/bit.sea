@@ -35,7 +35,7 @@ def remove_bad_sensors(Profilelist,var):
 
     return Profilelist
 
-def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
+def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='a'):
     nP=len(Pres)
     if mode=='a':
         command = "cp %s %s.tmp" %(outfile,outfile)
@@ -80,7 +80,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar[:]=QcS
 
 
-    print "dumping oxygen on " + outfile
+    #print ("dumping oxygen on " + outfile)
     doxy_already_existing="nDOXY" in ncOUT.dimensions.keys()
     if not doxy_already_existing : ncOUT.createDimension('nDOXY', nP)
     ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
@@ -102,3 +102,33 @@ def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
     return filename
+
+
+def doxy_algorithm(p, outfile, metadata,writing_mode):
+    Pres, Value, Qc = read_doxy(p)
+    if Pres is None: return
+
+
+    if p._my_float.status_var('DOXY')=='D':
+        metadata.status_var='D'
+        condition_to_write = True
+    else:
+        metadata.status_var='A'
+        condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+
+
+    if condition_to_write:
+        os.system('mkdir -p ' + os.path.dirname(outfile))
+        dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
+    else:
+        print "Saturation Test not passed"
+
+def read_doxy(pCor):
+    Pres, Value, Qc = pCor.read('DOXY',read_adjusted=True)
+    nP=len(Pres)
+    if nP<5 :
+        print "few values for " + pCor._my_float.filename
+        return None, None, None
+    ValueCconv=convert_oxygen(pCor, Pres, Value)
+    return Pres, ValueCconv, Qc
+

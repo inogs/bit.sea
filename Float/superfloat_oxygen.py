@@ -56,7 +56,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
 from datetime import datetime, timedelta
-from TREND_ANALYSIS import trend_conditions as TD
+from TREND_ANALYSIS import trend_conditions
 from TREND_ANALYSIS import sign_analysis
 import TREND_ANALYSIS
 import basins.OGS as OGS
@@ -188,12 +188,12 @@ def read_doxy(pCor):
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
 
-def trend_analysis(p, datestart, dateend):
+def trend_analysis(p):
     starttime                  = p.time - timedelta(days=365*3)
     TI                         = TimeInterval.fromdatetimes(starttime, p.time)
     Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
     print(TI, len(Profilelist))
-    df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist , wmo)
+    df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist , p._my_float.wmo)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
@@ -213,7 +213,7 @@ def get_trend_report(p, df):
         days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
         Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
         tmp.dropna(inplace=True)
-        lst = TD(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
+        lst = trend_conditions(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
         df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns)
         serv = df_report.loc[df_report.WMO==wmo]
         A    = np.append(np.array( serv['Theil-Sen']), np.array( serv['RANSAC']))
@@ -274,7 +274,7 @@ def apply_detrend(Pres, Prof_Coriolis, df_report):
 def doxy_algorithm(p, outfile, metadata,writing_mode):
     Pres, Value, Qc = read_doxy(p)
     if Pres is None: return
-    print(outfile)
+    #print(outfile)
 
 
     if p._my_float.status_var('DOXY')=='D':
@@ -289,7 +289,7 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         print("Saturation Test not passed")
         return
 
-    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, args.datestart, args.dateend)
+    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p)
 
     if not condition1_to_detrend:
         DRIFT_CODE = -1
@@ -297,7 +297,7 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         print("no detrend possible")
         metadata.drift_code = DRIFT_CODE
     else:
-        # compute trend
+        print("compute trend")
         df_report, tmp = get_trend_report(p, df)
         OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
 
@@ -338,7 +338,7 @@ if input_file == 'NO_file':
     for wmo in wmo_list:
         print(wmo)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        for ip, p in enumerate(Profilelist[90:]):
+        for ip, p in enumerate(Profilelist):
             outfile = get_outfile(p,OUTDIR)
 
             if p._my_float.status_var('DOXY')=='R': continue

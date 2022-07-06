@@ -70,6 +70,7 @@ class Metadata():
     def __init__(self, filename):
         self.filename = filename
         self.status_var = 'n'
+        self.drift_code = -5
 
 def remove_bad_sensors(Profilelist,var):
     '''
@@ -163,6 +164,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     ncvar[:]=Value
     #if not doxy_already_existing:
     setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'drift_code' , metadata.drift_code)
     setattr(ncvar, 'variable'   , 'DOXY')
     setattr(ncvar, 'units'      , "mmol/m3")
     ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
@@ -243,6 +245,17 @@ def clim_check(p, df_report, NAME_BASIN, tmp):
     return OFFSET, threshold, df_report
 
 def apply_detrend(Pres, Prof_Coriolis, df_report):
+    '''
+    Arguments:
+    * Pres          * ndarray
+    * Prof_Coriolis * ndarray
+    * df_report     *  dataframe
+
+    Returns: Profile, ndarray - detrended oxygen
+
+    Linear interp from 600m to 0
+    Constant between 600m and bottom
+    '''
     DEPTH=600
     Mask = [Pres<=DEPTH]
     Profile = Prof_Coriolis.copy()
@@ -282,7 +295,7 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         DRIFT_CODE = -1
         Oxy_Profile = Value
         print("no detrend possible")
-        # metadata --> ARGO sub basin info
+        metadata.drift_code = DRIFT_CODE
     else:
         # compute trend
         df_report, tmp = get_trend_report(p, df)
@@ -296,6 +309,7 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
             return
         else:
             Oxy_Profile = apply_detrend(Pres, Value, df_report)
+            metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
             # high freq.csv
 
     os.system('mkdir -p ' + os.path.dirname(outfile))

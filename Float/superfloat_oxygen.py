@@ -55,10 +55,13 @@ import os
 import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
-import datetime
+from datetime import datetime
 from TREND_ANALYSIS import trend_conditions as TD
 from TREND_ANALYSIS import sign_analysis
 import basins.OGS as OGS
+from commons import timerequestors
+from instruments.var_conversions import FLOATVARS
+from commons_local import cross_Med_basins
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
 df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
@@ -315,6 +318,7 @@ if input_file == 'NO_file':
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, p in enumerate(Profilelist):
             outfile = get_outfile(p,OUTDIR)
+            print(outfile)
             if p._my_float.status_var('DOXY')=='R': continue
 
             writing_mode=superfloat_generator.writing_mode(outfile)
@@ -339,7 +343,7 @@ else:
         filename         = INDEX_FILE['file_name'][iFile].decode()
         available_params = INDEX_FILE['parameters'][iFile].decode()
         parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
-        float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
+        float_time = datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 
 

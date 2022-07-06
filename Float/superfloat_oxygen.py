@@ -19,6 +19,11 @@ def argument():
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--outdiag','-O',
+                                type = str,
+                                required = True,
+                                default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
+                                help = 'path for statistics, diagnostics, logs')
     parser.add_argument(   '--force', '-f',
                                 action='store_true',
                                 help = """Overwrite existing files
@@ -38,7 +43,8 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
-
+import pandas as pd
+import CORIOLIS_checks
 from instruments import bio_float
 from Float import oxygen_saturation
 from commons.time_interval import TimeInterval
@@ -50,6 +56,12 @@ import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
 import datetime
+from TREND_ANALYSIS import trend_conditions as TD
+from TREND_ANALYSIS import sign_analysis
+import basins.OGS as OGS
+
+df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
+df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
 
 class Metadata():
     def __init__(self, filename):
@@ -190,10 +202,69 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         return Pres, Value, Qc
     else:
         print("Saturation Test not passed")
-        return None, None, None 
+        return None, None, None
 
-def doxy_QCsec(p, wmo, datestart, dateend  ):
+def get_trend_report(df):
     LIST_DEPTH = [600,800]
+    COLUMNS     = ['WMO','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC']
+    df_report   = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
+    df_report['TREND_TIME_SERIES'] ,df_report['TREND_per_YEAR'] ,df_report['DRIFT_CODE'] = np.nan , np.nan , np.nan
+
+    COUNT=0
+    TI_3 = timerequestors.TimeInterval(starttime=DATE_DAY, endtime=DATE_DAY, dateformat='%Y%m%d')
+
+    for DEPTH in LIST_DEPTH:
+        tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
+        tmp.index = np.arange(0,len(tmp.index))
+        days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
+        Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
+        tmp.dropna(inplace=True)
+        lst = TD(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
+        df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns)
+        serv = df_report.loc[df_report.WMO==wmo]
+        A    = np.append(np.array( serv['Theil-Sen']), np.array( serv['RANSAC']))
+        if serv.DURATION.any()==0:
+            pass
+        else:
+            Bool = sign_analysis(A)
+            df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
+        COUNT+=1
+
+    return df_report
+
+def clim_check(df_report):
+    VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
+    TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
+    if TREND_null:
+        OFFSET  = np.float(tmp.VAR.iloc[-1]) - VALCLIM
+    else:
+        Corrrected_val = np.float(tmp.VAR.iloc[-1]) - np.float(tmp_meta.TREND_TIME_SERIES)
+        OFFSET  = Corrrected_val - VALCLIM
+    STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
+    STDCLIM_2 = 2*STDCLIM
+    df_report.loc[ df_report.WMO == WMO , 'OFFSET'] = OFFSET
+    df_report.loc[ df_report.WMO == WMO , 'basin'] = NAME_BASIN
+    df_report.loc[ df_report.WMO == WMO , 'EMODNET'] = VALCLIM
+    df_report.loc[ df_report.WMO == WMO , 'STdev*2'] =  STDCLIM_2
+    threshold = STDCLIM_2
+    return OFFSET, threshold, df_report
+
+def apply_detrend(Pres, Prof_Coriolis):
+    Mask = [Pres<=DEPTH]
+    Profile = Prof_Coriolis.copy()
+    z_depth = np.array([Pres[0], DEPTH])
+    x_var   = np.array([0, np.float(tmp_meta.TREND_TIME_SERIES)])
+    if np.isnan(np.sum(x_var)):
+        pass
+    else:
+        fittval = np.polyfit(z_depth, x_var, 1)
+        polyval = np.polyval(fittval, Pres[Mask]  )
+        Profile[0:len(polyval)] = Profile[Mask]   -   polyval
+        Mask_deep = [Pres>DEPTH]
+        Profile[len(polyval):]  = Profile[Mask_deep] - polyval[-1]
+    return Profile
+
+def trend_analysis(p, datestart, dateend):
     DATE_Tserie                = datetime.strptime(datestart , '%Y%m%d')
     DATE_Tserie                = DATE_Tserie.replace(DATE_Tserie.year - 3).strftime('%Y%m%d')
     TI                         = timerequestors.TimeInterval(starttime=DATE_Tserie, endtime=datestart, dateformat='%Y%m%d')
@@ -201,74 +272,32 @@ def doxy_QCsec(p, wmo, datestart, dateend  ):
     df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist , wmo)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
-    if not condition1_to_detrend:
-       DRIFT_CODE = -1
-       # SCRIVO IL NETCDF
-       # metadata --> ARGO sub basin info
-    else:
-       # compute trend
-       COLUMNS     = ['WMO','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC']
-       df_report   = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
-       df_report['TREND_TIME_SERIES'] ,df_report['TREND_per_YEAR'] ,df_report['DRIFT_CODE'] = np.nan , np.nan , np.nan
-       from TREND_ANALYSIS import trend_conditions as TD
-       from TREND_ANALYSIS import sign_analysis
-       COUNT=0
-       TI_3 = timerequestors.TimeInterval(starttime=DATE_DAY, endtime=DATE_DAY, dateformat='%Y%m%d')
+    return df, NAME_BASIN, condition1_to_detrend
 
-       for DEPTH in LIST_DEPTH:
-           tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
-           tmp.index = np.arange(0,len(tmp.index))
-           days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
-           Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
-           tmp.dropna(inplace=True)
-           lst = TD(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
-           df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns)
-           serv = df_report.loc[df_report.WMO==wmo]
-           A    = np.append(np.array( serv['Theil-Sen']), np.array( serv['RANSAC']))
-           if serv.DURATION.any()==0:
-              pass
-           else:
-              Bool = sign_analysis(A)
-              df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
-           COUNT+=1
-       df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
-       df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
-       VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
-       TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
-       if TREND_null:
-          OFFSET  = np.float(tmp.VAR.iloc[-1]) - VALCLIM
-       else:
-          Corrrected_val = np.float(tmp.VAR.iloc[-1]) - np.float(tmp_meta.TREND_TIME_SERIES)
-          OFFSET  = Corrrected_val - VALCLIM
-          STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
-          STDCLIM_2 = 2*STDCLIM
-          df_report.loc[ df_report.WMO == WMO , 'OFFSET'] = OFFSET
-          df_report.loc[ df_report.WMO == WMO , 'basin'] = NAME_BASIN
-          df_report.loc[ df_report.WMO == WMO , 'EMODNET'] = VALCLIM
-          df_report.loc[ df_report.WMO == WMO , 'STdev*2'] =  STDCLIM_2
-          if abs(OFFSET) >= STDCLIM_2:
-              df_report.loc[ (df_report.WMO == WMO) & (df_report.Depth== DEPTH), 'Black_list'] = 'True'
-              #commons_.save_report( OUT_META+ "Blacklist_wmo.csv", 1,
-              #                      ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
-              #                      [int(WMO), DATE_DAY, OFFSET , STDCLIM_2]
-              #                     )
-          else: # calculate detrend
-              Mask = [Pres<=DEPTH]
-              Prof_Coriolis = Profile.copy()
-              z_depth = np.array([Pres[0], DEPTH])
-              x_var   = np.array([0, np.float(tmp_meta.TREND_TIME_SERIES)])
-              if np.isnan(np.sum(x_var)):
-                 pass
-              else:
-                 fittval = np.polyfit(z_depth, x_var, 1)
-                 polyval = np.polyval(fittval, Pres[Mask]  )
-                 Profile[0:len(polyval)] = Profile[Mask]   -   polyval
-                 Mask_deep = [Pres>DEPTH]
-                 Profile[len(polyval):]  = Profile[Mask_deep] - polyval[-1]
-                 # SAve file
-                 # high freq.csv
+
+def doxy_QCsec(p, Pres, Doxy_profile, datestart, dateend  ):
+
+    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, datestart, dateend)
+
+    if not condition1_to_detrend:
+        DRIFT_CODE = -1
+        # SCRIVO IL NETCDF
+        # metadata --> ARGO sub basin info
+    else:
+        # compute trend
+        df_report = get_trend_report(df)
+        OFFSET, STDCLIM_2, df_report = clim_check(df_report)
+
+        if abs(OFFSET) >= STDCLIM_2:
+            df_report.loc[ (df_report.WMO == WMO) & (df_report.Depth== DEPTH), 'Black_list'] = 'True'
+            commons_.save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(WMO), DATE_DAY, OFFSET , STDCLIM_2])
+        else:
+            dentrended_profile = apply_detrend(Pres, Doxy_profile)
+            # Save file
+            # high freq.csv
 
 OUTDIR = addsep(args.outdir)
+OUT_META = addsep(args.outdiag)
 input_file=args.update_file
 if input_file == 'NO_file':
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
@@ -297,7 +326,7 @@ if input_file == 'NO_file':
             metadata = Metadata(p._my_float.filename)
             Pres,Value,Qc = doxy_algorithm(p,outfile, metadata,writing_mode)
             if Pres is None: continue
-            doxy_QCsec(p,wmo, args.datestart, args.dateend )
+            doxy_QCsec(p, Pres,Value , args.datestart, args.dateend )
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)

@@ -55,13 +55,13 @@ import os
 import scipy.io.netcdf as NC
 import numpy as np
 import seawater as sw
-from datetime import datetime
+from datetime import datetime, timedelta
 from TREND_ANALYSIS import trend_conditions as TD
 from TREND_ANALYSIS import sign_analysis
+import TREND_ANALYSIS
 import basins.OGS as OGS
-from commons import timerequestors
 from instruments.var_conversions import FLOATVARS
-from commons_local import cross_Med_basins
+from commons_local import cross_Med_basins, save_report
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
 df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
@@ -189,6 +189,7 @@ def read_doxy(pCor):
 def doxy_algorithm(p, outfile, metadata,writing_mode):
     Pres, Value, Qc = read_doxy(p)
     if Pres is None: return
+    print(outfile)
 
 
     if p._my_float.status_var('DOXY')=='D':
@@ -199,22 +200,44 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
 
 
-    if condition_to_write:
-        #os.system('mkdir -p ' + os.path.dirname(outfile))
-        #dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-        return Pres, Value, Qc
-    else:
+    if not condition_to_write:
         print("Saturation Test not passed")
-        return None, None, None
+        return
 
-def get_trend_report(df):
+    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, args.datestart, args.dateend)
+
+    if not condition1_to_detrend:
+        DRIFT_CODE = -1
+        Oxy_Profile = Value
+        print("no detrend possible")
+        # metadata --> ARGO sub basin info
+    else:
+        # compute trend
+        df_report, tmp = get_trend_report(p, df)
+        OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
+
+        if abs(OFFSET) >= threshold:
+            wmo = p._my_float.wmo
+            df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
+            timestr = p.time.strftime("%Y%m%d")
+            save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timestr, OFFSET , threshold])
+            return
+        else:
+            Oxy_Profile = apply_detrend(Pres, Value, df_report)
+            # high freq.csv
+
+    os.system('mkdir -p ' + os.path.dirname(outfile))
+    dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
+
+
+def get_trend_report(p, df):
     LIST_DEPTH = [600,800]
     COLUMNS     = ['WMO','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC']
     df_report   = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
     df_report['TREND_TIME_SERIES'] ,df_report['TREND_per_YEAR'] ,df_report['DRIFT_CODE'] = np.nan , np.nan , np.nan
 
     COUNT=0
-    TI_3 = timerequestors.TimeInterval(starttime=DATE_DAY, endtime=DATE_DAY, dateformat='%Y%m%d')
+    TI_3 = TimeInterval.fromdatetimes(p.time, p.time)
 
     for DEPTH in LIST_DEPTH:
         tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
@@ -233,30 +256,32 @@ def get_trend_report(df):
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
         COUNT+=1
 
-    return df_report
+    return df_report, tmp
 
-def clim_check(df_report):
+def clim_check(p, df_report, NAME_BASIN, tmp):
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
     TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
     if TREND_null:
         OFFSET  = np.float(tmp.VAR.iloc[-1]) - VALCLIM
     else:
-        Corrrected_val = np.float(tmp.VAR.iloc[-1]) - np.float(tmp_meta.TREND_TIME_SERIES)
+        Corrrected_val = np.float(tmp.VAR.iloc[-1]) - np.float(df_report.TREND_TIME_SERIES.iloc[0])
         OFFSET  = Corrrected_val - VALCLIM
     STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
     STDCLIM_2 = 2*STDCLIM
-    df_report.loc[ df_report.WMO == WMO , 'OFFSET'] = OFFSET
-    df_report.loc[ df_report.WMO == WMO , 'basin'] = NAME_BASIN
-    df_report.loc[ df_report.WMO == WMO , 'EMODNET'] = VALCLIM
-    df_report.loc[ df_report.WMO == WMO , 'STdev*2'] =  STDCLIM_2
+    wmo = p._my_float.wmo
+    df_report.loc[ df_report.WMO == wmo , 'OFFSET'] = OFFSET
+    df_report.loc[ df_report.WMO == wmo , 'basin'] = NAME_BASIN
+    df_report.loc[ df_report.WMO == wmo , 'EMODNET'] = VALCLIM
+    df_report.loc[ df_report.WMO == wmo , 'STdev*2'] =  STDCLIM_2
     threshold = STDCLIM_2
     return OFFSET, threshold, df_report
 
-def apply_detrend(Pres, Prof_Coriolis):
+def apply_detrend(Pres, Prof_Coriolis, df_report):
+    DEPTH=600
     Mask = [Pres<=DEPTH]
     Profile = Prof_Coriolis.copy()
     z_depth = np.array([Pres[0], DEPTH])
-    x_var   = np.array([0, np.float(tmp_meta.TREND_TIME_SERIES)])
+    x_var   = np.array([0, np.float(df_report.TREND_TIME_SERIES.iloc[0])])
     if np.isnan(np.sum(x_var)):
         pass
     else:
@@ -268,36 +293,16 @@ def apply_detrend(Pres, Prof_Coriolis):
     return Profile
 
 def trend_analysis(p, datestart, dateend):
-    DATE_Tserie                = datetime.strptime(datestart , '%Y%m%d')
-    DATE_Tserie                = DATE_Tserie.replace(DATE_Tserie.year - 3).strftime('%Y%m%d')
-    TI                         = timerequestors.TimeInterval(starttime=DATE_Tserie, endtime=datestart, dateformat='%Y%m%d')
+    starttime                  = p.time - timedelta(days=365*3)
+    TI                         = TimeInterval.fromdatetimes(starttime, p.time)
     Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
+    print(TI, len(Profilelist))
     df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist , wmo)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
 
 
-def doxy_QCsec(p, Pres, Doxy_profile, datestart, dateend  ):
-
-    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, datestart, dateend)
-
-    if not condition1_to_detrend:
-        DRIFT_CODE = -1
-        # SCRIVO IL NETCDF
-        # metadata --> ARGO sub basin info
-    else:
-        # compute trend
-        df_report = get_trend_report(df)
-        OFFSET, STDCLIM_2, df_report = clim_check(df_report)
-
-        if abs(OFFSET) >= STDCLIM_2:
-            df_report.loc[ (df_report.WMO == WMO) & (df_report.Depth== DEPTH), 'Black_list'] = 'True'
-            commons_.save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(WMO), DATE_DAY, OFFSET , STDCLIM_2])
-        else:
-            dentrended_profile = apply_detrend(Pres, Doxy_profile)
-            # Save file
-            # high freq.csv
 
 OUTDIR = addsep(args.outdir)
 OUT_META = addsep(args.outdiag)
@@ -310,15 +315,15 @@ if input_file == 'NO_file':
     PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-
+    wmo_list = ["6902875"]
 
 
     for wmo in wmo_list:
         print(wmo)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        for ip, p in enumerate(Profilelist):
+        for ip, p in enumerate(Profilelist[90:]):
             outfile = get_outfile(p,OUTDIR)
-            print(outfile)
+
             if p._my_float.status_var('DOXY')=='R': continue
 
             writing_mode=superfloat_generator.writing_mode(outfile)
@@ -328,9 +333,7 @@ if input_file == 'NO_file':
             if not condition_to_write: continue
 
             metadata = Metadata(p._my_float.filename)
-            Pres,Value,Qc = doxy_algorithm(p,outfile, metadata,writing_mode)
-            if Pres is None: continue
-            doxy_QCsec(p, Pres,Value , args.datestart, args.dateend )
+            doxy_algorithm(p,outfile, metadata,writing_mode)
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)

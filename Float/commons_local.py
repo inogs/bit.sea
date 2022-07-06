@@ -1,4 +1,7 @@
 from basins import V2 as basV2
+import os
+import pandas as pd
+import numpy as np
 def cross_Med_basins(RECTANGLE):
    if RECTANGLE.cross(basV2.eas3):
       LIST_REGION=['lev1','lev2','lev3','lev4','aeg']
@@ -38,3 +41,17 @@ def cross_Med_basins(RECTANGLE):
          return(basV2.ion2.name, basV2.ion2.borders)
       elif RECTANGLE.cross(basV2.ion3):
          return(basV2.ion3.name, basV2.ion3.borders)
+
+def save_report(OUTPATH_NAME, indexlenght, columns_list, values_list):
+   """ OUTPATH_NAME EG. 'OUTPUTS/High_time_freq_argo.csv'
+   """
+   if os.path.exists(OUTPATH_NAME):
+       df  = pd.read_csv(OUTPATH_NAME,index_col=0)
+   else:
+       df  = pd.DataFrame(index=np.arange(0, indexlenght), columns= columns_list  )
+   dftmp = pd.DataFrame(index=np.arange(0,1), columns= columns_list )
+   dftmp = pd.Series(values_list , columns_list)
+   df =  df.append(dftmp , ignore_index=True)
+   df.drop_duplicates(inplace=True)
+   df = df.sort_values(by="DATE_DAY")
+   df.to_csv(OUTPATH_NAME)

@@ -192,8 +192,9 @@ def trend_analysis(p):
     starttime                  = p.time - timedelta(days=365*3)
     TI                         = TimeInterval.fromdatetimes(starttime, p.time)
     Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
+    Profilelist                = bio_float.filter_by_wmo(Profilelist, p._my_float.wmo)
     print(TI, len(Profilelist))
-    df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist , p._my_float.wmo)
+    df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend

@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import copy
 import sys 
-from instruments import superfloat
 from instruments.var_conversions import FLOATVARS
 
 def check_data(LIST, day):
@@ -11,7 +10,7 @@ def check_data(LIST, day):
     else:
        print (' ...    available argo in date ' + day + '   ' + str(LIST))
 
-def Depth_interp(Profilelist, wmo):
+def Depth_interp(Profilelist):
     """ data at 600m and 800m are created by interpolating data using layer 580-620m 
         and 780-820 m 
     """
@@ -22,8 +21,7 @@ def Depth_interp(Profilelist, wmo):
     columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
     df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
     for DEPTH in LIST_DEPTH:
-            wmo_timeseries = superfloat.filter_by_wmo(Profilelist,wmo)
-            for profile in wmo_timeseries:
+            for profile in Profilelist:
                 Pres, Profile, Qc = profile.read(FLOATVARS[varmod])
                 IDX = np.where((Pres >= DEPTH-THRES  ) & ( Pres <= DEPTH+THRES))
                 lst = [profile.ID(), profile.time, profile.lat,profile.lon, profile.name(),

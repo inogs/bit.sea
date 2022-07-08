@@ -188,13 +188,45 @@ def read_doxy(pCor):
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
 
-def trend_analysis(p):
+def Depth_interp(Profilelist, HistoricalDataset):
+    """
+    HistoricalDataset is a dictionary: keys are p.ID(), values are tuples (Pres,Value,Qc)
+
+    data at 600m and 800m are created by interpolating data using layer 580-620m
+        and 780-820 m
+    """
+    THRES             = 20
+    LIST_DEPTH        = [600,800]
+    COUNT=0
+    VARNAME ,varmod   = 'DOXY' , 'O2o'
+    columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
+    df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
+    for DEPTH in LIST_DEPTH:
+        for profile in Profilelist:
+            Pres, Profile, Qc = HistoricalDataset[profile.ID()] #read_doxy(profile)
+            IDX = np.where((Pres >= DEPTH-THRES  ) & ( Pres <= DEPTH+THRES))
+            lst = [profile.ID(), profile.time, profile.lat,profile.lon, profile.name(),
+                  'Type', np.nan, np.nan]
+            df.loc[COUNT] = pd.Series(lst , columnlist)
+            if np.array(IDX).size ==0:
+               df.Depth[COUNT] = DEPTH
+            else:
+               df.Depth[COUNT] = DEPTH
+               df.VAR[COUNT]   = np.interp(DEPTH , Pres[IDX], (Profile[IDX]))
+            COUNT+=1
+
+    CONDITION = df[df.Depth==600].VAR.notnull().any()  # no data at 600m
+    return(df, CONDITION)
+
+
+def trend_analysis(p, Profilelist_hist, Dataset):
     starttime                  = p.time - timedelta(days=365*3)
     TI                         = TimeInterval.fromdatetimes(starttime, p.time)
-    Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
-    Profilelist                = bio_float.filter_by_wmo(Profilelist, p._my_float.wmo)
+    Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
+#    Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
+#    Profilelist                = bio_float.filter_by_wmo(Profilelist, p._my_float.wmo)
     print(TI, len(Profilelist))
-    df, condition1_to_detrend  = CORIOLIS_checks.Depth_interp(Profilelist)
+    df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
@@ -212,6 +244,7 @@ def get_trend_report(p, df):
         tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
         tmp.index = np.arange(0,len(tmp.index))
         days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
+        print("days = ", days, min_d, max_d)
         Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
         tmp.dropna(inplace=True)
         lst = trend_conditions(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
@@ -224,6 +257,7 @@ def get_trend_report(p, df):
             Bool = sign_analysis(A)
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
         COUNT+=1
+    print(df_report.DRIFT_CODE)
 
     return df_report, tmp
 
@@ -272,25 +306,33 @@ def apply_detrend(Pres, Prof_Coriolis, df_report):
         Profile[len(polyval):]  = Profile[Mask_deep] - polyval[-1]
     return Profile
 
-def doxy_algorithm(p, outfile, metadata,writing_mode):
-    Pres, Value, Qc = read_doxy(p)
-    if Pres is None: return
-    #print(outfile)
+def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode):
+    '''
+    Arguments:
+    * p                * profile object
+    * Profilelist_hist * List of profile object, provided by load_history()
+    * Dataset          * dictionary, provided by load_history()
+    '''
+    Pres, Value, Qc  = Dataset[p.ID()]
 
-
-    if p._my_float.status_var('DOXY')=='D':
-        metadata.status_var='D'
-        condition_to_write = True
-    else:
-        metadata.status_var='A'
-        condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-
-
-    if not condition_to_write:
-        print("Saturation Test not passed")
-        return
-
-    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p)
+#     Pres, Value, Qc = read_doxy(p)
+#     if Pres is None: return
+#
+#
+#
+#     if p._my_float.status_var('DOXY')=='D':
+#         metadata.status_var='D'
+#         condition_to_write = True
+#     else:
+#         metadata.status_var='A'
+#         condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+#
+#
+#     if not condition_to_write:
+#         print("Saturation Test not passed")
+#         return
+    metadata.status_var = p._my_float.status_var('DOXY')
+    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, Profilelist_hist, Dataset)
 
     if not condition1_to_detrend:
         DRIFT_CODE = -1
@@ -298,15 +340,14 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
         print("no detrend possible")
         metadata.drift_code = DRIFT_CODE
     else:
-        print("compute trend")
         df_report, tmp = get_trend_report(p, df)
         OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
 
         if abs(OFFSET) >= threshold:
             wmo = p._my_float.wmo
             df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
-            timestr = p.time.strftime("%Y%m%d")
-            save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timestr, OFFSET , threshold])
+            timenum = int(p.time.strftime("%Y%m%d"))
+            save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
             return
         else:
             Oxy_Profile = apply_detrend(Pres, Value, df_report)
@@ -318,7 +359,34 @@ def doxy_algorithm(p, outfile, metadata,writing_mode):
 
 
 
+def load_history(wmo):
+    '''
+     Replicates superfloat dataset without detrend - the previous doxy_algorithm
+    '''
+    print("Loading dataset for float", wmo, "...")
+    TI     = TimeInterval("1950","2050",'%Y')
+    R = Rectangle(-6,36,30,46)
+    PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
+    PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
+    Profilelist_wmo=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+    Profilelist=[]
+    Dataset={}
+    for p in Profilelist_wmo:
+        if p._my_float.status_var('DOXY')=='R': continue
+        Pres, Value, Qc = read_doxy(p)
+        if Pres is None: continue
+        if p._my_float.status_var('DOXY')=='D':
+            condition_to_write = True
+        else:
+            condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+        if not condition_to_write:
+            print(p._my_float.filename, "Saturation Test not passed")
+            continue
 
+        Profilelist.append(p)
+        Dataset[p.ID()] = (Pres,Value,Qc)
+    print("...done")
+    return Profilelist, Dataset
 
 
 
@@ -333,14 +401,18 @@ if input_file == 'NO_file':
     PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-    wmo_list = ["6902875"]
+    wmo_list = ["6901775"]
 
 
     for wmo in wmo_list:
-        print(wmo)
-        Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        for ip, p in enumerate(Profilelist):
+
+        Hist_filtered_Profilelist, Dataset = load_history(wmo)
+
+        Profilelist= [p for p in bio_float.filter_by_wmo(PROFILES_COR, wmo) if p in Hist_filtered_Profilelist]
+        for ip, p in enumerate(Profilelist[50:80]):
             outfile = get_outfile(p,OUTDIR)
+            print("")
+            print("Start", p.time, outfile)
 
             if p._my_float.status_var('DOXY')=='R': continue
 
@@ -351,7 +423,7 @@ if input_file == 'NO_file':
             if not condition_to_write: continue
 
             metadata = Metadata(p._my_float.filename)
-            doxy_algorithm(p,outfile, metadata,writing_mode)
+            doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)

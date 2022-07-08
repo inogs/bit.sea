@@ -10,32 +10,7 @@ def check_data(LIST, day):
     else:
        print (' ...    available argo in date ' + day + '   ' + str(LIST))
 
-def Depth_interp(Profilelist):
-    """ data at 600m and 800m are created by interpolating data using layer 580-620m 
-        and 780-820 m 
-    """
-    THRES             = 20
-    LIST_DEPTH        = [600,800]
-    COUNT=0
-    VARNAME ,varmod   = 'DOXY' , 'O2o'
-    columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
-    df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
-    for DEPTH in LIST_DEPTH:
-            for profile in Profilelist:
-                Pres, Profile, Qc = profile.read(FLOATVARS[varmod])
-                IDX = np.where((Pres >= DEPTH-THRES  ) & ( Pres <= DEPTH+THRES))
-                lst = [profile.ID(), profile.time, profile.lat,profile.lon, profile.name(),
-                      'Type', np.nan, np.nan]
-                df.loc[COUNT] = pd.Series(lst , columnlist)
-                if np.array(IDX).size ==0:
-                   df.Depth[COUNT] = DEPTH
-                else:
-                   df.Depth[COUNT] = DEPTH
-                   df.VAR[COUNT]   = np.interp(DEPTH , Pres[IDX], (Profile[IDX]))
-                COUNT+=1
 
-    CONDITION = df[df.Depth==600].VAR.notnull().any()  # no data at 600m 
-    return(df, CONDITION)
 
 
 def check_lenght_timeseries(df):

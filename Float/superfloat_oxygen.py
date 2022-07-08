@@ -223,9 +223,7 @@ def trend_analysis(p, Profilelist_hist, Dataset):
     starttime                  = p.time - timedelta(days=365*3)
     TI                         = TimeInterval.fromdatetimes(starttime, p.time)
     Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
-#    Profilelist                = bio_float.FloatSelector(FLOATVARS['O2o'],TI, OGS.med)
-#    Profilelist                = bio_float.filter_by_wmo(Profilelist, p._my_float.wmo)
-    print(TI, len(Profilelist))
+
     df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
     ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
@@ -244,7 +242,6 @@ def get_trend_report(p, df):
         tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
         tmp.index = np.arange(0,len(tmp.index))
         days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
-        print("days = ", days, min_d, max_d)
         Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
         tmp.dropna(inplace=True)
         lst = trend_conditions(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
@@ -257,7 +254,6 @@ def get_trend_report(p, df):
             Bool = sign_analysis(A)
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
         COUNT+=1
-    print(df_report.DRIFT_CODE)
 
     return df_report, tmp
 
@@ -401,20 +397,15 @@ if input_file == 'NO_file':
     PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-    wmo_list = ["6901775"]
 
 
     for wmo in wmo_list:
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
-
-        Profilelist= [p for p in bio_float.filter_by_wmo(PROFILES_COR, wmo) if p in Hist_filtered_Profilelist]
-        for ip, p in enumerate(Profilelist[50:80]):
+        Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
+        for ip, p in enumerate(Profilelist):
             outfile = get_outfile(p,OUTDIR)
-            print("")
-            print("Start", p.time, outfile)
-
-            if p._my_float.status_var('DOXY')=='R': continue
 
             writing_mode=superfloat_generator.writing_mode(outfile)
 

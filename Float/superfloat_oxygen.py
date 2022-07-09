@@ -43,6 +43,7 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
+
 import pandas as pd
 import CORIOLIS_checks
 from instruments import bio_float
@@ -71,6 +72,8 @@ class Metadata():
         self.filename = filename
         self.status_var = 'n'
         self.drift_code = -5
+        self.offset = -999
+
 
 def remove_bad_sensors(Profilelist,var):
     '''
@@ -155,7 +158,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print("dumping oxygen on " + outfile)
+    print("dumping oxygen on " + outfile, flush=True)
     doxy_already_existing="nDOXY" in ncOUT.dimensions.keys()
     if not doxy_already_existing : ncOUT.createDimension('nDOXY', nP)
     ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
@@ -165,6 +168,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     #if not doxy_already_existing:
     setattr(ncvar, 'status_var' , metadata.status_var)
     setattr(ncvar, 'drift_code' , metadata.drift_code)
+    setattr(ncvar, 'offset'     , metadata.offset)
     setattr(ncvar, 'variable'   , 'DOXY')
     setattr(ncvar, 'units'      , "mmol/m3")
     ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
@@ -183,7 +187,7 @@ def read_doxy(pCor):
     Pres, Value, Qc = pCor.read('DOXY',read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
-        print("few values for " + pCor._my_float.filename)
+        print("few values for " + pCor._my_float.filename, flush=True)
         return None, None, None
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
@@ -255,6 +259,7 @@ def get_trend_report(p, df):
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
         COUNT+=1
 
+    tmp = df[(df.Depth == 600) & (df.name == wmo)]
     return df_report, tmp
 
 def clim_check(p, df_report, NAME_BASIN, tmp):
@@ -329,26 +334,32 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 #         return
     metadata.status_var = p._my_float.status_var('DOXY')
     df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, Profilelist_hist, Dataset)
+    Oxy_Profile = Value
 
     if not condition1_to_detrend:
         DRIFT_CODE = -1
-        Oxy_Profile = Value
-        print("no detrend possible")
+        print("no detrend possible", flush=True)
         metadata.drift_code = DRIFT_CODE
     else:
         df_report, tmp = get_trend_report(p, df)
-        OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
-
-        if abs(OFFSET) >= threshold:
-            wmo = p._my_float.wmo
-            df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
-            timenum = int(p.time.strftime("%Y%m%d"))
-            save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
-            return
+        if tmp[tmp.Depth==600].VAR.isnull().values.any() :
+            DRIFT_CODE = -1
+            metadata.drift_code = DRIFT_CODE
         else:
-            Oxy_Profile = apply_detrend(Pres, Value, df_report)
-            metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
-            # high freq.csv
+
+            OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
+
+            if abs(OFFSET) >= threshold:
+                wmo = p._my_float.wmo
+                df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
+                timenum = int(p.time.strftime("%Y%m%d"))
+                save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
+                return
+            else:
+                Oxy_Profile = apply_detrend(Pres, Value, df_report)
+                metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
+                metadata.offset = OFFSET
+                # high freq.csv
 
     os.system('mkdir -p ' + os.path.dirname(outfile))
     dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
@@ -359,7 +370,7 @@ def load_history(wmo):
     '''
      Replicates superfloat dataset without detrend - the previous doxy_algorithm
     '''
-    print("Loading dataset for float", wmo, "...")
+    print("Loading dataset for float", wmo, "...", flush=True)
     TI     = TimeInterval("1950","2050",'%Y')
     R = Rectangle(-6,36,30,46)
     PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
@@ -376,12 +387,12 @@ def load_history(wmo):
         else:
             condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
         if not condition_to_write:
-            print(p._my_float.filename, "Saturation Test not passed")
+            print(p._my_float.filename, "Saturation Test not passed", flush=True)
             continue
 
         Profilelist.append(p)
         Dataset[p.ID()] = (Pres,Value,Qc)
-    print("...done")
+    print("...done", flush=True)
     return Profilelist, Dataset
 
 
@@ -397,9 +408,11 @@ if input_file == 'NO_file':
     PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
 
     for wmo in wmo_list:
+        print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)

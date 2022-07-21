@@ -97,8 +97,6 @@ bt=300
 depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
-#  if (var_mod =="O2o"):
-#   if (var_mod =="P_c"):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
@@ -163,18 +161,18 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
         # PLOT HOVMOELLER OF FLOAT
         if (var_mod == 'P_l'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
         if (var_mod == 'O2o'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=160,vmax=250)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=160,vmax=250)
         if (var_mod == 'N3n'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
         if (var_mod == 'P_c'):
            # plotmat_m = 12128 * (plotmat_m * ( 470.0/ 700)**0.78 ) + 0.59
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=20)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=20)
 
         ax3.invert_yaxis()
         ax4.invert_yaxis()
@@ -306,9 +304,16 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
-        ticklabs = cbar.ax.get_yticklabels()
-        cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
+#        ticklabs = cbar.ax.get_yticklabels()
+        ticklabs = cbar.get_ticks()
+        print (ticklabs)
+        if (var_mod == 'O2o'):
+#            cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
+            cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
+        else:
+            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs] , fontsize=font_s)
         
+
 #        if var_mod == 'O2o': 
 #        if var_mod == 'OXY':
         if var_mod == 'P_c':

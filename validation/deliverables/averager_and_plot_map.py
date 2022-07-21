@@ -201,7 +201,7 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.tick_params(axis='x', labelsize=10)
     ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 
-    ax.xaxis.set_ticks(np.arange(-2,36,6))
+    ax.xaxis.set_ticks(np.arange(-6,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))
     #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
@@ -222,14 +222,15 @@ for il, layer in enumerate(PLOT.layerlist):
         climlog=PLOTlog.climlist[il]
         fig,ax = mapplotlog({'clim':climlog, 'data':integrated_masked, }, \
             fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-        ax.set_xlim([-5,36])
+        ax.set_xlim([-6,36])
         ax.set_ylim([30,46])
         ax.set_xlabel('Lon').set_fontsize(11)
         ax.set_ylabel('Lat').set_fontsize(12)
-        ax.ticklabel_format(fontsize=10)
-        ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+#        ax.ticklabel_format(fontsize=10)
+        ax.tick_params(axis='x', labelsize=10)
+        ax.text(-6,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 
-        ax.xaxis.set_ticks(np.arange(-2,36,6))
+        ax.xaxis.set_ticks(np.arange(-6,36,6))
         ax.yaxis.set_ticks(np.arange(30,46,4))
         ax.grid()
         title = "%s %s %s" % ('annual', var, layer.__repr__())

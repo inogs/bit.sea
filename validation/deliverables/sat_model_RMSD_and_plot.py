@@ -1,5 +1,5 @@
 import argparse
-# python sat_model_RMSD_and_plot.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE  -o Fig4.1/ -s 20170101 -e 20180101
+# python sat_model_RMSD_and_plot.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE  -o Fig4.1/ -st 20170101 -et 20180101
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -80,7 +80,7 @@ dateformat ="%Y%m%d"
 #TI = TimeInterval('20170101','20180101',"%Y%m%d") 
 TI = TimeInterval(START_TIME,END___TIME,"%Y%m%d")
 sat_TL = TimeList.fromfilenames(TI, SATDIR,"*.nc", prefix="", dateformat="%Y%m%d")
-print sat_TL
+print (sat_TL)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
 
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
@@ -103,11 +103,11 @@ for iFrame, k in enumerate(indexes):
     sattime = CoupledList[0][0]
     satfile = SATDIR + "/" + sattime.strftime(dateformat) + suffix
     modfile = model_TL.filelist[k]
-    print modfile
+    print (modfile)
 
     De         = DataExtractor(TheMask,filename=modfile, varname='P_l')
     Model      = MapBuilder.get_layer_average(De, surf_layer)
-    print modeltime
+    print (modeltime)
     Sat24 = Sat.readfromfile(satfile,var='CHL') 
 
     cloudsLand = (np.isnan(Sat24)) | (Sat24 > 1.e19) | (Sat24<0)
@@ -130,16 +130,17 @@ Sat2d[Sat2d<0] = np.nan
 Sat2d[~mask] = np.NaN
 var = 'SATchl'
 
-fig,ax     = mapplot({'clim':[0.001,0.05],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplot({'clim':[0.001,0.07],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-ax.ticklabel_format(fontsize=10)
+#ax.ticklabel_format(fontsize=10)
+ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-2,36,6))
+ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
@@ -154,11 +155,12 @@ ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-ax.ticklabel_format(fontsize=10)
+#ax.ticklabel_format(fontsize=10)
+ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Maplog_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-2,36,6))
+ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
@@ -172,11 +174,12 @@ ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-ax.ticklabel_format(fontsize=10)
+#ax.ticklabel_format(fontsize=10)
+ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ': # POINTS ',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Map_COUNTS_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-2,36,6))
+ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()

@@ -133,6 +133,9 @@ def kd_algorithm(pCor, outfile, metadata,writing_mode):
     else:
         Pres, Value, Qc = pCor.read('DOWN_IRRADIANCE490', read_adjusted=False)
     if Pres is None: return
+    if len(Pres)<5:
+        print("few values in Coriolis for KD in " + pCor._my_float.filename, flush=True)
+        return
     dump_kd_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
 OUTDIR = addsep(args.outdir)

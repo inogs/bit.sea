@@ -133,6 +133,9 @@ def par_algorithm(pCor, outfile, metadata,writing_mode):
     else:
         Pres, Value, Qc = pCor.read('DOWNWELLING_PAR', read_adjusted=False)
     if Pres is None: return
+    if len(Pres)<5:
+        print("few values in Coriolis for PAR in " + pCor._my_float.filename, flush=True)
+        return
     dump_par_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
 OUTDIR = addsep(args.outdir)

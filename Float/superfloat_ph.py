@@ -130,6 +130,9 @@ def ph_algorithm(pCor, outfile, metadata,writing_mode):
     else:
         Pres, Value, Qc = pCor.read('PH_IN_SITU_TOTAL', read_adjusted=False)
     if Pres is None: return
+    if len(Pres)<5:
+        print("few values in Coriolis for pH in " + pCor._my_float.filename, flush=True)
+        return
     dump_ph_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
 

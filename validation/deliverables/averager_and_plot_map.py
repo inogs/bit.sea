@@ -36,7 +36,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','ALK','DIC','netPPYc'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','ALK','DIC','netPPYc','N4n','N5s','CO2airflux'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -125,6 +125,8 @@ CONVERSION_DICT={
          'O2o' : 1,
          'N1p' : 1,
          'N3n' : 1,
+         'N4n' : 1,
+         'N5s' : 1,
          'PH'  : 1,
          'pH'  : 1, 
          'pCO2': 1,
@@ -133,7 +135,8 @@ CONVERSION_DICT={
          'P_i' : 1,
 	 'Ac'  : 1,
          'ALK' : 1,
-         'DIC' : 1
+         'DIC' : 1, 
+  'CO2airflux' : 1
          }
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -193,11 +196,11 @@ for il, layer in enumerate(PLOT.layerlist):
 
     fig,ax     = mapplot({'clim':clim, 'data':integrated_masked, }, \
         fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-    ax.set_xlim([-5,36])
+    ax.set_xlim([-6,36])
     ax.set_ylim([30,46])
     ax.set_xlabel('Lon').set_fontsize(11)
     ax.set_ylabel('Lat').set_fontsize(12)
-#    ax.ticklabel_format(fontsize=10)
+    #ax.ticklabel_format(fontsize=10)
     ax.tick_params(axis='x', labelsize=10)
     ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 
@@ -208,8 +211,8 @@ for il, layer in enumerate(PLOT.layerlist):
     title = "%s %s %s" % ('annual', var, layer.__repr__())
 #    if (var == "PH"): title = "%s %s %s" % ('annual', "pH$\mathrm{_T}$", layer.__repr__())
 #    title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], var, layer.__repr__())
-    if (var == "pH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
-    if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
+#    if (var == "pH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
+#    if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
     fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)
@@ -226,9 +229,9 @@ for il, layer in enumerate(PLOT.layerlist):
         ax.set_ylim([30,46])
         ax.set_xlabel('Lon').set_fontsize(11)
         ax.set_ylabel('Lat').set_fontsize(12)
-#        ax.ticklabel_format(fontsize=10)
+       # ax.ticklabel_format(fontsize=10)
         ax.tick_params(axis='x', labelsize=10)
-        ax.text(-6,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 
         ax.xaxis.set_ticks(np.arange(-6,36,6))
         ax.yaxis.set_ticks(np.arange(30,46,4))

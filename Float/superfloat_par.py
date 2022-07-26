@@ -102,7 +102,7 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print("dumping par on " + outfile)
+    print("dumping par on " + outfile, flush=True)
     par_already_existing="nPAR" in ncOUT.dimensions.keys()
     if not par_already_existing : ncOUT.createDimension('nDOWNWELLING_PAR', nP)
     ncvar=ncOUT.createVariable("PRES_DOWNWELLING_PAR", 'f', ('nDOWNWELLING_PAR',))
@@ -148,7 +148,7 @@ if input_file == 'NO_file':
 
 
     for wmo in wmo_list:
-        print(wmo)
+        print(wmo, flush=True)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)

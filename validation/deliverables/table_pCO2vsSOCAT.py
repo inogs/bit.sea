@@ -48,13 +48,13 @@ for isub, sub in enumerate(V2.P.basin_list):
     M[isub,1]=RMSD
     M[isub,2]=C[0,1]
     M[isub,3]=n_socat
-    print sub.name, " ","%8.2f"%  BIAS, " ","%8.2f"%  RMSD, " ", "%8.2f"%  C[0,1], " ", "%d"%  n_socat
+    print (sub.name, " ","%8.2f"%  BIAS, " ","%8.2f"%  RMSD, " ", "%8.2f"%  C[0,1], " ", "%d"%  n_socat)
     # C=np.corrcoef(model[iSub,:],socat[iSub,:])
 
 TOT_RMSD[0,0]=np.sqrt(np.nanmean((model[:,:-1]-socat[:,:-1])**2))
 TOT_RMSD[0,1]=np.nansum(num_socat[:,:-1])
 
-print "TOTAL RMSD: ", "%8.2f"%  TOT_RMSD[0,0]
+print ("TOTAL RMSD: ", "%8.2f"%  TOT_RMSD[0,0])
 rows_names_list=[sub.name for sub in V2.P]
 column_names_list=["BIAS","RMSD","CORR","nSOCAT"]
 outfile="pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt"

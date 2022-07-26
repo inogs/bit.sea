@@ -69,7 +69,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
-    print("dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S"))
+    print("dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
     ncOUT = NC.netcdf_file(outfile,"w")
     setattr(ncOUT, 'origin'     , 'coriolis')
     setattr(ncOUT, 'file_origin', metadata.filename)
@@ -129,7 +129,7 @@ def treating_coriolis(pCor):
     if pCor._my_float.status_var('CHLA') in ['A','D'] :
         Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
-            print("few values in Coriolis for " + pCor._my_float.filename)
+            print("few values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
             return None, None, None, metadata
 
         #Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
@@ -141,7 +141,7 @@ def treating_coriolis(pCor):
         CHL[ii] = 0.005
         return Pres, CHL, Qc, metadata
     else:
-        print("R -- not dumped ", pCor._my_float.filename)
+        print("R -- not dumped ", pCor._my_float.filename, flush=True)
         return None, None, None, metadata
 
 def chla_algorithm(pCor,outfile):

@@ -39,17 +39,43 @@
 <depth top= "0600" bottom="1000" levplot="0600" clim="[180,260]"> </depth>
 </plots>
 
+<!--  N4n -->
+<plots var="N4n" units="mmol/m3" plotunits="mmol m$^{-3}$" name="N4n" longname="Ammonium">
+<depth top= "0000" bottom="0010" levplot="0000" clim="[0,0.4]"> </depth>
+<depth top= "0010" bottom="0030" levplot="0010" clim="[0,0.4]"> </depth>
+<depth top= "0030" bottom="0060" levplot="0030" clim="[0,0.4]"> </depth>
+<depth top= "0060" bottom="0100" levplot="0060" clim="[0,0.4]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[0,0.4]"> </depth>
+<depth top= "0150" bottom="0300" levplot="0150" clim="[0,0.4]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0300" clim="[0,0.4]"> </depth>
+<depth top= "0600" bottom="1000" levplot="0600" clim="[0,0.4]"> </depth>
+</plots>
+
+<!--  N5s -->
+<plots var="N5s" units="mmol/m3" plotunits="mmol m$^{-3}$" name="N5s" longname="Silicate">
+<depth top= "0000" bottom="0010" levplot="0000" clim="[0,5]"> </depth>
+<depth top= "0010" bottom="0030" levplot="0010" clim="[0,5]"> </depth>
+<depth top= "0030" bottom="0060" levplot="0030" clim="[0,5]"> </depth>
+<depth top= "0060" bottom="0100" levplot="0060" clim="[0,5]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[0,5]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[0,8]"> </depth>
+<depth top= "0150" bottom="0300" levplot="0150" clim="[0,8]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0300" clim="[0,8]"> </depth>
+<depth top= "0600" bottom="1000" levplot="0600" clim="[0,8]"> </depth>
+</plots>
+
 
 <!--  Pc -->
 <plots var="P_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="PhytoC" longname="Phytoplankton biomass">
-<depth top= "0000" bottom="0010" levplot="0000" clim="[0,30]"> </depth>
-<depth top= "0010" bottom="0030" levplot="0010" clim="[0,30]"> </depth>
-<depth top= "0030" bottom="0060" levplot="0030" clim="[0,30]"> </depth>
-<depth top= "0060" bottom="0100" levplot="0060" clim="[0,30]"> </depth>
-<depth top= "0100" bottom="0150" levplot="0100" clim="[0,30]"> </depth>
-<depth top= "0150" bottom="0300" levplot="0150" clim="[0,30]"> </depth>
-<depth top= "0300" bottom="0600" levplot="0300" clim="[0,30]"> </depth>
-<depth top= "0300" bottom="0600" levplot="0600" clim="[0,30]"> </depth>
+<depth top= "0000" bottom="0010" levplot="0000" clim="[0,20]"> </depth>
+<depth top= "0010" bottom="0030" levplot="0010" clim="[0,20]"> </depth>
+<depth top= "0030" bottom="0060" levplot="0030" clim="[0,20]"> </depth>
+<depth top= "0060" bottom="0100" levplot="0060" clim="[0,20]"> </depth>
+<depth top= "0100" bottom="0150" levplot="0100" clim="[0,20]"> </depth>
+<depth top= "0150" bottom="0300" levplot="0150" clim="[0,20]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0300" clim="[0,20]"> </depth>
+<depth top= "0300" bottom="0600" levplot="0600" clim="[0,20]"> </depth>
+<depth top= "0000" bottom="0200" levplot="0200" clim="[0,20]"> </depth>
 </plots>
 
 
@@ -87,6 +113,12 @@
 <depth top= "0000" bottom="0200"  levplot="0000" clim="[0,220]"> </depth>
 </plots>
 
+<!--  Zooplancton -->
+<plots var="Z_c" units="gC/m2" plotunits="gC m$ ^{-2}$" name="ZOOPL" longname="Zooplankton">
+<depth top= "0000" bottom="0200"  levplot="0000" clim="[0.5,2]"> </depth>
+</plots>
+
+
 <!--  pH @ insitu total scale -->
 <plots var="pH" units="@Tinsitu, Total Scale" plotunits="Total Scale" name="pH" longname="Seawater acidity">
 <depth top= "0000" bottom="0030" levplot="0000" clim="[7.95,8.25]"> </depth>
@@ -113,7 +145,10 @@
 <depth top= "0600" bottom="1000" levplot="0600" clim="[7.95,8.25]"> </depth>
 </plots>
 
-
+<!--  CO2airflux -->
+<plots var="CO2airflux" units="molC/m2/y" plotunits="mol C m$^{-2}$ y$^{-1}$" name="PhytoC" longname="CO2 airflux">
+<depth top= "0000" bottom="0010" levplot="0000" clim="[-1,1]"> </depth>
+</plots>
 
 <!--  pCO2 -->
 <plots var="pCO2" units="uatm" plotunits="$\mu$ atm "  name="pCO2" longname="Seawater pCO2">

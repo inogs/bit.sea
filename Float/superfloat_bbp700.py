@@ -99,7 +99,7 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print("dumping bbp700 on " + outfile)
+    print("dumping bbp700 on " + outfile, flush=True)
     bbp700_already_existing="nBBP700" in ncOUT.dimensions.keys()
     if not bbp700_already_existing : ncOUT.createDimension('nBBP700', nP)
     ncvar=ncOUT.createVariable("PRES_BBP700", 'f', ('nBBP700',))
@@ -144,7 +144,7 @@ if input_file == 'NO_file':
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
 
     for wmo in wmo_list:
-        print(wmo)
+        print(wmo, flush=True)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)

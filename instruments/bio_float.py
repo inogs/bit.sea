@@ -263,7 +263,10 @@ class BioFloat(Instrument):
         if pres.size ==0:
             return pres, prof, qc
 
-        good = (qc==1) | (qc ==2 ) | (qc==5) | (qc==8)
+        if var in ['TEMP','PSAL']:
+            good = np.ones_like(pres, dtype=np.bool)
+        else:
+            good = (qc==1) | (qc ==2 ) | (qc==5) | (qc==8)
         pres = pres[good]
         prof = prof[good]
         qc   =   qc[good]

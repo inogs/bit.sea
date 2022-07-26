@@ -147,7 +147,7 @@
 
 <!--  CO2airflux -->
 <plots var="CO2airflux" units="molC/m2/y" plotunits="mol C m$^{-2}$ y$^{-1}$" name="PhytoC" longname="CO2 airflux">
-<depth top= "0000" bottom="0010" levplot="0000" clim="[-1,1]"> </depth>
+<depth top= "0000" bottom="0010" levplot="0000" clim="[-2,2]"> </depth>
 </plots>
 
 <!--  pCO2 -->

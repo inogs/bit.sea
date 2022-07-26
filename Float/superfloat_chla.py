@@ -101,14 +101,14 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
     ncvar[:]=QcT
     
-    ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PSAL','f',('nPSAL',))
     ncvar[:]=Sali
     setattr(ncvar, 'variable'   , 'SALI')
     setattr(ncvar, 'units'      , "PSS78")
 
-    ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
     ncvar[:]=PresT
-    ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
     ncvar[:]=QcS
 
     ncvar=ncOUT.createVariable('CHLA','f',('nCHLA',))
@@ -160,6 +160,7 @@ if input_file == 'NO_file':
     R = Rectangle(-6,36,30,46)
     PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
     for wmo in wmo_list:
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)

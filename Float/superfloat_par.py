@@ -145,6 +145,7 @@ if input_file == 'NO_file':
     PROFILES_COR =bio_float.FloatSelector('DOWNWELLING_PAR', TI, R)
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
 
     for wmo in wmo_list:

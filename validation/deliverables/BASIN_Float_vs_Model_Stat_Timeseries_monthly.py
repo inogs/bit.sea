@@ -51,7 +51,6 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
 import commons.timerequestors as requestors
 from instruments import check
-#from float_OXY_saturation import *
 from Float.oxygen_saturation import *
 
 OUTDIR = addsep(args.outdir)
@@ -71,7 +70,6 @@ nSub = len(OGS.basin_list)
 
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','dNit_dz','CM','O2o_sat','OMZ','max_O2']
-#METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','OMZ','max_O2']
 nStat = len(METRICS)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -85,7 +83,6 @@ A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 A_model = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 
 for ivar, var_mod in enumerate(VARLIST):
-# if (ivar == 2):
     var = FLOATVARS[var_mod]
     adj=Adj[ivar]
 
@@ -101,8 +98,8 @@ for ivar, var_mod in enumerate(VARLIST):
         for iSub, Sub in enumerate(OGS.basin_list):
             BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
             BASIN_PROFILES_float = bio_float.remove_bad_sensors(BASIN_PROFILES_float_raw,var)
-            print ("RAW  : " + np.str(len(BASIN_PROFILES_float_raw)))
-            print ("FILT.: " + np.str(len(BASIN_PROFILES_float)))
+#            print ("RAW  : " + np.str(len(BASIN_PROFILES_float_raw)))
+#            print ("FILT.: " + np.str(len(BASIN_PROFILES_float)))
             A_float[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             A_model[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             if len(BASIN_PROFILES_float) == 0: continue
@@ -111,9 +108,9 @@ for ivar, var_mod in enumerate(VARLIST):
             Mod = np.zeros((len(BASIN_PROFILES_float), nStat), np.float32 ) * np.nan
             for ip, p in enumerate(BASIN_PROFILES_float):
                 if p.available_params.find(var)<0 : continue
-#                Pres,Profile,Qc=p.read(var,read_adjusted=adj)
                 if (var_mod=="P_c"):
                     Pres,Profile,Qc=p.read(var,var_mod="P_c")
+                    print (p.ID())
                 else:
                     Pres,Profile,Qc=p.read(var) #,True)
 
@@ -136,8 +133,13 @@ for ivar, var_mod in enumerate(VARLIST):
                 Flo[ip,0] = np.nansum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
                 Flo[ip,1] = gm200.correlation()
                 Flo[ip,5] = gm200.Ref[0] # Surf Value
+                print (Flo[ip,0])
+                print (Flo[ip,1])
+                print (Flo[ip,6])
 
-                Mod[ip,0] = np.sum(gm200.Model*TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
+
+                Mod[ip,0] = np.nansum(gm200.Model*TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
+                print (Mod[ip,0])
                 Mod[ip,1] = gm200.correlation()
                 Mod[ip,5] = gm200.Model[0] # Surf Value
 
@@ -167,8 +169,13 @@ for ivar, var_mod in enumerate(VARLIST):
 
             for iStat, sStat in enumerate(METRICS):
                 if (iStat == 6): continue
-                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[ip,iStat])
-                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[ip,iStat])
+                print (Flo[ip,0])
+                print (Flo[ip,1])
+#                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[ip,iStat])
+#                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[ip,iStat])
+                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[:,iStat])
+                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[:,iStat])
+                print (A_float[3,:,6,6])
 
     print (var)
 np.save(OUTDIR + 'Basin_Statistics_FLOAT',A_float)

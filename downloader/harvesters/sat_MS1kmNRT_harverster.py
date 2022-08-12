@@ -28,14 +28,18 @@ def dest_file(suffix,f,path):
 class Sat_ms1kmNRT_Harvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files from the
-    ftp server myocean.artov.isac.cnr.it.
+    ftp server nrt.cmems-du.eu.
     """
     def harvest(self, db_path, log):
         """
         Download all the files inside a remote directory of the ftp server
+        which are supposed ordered in directories yyyy/mm/
         whose modification date is after the modification date of the last
-        file in the local dir. Download the files if the contain
-        '-NRT-' in their name.
+        file in the local dir.
+        If there are existing files in local path, it looks for:
+        - all the months of the current year
+        - an eventual new year, in case we are at the end of one
+
 
         Args:
             - *db_path*: the path of the directory set in the download program.
@@ -76,8 +80,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
                 for month in months:
                     connection.cwd(month)
                     files, _, perms = list_files(connection)
-                    files_to_be_downloaded = [f for f in files if '_nrt_' in f]
-                    for f in files_to_be_downloaded:
+                    for f in files:
                         destfile=dest_file(suffix,f,path)
                         d = download_file(connection, f, path,
                                                log, perms, destfile, False)
@@ -86,6 +89,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
                     connection.cwd('..')
                 connection.cwd('..')
         else:
+            # daily executed
             loc_files.sort()
             last_file = loc_files[-1]
             last_year = int(last_file[0:4])
@@ -98,8 +102,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             for month in months:
                 connection.cwd(month)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if '_nrt_' in f]
-                for f in files_to_be_downloaded:
+                for f in files:
                     #if f > last_file:
                     destfile=dest_file(suffix,f,path)
                     d = download_file(connection, f, path,
@@ -115,9 +118,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
                 for month in months:
                     connection.cwd(month)
                     files, _, perms = list_files(connection)
-                    files_to_be_downloaded = [f for f in files if '-_nrt-' in f]
-                    print ("step 1", files_to_be_downloaded)
-                    for f in files_to_be_downloaded:
+                    for f in files:
                         destfile=dest_file(suffix,f,path)
                         d = download_file(connection, f, path,
                                           log, perms, destfile, True, True)
@@ -141,8 +142,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
     def rebuild(self, db_path, log):
         """
         Download all the files inside a remote directory of the ftp server. If the
-        file is already present on the local directory, rewrite it. Do not download
-        the file that contain the string '-NRT-' in their filename.
+        file is already present on the local directory, rewrite it.
 
         Args:
             - *db_path*: the path of the directory set in the download program.
@@ -175,8 +175,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             for month in months:
                 connection.cwd(month)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if '-_nrt-' in f]
-                for f in files_to_be_downloaded:
+                for f in files:
                     destfile=dest_file(suffix,f,path)
                     d = download_file(connection, f, path,
                                            log, perms, destfile, False)

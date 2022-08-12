@@ -128,7 +128,7 @@ def list_files(connection):
 
 
 
-def download_file(connection, f, path, log, perms=None,
+def download_file(connection, f, path, log, perms=None, destfile=None,
                   skip_if_exists=True, skip_is_strange = False):
     """
     Download a file from an ftp remote archive.
@@ -155,9 +155,14 @@ def download_file(connection, f, path, log, perms=None,
     Raises:
         *DownloadError* if something went wrong during the download
     """
+    if destfile is None:
+        file_path = join(path, f)
+    else:
+        file_path = destfile
+
     if skip_if_exists:
         # Check if the file already exists
-        if exists(join(path, f)):
+        if exists(file_path):
             if skip_is_strange:
                 log.info('Skipping file ' + f + ' because'
                          ' it was already downloaded!')
@@ -179,7 +184,6 @@ def download_file(connection, f, path, log, perms=None,
     
     # I will first save the partial file with a temp name. When the
     # transfers end, I will rename it
-    file_path = join(path, f)
     temp_name = join(path, 'incomplete_download.tmp')
 
     # The transfer will be executed by another thread. So I will write here

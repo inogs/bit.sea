@@ -28,14 +28,17 @@ def find_DCM(Chl_profile,zlev):
 
 def MLD(Temperature,Salinity,Pres):
         ''' Calculation of Mixed Layer Depth based on temperature difference of 0.2
-        mld is defined as 
+        mld is defined as the level where the difference of temperature with respect the reference level of 10m
+        is of 0.2C
         It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
         '''
         th=10 #threshold of depth minimum
+        i_less_than_10=Pres<th
+        i_10=i_less_than_10[-1] + 1 (this is the index corresponding approx ~10m of the zlevel array) 
         MLD = np.nan
         T = Temperature
         S = Salinity
-        D1000=Pres[(Pres<1000) & (Pres>th)] # CONSIDER VALUES above "th"5m
+        D1000=Pres[(Pres<1000) & (Pres>th)] # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
         T1000=T[(Pres<1000) & (Pres>th)]
         S1000=S[(Pres<1000) & (Pres>th)]
         Dens1000=sw.dens(S1000,T1000,D1000)-1000 # DENSITY # SIGMA
@@ -43,7 +46,8 @@ def MLD(Temperature,Salinity,Pres):
         for ip,p in enumerate(T1000):
 #            abs_diff=abs(p-T1000[0])
 #            if abs_diff > 0.2:
-            abs_diff=abs(p-np.mean(T[Pres<th]))
+#            abs_diff=abs(p-np.mean(T[Pres<th]))
+            abs_diff=abs(p-T[i_10])
             if abs_diff > 0.2:
                         break
         MixedLayerDepth=D1000[ip]

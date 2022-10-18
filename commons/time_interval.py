@@ -16,7 +16,7 @@ class TimeInterval():
         Returns:
            True if specific_time is inside the time interval
         '''
-        if (specific_time >= self.start_time) and (specific_time <= self.end_time):
+        if (specific_time >= self.start_time) and (specific_time < self.end_time):
             return True
         else:
             return False

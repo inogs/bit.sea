@@ -56,7 +56,7 @@ class TimeList():
                 self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",hour=12,forceFrequency=None):
+    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",forcehour=None,forceFrequency=None):
         '''
         Generates a TimeList object by reading a directory
 
@@ -77,7 +77,7 @@ class TimeList():
                            a file is vaild if the filename string contains filtervar
         * prefix         * string, the part of the filename before the date
         * dateformat     * string
-        * hour           * integer
+        * forcehour      * integer, it forces hours to it. No effect if None (default).
         * forceFrequency * string, like 'daily','weekly','monthly'. The default is None.
                            If set to None, the frequency is automatically calculated, else is forced to
                            the string provided. This is useful when the timeseries has gaps and is not continue and automatic calculation
@@ -150,12 +150,11 @@ class TimeList():
         TimeListObj.nTimes   =len(TimeListObj.filelist)
 
 
-        # we force daily datetimes to have hours = 12
-        if TimeListObj.inputFrequency == 'daily':
+        # forcing hours
+        if forcehour is not None:
             for iFrame, t in enumerate(TimeListObj.Timelist):
-                if t.hour==0:
-                    newt = datetime.datetime(t.year,t.month,t.day,hour,0,0)
-                    TimeListObj.Timelist[iFrame] = newt
+                newt = datetime.datetime(t.year,t.month,t.day,forcehour,0,0)
+                TimeListObj.Timelist[iFrame] = newt
 
         return TimeListObj
 

@@ -16,9 +16,9 @@ ftp_url = 'my.cmems-du.eu'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT/CHL/MULTISENSOR/1Km/DT/DAILY/ORIG/"
+relative_path = "SAT/CHL/DT/DAILY/ORIG/"
 remote_path = "Core/OCEANCOLOUR_MED_BGC_L3_MY_009_143/cmems_obs-oc_med_bgc-plankton_my_l3-multi-1km_P1D"
-suffix = "_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-DT-v02.nc"
+suffix = None
 
 def dest_file(suffix,f,path):
     if suffix is None: return None

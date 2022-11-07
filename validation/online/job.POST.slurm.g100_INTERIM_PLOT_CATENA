@@ -1,0 +1,40 @@
+#! /bin/bash
+
+
+#SBATCH --job-name=PLOT
+#SBATCH -N1
+#SBATCH --ntasks-per-node=24
+#SBATCH --exclusive
+#SBATCH --time=00:30:00
+#SBATCH --mem=300gb
+#SBATCH --account=OGS_prodC
+#SBATCH --partition=g100_meteo_prod
+#SBATCH --qos=qos_meteo
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=gcoidessa@inogs.it
+
+cd $SLURM_SUBMIT_DIR
+
+module load intel/oneapi-2021--binary
+module load intelmpi/oneapi-2021--binary
+export OPA_HOME=/g100_work/OGS_prodC/OPA/V8C-prod/
+export OPA_HOSTNAME=g100
+export HDF5_DIR=$OPA_HOME/HOST/$OPA_HOSTNAME
+export NETCDF4_DIR=$OPA_HOME/HOST/$OPA_HOSTNAME
+export GEOS_DIR=$OPA_HOME/HOST/$OPA_HOSTNAME
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/g100_work/OGS_prodC/OPA/V8C-prod/HOST/g100/lib:/g100_work/OGS21_PRACE_P/COPERNICUS/V8C/HOST/g100/lib
+source /g100_work/OGS21_PRACE_P/COPERNICUS/py_env_3.6.8/bin/activate
+export PYTHONPATH=$PYTHONPATH:/g100_work/OGS21_PRACE_P/COPERNICUS/bit.sea
+
+##source /g100_work/OGS20_PRACE_P_2/COPERNICUS/sequence.sh
+
+date
+
+. ./profile.inc
+
+#OUTPUTDIR=/g100_scratch/userexternal/gcoidess/REA2020/monthly_per_prodotti_INTERIM/
+OUTDIR=/g100_scratch/userexternal/gcoidess/MULTIPLOT/OUTPUT_SEPTEMBER/
+mkdir -p $OUTDIR
+
+my_prex_or_die "mpirun -np 16 python profiles_plotter_INTERIM_timeseries.py"
+#my_prex_or_die "mpirun -np 16 python profiles_plotter_INTERIM_timeseriesTEST2.py"

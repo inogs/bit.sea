@@ -3,17 +3,18 @@
 # QUID REANALYSIS
 # SECTION 4:
 . ../online/profile.inc
-export MASKFILE=/g100_work/OGS_prod100/OPA/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
-export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/
 
-         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/MODEL/AVE_FREQ_2/ #compressed/
-   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
-STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
+export MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
+export ONLINE_REPO=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/DA/TRANSITION/
+
+         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V9C/transition/wrkdir/MODEL/AVE_FREQ_2/ #compressed/
+   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V9C/transition/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
+#STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 
 
 SAT_KD_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY_24/
 SAT_CHLWEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/DT/WEEKLY_4_24
-KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/out/AVE_FREQ_3/KD_WEEKLY
+KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V9C/transition/wrkdir/POSTPROC/output/AVE_FREQ_3/KD_WEEKLY/
 
 # CREATE Directories for kd SAT:
 #opa_prex_or_die "mkdir -p Fig4.2_kd Fig4.3_kd/offshore Fig4.3_kd/coast table4.1 table4.2"
@@ -131,11 +132,6 @@ python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PAR
 #python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN per lo 0-200m
 #python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral -m $MASKFILE -o Fig4.7bis -l Plotlist_bio_ppn20m.xml -s 20170101 -e 20180101
 
-#INPUTDIR_PPN=/gpfs/scratch/userexternal/ateruzzi/PPN_TRANSITION2017/
-mkdir -p Fig4.7refScale
-#python averager_and_plot_map_ppn_refScale.py -i $INPUTDIR_PPN  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20170101 -e 20180101
-python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101
-
 python averager_and_plot_map.py -i $INPUTDIR        -v ALK   -t mean $COMMONS_PARAMS   # Ac-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN  --> not requested in the ScQP
 python averager_and_plot_map.py -i $INPUTDIR        -v DIC  -t mean $COMMONS_PARAMS   # DIC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> not requested in the ScQP
 cp LayerMaps/*P_l* Fig4.1/
@@ -151,23 +147,6 @@ cp LayerMaps/*DIC* Fig4.19/
 #CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN from SATELLITE:
 #python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
 
-mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2
-
-OUTDIR=TMP_week/
-# Create files with matchup of CHL vals, bias, rmsd between data and sar
-python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c open_sea   -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl
-python ScMYvalidation_plan.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast_STD_CORR.pkl
-
-# Plot for the timeseries for both model and Sat with theyr spatial STD fpr each subbasin
-python plot_timeseries_STD.py -o export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -c export_data_ScMYValidation_plan_coast_STD_CORR.pkl -O ./Fig4.2/
-
-# CHL-SURF-W-CLASS4-SIMG-BIAS-BASIN
-# CHL-SURF-W-CLASS4-SIMG-RMSD-BASIN
-# Plot for BIAS and RMSD for different subbasins
-python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o Fig4.3/offshore  # table4.1
-python plot_timeseries_RMS_CORR.py -i export_data_ScMYValidation_plan_coast_STD_CORR.pkl    -o Fig4.3/coast     # table4.2
-cp Fig4.3/offshore/table4.1.dat table4.1
-cp Fig4.3/coast/table4.1.dat    table4.2/table4.2.dat
 
 mkdir -p Fig4.8
 INTEGRALS_PPN=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_01/wrkdir/POSTPROC/out/AVE_FREQ_2/INTEGRALS/PPN/
@@ -175,58 +154,6 @@ INTEGRALS_PPN=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_01/wrkdir/POSTPR
 python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
 
 
-# Figure carbonatiche 1x1
-# ALK-LAYER-Y-CLASS4-CLIM-RMSD
-# ALK-LAYER-Y-CLASS4-CLIM-BIAS
-# DIC-LAYER-Y-CLASS4-CLIM-RMS
-# DIC-LAYER-Y-CLASS4-CLIM-BIAS
-
-
-#mkdir -p Fig4.4a Fig4.4b Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8 
-mkdir -p Fig4.4 Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8
-BASEDIR=/g100_scratch/userexternal/lfeudale/validation/V9C/run4.0/PROFILATORE/
-NCDIR=tmp_nc
-OUTDIR=Fig4.4
-echo python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
-python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR
-echo python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR
-python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR
-#python Hov_flots+model_vars.py -m $MASKFILE -o $OUTDIR
-mv $OUTDIR/*N3n*.png Fig4.12
-mv $OUTDIR/*O2o*.png Fig4.15
-
-# Figures 4.6 and 4.13 + tables 4.4 and 4.8
-# CHL-PROF-D-CLASS4-PROF-CORR-BASIN
-# NIT-PROF-D-CLASS4-PROF-CORR-BASIN
-#  DO-PROF-D-CLASS4-PROF-CORR-BASIN 
-
-OUTDIR=Fig4.6
-#mkdir -p $NCDIR/chla_check/ $NCDIR/nitrate_check/
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly.py -m $MASKFILE -o $NCDIR
-python BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py -m $MASKFILE -i $NCDIR -o $OUTDIR
-mv $OUTDIR/N3n*.png Fig4.13
-
-cp $OUTDIR/P_l_tab_statistics_SHORT.txt table4.4/ 
-cp $OUTDIR/N3n_tab_statistics_SHORT.txt table4.8/
-
-
-# BIOFLOATS SECTION: statistics on layers
-# CHL-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-# NIT-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-#  DO-LAYER-D-CLASS4-PROF-[BIAS/RMS]-BASIN
-
-
-OUTFIGDIR=Floats_bias_rmse_Timeseries     # 8layer x 7sub x 3var = 168 png files
-TABLE_DIR=Floats_bias_rmse_tables         #: 2stats x 3var        = 6 txt files, TABLE.O2o_BIAS.txt  with time average for each layer,sub
-mkdir -p $OUTFIGDIR $TABLE_DIR table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ Fig4.16/
-python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
-python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
-cp $TABLE_DIR/P_l_BIAS.txt $TABLE_DIR/P_l_RMSE.txt table4.3/
-cp $TABLE_DIR/N3n_BIAS.txt $TABLE_DIR/N3n_RMSE.txt table4.9/
-cp $TABLE_DIR/O2o_BIAS.txt $TABLE_DIR/O2o_RMSE.txt table4.12/
-cp $OUTFIGDIR/*P_l* Fig4.5
-cp $OUTFIGDIR/*N3n* Fig4.14
-cp $OUTFIGDIR/*O2o* Fig4.16
 #########################   static dataset climatology section ###################################
 # Fig. 4.11:
 # PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD/CORR calculated on 8 layers

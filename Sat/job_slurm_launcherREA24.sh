@@ -45,7 +45,7 @@ WEEKLYDIR_24=$WEEKLYbase/WEEKLY_24/
 MASKFILE=/gpfs/work/IscrC_REBIOMED/REANALISI_24/PREPROC/MASK/gdept_3d/ogstm/meshmask.nc
 mkdir -p $WEEKLYDIR_24
 
-my_prex_or_die "mpirun python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m $MASKFILE --inmesh SAT1km_mesh"
+my_prex_or_die "mpirun python interpolator.py -i $WEEKLY_DIR -o $WEEKLYDIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v CHL"
 
 exit 0
 #############################

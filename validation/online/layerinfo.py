@@ -14,12 +14,14 @@ dep5mQ = {}
 DICTlayersQ = {
     'chl' : [],
     'nit' : [],
+    'oxy' : []
 }
 for ll in LayerLIST:
     layername = '%s' %(ll[0]) + '-' + '%s' %(ll[1])
     DICTlayerQ[layername] = ll
     dep5mQ[layername] = range(ll[0],ll[1]+1,5)
     DICTlayersQ['nit'].append(layername)
+    DICTlayersQ['oxy'].append(layername)
     if ll[1]<200:
         DICTlayersQ['chl'].append(layername)
 

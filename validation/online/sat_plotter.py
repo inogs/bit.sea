@@ -25,6 +25,11 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--var', '-v',
+                                type = str,
+                                default = None,
+                                required = True,
+                                choices=['P_l','kd490'])
 
     return parser.parse_args()
 
@@ -80,11 +85,19 @@ F2 = timelistcontainer(TI,INPUT_DIR, 'Validation_f3_*on_daily_Sat*', prefix=pref
 
 
 #alb swm1 swm2 nwm tyr1 tyr2 adr1 adr2 aeg ion1 ion2 ion3 lev1 lev2 lev3 lev4 med
+if args.var=='P_l':
+    varname='chlsup'
+    EAN_BIAS_s = [0.03, 0.005, 0.005, 0.005, 0.005, 0.005, -0.01, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
 
-EAN_BIAS_s = [0.03, 0.005, 0.005, 0.005, 0.005, 0.005, -0.01, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
+    EAN_RMSD_w = [0.14, 0.07, 0.09, 0.08, 0.05, 0.05, 0.02, 0.04, 0.03, 0.03, 0.02, 0.03, 0.03, 0.04, 0.02, 0.02, 0.05]
+    EAN_RMSD_s = [0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.005, 0.005, 0.01, 0.005, 0.01, 0.005, 0.01, 0.01]
+else:
+    varname='kd490'
+    EAN_BIAS_s = [0.03, 0.005, 0.005, 0.005, 0.005, 0.005, -0.01, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
 
-EAN_RMSD_w = [0.14, 0.07, 0.09, 0.08, 0.05, 0.05, 0.02, 0.04, 0.03, 0.03, 0.02, 0.03, 0.03, 0.04, 0.02, 0.02, 0.05]
-EAN_RMSD_s = [0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.005, 0.005, 0.01, 0.005, 0.01, 0.005, 0.01, 0.01]
+    EAN_RMSD_w = [0.14, 0.07, 0.09, 0.08, 0.05, 0.05, 0.02, 0.04, 0.03, 0.03, 0.02, 0.03, 0.03, 0.04, 0.02, 0.02, 0.05]
+    EAN_RMSD_s = [0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.005, 0.005, 0.01, 0.005, 0.01, 0.005, 0.01, 0.01]
+
 
 w = 0.9 # bar width
 coast='open_sea'
@@ -93,8 +106,8 @@ nSub=len(OGS.P.basin_list)
 
 for isub, sub in enumerate(OGS.P):
     if sub.name == 'atl': continue
-    print(sub.name)
-    outfile=OUTFIG_DIR + "NRTvalidation_chlsup_" + sub.name + "_" + coast + ".png"
+    outfile="%sNRTvalidation_%s_%s_%s.png" %(OUTFIG_DIR,varname, sub.name,coast)
+    print(outfile,flush=True)
     fig, (ax1, ax2, ax3) = pl.subplots(3, sharex=True, figsize=(15,10)) 
     # BIAS
 

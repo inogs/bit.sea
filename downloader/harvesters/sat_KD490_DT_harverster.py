@@ -25,7 +25,7 @@ def dest_file(suffix,f,path):
     return join(path,f[:8]+suffix)
 
 
-class KD490_Harvester(HarvesterInterface):
+class KD490_DT_Harvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files from the
     ftp server my.cmems-du.eu.

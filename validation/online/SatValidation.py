@@ -4,6 +4,7 @@ import matchup.matchup as matchup
 from commons.dataextractor import DataExtractor
 from basins import V2 as OGS
 import scipy.io.netcdf as NC
+import os
 
 def weighted_mean(Conc, Weight):
 
@@ -22,6 +23,9 @@ def weighted_var(Conc, Weight):
 def SatValidation(var, modfile,satfile,climafile,TheMask,outfile,SUB,COASTNESS_LIST,COASTNESS,nSUB):
     assert var in ['P_l','kd490']
     varname_sat={'P_l':'CHL','kd490':'KD490'}
+    if not os.path.exists(satfile):
+        print("Not existing file: " + satfile)
+        return
     
     print(outfile)
     nCOAST = len(COASTNESS_LIST)

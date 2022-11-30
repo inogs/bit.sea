@@ -27,6 +27,11 @@ def argument():
                                  type = str,
                                  required = True,
                                  help = 'Maskfile')
+    parser.add_argument(   '--var', '-v',
+                                 type = str,
+                                 required = True,
+                                 choices = ['P_l','kd490'])
+    
     parser.add_argument(   '--rundate', '-r',
                                  type = str,
                                  required = True,
@@ -84,7 +89,16 @@ COASTNESS = np.ones((jpj,jpi),dtype=dtype)
 COASTNESS['coast']     = ~mask200_2D
 COASTNESS['open_sea']  =  mask200_2D
 
+SUFFIX={'P_l'  : '_cmems_obs-oc_med_bgc-plankton_nrt_l3-multi-1km_P1D.nc',
+        'kd490': '_cmems_obs-oc_med_bgc-transp_nrt_l3-multi-1km_P1D.nc'
+        }
 
+def climfilename(CLIM_DIR, month,var):
+    if var=='P_l':
+        return CLIM_DIR + '/ave.yyyy' + month + '15-00:00:00.nc'
+    else:
+        return None
+        
 delay=-15
  
 opa_rundate=datetime.strptime(OPA_RUNDATE,'%Y%m%d')
@@ -94,23 +108,23 @@ for RUNDAY in range(1,8)[rank::nranks]:
         daydate = FC_RUNDATE + timedelta(days=fc_day)
         day = daydate.strftime('%Y%m%d')
         month = daydate.strftime('%m')
-        avefile = 'ave.' + day + '-12:00:00.P_l.nc'
-        LOCAL_FC = ARCHIVEDIR +'/'+ FC_RUNDATE.strftime('%Y%m%d') +'/'+ avefile
-        SAT_FILE=SAT_DAILY_DIR + day + '_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc'
-        CLIM_FILE= CLIM_DIR + '/ave.yyyy' + month + '15-00:00:00.nc'
-        f_name = OUTDIR + '/Validation_f' + np.str(fc_day+1) + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day + '.nc'
-        SatValidation(LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
+        avefile = "ave.%s-12:00:00.%s.nc" %(day, args.var)
+        LOCAL_FC = "%s%s/%s" %(ARCHIVEDIR, FC_RUNDATE.strftime('%Y%m%d'),avefile)
+        SAT_FILE = SAT_DAILY_DIR + day + SUFFIX[args.var]
+        CLIM_FILE= climfilename(CLIM_DIR, month, args.var)
+        f_name = OUTDIR + 'Validation_f' + np.str(fc_day+1) + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day + '.nc'
+        SatValidation(args.var, LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
 
     # PERSISTENCY  
     daydate = FC_RUNDATE + timedelta(days=-1)
     day = daydate.strftime('%Y%m%d')
     month = daydate.strftime('%m')
-    avefile = 'ave.' + day + '-12:00:00.P_l.nc'
-    LOCAL_FC = ARCHIVEDIR +'/'+ FC_RUNDATE.strftime('%Y%m%d') +'/'+ avefile
+    avefile = "ave.%s-12:00:00.%s.nc" %(day, args.var)
+    LOCAL_FC = "%s%s/%s" %(ARCHIVEDIR, FC_RUNDATE.strftime('%Y%m%d'),avefile)
     SATdate = FC_RUNDATE
     day_sat = SATdate.strftime('%Y%m%d')
     SAT_FILE=SAT_DAILY_DIR + day_sat + '_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc'
-    CLIM_FILE= CLIM_DIR + '/ave.yyyy' + month + '15-00:00:00.nc'
-    f_name = OUTDIR + '/Validation_pers' + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day_sat + '.nc'
+    CLIM_FILE= climfilename(CLIM_DIR, month, args.var)
+    f_name = OUTDIR + 'Validation_pers' + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day_sat + '.nc'
     SatValidation(LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
 

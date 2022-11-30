@@ -19,19 +19,22 @@ def weighted_var(Conc, Weight):
     Weighted_Var    = Mass/Weight_sum
     return Weighted_Var
 
-def SatValidation(modfile,satfile,climafile,TheMask,outfile,SUB,COASTNESS_LIST,COASTNESS,nSUB):
+def SatValidation(var, modfile,satfile,climafile,TheMask,outfile,SUB,COASTNESS_LIST,COASTNESS,nSUB):
+    assert var in ['P_l','kd490']
+    varname_sat={'P_l':'CHL','kd490':'KD490'}
+    
     print(outfile)
     nCOAST = len(COASTNESS_LIST)
-    De = DataExtractor(TheMask,filename=modfile,varname='P_l',dimvar=2)
+    De = DataExtractor(TheMask,filename=modfile,varname=var,dimvar=2)
     Model = De.values[:,:]
 
     if climafile is not None:
-        Declim = DataExtractor(TheMask,filename=climafile,varname='P_l',dimvar=2)
+        Declim = DataExtractor(TheMask,filename=climafile,varname=var,dimvar=2)
         Clima = Declim.values[:,:]
     try:
-        Sat24 = Sat.readfromfile(satfile,'CHL') # weekly
+        Sat24 = Sat.readfromfile(satfile,varname_sat[var]) # weekly
     except:
-        Sat24 = Sat.convertinV4format(Sat.readfromfile(satfile, 'CHL'))  # daily
+        Sat24 = Sat.convertinV4format(Sat.readfromfile(satfile, varname_sat[var]))  # daily
 
     cloudsLand = np.isnan(Sat24)
     Sat24[cloudsLand] = -999.0

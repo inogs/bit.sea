@@ -123,8 +123,8 @@ for RUNDAY in range(1,8)[rank::nranks]:
     LOCAL_FC = "%s%s/%s" %(ARCHIVEDIR, FC_RUNDATE.strftime('%Y%m%d'),avefile)
     SATdate = FC_RUNDATE
     day_sat = SATdate.strftime('%Y%m%d')
-    SAT_FILE=SAT_DAILY_DIR + day_sat + '_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc'
+    SAT_FILE=SAT_DAILY_DIR + day_sat + SUFFIX[args.var]
     CLIM_FILE= climfilename(CLIM_DIR, month, args.var)
     f_name = OUTDIR + 'Validation_pers' + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day_sat + '.nc'
-    SatValidation(LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
+    SatValidation(args.var, LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
 

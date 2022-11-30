@@ -58,7 +58,7 @@ TI = TimeInterval(TLmis.Timelist[0].strftime('%Y%m%d'), \
                   TLmis.Timelist[-1].strftime('%Y%m%d'))
 
 TLstats = TimeList.fromfilenames(TI, INCHECKDIR, \
-          '*_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-*-v02_statsCHECK.nc', \
+          '*_cmems_obs-oc_med_bgc-plankton_*_statsCHECK.nc', \
           prefix='',dateformat='%Y%m%d')
 
 

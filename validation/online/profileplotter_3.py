@@ -44,7 +44,7 @@ from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
 
-VARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+VARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
 
 
 def figure_generator(p):

@@ -42,7 +42,7 @@ from instruments import superfloat as bio_float
 from basins.region import Rectangle
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
-
+from datetime import timedelta
 
 VARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
 
@@ -135,8 +135,10 @@ def ncreader(filename):
 def getprofile(time,lon,lat):
     lon = float(lon)
     lat = float(lat)
-    R=Rectangle(lon,lon,lat,lat)
-    Profilelist=bio_float.FloatSelector(None,TimeInterval.fromdatetimes(time, time),R)
+    eps=0.001
+    R=Rectangle(lon-eps,lon+eps,lat-eps,lat+eps)
+    d=timedelta(minutes=30)
+    Profilelist=bio_float.FloatSelector(None,TimeInterval.fromdatetimes(time-d, time+d),R)
     profile=Profilelist[0]
     return profile
 

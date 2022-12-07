@@ -219,6 +219,9 @@
 <depth top= "0000" bottom="0010"  clim="[-20,20]"> </depth>
 </plots>
 
+<plots var="kd490" units="1/m" plotunits="m$ ^{-1}$ " name="Kd490" longname="Extinction coefficient at 490 nm">
+<depth top= "0000" bottom="0010"  clim="[0,0.5]"> </depth>
+</plots>
 
 </LayersMaps>
 

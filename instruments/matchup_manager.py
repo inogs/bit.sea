@@ -425,7 +425,7 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,501,5)
-        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
         plotvarname = [r'Chl $[mg/m^3]$',
                        r'Oxy $[mmol/m^3]$',
                        r'Nitr $[mmol/m^3]$',

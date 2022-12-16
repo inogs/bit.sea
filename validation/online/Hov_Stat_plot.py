@@ -328,7 +328,7 @@ for ivar, var_mod in enumerate(VARLIST):
         pl.setp(xlabels, rotation=30, fontsize=15)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
-        for ax in axes[2:]: ax.set_xlim([T_start2num,timelabel_list[-1]])
+        for ax in axes[2:]: ax.set_xlim([T_start2num,T_end2num])
         ax5.xaxis.grid(True)
         ax6.xaxis.grid(True)
         ax7.xaxis.grid(True)

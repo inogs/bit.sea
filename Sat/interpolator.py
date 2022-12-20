@@ -28,6 +28,11 @@ def argument():
                                 required = True,
                                 help = ''' Path of the meshmask corresponding to output sat files'''
                                 )
+    parser.add_argument(   '--var', '-v',
+                                type = str,
+                                required = True,
+                                choices = ['CHL','KD490']
+                                )
 
     return parser.parse_args()
 
@@ -88,9 +93,9 @@ for filename in TL.filelist[rank::nranks]:
     exit_condition = os.path.exists(outfile) and (not reset)
     if exit_condition: 
         continue
-    Mfine = Sat.readfromfile(filename)
+    Mfine = Sat.readfromfile(filename, args.var)
     Mout, usedPoints  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END, min_cov=0.0, ave_func=Sat.mean)
-    Sat.dumpGenericNativefile(outfile, Mout, 'CHL', mesh=TheMask)
+    Sat.dumpGenericNativefile(outfile, Mout, args.var, mesh=TheMask)
     netcdf3.write_2d_file(usedPoints, 'Points', outfile, Mout)
 
     print("\tfile ", counter, " of ", MySize, " done by rank ", rank)

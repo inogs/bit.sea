@@ -44,10 +44,11 @@ OUTDIR = addsep(args.outdir)
 
 
 
-varLIST = ['chl','nit']
+varLIST = ['chl','nit','oxy']
 DICTvarname = {
     'chl': 'P_l',
     'nit': 'N3n',
+    'oxy': 'O2o',
 }
 
 TL = {}
@@ -65,6 +66,7 @@ TLmis = TimeList.fromfilenames(None, INDADIR,  \
 DICTlayers = {
     'chl': ['0-50','50-150'],
     'nit': ['0-50','50-150','300-400'],
+    'oxy': ['0-50','50-150','300-400'],
 }
 
 DICTlayer = {
@@ -89,6 +91,7 @@ for var in varLIST:
 DICTflagvar = {
     'chl': 0,
     'nit': 1,
+    'oxy': 2,
 }
 
 Ndates = TLmis.nTimes
@@ -97,6 +100,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
     print(misfile)
     req = requestors.Daily_req(datemis.year,datemis.month,datemis.day)
     misALL = np.loadtxt(misfile,skiprows=1)
+    if misALL.size == 0 : continue
     LIST = {}
     LISTq = {}
     for var in varLIST:
@@ -164,7 +168,10 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
             nprofexc = 0
         else:
             checkvar = np.loadtxt(txtvar,ndmin=2)
-            nobsexc = np.sum(checkvar[:,5])
+            if var == 'chl':
+                nobsexc=30
+            else:
+                nobsexc = np.sum(checkvar[:,5])
             nprofexc = checkvar.shape[0]
             nexc[var]+= 1
         LIST[var][3+Nlayers[var]] = nobsexc

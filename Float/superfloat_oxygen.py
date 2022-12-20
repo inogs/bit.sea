@@ -433,6 +433,8 @@ else:
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
     nFiles=INDEX_FILE.size
 
+    PROFILES_COR=[]
+
     for iFile in range(nFiles):
         timestr          = INDEX_FILE['date'][iFile].decode()
         lon              = INDEX_FILE['longitude' ][iFile]
@@ -446,13 +448,22 @@ else:
 
         if 'DOXY' not in available_params: continue
         p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-        wmo=p._my_float.wmo
-        OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
+        PROFILES_COR.append(p)
 
-        if wmo in OUT_O2o: continue
-        outfile = get_outfile(p,OUTDIR)
-        if p._my_float.status_var('DOXY')=='R': continue
+    OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
+    wmo_list= [p for p in bio_float.get_wmo_list(PROFILES_COR) if p not in OUT_O2o]
+    wmo_list.sort()
 
-        writing_mode=superfloat_generator.writing_mode(outfile)
-        metadata = Metadata(p._my_float.filename)
-        doxy_algorithm(p, outfile, metadata, writing_mode)
+    for wmo in wmo_list:
+        print (wmo, flush=True)
+
+        Hist_filtered_Profilelist, Dataset = load_history(wmo)
+        Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
+        Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
+        for ip, p in enumerate(Profilelist):
+            outfile = get_outfile(p,OUTDIR)
+            if p._my_float.status_var('DOXY')=='R': continue
+            writing_mode=superfloat_generator.writing_mode(outfile)
+            metadata = Metadata(p._my_float.filename)
+            doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
+

@@ -226,7 +226,7 @@ LEVELS=[0,50,100,150] #m
 
 
 PLOT_LIST = []
-StyleLIST = [':g',':y',':c','-b']
+StyleLIST = [':g',':y','-b']
 for ii,yy in enumerate(LISTyear):
     PLOT_LIST.append(plot_container(np.str(yy),StyleLIST[ii],PATH[yy],Mask24))
 

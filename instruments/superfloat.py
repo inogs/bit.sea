@@ -143,7 +143,7 @@ class BioFloat(Instrument):
             if ii.sum() > 0 :
                 shift=POC[ii].mean()
                 print( "POC: adding a shift of " + np.str(shift))
-                Profile = Profile - shift
+                Profile = POC - shift
                 ii=Profile<=0
                 Profile[ii] = 0.0
 

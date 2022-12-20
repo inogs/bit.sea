@@ -86,6 +86,7 @@ F2 = timelistcontainer(TI,INPUT_DIR, 'Validation_f3_*on_daily_Sat*', prefix=pref
 
 #alb swm1 swm2 nwm tyr1 tyr2 adr1 adr2 aeg ion1 ion2 ion3 lev1 lev2 lev3 lev4 med
 if args.var=='P_l':
+    title="Chlorophyll"
     varname='chlsup'
     EAN_BIAS_s = [0.06, 0.01, 0.005, 0.005, 0.005, 0.005, -0.01, -0.01, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
     EAN_BIAS_w = [0.10, 0.06, 0.06,  0.05,  0.03  , 0.03, 0.005,  0.01, 0.01 , 0.02 , 0.02 ,  0.02 , 0.03,  0.02, 0.02 , 0.01,  0.03]
@@ -93,6 +94,7 @@ if args.var=='P_l':
     EAN_RMSD_w = [0.15, 0.08, 0.08, 0.09, 0.05, 0.05, 0.03, 0.05, 0.04, 0.03, 0.03, 0.03, 0.04, 0.03, 0.02, 0.02, 0.05]
     EAN_RMSD_s = [0.10, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.005, 0.005, 0.01, 0.005, 0.005, 0.005, 0.01, 0.01]
 else:
+    title="Kd490"
     varname='kd490'
     EAN_BIAS_s = [0.002, 0.004, 0.006, 0.002, 0.004, 0.006,  0.001, 0.002, 0.003, 0.007, 0.007, 0.005, 0.006, 0.006, 0.007, 0.006, 0.005]
     EAN_BIAS_w = [-0.015, -0.007, -0.011, -0.017, -0.011, -0.008,  -0.008, -0.005, -0.004, -0.004, 0.001, -0.003, 0.002, 0.001, 0.003, 0.001, -0.005]
@@ -169,6 +171,7 @@ for isub, sub in enumerate(OGS.P):
 
     fig.subplots_adjust(hspace=0.1)
     pl.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+    fig.suptitle(title,fontsize=16)
     fig.savefig(outfile)
     pl.close(fig)
 

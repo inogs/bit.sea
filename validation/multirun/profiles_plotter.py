@@ -109,9 +109,9 @@ class figure_generator():
         
         self.LEFT_SIDE_AXES=[ax1, ax2, ax3, ax4]
         for iax, ax in enumerate(self.LEFT_SIDE_AXES):
-            if iax<len(self.LEFT_SIDE_AXES)-1:
+            if iax<len(self.LEFT_SIDE_AXES):
                 ax.set_xticks([])
-                ax.grid()
+
         
         ax_p = fig.add_subplot(122)
         title = "%s %s" %(var, subname)
@@ -146,50 +146,39 @@ class figure_generator():
             x=Left + (Right-Left)*0.03
             y=Top - (Top-Bottom)*0.05
             ax.text(x, y, title,fontsize=10,ha='left',va='top')
+            ax.grid()
     def add_legend(self):
         self.ax_p.legend()
         
                     
 ##### USER SETTINGS #######################################
-LOC="/marconi_work/OGS_dev_0/"
-LOC = '/gpfs/scratch/userexternal/'
+LOC="/g100_scratch/userexternal/gbolzon0/BI-HOURLY/"
 
-PATH6 = LOC + "DEGRADATION_4_70/CFR_PREVIOUS_RUNS/HC16/STAT_PROFILES/"
-PATH8 = LOC + "DEGRADATION_4_70/TEST_08/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH14= LOC + "DEGRADATION_4_70/TEST_14/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH16= LOC + "DEGRADATION_4_70/TEST_16/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-PATH17= LOC + "DEGRADATION_4_70/TEST_17/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/"
-
-PATH_05 = LOC + '/ateruzzi/MULTIVARIATE_24/STAT_PROFILES_TRANSITION/' + \
-    '/STAT_PROFILES/'
-# PATH_06 = LOC + '/ateruzzi//MULTIVARIATE_24/TEST_01/wrkdir/POSTPROC/' + \
-#     '/output/AVE_FREQ_1/STAT_PROFILES/'
-PATH_07 = LOC + '/ateruzzi//MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/' + \
-    '/output/AVE_FREQ_2/STAT_PROFILES/'
+PATH1 = LOC + "2H/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
+PATH2 = LOC + "4H/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
+PATH3 = LOC + "4H/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
+PATH4 = LOC + "24H_orig/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
 
 #Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
 #Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
 #Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
-# Mask24=Mask(LOC + "/gbolzon0/OPEN_BOUNDARY/TEST_06/wrkdir/MODEL/meshmask.nc",loadtmask=False)
-Mask24=Mask(LOC + "/ateruzzi//MULTIVARIATE_24/TEST_02/wrkdir/MODEL/meshmask.nc",loadtmask=False)
-OUTDIR= LOC + "/ateruzzi/ELAB_DAFloat_24/ProfilesCOMPARISONweekly_02/"
+
+Mask24=Mask(LOC + "2H/wrkdir/MODEL/meshmask.nc",loadtmask=False)
+OUTDIR= LOC + "multirun/spaghetti/offshore/"
 
 LEVELS=[0,50,100,150] #m
 
-#P14= plot_container('HC16_4_BFMv2', "r:"   ,PATH14, Mask_4)
-#P16= plot_container('HC16_4_bfmv5', "g"  , PATH16, Mask_4)
-#P17= plot_container('HC16_4_bfmv5_day_night', "k"  , PATH16, Mask_4)
-P05= plot_container('TRANS', "r"  , PATH_05, Mask24)
-# P06= plot_container('TEST_01', "b"  , PATH_06, Mask24)
-# P06b= plot_container('TEST_01', "ob"  , PATH_06, Mask24)
-P07= plot_container('TEST_02', "g"  , PATH_07, Mask24)
+P1= plot_container('2h', "r"   ,PATH1, Mask24)
+P2= plot_container('4h', "b:"  ,PATH2, Mask24)
+P3= plot_container('6h', "g"  , PATH3, Mask24)
+P4= plot_container('24h', "k"  , PATH4, Mask24)
 
-#PLOT_LIST=[P14,P16,P17]
-PLOT_LIST=[P05,P07]
+
+PLOT_LIST=[P1,P2,P3,P4]
 
 VARLIST=["P_l","N3n","N1p","N4n","N5s","P_c","O2o"]
-VARLIST=["N1p", "N3n", "N4n", "O2o", "P_l", "P_c", "DIC", "ppn", "ALK", "DIC", 'pH', "pCO2","exR2ac"]
-VARLIST=["O3h","O3c"]
+VARLIST=["N1p", "N3n", "N4n", "O2o", "P_l", "P_c", "DIC", "ppn", "ALK", "DIC", 'pH', "pCO2","O3c","O3h"]
+
 # VARLIST=["DIC","pH","Ac","pCO2"]
 # VARLIST_only_v5=['exPPYcR1', 'exPPYcR2','exPPYcR3','exPPYcR6',"resPPYc"]
 
@@ -202,7 +191,7 @@ for var in VARLIST[rank::nranks] :
     for iSub, sub in enumerate(V2.P):
         # if sub.name != "alb" : continue
         outfile = "%sMultirun_Profiles.%s.%s.png" %(OUTDIR,var,sub.name)
-        print outfile
+        print(outfile)
 
         FigureGenerator=figure_generator()
         fig, axes= FigureGenerator.gen_structure(var, sub.name,LEVELS)

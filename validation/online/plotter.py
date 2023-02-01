@@ -122,7 +122,7 @@ def figure_generator(Profilelist):
 
     ax2.plot(LonZ,LatZ,'r.',markersize=font_s2)
     ax2.plot(LonZ[0],LatZ[0],'bo',markersize=font_s2)
-    ax2.plot(LonZ[0],LatZ[0],'bx',markersize=font_s)
+    ax2.plot(LonZ[-1],LatZ[-1],'bx',markersize=font_s)
 
     ax2.set_position([0.90-deltax, b,deltax, deltax*mapobj_zoom.ymax/mapobj_zoom.xmax ])
 

@@ -21,7 +21,7 @@ mydtype= np.dtype([
           ('parameters','S200'),
           ('parameter_data_mode','S100')] )
 
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/"
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + CORIOLIS_DIR + "Float_Index.txt"
 
@@ -465,7 +465,7 @@ if __name__ == '__main__':
     from commons.time_interval import TimeInterval
     import sys
 
-    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/CORIOLIS/6902902/SR6902902_456.nc'
+    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/CORIOLIS/6902902/SR6902902_456.nc'
     F = BioFloat.from_file(f)
 
     Pres, values, valuesa, Qc, Qca =F.read_very_raw('TEMP')

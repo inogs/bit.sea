@@ -85,7 +85,7 @@ def figure_generator(Profilelist):
     ax1.set_position([l, b, 0.45, 0.45*mapobj.ymax/mapobj.xmax ])
     ax1.plot(LonN,LatN,'r.',markersize=font_s2)
     ax1.plot(LonN[0],LatN[0],'bo',markersize=font_s2)
-    ax1.plot(LonN[0],LatN[0],'bx')    
+    ax1.plot(LonN[-1],LatN[-1],'bx')
     parallels = np.arange(32.,46.,4)
     mapobj.drawparallels(parallels,labels=[1,0,0,1],linewidth=0.5, fontsize=13, dashes=[1,2], ax=ax1)
     meridians = np.arange(-4.,40,8.)
@@ -122,7 +122,7 @@ def figure_generator(Profilelist):
 
     ax2.plot(LonZ,LatZ,'r.',markersize=font_s2)
     ax2.plot(LonZ[0],LatZ[0],'bo',markersize=font_s2)
-    ax2.plot(LonZ[0],LatZ[0],'bx',markersize=font_s)
+    ax2.plot(LonZ[-1],LatZ[-1],'bx',markersize=font_s)
 
     ax2.set_position([0.90-deltax, b,deltax, deltax*mapobj_zoom.ymax/mapobj_zoom.xmax ])
 

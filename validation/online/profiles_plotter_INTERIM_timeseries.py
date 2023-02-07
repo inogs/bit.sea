@@ -20,6 +20,15 @@ def argument():
                                 name of last month that will be plotted alone
                                 EX: December 2022
                                 ''')
+    
+    parser.add_argument(   '--meshmask', '-m',
+                                type = str,
+                                required =True,
+                                help = '''
+                                meshmask
+                                ''')
+
+    
     return parser.parse_args()
 
 args = argument()
@@ -45,6 +54,7 @@ import matplotlib.dates as mdates
 INPUTDIR = addsep(args.inputdir)
 OUTPUTDIR = addsep(args.outdir)
 time_label = addsep(args.timelabel)
+meshmask= addsep(args.meshmask)
 
 VARLIST=["ALK","DIC","exR2ac","N1p","N3n","N4n","N5s","O2o","P_c","pCO2","pH","P_l","ppn",'Z_c']
 #xmldoc = minidom.parse(args.variables)
@@ -227,7 +237,7 @@ PATH_2020=INPUTDIR + '/' + np.str(2020) +'/'
 PATH_2021=INPUTDIR + '/' + np.str(2021) +'/'
 PATH_2022=INPUTDIR + '/' + np.str(2022) +'/'
 
-Mask24=Mask('/g100_scratch/userexternal/gcoidess/REANALISI_INTERIM/wrkdir/MODEL/meshmask.nc')
+Mask24=Mask(meshmask)
 
 LEVELS=[0,50,100,150] #m
 ncolors=19

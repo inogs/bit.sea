@@ -1,5 +1,28 @@
 import argparse
 
+import argparse
+
+def argument():
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required = True,
+                                help = 'The directory that contains pkl files')    
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                required = True,
+                                help = 'The directory which will contain spaghetti plot files')
+
+    parser.add_argument(   '--timelabel', '-t',
+                                type = str,
+                                required =True,
+                                help = '''
+                                name of last month that will be plotted alone
+                                EX: December 2022
+                                ''')
+    return parser.parse_args()
+
+args = argument()
 
 import matplotlib
 matplotlib.use("Agg")
@@ -19,10 +42,10 @@ import pylab as pl
 import matplotlib.cm as cm
 import matplotlib.dates as mdates
 
+INPUTDIR = addsep(args.inputdir)
+OUTPUTDIR = addsep(args.outdir)
+time_label = addsep(args.timelabel)
 
-INPUTDIR = '/g100_scratch/userexternal/gcoidess/MULTIPLOT/'
-OUTDIR = '/g100_scratch/userexternal/gcoidess/MULTIPLOT/OUTPUT_SEPTEMBER/'
-VARLIST= ['P_l','Z_c','P_c','DIC','ALK']
 VARLIST=["ALK","DIC","exR2ac","N1p","N3n","N4n","N5s","O2o","P_c","pCO2","pH","P_l","ppn",'Z_c']
 #xmldoc = minidom.parse(args.variables)
 
@@ -96,7 +119,7 @@ class plot_container():
     def plot_extra(self,axes_list,LEVELS,iSub):
         iCoast=1 #Open sea
 
-        axes_list[-1].plot(self.values[-1,iSub,iCoast,:,0],self.mask.zlevels, color='b',ls='--',label="September 2022")
+        axes_list[-1].plot(self.values[-1,iSub,iCoast,:,0],self.mask.zlevels, color='b',ls='--',label=time_label)
 
 class figure_generator():
     def __init__(self):

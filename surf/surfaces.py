@@ -221,7 +221,7 @@ def NITRCL(nit,maskobj,threshold=2.0):
     '''
 
     _,jpj,jpi = maskobj.shape
-    tmask = maskobj.mask_at_level(200)
+    tmask = maskobj.mask_at_level(0)
     DEPTHS = maskobj.bathymetry_in_cells()
     matrixNCL  = np.zeros((jpj,jpi))*np.nan
     matrixINCL = np.zeros((jpj,jpi))*np.nan
@@ -240,9 +240,7 @@ def NITRCL(nit,maskobj,threshold=2.0):
                         matrixINCL[jj,ji] = iid
                         break
                 
-    
-    matrixNCL[~tmask] = np.nan
-    matrixINCL[~tmask] = np.nan
+
     return matrixNCL,matrixINCL
 
 

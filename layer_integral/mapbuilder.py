@@ -181,6 +181,8 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer or a MapLayer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims ==2 :
+            return data_extractor.values
 
         if isinstance(layer, (Layer,)) :
             #Find Z indices
@@ -243,6 +245,9 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims ==2 :
+            return data_extractor.values
+
         if isinstance(layer, (Layer,)) :
             #Find Z indices
             top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
@@ -336,6 +341,9 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims == 2:
+            return data_extractor.values
+
         #Find Z indices
         if isinstance(layer, (Layer,)):
             top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]

@@ -22,7 +22,7 @@ mask200 = TheMask.mask_at_level(200)
 
 Nsub = len(OGS.P.basin_list)
 SUB = {}
-SUB['med'] = np.zeros((jpj,jpi),np.bool)
+SUB['med'] = np.zeros((jpj,jpi),bool)
 npointSub = {}
 npointSub['everywhere'] = np.zeros(Nsub)
 npointSub['open'] = np.zeros(Nsub)

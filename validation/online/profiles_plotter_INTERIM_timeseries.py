@@ -118,7 +118,7 @@ class plot_container():
         seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.ones_like(y,dtype=np.bool)
+        maskseas = np.ones_like(y,dtype=bool)
         #maskseas[sind] = True
         if self.label is not None:
             ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0),self.mask.zlevels, color=self.plotargs,label=self.label)

@@ -106,7 +106,7 @@ nFrames = model_TL.nTimes
 nSUB = len(OGS.P.basin_list)
 
 jpk,jpj,jpi =TheMask.shape
-dtype = [(sub.name, np.bool) for sub in OGS.P]
+dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
     print (sub.name)

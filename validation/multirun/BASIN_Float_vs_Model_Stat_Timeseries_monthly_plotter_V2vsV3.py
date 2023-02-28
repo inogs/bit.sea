@@ -133,7 +133,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 times = [req.time_interval.start_time for req in M.TL.getMonthlist()  ]
 ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
-ii = np.zeros((len(times),) , np.bool)
+ii = np.zeros((len(times),) , bool)
 for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 
 

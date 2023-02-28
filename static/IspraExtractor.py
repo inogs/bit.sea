@@ -108,7 +108,7 @@ class IspraExtractor():
         dataset = self.DATA[-1,good]
         
         nValues=values.size
-        Selected = np.zeros((nValues,),dtype=np.bool)
+        Selected = np.zeros((nValues,),dtype=bool)
         TIME     = np.zeros((nValues), dtype=np.int32)
         for i in range(nValues):
             time = datetime.datetime(year[i],month[i],day[i])

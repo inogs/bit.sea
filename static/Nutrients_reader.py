@@ -19,7 +19,7 @@ class NutrientsReader():
         # QC  section ----------------
         M = self.DataExtractor
         nvars, nData=M.DATA.shape
-        selected = np.ones((nData,),np.bool)
+        selected = np.ones((nData,),bool)
 
         dataset = self.DataExtractor.DATA[-1,:]
         id_dataset= find_index('Barney',self.DataExtractor.CRUISES)

@@ -122,7 +122,7 @@ if isLOV:
     REMOVING_LIST.append("6901772/output_lovbio092e_000_00.nc") #non mi fido di time, lat,lon
     REMOVING_LIST.append("6902900/output_lovbio091e_000_00.nc")
     
-    good=np.ones((nFiles,),np.bool)
+    good=np.ones((nFiles,),bool)
     for f in REMOVING_LIST:
         ii=INDEX_FILE['file_name']=="6901772/output_lovbio092e_000_00.nc"
         good[ii]=False
@@ -175,7 +175,7 @@ for wmo in WMOS:
                 break
 
 
-good = np.ones((nFiles),np.bool)
+good = np.ones((nFiles),bool)
 LINES=[]
 for iFile in range(nFiles):
     if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile].decode() in REMOVING_LIST:

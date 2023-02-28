@@ -96,7 +96,7 @@ def interpOnV1(CHL_16,bathy_threshold = 0):
                 condition = True
             if batgoods.sum() == 2:
                 diag1 = batgoods.diagonal()
-                diag2 = np.array([batgoods[0,1], batgoods[1,0]],np.bool)
+                diag2 = np.array([batgoods[0,1], batgoods[1,0]],bool)
                 if (diag1.all()) | (diag2.all()) :
                     condition=True
 

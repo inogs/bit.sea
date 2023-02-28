@@ -35,19 +35,19 @@ MEDmask[:, Lon < -5.3] = False# Atlantic buffer
 if (nav_lev.max() > 200.0):
     mask200_2D   = TheMask.mask_at_level(200.0)
     #mask200_2D[Lon < -5.3] = False # Atlantic buffer
-    mask200_3D = np.zeros((jpk,jpj,jpi),dtype=np.bool)
+    mask200_3D = np.zeros((jpk,jpj,jpi),dtype=bool)
     for i in range(jpk):
         mask200_3D[i,:,:]=mask200_2D
 
 if annaCoast:
     # Read k means class for coastal areas
     kcoastmask = np.load(kcoastfile)
-    kmask1_2D =  np.zeros((jpj,jpi),dtype=np.bool)
+    kmask1_2D =  np.zeros((jpj,jpi),dtype=bool)
     kmask1_2D[kcoastmask==1] = True
-    kmask2_2D =  np.zeros((jpj,jpi),dtype=np.bool)
+    kmask2_2D =  np.zeros((jpj,jpi),dtype=bool)
     kmask2_2D[kcoastmask==2] = True
-    kmask1 =  np.zeros((jpk,jpj,jpi),dtype=np.bool)
-    kmask2 =  np.zeros((jpk,jpj,jpi),dtype=np.bool)
+    kmask1 =  np.zeros((jpk,jpj,jpi),dtype=bool)
+    kmask2 =  np.zeros((jpk,jpj,jpi),dtype=bool)
     for i in range(jpk):
         kmask1[i,:,:] = kmask1_2D
         kmask2[i,:,:] = kmask2_2D
@@ -56,7 +56,7 @@ if annaCoast:
 COASTNESS_LIST=['coast', 'open_sea','everywhere']
 if annaCoast: COASTNESS_LIST=['coast','open_sea','everywhere','coast1','coast2']
     
-COASTNESS = np.ones((jpk,jpj,jpi) ,dtype=[(coast,np.bool) for coast in COASTNESS_LIST])
+COASTNESS = np.ones((jpk,jpj,jpi) ,dtype=[(coast,bool) for coast in COASTNESS_LIST])
 if (nav_lev.max() > 200.0):
     COASTNESS['open_sea']  =  mask200_3D;
     COASTNESS['coast']     = ~mask200_3D;
@@ -74,7 +74,7 @@ if annaCoast:
     Bottom_list =[200, 6000]
 
 
-DEPTH  = np.zeros((jpk,jpj,jpi),dtype=[(depth,np.bool) for depth in DEPTHlist])
+DEPTH  = np.zeros((jpk,jpj,jpi),dtype=[(depth,bool) for depth in DEPTHlist])
 tk_top = 0
 for idepth, depth in enumerate(DEPTHlist):
     tk_bottom = TheMask.getDepthIndex(Bottom_list[idepth])+1

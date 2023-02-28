@@ -56,7 +56,7 @@ def get_nitrate(timeobj,lat,lon, pres,temp, psal, doxy):
     inval  = np.ones((nol,ni,noparsets), np.float32)*np.nan
 
     for l in range(noparsets):
-        nlayerflag=1+np.bool(inwgts[1,l])
+        nlayerflag=1+bool(inwgts[1,l])
         nl1=int(inwgts[0,l])
         nl2=int(inwgts[1,l])
         beta=inwgts[2,l]

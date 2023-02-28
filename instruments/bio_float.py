@@ -264,7 +264,7 @@ class BioFloat(Instrument):
             return pres, prof, qc
 
         if var in ['TEMP','PSAL']:
-            good = np.ones_like(pres, dtype=np.bool)
+            good = np.ones_like(pres, dtype=bool)
         else:
             good = (qc==1) | (qc ==2 ) | (qc==5) | (qc==8)
         pres = pres[good]

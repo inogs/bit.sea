@@ -270,7 +270,7 @@ def nan_compare(array_with_nan,operator, value):
     '''
 
     ii = np.isnan(array_with_nan)
-    out = np.zeros(array_with_nan.shape, np.bool)
+    out = np.zeros(array_with_nan.shape, bool)
     if operator=='>'  : out[~ii] = array_with_nan[~ii] >  value
     if operator=='>=' : out[~ii] = array_with_nan[~ii] >= value
     if operator=='< ' : out[~ii] = array_with_nan[~ii] <  value

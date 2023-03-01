@@ -207,20 +207,25 @@ def MWB2(chl,maskobj):
     return matrixMWB,matrixIMWB,matrixCMWB,matrixI9MWB
 
 
-def NITRCL(nit,maskobj):
+def NITRCL(nit,maskobj,threshold=2.0):
     '''
+    Arguments:
+    * nit     *  3d array of nitrate
+    * maskobj *  mask object
     Calculates of nitracline depth
     based on criteria p>=2
 
+    Returns:
+    * matrixNCL   * 2d array of depths (the actual nitracline)
+    * matrixINCL  * 2d array of indexes of depth
     '''
+
     _,jpj,jpi = maskobj.shape
-    tmask = maskobj.mask_at_level(200)
-    # indlev = maskobj.getDepthIndex(0)
+    tmask = maskobj.mask_at_level(0)
     DEPTHS = maskobj.bathymetry_in_cells()
-    matrixNCL = np.zeros((jpj,jpi))
-    matrixNCL[:,:] = np.nan
-    matrixINCL = np.zeros((jpj,jpi))
-    matrixINCL[:,:] = np.nan
+    matrixNCL  = np.zeros((jpj,jpi))*np.nan
+    matrixINCL = np.zeros((jpj,jpi))*np.nan
+
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -229,15 +234,13 @@ def NITRCL(nit,maskobj):
                 profile = nit[:profile_len,jj,ji]
                 depths = maskobj.zlevels[:profile_len]
                 for iid, dd in enumerate(profile):
-                    if (dd>=2) and (depths[iid]>30):
+                    if (dd>=threshold) and (depths[iid]>30):
                         NCL = depths[iid]
                         matrixNCL[jj,ji] = NCL
                         matrixINCL[jj,ji] = iid
                         break
                 
-    
-    matrixNCL[~tmask] = np.nan
-    matrixINCL[~tmask] = np.nan
+
     return matrixNCL,matrixINCL
 
 

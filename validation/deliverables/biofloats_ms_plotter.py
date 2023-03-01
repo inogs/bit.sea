@@ -123,7 +123,7 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
         tick.label.set_fontsize(16)
     for l in ax2.get_yticklabels() : l.set_fontsize(16)
 
-    ii = np.zeros((len(times),) , np.bool)
+    ii = np.zeros((len(times),) , bool)
     for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
     biasm = np.nanmean(bias1[ii])
     rmsem = np.nanmean(rmse1[ii])

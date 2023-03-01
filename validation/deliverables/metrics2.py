@@ -34,7 +34,11 @@ def MLD(Temperature,Salinity,Pres):
         '''
         th=10 #threshold of depth minimum
         i_less_than_10=Pres<th
+<<<<<<< HEAD
         i_10=i_less_than_10[-1] + 1 #(this is the index corresponding approx ~10m of the zlevel array) 
+=======
+        i_10=i_less_than_10[-1] + 1 # (this is the index corresponding approx ~10m of the zlevel array)
+>>>>>>> 0b778872db97e4a3cc1c45d8c0e267f4b512fbef
         MLD = np.nan
         T = Temperature
         S = Salinity

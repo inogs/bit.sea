@@ -7,7 +7,7 @@ import numpy as np
 
 OUTDIR = '/gpfs/scratch/userexternal/ateruzzi/MASKS24/'
 
-already_assigned=np.zeros(TheMask.shape,dtype=np.bool)
+already_assigned=np.zeros(TheMask.shape,dtype=bool)
 
 for sub in OGS.Pred.basin_list:
     S=SubMask(sub,maskobject=TheMask)

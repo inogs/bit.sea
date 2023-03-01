@@ -117,7 +117,7 @@ class plot_container():
         seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.zeros_like(y,dtype=np.bool)
+        maskseas = np.zeros_like(y,dtype=bool)
         maskseas[sind] = True
         ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0), \
                 self.mask.zlevels, self.plotargs, \

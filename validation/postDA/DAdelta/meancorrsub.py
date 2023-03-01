@@ -51,7 +51,7 @@ OUT_DIR = addsep(args.outputdir)
 TheMask = Mask(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 
-dtype = [(sub.name, np.bool) for sub in OGS.P]
+dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 0 
 for sub in OGS.Pred:

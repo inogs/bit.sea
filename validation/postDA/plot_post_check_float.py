@@ -169,7 +169,7 @@ for il,ll in enumerate(CHLlist):
     arraymis = np.array(LISTchl[3+il])
     for mreq in MonthList:
         mind,_ = TL['P_l'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm = np.zeros(Ntot,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arraymis[maskm]))
 
@@ -188,7 +188,7 @@ arrayobs = np.array(LISTchl[2])
 arrayobsexc = np.array(LISTchl[5])
 for mreq in MonthList:
     mind,_ = TL['P_l'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
+    maskm = np.zeros(Ntot,dtype=bool)
     maskm[mind] = True
     percused = np.nansum(arrayobs[maskm])/  \
         (np.nansum(arrayobs[maskm])+np.nansum(arrayobsexc[maskm])) * 100.
@@ -205,7 +205,7 @@ arrayprof = np.array(LISTchl[1])
 arrayprofexc = np.array(LISTchl[6])
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
+    maskm = np.zeros(Ntot,dtype=bool)
     maskm[mind] = True
     nexcprofm = np.nansum(arrayprofexc[maskm])
     nprofm = np.nansum(arrayprof[maskm])
@@ -234,7 +234,7 @@ for il,ll in enumerate(NITlist):
     arraymis = np.array(LISTnit[3+il])
     for mreq in MonthList:
         mind,_ = TL['N3n'].select(mreq)
-        maskm = np.zeros(Ntot,dtype=np.bool)
+        maskm = np.zeros(Ntot,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arraymis[maskm]))
 
@@ -250,7 +250,7 @@ plt.sca(axs[1])
 LISTpercm = []
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
+    maskm = np.zeros(Ntot,dtype=bool)
     maskm[mind] = True
     percused = np.nansum(np.array(LISTnit[2])[maskm])*1./  \
         (np.nansum(np.array(LISTnit[2])[maskm])+np.nansum(np.array(LISTnit[6])[maskm])) * 100.
@@ -266,7 +266,7 @@ LISTprofexcN = []
 
 for mreq in MonthList:
     mind,_ = TL['N3n'].select(mreq)
-    maskm = np.zeros(Ntot,dtype=np.bool)
+    maskm = np.zeros(Ntot,dtype=bool)
     maskm[mind] = True
     nprofm = np.nansum(np.array(LISTnit[1])[maskm])
     nexcprofm = np.nansum(np.array(LISTnit[7])[maskm])
@@ -465,7 +465,7 @@ for il,ll in enumerate(CHLlist):
     arrayrms = np.array(RMSDchl[1+il])
     for mreq in MonthList:
         mind,_ = TLq['P_l'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
+        maskm = np.zeros(Ntotq,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -495,7 +495,7 @@ for il,ll in enumerate(NITlist):
     arrayrms = np.array(RMSDnit[1+il])
     for mreq in MonthList:
         mind,_ = TLq['N3n'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
+        maskm = np.zeros(Ntotq,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -525,7 +525,7 @@ for il,ll in enumerate(CHLlist):
     arrayrms = np.array(BIASchl[1+il])
     for mreq in MonthList:
         mind,_ = TLq['P_l'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
+        maskm = np.zeros(Ntotq,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 
@@ -555,7 +555,7 @@ for il,ll in enumerate(NITlist):
     arrayrms = np.array(BIASnit[1+il])
     for mreq in MonthList:
         mind,_ = TLq['N3n'].select(mreq)
-        maskm = np.zeros(Ntotq,dtype=np.bool)
+        maskm = np.zeros(Ntotq,dtype=bool)
         maskm[mind] = True
         LISTmonthly.append(np.nanmean(arrayrms[maskm]))
 

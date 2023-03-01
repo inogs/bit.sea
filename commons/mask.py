@@ -15,9 +15,9 @@ class Mask(object):
             if (maskvarname in dset.variables) and (loadtmask):
                 m = dset.variables[maskvarname]
                 if len(m.shape) == 4:
-                    self._mask = np.array(m[0,:,:,:], dtype=np.bool)
+                    self._mask = np.array(m[0,:,:,:], dtype=bool)
                 elif len(m.shape) == 3:
-                    self._mask = np.array(m[:,:,:], dtype=np.bool)
+                    self._mask = np.array(m[:,:,:], dtype=bool)
                 else:
                     raise ValueError("Wrong shape: %s" % (m.shape,))
                 self._shape = self._mask.shape
@@ -294,7 +294,7 @@ class Mask(object):
         New_mask = copy.copy(self)
 
         _,jpj,jpi = self.shape
-        red_mask = np.zeros((1,jpj,jpi),dtype=np.bool)
+        red_mask = np.zeros((1,jpj,jpi),dtype=bool)
         red_mask[0,:,:] = self._mask[index,:,:]
         New_mask._mask = red_mask
 

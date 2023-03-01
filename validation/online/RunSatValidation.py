@@ -74,7 +74,7 @@ TheMask=Mask(args.maskfile)
 nSUB = len(OGS.P.basin_list)
 jpk,jpj,jpi =TheMask.shape
 mask200_2D = TheMask.mask_at_level(200.0)
-dtype = [(sub.name, np.bool) for sub in OGS.P]
+dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 
 for sub in OGS.Pred:
@@ -84,7 +84,7 @@ for sub in OGS.Pred:
 
 COASTNESS_LIST=['coast','open_sea','everywhere']
 
-dtype = [(coast, np.bool) for coast in COASTNESS_LIST]
+dtype = [(coast, bool) for coast in COASTNESS_LIST]
 COASTNESS = np.ones((jpj,jpi),dtype=dtype)
 COASTNESS['coast']     = ~mask200_2D
 COASTNESS['open_sea']  =  mask200_2D

@@ -122,7 +122,7 @@ def write_eof(outfile,eofp,eofa):
 
 
 AREASlist = [sub.name for sub in OGS.Pred]
-dtype = [(sub.name, np.bool) for sub in OGS.Pred]
+dtype = [(sub.name, bool) for sub in OGS.Pred]
 SUBareas = np.zeros((jpj,jpi),dtype=dtype)
 SUBtot = np.zeros((jpj,jpi),np.int)
 for isub,sub in enumerate(OGS.Pred):

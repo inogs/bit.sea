@@ -53,7 +53,7 @@ class SubMask(Mask):
                 sbmask=(self._xlevels>=rect.lonmin) & (self._xlevels <=rect.lonmax) & (self._ylevels>=rect.latmin) & (self._ylevels <=rect.latmax)
             else: # algorithm for generic basin
                 if  hasattr(basin.region,'border_longitudes'): #optimized
-                    sbmask = np.zeros((jpj,jpi),np.bool)
+                    sbmask = np.zeros((jpj,jpi),bool)
                     lonmin=min(basin.region.border_longitudes) -0.1
                     lonmax=max(basin.region.border_longitudes) +0.1
                     latmin=min(basin.region.border_latitudes)  -0.1
@@ -81,7 +81,7 @@ class SubMask(Mask):
 
     def standard_method(self, maskobject, basin):
         _,jpj,jpi = self.shape
-        sbmask = np.zeros((jpj,jpi),np.bool)
+        sbmask = np.zeros((jpj,jpi),bool)
         for i in range(jpi):
             for j in range(jpj):
                 lon,lat = maskobject.convert_i_j_to_lon_lat(i,j)
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     TheMask=Mask('/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_872.nc')
     from basins import V2
 
-    already_assigned=np.zeros(TheMask.shape,dtype=np.bool)
+    already_assigned=np.zeros(TheMask.shape,dtype=bool)
 
     for sub in V2.Pred.basin_list:
         S=SubMask(sub,maskobject=TheMask)

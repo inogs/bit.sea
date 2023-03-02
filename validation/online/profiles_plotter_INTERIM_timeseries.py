@@ -3,6 +3,12 @@ import argparse
 import argparse
 
 def argument():
+    parser = argparse.ArgumentParser(description = '''
+
+    script for image generation
+
+    ''')
+
     parser.add_argument(   '--inputdir', '-i',
                                 type = str,
                                 required = True,
@@ -20,15 +26,6 @@ def argument():
                                 name of last month that will be plotted alone
                                 EX: December 2022
                                 ''')
-    
-    parser.add_argument(   '--meshmask', '-m',
-                                type = str,
-                                required =True,
-                                help = '''
-                                meshmask
-                                ''')
-
-    
     return parser.parse_args()
 
 args = argument()
@@ -52,9 +49,8 @@ import matplotlib.cm as cm
 import matplotlib.dates as mdates
 
 INPUTDIR = addsep(args.inputdir)
-OUTPUTDIR = addsep(args.outdir)
-time_label = addsep(args.timelabel)
-meshmask= addsep(args.meshmask)
+OUTDIR = addsep(args.outdir)
+time_label = args.timelabel
 
 VARLIST=["ALK","DIC","exR2ac","N1p","N3n","N4n","N5s","O2o","P_c","pCO2","pH","P_l","ppn",'Z_c']
 #xmldoc = minidom.parse(args.variables)
@@ -118,7 +114,7 @@ class plot_container():
         seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.ones_like(y,dtype=bool)
+        maskseas = np.ones_like(y,dtype=np.bool)
         #maskseas[sind] = True
         if self.label is not None:
             ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0),self.mask.zlevels, color=self.plotargs,label=self.label)
@@ -129,7 +125,7 @@ class plot_container():
     def plot_extra(self,axes_list,LEVELS,iSub):
         iCoast=1 #Open sea
 
-        axes_list[-1].plot(self.values[-1,iSub,iCoast,:,0],self.mask.zlevels, color='b',ls='--',label=time_label)
+        axes_list[-1].plot(self.values[-1,iSub,iCoast,:,0],self.mask.zlevels, color='orange',ls='--',label=time_label)
 
 class figure_generator():
     def __init__(self):
@@ -236,8 +232,8 @@ PATH_2019=INPUTDIR + '/' + np.str(2019) +'/'
 PATH_2020=INPUTDIR + '/' + np.str(2020) +'/'
 PATH_2021=INPUTDIR + '/' + np.str(2021) +'/'
 PATH_2022=INPUTDIR + '/' + np.str(2022) +'/'
-
-Mask24=Mask(meshmask)
+PATH_2023=INPUTDIR + '/' + np.str(2023) +'/'
+Mask24=Mask('/g100_scratch/userexternal/gcoidess/NEW_REA_24/wrkdir/bit.sea/validation/online/meshmask.nc')
 
 LEVELS=[0,50,100,150] #m
 ncolors=19
@@ -253,6 +249,7 @@ PLOT_LIST.append(plot_container('2019',COLOR[18],PATH_2019,Mask24,'1999-2019'))
 PLOT_LIST.append(plot_container('2020','r',PATH_2020,Mask24,'2020'))
 PLOT_LIST.append(plot_container('2021','g',PATH_2021,Mask24,'2021'))
 PLOT_LIST.append(plot_container('2022','b',PATH_2022,Mask24,'2022'))
+PLOT_LIST.append(plot_container('2023','orange',PATH_2023,Mask24,'2023'))
 
 #NN = xmldoc.getElementsByTagName("LayersMaps")
 #MM = NN[0].getElementsByTagName("plots")

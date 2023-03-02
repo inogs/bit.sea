@@ -24,7 +24,7 @@ def argument():
                                 help = ''' Input model dir, where P_l files are, usually ../wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/'''
                                 )
     parser.add_argument(   '--outfile', '-o',
-                                type = str,
+                                type= str,
                                 required = True,
                                 default = 'export_data_ScMYValidation_plan.pkl',
                                 help = 'Output pickle file')
@@ -37,8 +37,16 @@ def argument():
                                 required = True,
                                 choices = ['coast','open_sea','everywhere'],
                                 help = 'definition of mask to apply to the statistics')
-
-
+    parser.add_argument(   '--datestart', '-t',
+                                type = str,
+                                required =True,
+                                help = ''' Date start for time interval to consider for validation, format %Y%m%d'''
+                                )
+    parser.add_argument(   '--dateend', '-e',
+                                type = str,
+                                required =True,
+                                help = ''' Date end for time interval to consider for validation,format %Y%m%d'''
+                                )
 
     return parser.parse_args()
 
@@ -61,7 +69,7 @@ from basins import V2 as OGS
 from commons.layer import Layer
 from commons.utils import addsep
 import pickle
-from profiler import DATESTART, DATE__END
+#from profiler import DATESTART, DATE__END
 
 def weighted_mean(Conc, Weight):
 
@@ -76,18 +84,19 @@ Sup_mask = TheMask.cut_at_level(0)
 MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
+Timestart=args.datestart
+Time__end=args.dateend
 
-
-#Timestart="20210301"
-#Time__end="20211201"
-Timestart=DATESTART
-Time__end=DATE__END
+#mestart="20200101"
+#ime__end="20240101"
+#Timestart=DATESTART
+#Time__end=DATE__END
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
 print (TI)
 dateformat ="%Y%m%d"
 #dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"ave." + Timestart[0:6] + "*P_l.nc")
 print (sat_TL.Timelist)  
 print (" " )
 print (model_TL.Timelist)
@@ -98,7 +107,7 @@ nFrames = model_TL.nTimes
 nSUB = len(OGS.P.basin_list)
 
 jpk,jpj,jpi =TheMask.shape
-dtype = [(sub.name, bool) for sub in OGS.P]
+dtype = [(sub.name, np.bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
     print (sub.name)

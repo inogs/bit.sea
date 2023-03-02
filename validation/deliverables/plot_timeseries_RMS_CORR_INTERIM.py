@@ -69,6 +69,7 @@ SAT___MEAN=LIST[4]
 MODEL_STD = LIST[7]
 SAT___STD = LIST[8]
 BGC_CLASS4_CHL_CORR_SURF_BASIN= LIST[9]
+BGC_CLASS4_CHL_POINTS_SURF_BASIN= LIST[10]
 
 from basins import V2 as OGS
 
@@ -88,17 +89,33 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
     pl.ylim(-0.3, 0.3)
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30,fontsize=9)
+    pl.setp(xlabels, rotation=30,fontsize=11)
     ylabels = ax.get_yticklabels()
     pl.setp(ylabels, fontsize=10)
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
     outfilename="%s%s-RMS-BIAS_%s.png"  %(OUTDIR, args.var, sub.name) #  args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
     pl.savefig(outfilename)
+    pl.close(fig)
+
+# Histogram for number of obs:
+w = 0.9 # bar width
+for isub,sub in enumerate(OGS.P):
+    print (sub.name)
+    fig, ax = pl.subplots()
+    ax.bar(TIMES,BGC_CLASS4_CHL_POINTS_SURF_BASIN[:,isub],width=5, bottom=0, align="center", color="grey")
+    ax.set_ylabel('# of points',fontsize=14)
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2)) #(byweekday=0, interval=2))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+    xlabels = ax.get_xticklabels()
+    pl.setp(xlabels, rotation=30,fontsize=11)
+    outfile= args.outdir + "/ValidPoints_SATchlsup_validation_" + sub.name + ".png"
+    print (outfile)
+    fig.savefig(outfile)
     pl.close(fig)
 
 

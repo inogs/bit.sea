@@ -16,7 +16,8 @@ INPUT_AGGR_DIR=/g100_scratch/userexternal/gcoidess/NEW_REA_24/wrkdir/POSTPROC/ou
 
 
 # SAT validation:
-mkdir -p Chla_SAT/Tserie Chla_SAT/offshore Chla_SAT/coast Chla_SAT/table/table_CHLA_offshore Chla_SAT/table/table_CHLA_coast 
+#mkdir -p Chla_SAT/Tserie Chla_SAT/offshore Chla_SAT/coast Chla_SAT/table/table_CHLA_offshore Chla_SAT/table/table_CHLA_coast 
+mkdir -p Chla_SAT/Tserie Chla_SAT/offshore Chla_SAT/coast 
 SAT_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/CHL/DT/WEEKLY_4_24/
 
 OUTDIR=tmp_WEEK/
@@ -26,12 +27,14 @@ python ScMYvalidation_plan_STD_CORR_valid.py  -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_
 python ScMYvalidation_plan_STD_CORR_valid.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE -c coast      -o export_data_ScMYValidation_plan_coast_STD_CORR.pkl # -v "chl" -l 10
 
 ##########
-python plot_timeseries_STD.py -v chl -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o ./Chla_SAT/Tserie/ 
+python plot_timeseries_STD_INTERIM.py  -v chl -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o ./Chla_SAT/Tserie/ 
 
 # CHL-SURF-W-CLASS4-SIMG-BIAS-BASIN
-python plot_timeseries_RMS_CORR.py -v chl -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o Chla_SAT/offshore  # table4.1 ./Chla_SAT/offshore_LONG ./Chla_SAT/coast_LONG
-python plot_timeseries_RMS_CORR.py -v chl -i export_data_ScMYValidation_plan_coast_STD_CORR.pkl    -o Chla_SAT/coast  
+python plot_timeseries_RMS_CORR_INTERIM.py -v chl -i export_data_ScMYValidation_plan_open_sea_STD_CORR.pkl -o Chla_SAT/offshore  # table4.1 ./Chla_SAT/offshore_LONG ./Chla_SAT/coast_LONG
+python plot_timeseries_RMS_CORR_INTERIM.py -v chl -i export_data_ScMYValidation_plan_coast_STD_CORR.pkl    -o Chla_SAT/coast  
 
+# Copy the output in the folder for the Medeaf webpage (A.Brosich take care of it)
+# cp -pr Chla_SAT /g100_scratch/userexternal/lfeudale/PNG_NEW_REAN/.
 
 exit 0
 
@@ -54,3 +57,6 @@ mkdir -p $OUTFIGDIR $TABLE_DIR #table4.3/ table4.9/ table4.12/ Fig4.5/ Fig4.14/ 
 python biofloats_ms.py  -m $MASKFILE -o float_bias_rmse.nc
 python biofloats_ms_plotter.py -i float_bias_rmse.nc -f $OUTFIGDIR -t $TABLE_DIR
 
+# Copy the outputs in the folder for the Medeaf webpage (A.Brosich take care of it)
+# cp -pr Floats_bias_rmse_Timeseries  /g100_scratch/userexternal/lfeudale/PNG_NEW_REAN/.
+# cp -pr Hovmoeller_plots /g100_scratch/userexternal/lfeudale/PNG_NEW_REAN/.

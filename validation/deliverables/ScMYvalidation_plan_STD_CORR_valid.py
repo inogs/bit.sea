@@ -96,7 +96,7 @@ print (TI)
 dateformat ="%Y%m%d"
 #dateformat ="%Y%m_d"
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
-model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"ave." + Timestart[0:6] + "*P_l.nc")
+model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"ave.*P_l.nc")
 print (sat_TL.Timelist)  
 print (" " )
 print (model_TL.Timelist)

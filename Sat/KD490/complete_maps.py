@@ -69,7 +69,7 @@ _,jpj,jpi = TheMask.shape
 
 tmaskS = TheMask.mask[0,:,:]
 
-filelist = glob.glob(WEEKLY_DIR + '/*_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v02.nc')
+filelist = glob.glob(WEEKLY_DIR + '/*_cmems_obs-oc_med_bgc-transp_myint_l3-multi-1km_P1D.nc')
 filelist.sort()
 
 # indexes to recontruct maps
@@ -98,7 +98,7 @@ for infile in filelist:
     nump = np.sum(maskk)
     print(nump)
     mstr = os.path.basename(infile)[0:6]
-    filemonth = MONTHLY_DIR + '/' + mstr + '_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v02.nc'
+    filemonth = MONTHLY_DIR + '/' + mstr + '_cmems_obs-oc_med_bgc-transp_myint_l3-multi-1km_P1D.nc'
     Km = NC4.Dataset(filemonth,'r')
     kmnth = np.array(Km.variables['KD490'][0,:,:])
     kext[maskk] = kmnth[maskk]

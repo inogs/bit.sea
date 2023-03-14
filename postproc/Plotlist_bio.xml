@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+
+<LayersMaps>
+
+<!--  N1p -->
+<plots var="N1p" units="mmolP/m3" plotunits="mmol m$^{-3}$"  name="PO4" longname='Phosphate' >
+<depth top= "0000" bottom="0010"  clim="[0,0.15]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,0.15]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,0.15]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,0.15]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,0.35]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,0.35]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,0.35]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,0.35]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,0.35]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,0.35]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,0.35]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,0.35]"> </depth>
+</plots>
+
+<!--  N3n -->
+<plots var="N3n" units="mmolN/m3" plotunits="mmol m$^{-3}$" name="NO3" longname='Nitrate'>
+<depth top= "0000" bottom="0010"  clim="[0,5]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,5]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,5]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,5]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,10]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,10]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,10]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,10]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,10]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,10]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,10]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,10]"> </depth>
+</plots>
+
+<!--  O2o -->
+<plots var="O2o" units="mmolO/m3" plotunits="mmol m$^{-3}$" name="O2" longname="Oxygen">
+<depth top= "0000" bottom="0010"  clim="[180,260]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[180,260]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[180,260]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[180,260]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[180,260]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[180,260]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[180,260]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[180,260]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[180,260]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[180,260]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[180,260]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[180,260]"> </depth>
+</plots>
+
+
+<!--  Pc -->
+<plots var="P_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="PhytoC" longname="Phytoplankton biomass">
+<depth top= "0000" bottom="0010"  clim="[0,30]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,30]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,30]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,30]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,30]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,30]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,30]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,30]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,30]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,30]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,30]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,30]"> </depth>
+</plots>
+
+
+<!--  Pi -->
+<plots var="P_l" units="mgCHLa/m3" plotunits="mg m$^{-3}$" name="Chla" longname="Chlorophyll" >
+<depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,1]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,1]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,1]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,1]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,1]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,1]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,1]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,1]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,1]"> </depth>
+</plots>
+
+<!--  PPN -->
+<plots var="ppn" units="mgC/m3/d" plotunits="mgC m$ ^{-3}$ d$^{-1}$" name="NPP" longname="Net Primary Production">
+<depth top= "0000" bottom="0010"  clim="[0,50]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,50]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,50]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,50]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,50]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,50]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,50]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,50]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,50]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,50]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,50]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,50]"> </depth>
+</plots>
+
+<!--  PH @ insitu total scale -->
+<plots var="pH" units="@Tinsitu, Total Scale" plotunits="Total Scale" name="pH" longname="Seawater acidity">
+<depth top= "0000" bottom="0010"  clim="[7.95,8.25]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[7.95,8.25]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[7.95,8.25]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[7.95,8.25]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[7.95,8.25]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[7.95,8.25]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[7.95,8.25]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[7.95,8.25]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[7.95,8.25]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[7.95,8.25]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[7.95,8.25]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[7.95,8.25]"> </depth>
+</plots>
+
+<!--  pCO2 -->
+<plots var="pCO2" units="uatm" plotunits="$\mu$ atm "  name="pCO2" longname="Seawater pCO2">
+<depth top= "0000" bottom="0010"  clim="[200,550]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[200,550]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[200,550]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[200,550]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[200,550]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[200,550]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[200,550]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[200,550]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[200,550]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[200,550]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[200,550]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[200,550]"> </depth>
+</plots>
+
+
+<!--  DIC -->
+<plots var="DIC" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="DIC" longname="Dissolved inorganic Carbon">
+<depth top= "0000" bottom="0010"  clim="[2120,2340]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[2120,2340]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[2120,2340]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[2120,2340]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[2120,2340]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[2250,2340]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[2250,2340]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[2250,2340]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[2250,2340]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[2250,2340]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[2250,2340]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[2250,2340]"> </depth>
+</plots>
+
+<!--  ALK -->
+<plots var="ALK" units="umol/kg " plotunits="$\mu$ mol kg$^{-1}$" name="Alk" longname="Alkalinity">
+<depth top= "0000" bottom="0010"  clim="[2350,2730]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[2350,2730]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[2350,2730]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[2350,2730]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[2350,2730]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[2350,2730]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[2500,2700]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[2500,2700]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[2500,2700]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[2500,2700]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[2500,2700]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[2500,2700]"> </depth>
+</plots>
+
+<!--  Zc -->
+<plots var="Z_c" units="mgC/m3" plotunits="mgC m$^{-3}$" name="ZooC" longname="Zooplankton biomass">
+<depth top= "0000" bottom="0010"  clim="[0,30]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,30]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,30]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,30]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,10]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,10]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,10]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,10]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,10]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,10]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,10]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,10]"> </depth>
+</plots>
+
+<!--  N4n -->
+<plots var="N4n" units="mmolN/m3" plotunits="mmol m$^{-3}$" name="NH4" longname='Ammonium'>
+<depth top= "0000" bottom="0010"  clim="[0,1]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,1]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,1]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,1]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,1]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,1]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,1]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,1]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,1]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,1]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,1]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,1]"> </depth>
+</plots>
+
+<!--  N5s -->
+<plots var="N5s" units="mmolSi/m3" plotunits="mmol m$^{-3}$" name="SiO4" longname='Silicate'>
+<depth top= "0000" bottom="0010"  clim="[0,5]"> </depth>
+<depth top= "0010" bottom="0030"  clim="[0,5]"> </depth>
+<depth top= "0030" bottom="0060"  clim="[0,5]"> </depth>
+<depth top= "0060" bottom="0100"  clim="[0,5]"> </depth>
+<depth top= "0100" bottom="0150"  clim="[0,5]"> </depth>
+<depth top= "0150" bottom="0300"  clim="[0,5]"> </depth>
+<depth top= "0300" bottom="0600"  clim="[0,10]"> </depth>
+<depth top= "0600" bottom="1000"  clim="[0,10]"> </depth>
+<depth top= "1000" bottom="1500"  clim="[0,10]"> </depth>
+<depth top= "1500" bottom="2000"  clim="[0,10]"> </depth>
+<depth top= "2000" bottom="2500"  clim="[0,10]"> </depth>
+<depth top= "2500" bottom="3000"  clim="[0,10]"> </depth>
+</plots>
+
+<!--  flCO2 -->
+<plots var="CO2airflux" units="mmol/m2/d" plotunits="mmol m$ ^{-2}$ d$^{-1}$" name="fluxCO2" longname="CO2 air-sea flux">
+<depth top= "0000" bottom="0010"  clim="[-20,20]"> </depth>
+</plots>
+
+
+</LayersMaps>
+
+</root>

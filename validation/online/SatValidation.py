@@ -40,6 +40,9 @@ def SatValidation(var, modfile,satfile,climafile,TheMask,outfile,SUB,COASTNESS_L
     except:
         Sat24 = Sat.convertinV4format(Sat.readfromfile(satfile, varname_sat[var]))  # daily
 
+    ndims = len(Model.shape)
+    if ndims>2: Model = Model[0,:,:]
+
     cloudsLand = np.isnan(Sat24)
     Sat24[cloudsLand] = -999.0
     cloudsLand = Sat24==-999.0

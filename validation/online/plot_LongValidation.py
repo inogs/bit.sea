@@ -156,14 +156,15 @@ fig,ax = plt.subplots(1,1,figsize=[10,5])
 
 for pp in LISTfilermsd_old:
     plt.plot(LISTdates_old[pp],LISTrmsd_old[pp],'--',color='salmon')
-    plt.plot(LISTdates_old[pp][0],LISTrmsd_old[pp][0],'o',color='r',
-        markersize=12,
-        alpha=0.3
-        )
-    plt.plot(LISTdates_old[pp][0],LISTrmsd_old[pp][0],'o',color='r',
-        markersize=12,
-        mfc='None'
-        )
+    if ('Copernicus' in pp)==False:
+        plt.plot(LISTdates_old[pp][0],LISTrmsd_old[pp][0],'o',color='r',
+            markersize=12,
+            alpha=0.3
+            )
+        plt.plot(LISTdates_old[pp][0],LISTrmsd_old[pp][0],'o',color='r',
+            markersize=12,
+            mfc='None'
+            )
 
 plt.plot(LISTdates,LISTrmsd,'o-',color='r',
         markersize=3,
@@ -243,7 +244,7 @@ plt.grid()
 
 plt.tight_layout()
 
-plt.show(block=False)
+#plt.show(block=False)
 
 
 plt.savefig(OUTDIR + 'longRMSD.png')

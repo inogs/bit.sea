@@ -77,7 +77,6 @@ class plot_container():
             y = self.values[:,iSub,iCoast, idepth,0]
             if ~np.isnan(y).all():
                 ax.plot(self.timelist,y,self.plotargs, label=self.name)
-                ax.grid()
                 pl.gcf().autofmt_xdate()
 
         ax = axes[-1] # the profile
@@ -109,8 +108,9 @@ class figure_generator():
         
         self.LEFT_SIDE_AXES=[ax1, ax2, ax3, ax4]
         for iax, ax in enumerate(self.LEFT_SIDE_AXES):
-            if iax<len(self.LEFT_SIDE_AXES):
-                ax.set_xticks([])
+            if iax<len(self.LEFT_SIDE_AXES)-1:
+                ax.set_xticklabels([])
+            ax.grid()
 
         
         ax_p = fig.add_subplot(122)
@@ -146,7 +146,7 @@ class figure_generator():
             x=Left + (Right-Left)*0.03
             y=Top - (Top-Bottom)*0.05
             ax.text(x, y, title,fontsize=10,ha='left',va='top')
-            ax.grid()
+
     def add_legend(self):
         self.ax_p.legend()
         

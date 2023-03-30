@@ -18,6 +18,11 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'The directory which will contain spaghetti plot files')
+    
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                required = True,
+                                help = 'Maskfile to use')
 
     parser.add_argument(   '--timelabel', '-t',
                                 type = str,
@@ -51,6 +56,7 @@ import matplotlib.dates as mdates
 INPUTDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 time_label = args.timelabel
+Maskfile=args.maskfile
 
 VARLIST=["ALK","DIC","exR2ac","N1p","N3n","N4n","N5s","O2o","P_c","pCO2","pH","P_l","ppn",'Z_c']
 #xmldoc = minidom.parse(args.variables)
@@ -233,7 +239,7 @@ PATH_2020=INPUTDIR + '/' + np.str(2020) +'/'
 PATH_2021=INPUTDIR + '/' + np.str(2021) +'/'
 PATH_2022=INPUTDIR + '/' + np.str(2022) +'/'
 PATH_2023=INPUTDIR + '/' + np.str(2023) +'/'
-Mask24=Mask('/g100_scratch/userexternal/gcoidess/NEW_REA_24/wrkdir/bit.sea/validation/online/meshmask.nc')
+Mask24=Mask('Maskfile')
 
 LEVELS=[0,50,100,150] #m
 ncolors=19

@@ -65,8 +65,8 @@ def t_p_cline(Profile,Pres):  # calculation of thermocline (Temp) - pycnocline (
         ip = dT.argmax()
         return Pres[ip] 
 
-def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
-        iz1000 = TheMask.getDepthIndex(1000)+1
+def StratIndex(BVF,TheMask,zdepth=1000): # BruntVaisalaFrequency is a 1D array
+        iz1000 = TheMask.getDepthIndex(zdepth)+1
         max_zindex=len(BVF)
         izmax = min(max_zindex,iz1000)
         SI = np.nan

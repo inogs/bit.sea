@@ -74,7 +74,7 @@ SUFFIX = {
 }
 
 var = 'P_l'
-delay = -21
+delay = -7
 CLIM_FILE = None
 
 opa_rundate=datetime.strptime(OPA_RUNDATE,'%Y%m%d')

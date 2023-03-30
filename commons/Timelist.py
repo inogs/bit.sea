@@ -108,7 +108,7 @@ class TimeList():
         if not filtervar is None:
             filename, file_extension = os.path.splitext(filelist_ALL[0])
             #filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
-            filelist_ALL=[f for f in filelist_ALL if filtervar+".nc" in os.path.basename(f) ]
+            filelist_ALL=[f for f in filelist_ALL if filtervar+file_extension in os.path.basename(f) ]
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]

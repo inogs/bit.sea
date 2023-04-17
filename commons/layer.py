@@ -54,7 +54,7 @@ class LayerMap(object):
             raise ValueError("top must be above of bottom")
 
     def __repr__(self):
-        return "Map of Layers with dimensions %g,%g" %(self.__dim[0], self__dim[1])
+        return "Map of Layers with dimensions %g,%g" %(self.__dim[0], self.__dim[1])
 
     def __str__(self):
         return "maplayer(%g,%g)" %(self.__dim[0], self__dim[1])

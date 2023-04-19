@@ -27,7 +27,9 @@ class DataExtractor(object):
             - *rawdata* (optional): a Numpy array containing the data.
             - *rawdatafill* (optional): the fill value used inside rawdata
               (default: np.nan)
-            _ *fill_value* (optional): the value that will be used when there's
+            - *fill_value* (optional): the value that will be used when there's
+            - *dimvar* (optional) : if present, it forces the dimension of the output.
+              If dimvar=2 when we read a 3D array, a 2d array of the surface will be returned.
 
         Either rawdata or filename plus varname must be defined.
         """
@@ -78,6 +80,7 @@ class DataExtractor(object):
                 dset.close()
                 self.__filename = fn
                 self.__varname = v
+                if ((self.dims==3) & (dimvar==2)) : self.__values=self.__values[0,:]
             except:
                 raise
 

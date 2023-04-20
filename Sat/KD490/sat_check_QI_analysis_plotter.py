@@ -5,7 +5,7 @@ matplotlib.use('Qt5Agg')
 import pylab as pl
 from postproc import masks
 from datetime import datetime
-
+from layer_integral import coastline
 
 class container():
     def __init__(self, I,J,values, QI_old, QI_new):
@@ -19,7 +19,7 @@ class container():
 
 
 pl.close('all')
-INPUTDIR="2020/QI_threshold_2"
+INPUTDIR="CHL/2019/QI_threshold_2"
 
 if True:
     A=np.load(INPUTDIR + '/rejected_counters.npy')
@@ -33,8 +33,8 @@ if True:
 
     fig,ax=pl.subplots()
     nPoints_tot = A['tot']
-    ax.plot(100*A['only_clim_reject']/nPoints_tot,'r',label='% rejected only CLIM')
-    ax.plot(100*A['only_qi_reject']/nPoints_tot,  'b',label='% rejected only QI')
+    ax.plot(100*A['only_clim_reject']/nPoints_tot,'r',  label='% rejected only CLIM')
+    ax.plot(100*A['only_qi_reject']/nPoints_tot,  'b',  label='% rejected only QI')
     ax.plot(100*A['both_reject']/nPoints_tot,  'g',     label='% common rejection')
     ax.legend()
     fig.show()
@@ -44,21 +44,20 @@ if True:
 
 
 
-from layer_integral import coastline
+
 coastlinelon, coastlineclat = coastline.get()
 maskSat = getattr(masks,'SAT1km_mesh')
 
 
 
-if True:
 
-    fid = open(INPUTDIR + '/rejected_only_old.pkl','rb')
-    DAILY_REJECT_ONLY_OLD=pickle.load(fid)
-    fid.close()
+fid = open(INPUTDIR + '/rejected_only_old.pkl','rb')
+DAILY_REJECT_ONLY_OLD=pickle.load(fid)
+fid.close()
 
-    fid = open(INPUTDIR + '/rejected_only_new.pkl','rb')
-    DAILY_REJECT_ONLY_NEW = pickle.load(fid)
-    fid.close()
+fid = open(INPUTDIR + '/rejected_only_new.pkl','rb')
+DAILY_REJECT_ONLY_NEW = pickle.load(fid)
+fid.close()
 
 
 
@@ -76,6 +75,7 @@ for C in DAILY_REJECT_ONLY_OLD[iFrame_start: iFrame_end]:
     I_clim = np.concatenate((I_clim,C.I))
     J_clim = np.concatenate((J_clim,C.J))
 
+
 for C in DAILY_REJECT_ONLY_NEW[iFrame_start: iFrame_end]:
     I_QI = np.concatenate((I_QI,C.I))
     J_QI = np.concatenate((J_QI,C.J))
@@ -84,13 +84,16 @@ for C in DAILY_REJECT_ONLY_NEW[iFrame_start: iFrame_end]:
 
 fig,ax = pl.subplots()
 ax.plot(coastlinelon, coastlineclat,'k')
-ax.plot(maskSat.lon[I_clim],maskSat.lat[J_clim],'b.', markersize=4, label='rejected only CLIM')
-ax.plot(maskSat.lon[I_QI],maskSat.lat[J_QI],'r.',markersize=4, label='rejected only QI')
+ax.plot(maskSat.lon[I_clim],maskSat.lat[J_clim],'r.', markersize=4, label='rejected only CLIM')
+ax.plot(maskSat.lon[I_QI],maskSat.lat[J_QI],'b.',markersize=4, label='rejected only QI')
 ax.legend()
 
 fig.show()
 
-
+#C=DAILY_REJECT_ONLY_NEW[iFrame_start]
+#fig,ax=pl.subplots()
+#ax.plot(C.QI_old,'.')
+#fig.show()
 
 
 

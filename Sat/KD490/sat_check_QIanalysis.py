@@ -6,8 +6,11 @@ import os
 
 from Sat import SatManager as Sat
 
-ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C//SAT/KD490/DT/DAILY/ORIG/" 
-CLIM_FILE = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/KD490_Climatology_1km.nc"
+#ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/KD490/DT/DAILY/ORIG/"
+#CLIM_FILE = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/KD490_Climatology_1km.nc"
+ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/CHL/DT/DAILY/ORIG/"
+CLIM_FILE = "/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/SAT/CCI_1km/SatClimatology.nc"
+
 maskSat = getattr(masks,'SAT1km_mesh')
 
 class container():
@@ -21,8 +24,13 @@ class container():
 
 reset = False
 
-Timestart="20200101"
-Time__end="20210101"
+Timestart="20190101"
+Time__end="20200101"
+THRESHOLD = 2
+OUTDIR = "CHL/2019/QI_threshold_2/"
+os.system('mkdir -p ' + OUTDIR)
+var="CHL"
+
 
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
@@ -43,8 +51,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    
 
-    VALUES_IN = Sat.readfromfile(filename,'KD490')
-    QI        = Sat.readfromfile(filename,'QI_KD490')
+    VALUES_IN = Sat.readfromfile(filename,var)
+    QI        = Sat.readfromfile(filename,'QI_' + var)
     cloudsLandTIME = VALUES_IN         == Sat.fillValue
     cloudlandsCLIM = DAILY_REF_MEAN == Sat.fillValue
     
@@ -65,7 +73,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
 
     qi_cloud = VALUES_IN == Sat.fillValue
     ############################################################
-    outOfRange_qi = np.abs(QI) > 2
+    outOfRange_qi = np.abs(QI) > THRESHOLD
     ############################################################
     outOfRange_qi[qi_cloud] = False
     
@@ -101,13 +109,13 @@ for iTime, filename in enumerate(TL_orig.filelist):
     #sys.exit()
     
 import pickle
-fid = open('rejected_only_old.pkl','wb')
+fid = open(OUTDIR + 'rejected_only_old.pkl','wb')
 pickle.dump(DAILY_REJECT_ONLY_OLD, fid)
 fid.close()
 
-fid = open('rejected_only_new.pkl','wb')
+fid = open(OUTDIR + 'rejected_only_new.pkl','wb')
 pickle.dump(DAILY_REJECT_ONLY_NEW, fid)
 fid.close()
 
-np.save('rejected_counters',REJECT)
+np.save(OUTDIR +'rejected_counters',REJECT)
 

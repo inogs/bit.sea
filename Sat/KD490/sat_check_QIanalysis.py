@@ -21,8 +21,8 @@ class container():
 
 reset = False
 
-Timestart="20190101"
-Time__end="20200101"
+Timestart="20200101"
+Time__end="20210101"
 
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
@@ -32,12 +32,11 @@ REJECT=np.zeros((nFrames,),dtype=[('tot',int),('both_reject',int),('only_clim_re
 DAILY_REJECT_ONLY_OLD = []
 DAILY_REJECT_ONLY_NEW = []
 
-#MEAN,STD = Sat.readClimatology(CLIM_FILE)
+MEAN,STD = Sat.readClimatology(CLIM_FILE)
 
 
 for iTime, filename in enumerate(TL_orig.filelist):
     print(iTime)
-    #outfile = CHECKDIR + os.path.basename(filename)
 
     julian = int( TL_orig.Timelist[iTime].strftime("%j") )
     if julian==366: julian=365 
@@ -65,12 +64,14 @@ for iTime, filename in enumerate(TL_orig.filelist):
 
 
     qi_cloud = VALUES_IN == Sat.fillValue
+    ############################################################
     outOfRange_qi = np.abs(QI) > 2
+    ############################################################
     outOfRange_qi[qi_cloud] = False
     
 
     
-    #values = VALUES_IN[outOfRange_qi]
+    
 
     out_both     =  Elim &  outOfRange_qi
     out_only_old =  Elim & ~outOfRange_qi

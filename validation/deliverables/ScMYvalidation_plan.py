@@ -44,7 +44,7 @@ def argument():
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['chl','kd'],
+                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l'],
                                 help = ''' model var name'''
                                 )
     return parser.parse_args()
@@ -68,6 +68,7 @@ from basins import V2 as OGS
 from commons.layer import Layer
 from commons.utils import addsep
 import pickle
+from instruments.var_conversions import SAT_VARS
 from profiler import DATESTART, DATE__END
 
 def weighted_mean(Conc, Weight):
@@ -84,12 +85,13 @@ MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
 
-if (args.var=='kd') :
-    modvarname = "kd490"
-    satvarname = "KD490"
-else:
-    modvarname = "P_l"
-    satvarname = "CHL"
+
+modvarname=args.var
+satvarname = SAT_VARS[modvarname]
+
+    
+
+
 Timestart=DATESTART
 Time__end=DATE__END
 TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
@@ -108,13 +110,19 @@ nSUB = len(OGS.P.basin_list)
 jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
-for sub in OGS.P:
+for sub in OGS.Pred:
     print (sub.name)
     sbmask         = SubMask(sub,maskobject=Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 mask200_2D = TheMask.mask_at_level(200.0)
 mask0_2D = TheMask.mask_at_level(0.0)
+SUB['med'] = mask0_2D.copy()
+ii=SUB['atl']
+SUB['med'][ii] = False
+print('med')
+
+
 if args.coastness == 'coast':
     coastmask=mask0_2D & (~mask200_2D)
 if args.coastness == "open_sea"  : coastmask = mask200_2D

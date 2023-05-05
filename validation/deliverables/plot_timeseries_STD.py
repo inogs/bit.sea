@@ -21,7 +21,7 @@ def argument():
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['chl','kd'],
+                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l'],
                                 help = ''' model var name'''
                                 )
     
@@ -40,6 +40,7 @@ import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 from commons.utils import addsep
 from basins import V2 as OGS
+from instruments.var_conversions import SAT_VARS
 
 OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')
@@ -50,10 +51,13 @@ TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR = LIST
 
 model_label=' MODEL'
 
-if (args.var =="chl"):
-    var_label = "CHL [mg/m$^3$]"
+if (args.var =="kd490"):
+    units="[m$^{-1}$]"
 else:
-    var_label = "KD [m$^{-1}$]"
+    units="[mg/m$^3$]"
+
+var_label = SAT_VARS[args.var] + " " + units
+
 
 
 for isub,sub in enumerate(OGS.P):

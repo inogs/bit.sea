@@ -29,7 +29,7 @@ def argument():
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['chl','kd'],
+                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l'],
                                 help = ''' model var name'''
                                 )
 
@@ -45,6 +45,7 @@ import matplotlib.dates as mdates
 import sys
 import numpy as np
 from commons.utils import addsep
+from instruments.var_conversions import SAT_VARS
 
 OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')
@@ -53,10 +54,13 @@ fid.close()
 
 model_label=' MODEL'
 
-if (args.var =="chl"):
-    var_label = "CHL [mg/m$^3$]"
+if (args.var =="kd490"):
+    units="[m$^{-1}$]"
 else:
-    var_label = "KD"
+    units="[mg/m$^3$]"
+    
+var_label = SAT_VARS[args.var] + " " + units
+
 
 TIMES                          = LIST[0]
 BGC_CLASS4_CHL_RMS_SURF_BASIN  = LIST[1]

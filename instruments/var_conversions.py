@@ -101,5 +101,10 @@ SOCAT_VARS ={"votemper": "temp",
              "vosaline": "sal",
              "pCO2"    : "fCO2"
              }
-
+SAT_VARS={'kd490':'KD490',
+          'P_l':'CHL',
+          'P1l':'DIATO',
+          'P2l':'NANO',
+          'P3l':'PICO',
+          'P4l':'DINO'}
 

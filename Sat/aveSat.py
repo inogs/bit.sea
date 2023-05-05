@@ -4,6 +4,7 @@ def argument():
     Generic averager for sat files.
     It works with one mesh, without performing interpolations.
     Files with dates used for the average provided (dirdates).
+    Empty dirdates is provided when the number of input daily files is lesser than 3.
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -25,7 +26,6 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = ''' OUT dates sat directory'''
-
                                 )
 
     parser.add_argument(   '--mesh', '-m',
@@ -34,6 +34,11 @@ def argument():
                                 choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24', 'Mesh4'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
+    parser.add_argument(   '--varname', '-v',
+                                type = str,
+                                required = True,
+                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO']
+                                )
 
     parser.add_argument(   '--timeaverage', '-t',
                                 type = str,
@@ -41,6 +46,10 @@ def argument():
                                 choices = ['monthly','weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday','tendays'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing variables in files
+                                """)
     return parser.parse_args()
 
 args = argument()
@@ -69,7 +78,7 @@ OUTDIR   = addsep(args.outdir)
 DIRDATES = addsep(args.dirdates)
 maskSat = getattr(masks,args.mesh)
 
-reset = False
+
 
 Timestart="19500101"
 Time__end="20500101"
@@ -88,19 +97,17 @@ if args.timeaverage == 'tendays'        : TIME_reqs=TLCheck.getSpecificIntervalL
 jpi = maskSat.jpi
 jpj = maskSat.jpj
 
-counter = 0
-MySize = len(TIME_reqs[rank::nranks])
+
 
 for req in TIME_reqs[rank::nranks]:
-    counter = counter + 1
 
-    outfile = req.string + suffix
-    outpathfile = OUTDIR + outfile
+    outfile = OUTDIR + req.string + suffix
+    writing_mode = Sat.writing_mode(outfile)
 
     ii, w = TLCheck.select(req)
     nFiles = len(ii)
 
-    if os.path.exists(outpathfile):
+    if os.path.exists(outfile):
         outdates = DIRDATES + req.string + 'weekdates.txt'
         weekdates = np.loadtxt(outdates,dtype=str)
         nDates = len(weekdates)
@@ -108,32 +115,36 @@ for req in TIME_reqs[rank::nranks]:
         if nFiles>nDates:
             print('Not skipping ' + req.string)
         else:
-            conditionToSkip = (os.path.exists(outpathfile)) and (not reset)
-            if conditionToSkip: continue
+            condition_to_write = not Sat.exist_valid_variable(args.varname,outfile)
+            if args.force: condition_to_write=True
+            if not condition_to_write: continue
+
 
     print(outfile)
     dateweek = []
     if nFiles < 3 : 
-        print(req)
-        print("less than 3 files")
+        print(req, "less than 3 files - Skipping average generation")
         filedates = DIRDATES + req.string + 'weekdates.txt'
-        print(filedates)
+        print('See ' + filedates)
         np.savetxt(filedates,dateweek,fmt='%s')
         continue
+
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]
-        CHL = Sat.readfromfile(inputfile)
-        M[iFrame,:,:] = CHL
+        VALUES = Sat.readfromfile(inputfile, args.varname)
+        M[iFrame,:,:] = VALUES
         idate = TLCheck.Timelist[j]
         date8 = idate.strftime('%Y%m%d')
         dateweek.append(date8)
-    CHL_OUT = Sat.logAverager(M)
-    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='CHL', mesh=maskSat)
+    if args.varname == 'KD490':
+        OUT = Sat.averager(M)
+    else:
+        OUT = Sat.logAverager(M)
+    Sat.dumpGenericfile(outfile, OUT, args.varname, mesh=maskSat, mode=writing_mode)
 
 
     filedates = DIRDATES + req.string + 'weekdates.txt'
     print(filedates)
     np.savetxt(filedates,dateweek,fmt='%s')
 
-    print("\trequest ", counter, " of ", MySize, " done by rank ", rank)

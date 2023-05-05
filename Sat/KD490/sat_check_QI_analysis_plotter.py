@@ -63,7 +63,7 @@ fid.close()
 
 datestart    = '20190701'
 d            = datetime.strptime(datestart,"%Y%m%d")
-iFrame_start = int(d.strftime('%j'))
+iFrame_start = int(d.strftime('%j')) -1
 iFrame_end   = iFrame_start + 1
 
 I_clim = np.array([],int)
@@ -71,10 +71,12 @@ J_clim = np.array([],int)
 I_QI   = np.array([],int)
 J_QI   = np.array([],int)
 
+
+VALUES = np.array([],np.float32)
 for C in DAILY_REJECT_ONLY_OLD[iFrame_start: iFrame_end]:
     I_clim = np.concatenate((I_clim,C.I))
     J_clim = np.concatenate((J_clim,C.J))
-
+    VALUES = np.concatenate((VALUES, C.values))
 
 for C in DAILY_REJECT_ONLY_NEW[iFrame_start: iFrame_end]:
     I_QI = np.concatenate((I_QI,C.I))
@@ -90,10 +92,36 @@ ax.legend()
 
 fig.show()
 
+
+
+hist, bin_edges=np.histogram(VALUES,bins=np.arange(0,1,0.02))
+for i in hist[:10]: print ("%f %% " %(100*i/len(VALUES)))
+
 #C=DAILY_REJECT_ONLY_NEW[iFrame_start]
 #fig,ax=pl.subplots()
 #ax.plot(C.QI_old,'.')
 #fig.show()
 
+# search reason of CLIM rejection in  DAILY_REF_MEAN and DAILY_REF_STD
+# ii=(VALUES > 0.34) & (VALUES <=0.36)
+# Itop=I_clim[ii]
+# Jtop=J_clim[ii]
+# nTop=4593
+#
+# MEAN_CLIM = np.zeros((nTop),np.float32)
+# MEAN_STD  = np.zeros((nTop),np.float32)
+# for k in range(nTop):
+#     j = Jtop[k]
+#     i = Itop[k]
+#     MEAN_CLIM[k] = DAILY_REF_MEAN[j,i]
+#     MEAN_STD[k] =  DAILY_REF_STD[j,i]
+#
+# fig,ax=pl.subplots()
+# ax.plot(MEAN_CLIM,'.')
+# fig.show()
+# fig,ax=pl.subplots()
+# ax.plot(MEAN_STD,'.')
+# fig.show()
+# -----------------------------------------------
 
 

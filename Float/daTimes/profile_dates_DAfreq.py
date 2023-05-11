@@ -55,15 +55,14 @@ DATEEND = args.dateend
 
 var = FLOATVARS[varMODEL] #'N3n' 'O2o'
 
-read_adjusted = {
-    FLOATVARS['P_l']: True,
-    FLOATVARS['N3n']: True,
-}
+#read_adjusted = {
+#    FLOATVARS['P_l']: True,
+#    FLOATVARS['N3n']: True,
+#    FLOATVARS['O2o']: True,
+#}
 
-
-TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', \
-                    'days=' + np.str(DAfreq))
-
+#TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00'+ 'days='+ np.str(DAfreq))
+TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', days=DAfreq)
 
 DAfloatdates = []
 NnoDAdates = 0
@@ -81,7 +80,7 @@ for dateref in TL:
     for wmo in WMOlist:
         SubProfilelist_1 = biofloat.filter_by_wmo(PROFILESdateref,wmo)
         for i in SubProfilelist_1:
-            _, Profile, _ = i.read(var,read_adjusted[var])   #Profile.shape,Profile.size, np.mean(Profile)
+            _, Profile, _ = i.read(var)#,read_adjusted[var])   #Profile.shape,Profile.size, np.mean(Profile)
             if(Profile.size!=0) : Goodlist.append(i)
 
         if (Goodlist!=[]):
@@ -91,7 +90,7 @@ for dateref in TL:
     if (Goodlist!=[]):
         dateDA = datetime.datetime(dateref.year, \
                 dateref.month,dateref.day,hourDA,00)
-        print dateDA
+        print (dateDA)
                                    
         DAfloatdates.append(datetime.datetime.strftime(dateDA,'%Y%m%d-%H:%M:%S'))
     else:
@@ -99,4 +98,3 @@ for dateref in TL:
 
 
 np.savetxt(args.outfile,DAfloatdates,fmt='%s')
-

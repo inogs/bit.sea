@@ -3,24 +3,24 @@ import numpy as np
 def find_DCM(Chl_profile,zlev):
 
         A = Chl_profile
-	CHL_surf = Chl_profile[0]
+        CHL_surf = Chl_profile[0]
         A_filtered=A[A>0.1]
         D_filtered=zlev[A>0.1]
         A_fil_rev = A_filtered[::-1]
         D_fil_rev = D_filtered[::-1]
 
-	if (len(A_fil_rev) == 0): 
-	    return np.nan , np.nan
+        if (len(A_fil_rev) == 0):
+            return np.nan , np.nan
 
-	CM  = A_fil_rev[0]
-	DCM = D_fil_rev[0]
+        CM  = A_fil_rev[0]
+        DCM = D_fil_rev[0]
         for ip, chl in enumerate(A_fil_rev):
             if (chl > CM): 
                 CM  = chl
                 DCM = D_fil_rev[ip]
 
-	if (DCM < 40): DCM = np.nan
-	if (CM/CHL_surf < 1.5): DCM = np.nan
+        if (DCM < 40): DCM = np.nan
+        if (CM/CHL_surf < 1.5): DCM = np.nan
 
         return CM, DCM
 
@@ -58,19 +58,19 @@ def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
 def find_WLB(Profile,Pres):  # Winter Layer Bloom (WLB)
         WLB = np.nan
         A = Profile
-	A_filtered=A[Pres<200]
-	D_filtered=Pres[Pres<200]
+        A_filtered=A[Pres<200]
+        D_filtered=Pres[Pres<200]
         for ip, p in enumerate(A_filtered):
             if (p <= A[0]*0.1): 
                 WLB = D_filtered[ip]
                 Chl_min = A_filtered[ip]
-	        break
+                break
         return WLB
 
 def find_NITRICL(Profile,Pres):
         for ip, p in enumerate(Profile):
             if (p >= 2):
-		return Pres[ip]
+                 return Pres[ip]
 
 def find_NITRICL_dz(Profile,Pres):
          dN = np.diff(Profile)/np.diff(Pres)

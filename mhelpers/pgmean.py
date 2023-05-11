@@ -2,7 +2,7 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
 from scipy.signal import gaussian
-from mean import GaussianMean
+from mhelpers.mean import GaussianMean
 from math import exp
 
 class PGaussianMean(GaussianMean):

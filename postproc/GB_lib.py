@@ -69,7 +69,7 @@ class filename_manager():
             if var in d.variables:
                 d.close()
                 return file_try2
-        for file_try in [file_try1,file_try2]: print "try", file_try
+        for file_try in [file_try1,file_try2]: print("try", file_try)
         raise ValueError("File not found")        
 
 
@@ -96,7 +96,7 @@ class filename_manager():
                     d.close()
                 return file_try
 
-        for file_try in [file_try1,file_try2,file_try3,file_try4]: print "try", file_try
+        for file_try in [file_try1,file_try2,file_try3,file_try4]: print("try", file_try)
         raise ValueError("File not found")
 
 
@@ -242,7 +242,7 @@ def WriteAggregateAvefiles_old(mask, N1pfile,OUTDIR,VarDescriptor):
 def WriteBigAve(Mask,N1pfile, outfile, VARS):
       
     if len(VARS)==0:
-        print "No variables in archive list"
+        print("No variables in archive list")
         return
 
     nc=NC.netcdf_file(N1pfile,"r");
@@ -307,7 +307,7 @@ def writeChlSup(avefile, chlfile, chlvar):
 if __name__ == "__main__" :
     formula= "ppn    = ppg - 0.1 * exR2cc - exR2ac - Resp "
     left_side, right_side, outlist = recognize_terms(formula)
-    print outlist
+    print(outlist)
 
     import sys
     sys.exit()
@@ -328,7 +328,7 @@ if __name__ == "__main__" :
     filename=avelist[0]
     filename='FORCINGS/Upippo.nc'
     F=filename_manager(filename)
-    print F.get_filename(filename, 'vozocrtx',INPUT_AVEDIR,AGGREGATE_AVEDIR)
+    print(F.get_filename(filename, 'vozocrtx',INPUT_AVEDIR,AGGREGATE_AVEDIR))
 
     #print F.get_filename(filename, var,INPUT_AVEDIR,AGGREGATE_AVEDIR)
 

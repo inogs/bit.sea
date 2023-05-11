@@ -23,8 +23,8 @@
 ! ---
 &biolst
  chl_assim = @@ASS_P_l@@
- chl_upnut = @@ASS_P_lN3n@@
-    nut    = @@ASS_N3n@@
+ chl_upnut = 0
+    nut    = @@ASS_N3nO2o@@
     multiv = 0
    nphyto  = 4
    chl_dep = 0.0
@@ -32,7 +32,7 @@
 ApplyConditions = .true.
     N3n    = @@ASS_N3n@@
     updateN1p = @@ASS_N3n@@
-    O2o    = 0
+    O2o    = @@ASS_O2o@@
 /
 !------------------------------------------------------------
 !
@@ -55,6 +55,6 @@ ApplyConditions = .true.
  sat_obs  = @@SAT_OBS@@
   argo    = @@ARGO@@
  uniformL = @@ARGO@@
-  anisL   = 1
+  anisL   = 0 
 /
 !------------------------------------------------------------

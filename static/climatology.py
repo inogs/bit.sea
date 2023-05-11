@@ -1,8 +1,8 @@
 from commons.time_interval import TimeInterval
 from commons import season
 from commons import timerequestors
-from Nutrients_reader import NutrientsReader
-from Carbon_reader import CarbonReader
+from static.Nutrients_reader import NutrientsReader
+from static.Carbon_reader import CarbonReader
 from instruments.var_conversions import NUTRVARS
 import numpy as np
 from basins import V2 as OGS
@@ -162,7 +162,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
         for isub, sub in enumerate(subbasinlist):
             sub_search = basin_expansion(sub, var_exp)
             INDEX_LIST=get_sub_indexes(sub_search)
-            print INDEX_LIST
+            print(INDEX_LIST)
             CLIM[isub,:] = CLIM[INDEX_LIST,:].mean(axis=0)
             STD [isub,:] =  STD[INDEX_LIST,:].mean(axis=0) # brutto ...
     if QC:
@@ -234,7 +234,7 @@ def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdept
         for isub, sub in enumerate(subbasinlist):
             sub_search = basin_expansion(sub, var_exp)
             INDEX_LIST=get_sub_indexes(sub_search)
-            print INDEX_LIST
+            print(INDEX_LIST)
             CLIM[isub,:] = CLIM[INDEX_LIST,:].mean(axis=0)
             STD [isub,:] =  STD[INDEX_LIST,:].mean(axis=0) # brutto ...
     if QC:

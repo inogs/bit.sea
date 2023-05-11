@@ -32,7 +32,7 @@ for req in WEEK_reqs:
 
     if conditionToSkip: continue
 
-    print outfile
+    print (outfile)
     ii, w = TLCheck.select(req)
     nFiles = len(ii)
     M = np.zeros((nFiles,jpj,jpi),np.float32)

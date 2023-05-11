@@ -36,7 +36,7 @@ import scipy.io.netcdf as NC
 import datetime
 import os,glob
 import numpy as np
-from StringIO import StringIO
+from io import StringIO
 from commons.utils import addsep
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
@@ -87,18 +87,18 @@ def file_header_content(filename,VARLIST, avail_params=None):
     try:
         ncIN = NC.netcdf_file(filename,'r')
     except:
-        print "Not valid NetDCF file: " + filename
+        print("Not valid NetDCF file: " + filename)
         return
 
     lon=ncIN.variables['LONGITUDE'].data[0]
     lat=ncIN.variables['LATITUDE'].data[0]
     BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
     if BadPosition:
-        print "Bad position in file : " + filename
+        print("Bad position in file : " + filename)
         ncIN.close()
         return
 
-    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tostring()
+    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tobytes().decode()
     juld = ncIN.variables['JULD'].data[0]
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
@@ -122,8 +122,18 @@ def get_sensor_list(wmo,LINES):
             A=np.loadtxt(d,dtype=mydtype,delimiter=',')
             return str(A['parameters'])
     else:
-        print wmo + " not in CORIOLIS"
+        print(wmo + " not in CORIOLIS")
         return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+def is_SR_to_reject(filename, filenames):
+    isSR=os.path.basename(filename).startswith('SR')
+    if isSR:
+        SDfilename=filename.replace('SR','SD')
+        if SDfilename in filenames:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 LOC=addsep(args.inputdir)
@@ -139,6 +149,7 @@ for DIR in DIRLIST:
     filenames.sort()
     for filename in filenames:
         if filename[-4:]!='D.nc':
+            if is_SR_to_reject(filename, filenames): continue
             if filename in FILELIST:
                 ind=FILELIST.index(filename)
                 timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
@@ -155,10 +166,10 @@ for DIR in DIRLIST:
                 if line is not None:
                     if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     LINES.append(line+"\n")
-                    if is_provided_indexer: print "added " + line
+                    if is_provided_indexer: print("added " + line)
 
 
-F = file(FloatIndexer,'w')
+F = open(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
 os.chdir(HERE)

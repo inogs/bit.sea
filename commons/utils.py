@@ -29,7 +29,7 @@ def is_number(val):
         - True if val is a number type.
         - False if val is not a number type.
     """
-    return isinstance(val, (int, long, float, complex, np.float32))
+    return isinstance(val, (int, float, complex, np.float32))
 
 def get_date_string(s):
     """Finds a date in YYYYMMDD format into a bigger string.
@@ -78,11 +78,11 @@ def find_index(thestring, STRINGLIST):
     '''
     nStrings = STRINGLIST.shape[0]
     for istring in range(nStrings):
-        strippedstring=STRINGLIST[istring,:].tostring().strip()
-        if strippedstring == thestring: break
+        strippedstring=STRINGLIST[istring,:].tobytes().strip()
+        if strippedstring.decode() == thestring: break
     else:
         print(thestring + " Not Found")
-        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tostring().strip() for istring in range(nStrings)]))
+        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tobytes().strip().decode() for istring in range(nStrings)]))
     return istring
 
 def die(why, exit_code=1, print_usage=True):
@@ -171,7 +171,7 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
 
     headerstr="\t"
     nrows,ncols=M.shape
-    dtype = [('colnames','S20')]
+    dtype = [('colnames','U20')]
     if fmt.count("%") == 1:
         fmtlist = [fmt for ii in range(ncols)]
     else:
@@ -270,10 +270,14 @@ def nan_compare(array_with_nan,operator, value):
     '''
 
     ii = np.isnan(array_with_nan)
-    out = np.zeros(array_with_nan.shape, np.bool)
+    out = np.zeros(array_with_nan.shape, bool)
     if operator=='>'  : out[~ii] = array_with_nan[~ii] >  value
     if operator=='>=' : out[~ii] = array_with_nan[~ii] >= value
     if operator=='< ' : out[~ii] = array_with_nan[~ii] <  value
     if operator=='<=' : out[~ii] = array_with_nan[~ii] <= value
     return out
 
+if __name__ == '__main__':
+    A=np.random.randn(3,2)
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'])
+    writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'],fmt='%5.3f\t')

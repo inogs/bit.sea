@@ -6,7 +6,7 @@ class filenamer():
         self.prefix=prefix
         self.dateformat=dateformat
         self.suffix=suffix
-        lendate = len(datetime.datetime(2000,01,01).strftime(dateformat))
+        lendate = len(datetime.datetime(2000,1,1).strftime(dateformat))
         self.date_startpos = len(self.prefix)
         self.date_endpos   = self.date_startpos+lendate
     def __str__(self):

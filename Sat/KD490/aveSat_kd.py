@@ -61,7 +61,7 @@ CHECKDIR = addsep(args.checkdir)
 OUTDIR   = addsep(args.outdir)
 maskSat = getattr(masks,args.mesh)
 
-reset = True
+reset = False
 
 Timestart="19500101"
 Time__end="20500101"
@@ -94,7 +94,7 @@ for req in TIME_reqs[rank::nranks]:
     if (os.path.exists(outpathfile)) and (not reset):
         continue
 
-    print outfile
+    print (outfile)
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]
@@ -107,4 +107,4 @@ for req in TIME_reqs[rank::nranks]:
 
 
 
-    print "\trequest ", counter, " of ", MySize, " done by rank ", rank
+    print ("\trequest ", counter, " of ", MySize, " done by rank ", rank)

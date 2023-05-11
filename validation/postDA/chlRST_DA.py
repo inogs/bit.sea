@@ -43,7 +43,7 @@ mask200 = TheMask.mask_at_level(200)
 
 Nsub = len(OGS.P.basin_list)
 SUB = {}
-SUB['med'] = np.zeros((jpj,jpi),np.bool)
+SUB['med'] = np.zeros((jpj,jpi),bool)
 for sub in OGS.Pred:
     print sub.name
     sbmask = SubMask(sub,maskobject=TheMask).mask

@@ -148,7 +148,7 @@ for iSub, sub in enumerate(basV2.P):
     fg2.clim_profile_plotter(z_clim,N4n_clim_mean,N4n_clim_std, axes[5], axes[11])
 
     fig.savefig(outfile)
-    print outfile
+    print (outfile)
     pl.close(fig)
 
 
@@ -219,6 +219,6 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.clim_profile_plotter(z_clim,PH__clim_mean,PH__clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
-    print outfile
+    print (outfile)
     pl.close(fig)
 

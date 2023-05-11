@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as pl
 from commons.layer import Layer
-from statistics import matchup
+from matchup.statistics import matchup
 
 
 
@@ -203,7 +203,7 @@ class ProfileMatchup():
         bads = np.isnan(Model)
         if not accept_nans:
             if bads.any() :
-                print "matchup: Nans in model "
+                print("matchup: Nans in model ")
                 Model = Model[~bads]
                 Ref   = Ref  [~bads]
                 Depth = Depth[~bads]

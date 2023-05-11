@@ -43,9 +43,9 @@ class timelistcontainer():
         self.nVAR = ncIN.dimensions['var']
         self.nSUB = ncIN.dimensions['sub']
         self.nDEPTH  = ncIN.dimensions['depth']
-        self.SUBLIST = ncIN.sublist.split(",")
-        self.LAYERLIST=ncIN.layerlist.split(",")
-        self.VARLIST = ncIN.varlist.split(",")
+        self.SUBLIST = ncIN.sublist.decode().split(",")
+        self.LAYERLIST=ncIN.layerlist.decode().split(",")
+        self.VARLIST = ncIN.varlist.decode().split(",")
         
         ncIN.close()        
 

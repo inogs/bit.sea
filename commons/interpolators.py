@@ -65,6 +65,43 @@ def surf_interp_2d(Mask1, Mask2, Map2d):
     return MAP2d_nearest
 
 
+def interp_same_resolution(Mask1, Mask2, M3d):
+    '''
+    Performs nearest interpolation for masks very similar,
+    differing only for sea/lands points.
+    Arguments:
+    * Mask1, Mask2 *   Mask objects
+    * M3d          * 3d numpy array, consistent with Mask1
+
+    Returns:
+     * OUT * 3d numpy array, consistent with Mask2
+    '''
+    ii=Mask2.mask & (~Mask1.mask)
+    K,J,I = np.nonzero(ii)
+    OUT = M3d
+    for k in np.unique(K):
+        M2d=M3d[k,:,:]
+        goods  = Mask1.mask[k,:,:]
+        Jgoods, Igoods = np.nonzero(goods)
+        nP = len(Jgoods)
+        points = np.zeros((nP,2),dtype=np.float32)
+        points[:,0] = Jgoods
+        points[:,1] = Igoods
+        values = M2d[goods]
+
+        bool_mask2lands_on_k = ii[k,:,:]
+        J,I = np.nonzero(bool_mask2lands_on_k)
+        nP =bool_mask2lands_on_k.sum()
+        xi = np.zeros((nP,2),dtype=np.float32)
+        xi[:,0] = J
+        xi[:,1] = I
+        V = griddata(points, values, xi, "nearest")
+        OUT[k,bool_mask2lands_on_k] = V
+    return OUT
+
+
+
+
 if __name__ == "__main__":
     from commons import netcdf3    
     from commons.mask import Mask

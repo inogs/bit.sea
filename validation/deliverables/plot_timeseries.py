@@ -66,7 +66,7 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
     pl.ylim(0.0, 0.6)
-    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()

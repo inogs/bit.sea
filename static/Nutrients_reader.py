@@ -1,7 +1,7 @@
 
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
-from DatasetExtractor import DatasetExtractor
+from static.DatasetExtractor import DatasetExtractor
 import numpy as np
 from commons.utils import find_index
 
@@ -19,7 +19,7 @@ class NutrientsReader():
         # QC  section ----------------
         M = self.DataExtractor
         nvars, nData=M.DATA.shape
-        selected = np.ones((nData,),np.bool)
+        selected = np.ones((nData,),bool)
 
         dataset = self.DataExtractor.DATA[-1,:]
         id_dataset= find_index('Barney',self.DataExtractor.CRUISES)
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     if not ax.yaxis_inverted():ax.invert_yaxis()
     fig.show()
 
-    print len(ProfileLIST)
+    print(len(ProfileLIST))
     
 
     from layer_integral import coastline

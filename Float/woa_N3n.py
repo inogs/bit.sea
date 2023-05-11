@@ -9,7 +9,7 @@ import seawater as sw
 woa_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/"
 WOA_DIR=addsep(os.getenv("WOA_DIR", woa_dir))
 if not os.path.exists(WOA_DIR):
-    print WOA_DIR
+    print(WOA_DIR)
     raise ValueError("Environment variable WOA_DIR must be defined")
 
 maskfile = WOA_DIR + "meshmask.nc"
@@ -97,11 +97,11 @@ if __name__ == "__main__":
     var="NITRATE"
 
     Profilelist=bio_float.FloatSelector(var,T_INT,OGS.med)
-    print len(Profilelist)
+    print(len(Profilelist))
     p=Profilelist[310]
 
     Pres, Prof, Qc= p.read(var,True)
-    print len(Prof)
+    print(len(Prof))
 
     from commons.layer import Layer
     from static.climatology import get_climatology
@@ -131,8 +131,8 @@ if __name__ == "__main__":
 
        for iSub,sub in enumerate(SUBLIST):
         if sub.is_inside(p.lon,p.lat):
-           print N3n_clim[iSub,:]
-           print sub.name
+           print(N3n_clim[iSub,:])
+           print(sub.name)
            sub_name=sub.name
            ax.plot(N3n_clim[iSub,:],-1*z_clim,'g',label="Clim")
 

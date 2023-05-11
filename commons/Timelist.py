@@ -1,11 +1,12 @@
-import timerequestors as requestors
-import genUserDateList as DL
+from __future__ import print_function
+from commons import timerequestors as requestors
+from commons import genUserDateList as DL
 import os,glob
 import datetime
 import numpy as np
-import season
-import IOnames
-from time_interval import TimeInterval
+from commons import season
+from commons import IOnames
+from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
 seasonobj = season.season()
@@ -16,11 +17,17 @@ def computeTimeWindow(freqString,currentDate):
     if (freqString == 'weekly'):  req = requestors.Weekly_req(currentDate.year, currentDate.month,currentDate.day)
     if (freqString == 'monthly'): req = requestors.Monthly_req(currentDate.year, currentDate.month)
     if (freqString == 'yearly'):  req = requestors.Yearly_req(currentDate.year)
-    if (freqString[:5]=='days='):
-        ndays=int(freqString[5:])
+    if freqString.startswith('days'):
+        pos=freqString.find("=")
+        ndays=int(freqString[pos+1:])
         req = requestors.Interval_req(currentDate.year,currentDate.month,currentDate.day,days=ndays)
-    if (freqString[:8]=='seconds='):
-        nseconds=int(freqString[8:])
+    if freqString.startswith('hours'):
+        pos=freqString.find("=")
+        nhours=int(freqString[pos+1:])
+        req = requestors.Hourly_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour, delta_hours=nhours)
+    if freqString.startswith('seconds='):
+        pos=freqString.find("=")
+        nseconds=int(freqString[pos+1:])
         req = requestors.seconds_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour,currentDate.minute, delta_seconds=nseconds) 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
@@ -49,7 +56,7 @@ class TimeList():
                 self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
-    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",hour=12,forceFrequency=None):
+    def fromfilenames(timeinterval, inputdir,searchstring, filtervar=None, prefix='ave.', dateformat="%Y%m%d-%H:%M:%S",forcehour=None,forceFrequency=None):
         '''
         Generates a TimeList object by reading a directory
 
@@ -70,7 +77,7 @@ class TimeList():
                            a file is vaild if the filename string contains filtervar
         * prefix         * string, the part of the filename before the date
         * dateformat     * string
-        * hour           * integer
+        * forcehour      * integer, it forces hours to it. No effect if None (default).
         * forceFrequency * string, like 'daily','weekly','monthly'. The default is None.
                            If set to None, the frequency is automatically calculated, else is forced to
                            the string provided. This is useful when the timeseries has gaps and is not continue and automatic calculation
@@ -101,7 +108,7 @@ class TimeList():
         if not filtervar is None:
             filename, file_extension = os.path.splitext(filelist_ALL[0])
             #filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
-            filelist_ALL=[f for f in filelist_ALL if filtervar+".nc" in os.path.basename(f) ]
+            filelist_ALL=[f for f in filelist_ALL if filtervar+file_extension in os.path.basename(f) ]
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]
@@ -119,7 +126,7 @@ class TimeList():
                     External_filelist.append(pathfile)
                     External_timelist.append(actualtime)
             except:
-                print "Warning: " + datestr + " does not exist!"
+                print("Warning: " + datestr + " does not exist!")
 
         TimeListObj = TimeList(datetimelist,forceFrequency=forceFrequency)
         filenamelist.sort()
@@ -143,12 +150,11 @@ class TimeList():
         TimeListObj.nTimes   =len(TimeListObj.filelist)
 
 
-        # we force daily datetimes to have hours = 12
-        if TimeListObj.inputFrequency == 'daily':
+        # forcing hours
+        if forcehour is not None:
             for iFrame, t in enumerate(TimeListObj.Timelist):
-                if t.hour==0:
-                    newt = datetime.datetime(t.year,t.month,t.day,hour,0,0)
-                    TimeListObj.Timelist[iFrame] = newt
+                newt = datetime.datetime(t.year,t.month,t.day,forcehour,0,0)
+                TimeListObj.Timelist[iFrame] = newt
 
         return TimeListObj
 
@@ -159,7 +165,7 @@ class TimeList():
         '''
         if len(self.Timelist)<2:
             timestr = self.timeinterval.start_time.strftime(" between %Y%m%d and ") +  self.timeinterval.end_time.strftime("%Y%m%d")
-            print "Frequency cannot be calculated in " + self.inputdir + timestr
+            print("Frequency cannot be calculated in " + self.inputdir + timestr)
             return None
 
         DIFFS = np.zeros((self.nTimes-1),np.float64)
@@ -176,8 +182,8 @@ class TimeList():
             return "weekly" #centered in " + str(self.Timelist[1].isoweekday())
         if (days > 26) & (days < 32) :
             return "monthly"
-        if (days < 1 ) & ( days > 1./24.):
-            return "hourly"
+        if (days < 1 ) & ( days >= 1./24.):
+            return "hours=%d" %int(days*24)
         if (days < 1./24 ) :
             return "seconds=%d" % int(days*24.*3600.)
         if (days > 364 ) & (days < 367): 
@@ -199,7 +205,7 @@ class TimeList():
             SELECTION=[]
             weights  =[]
 
-            if self.inputFrequency == "daily":
+            if (self.inputFrequency ==  "daily") | (self.inputFrequency.startswith("hours")):
                 for it, t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -230,7 +236,7 @@ class TimeList():
         for it, t in enumerate(self.Timelist):
             if requestor.time_interval.contains(t):
                 return it
-        print "Time not found"
+        print("Time not found")
         return None
 
     def selectWeeklyGaussWeights(self,requestor,std):
@@ -292,7 +298,7 @@ class TimeList():
             return SELECTION , np.array(weights)
 
         if isinstance(requestor,requestors.Hourly_req):
-            assert self.inputFrequency in [ 'hourly', "seconds=900", "seconds=1800"]
+            assert (self.inputFrequency in [ "seconds=900", "seconds=1800"]) | (self.inputFrequency.startswith("hours"))
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -303,7 +309,7 @@ class TimeList():
 
         if isinstance(requestor,requestors.Daily_req):
             # hourly values are treated as instantaneous values, not time averages
-            assert self.inputFrequency in ["hourly","daily", "seconds=900", "seconds=1800"] # it does not matter how many hours
+            assert (self.inputFrequency in ["daily", "seconds=900", "seconds=1800"])| (self.inputFrequency.startswith("hours"))
             SELECTION=[]
             weights = []
             for it,t in enumerate(self.Timelist):
@@ -317,7 +323,7 @@ class TimeList():
             SELECTION=[]
             weights = []
 
-            if self.inputFrequency in  ['daily','hourly',"seconds=900", "seconds=1800"] :
+            if (self.inputFrequency in  ['daily',"seconds=900", "seconds=1800"] ) | (self.inputFrequency.startswith("hours")):
                 for it, t in enumerate(self.Timelist):
                     if (t.year==requestor.year) & (t.month==requestor.month):
                         SELECTION.append(it)
@@ -342,7 +348,6 @@ class TimeList():
                         weights.append(weight)
                 return SELECTION , np.array(weights)
             if self.inputFrequency == 'monthly':
-                #print "Not time aggregation"
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -447,7 +452,7 @@ class TimeList():
         REQ_LIST=[]
         t = self.Timelist[0]
         starting_centered_day = datetime.datetime(t.year,t.month,t.day)
-        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=1")
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , days=1)
         for t in TL:
             d = requestors.Daily_req(t.year,t.month,t.day)
             indexes,_ = self.select(d)
@@ -474,7 +479,7 @@ class TimeList():
 
         starting_centered_day = self.timeinterval.start_time + datetime.timedelta(days=PossibleShifts[index])
 
-        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , "days=7")
+        TL=DL.getTimeList(starting_centered_day,self.Timelist[-1] , days=7)
         REQ_LIST=[]
         for t in TL:
             m = requestors.Weekly_req(t.year,t.month,t.day)
@@ -552,7 +557,6 @@ class TimeList():
                 req = requestors.Season_req(season[0],season[1],seasonobj)
 
                 if (req.time_interval.start_time >= firstSeason.time_interval.start_time) & (req.time_interval.end_time <=lastSeason.time_interval.end_time):
-                    #print "appended", season
                     SEASON_LIST_RED.append(season)
             SEASON_LIST = SEASON_LIST_RED
 
@@ -572,17 +576,17 @@ class TimeList():
         Not useful for time aggregation, but to get requestors in order to match with observations'''
 
         REQ_LIST=[]
-        if self.inputFrequency == 'seconds=900':
+        if self.inputFrequency.startswith('seconds='):
+            pos=self.inputFrequency.find("=")
+            nSeconds=int(self.inputFrequency[pos+1:])
             for t in self.Timelist:
-                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,900))
+                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,nSeconds))
             return REQ_LIST
-        if self.inputFrequency == 'seconds=1800':
+        if self.inputFrequency.startswith('hours'):
+            pos=self.inputFrequency.find("=")
+            nHours=int(self.inputFrequency[pos+1:])
             for t in self.Timelist:
-                REQ_LIST.append(requestors.seconds_req(t.year,t.month,t.day,t.hour,t.minute,1800))
-            return REQ_LIST
-        if self.inputFrequency == 'hourly':
-            for t in self.Timelist:
-                REQ_LIST.append(requestors.Hourly_req(t.year,t.month,t.day,t.hour))
+                REQ_LIST.append(requestors.Hourly_req(t.year,t.month,t.day,t.hour, delta_hours=nHours))
             return REQ_LIST
         if self.inputFrequency == 'daily':
             for t in self.Timelist:
@@ -686,18 +690,23 @@ class TimeList():
 
 
 if __name__ == '__main__':
-    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=17")
+    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", days=17)
     TTL     = TimeList(Days17)
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
 
-    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    H2 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", hours=2)
+    TL     = TimeList(H2)
+    REQS = TL.getOwnList()
+    import sys
+    sys.exit()
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)
     ii,w = TL.select(Sec_req)
 
-    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", "minutes=15")
+    Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Hourly_req=requestors.Hourly_req(2018,3,5,12,delta_hours=2)
     ii,w = TL.select(Hourly_req)
@@ -712,20 +721,20 @@ if __name__ == '__main__':
     intersection=[ k for k in ii if k in jj]
 
 
-    TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", "days=10")
+    TenDays = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", days=10)
     TTL     = TimeList(TenDays)
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
-        # print "\nii = ", ii, "\nw = ", weights
+        # print("\nii = ", ii, "\nw = ", weights)
 
-    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", "years=1")
+    yearly=DL.getTimeList("19970101-00:00:00", "20150502-12:00:00", years=1)
     TLY = TimeList(yearly)
     REQSY=TLY.getOwnList()
     r=REQSY[0]
     ii,weights = TLY.select(r)
 
-    monthly=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "months=1")
+    monthly=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", months=1)
     TLM = TimeList(monthly)
     for iSeas in range(4):
         m = requestors.Clim_season(iSeas,seasonobj)
@@ -735,7 +744,7 @@ if __name__ == '__main__':
         m = requestors.Clim_month(imonth)
         TLM.select(m)
 
-    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", "days=1")
+    daily=DL.getTimeList("19970601-00:00:00", "20150502-12:00:00", days=1)
     TL = TimeList(daily)
     REQS=TL.getOwnList()
     r=REQS[0]

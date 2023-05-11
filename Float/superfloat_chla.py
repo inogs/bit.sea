@@ -69,7 +69,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
-    print "dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S")
+    print("dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
     ncOUT = NC.netcdf_file(outfile,"w")
     setattr(ncOUT, 'origin'     , 'coriolis')
     setattr(ncOUT, 'file_origin', metadata.filename)
@@ -101,14 +101,14 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
     ncvar[:]=QcT
     
-    ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PSAL','f',('nPSAL',))
     ncvar[:]=Sali
     setattr(ncvar, 'variable'   , 'SALI')
     setattr(ncvar, 'units'      , "PSS78")
 
-    ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
     ncvar[:]=PresT
-    ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+    ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
     ncvar[:]=QcS
 
     ncvar=ncOUT.createVariable('CHLA','f',('nCHLA',))
@@ -127,12 +127,12 @@ def treating_coriolis(pCor):
     metadata = Metadata(pCor._my_float.filename)
     metadata.status_var = pCor._my_float.status_var('CHLA')
     if pCor._my_float.status_var('CHLA') in ['A','D'] :
-        Pres,Value, Qc=pCor.read('CHLA', read_adjusted=True)
+        Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
-            print "few values in Coriolis for " + pCor._my_float.filename
+            print("few values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
             return None, None, None, metadata
 
-        Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
+        #Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
         ii=(Pres >= 400) & (Pres <= 600)
         if ii.sum() > 0:
             shift = CHL[ii].mean()
@@ -141,7 +141,7 @@ def treating_coriolis(pCor):
         CHL[ii] = 0.005
         return Pres, CHL, Qc, metadata
     else:
-        print "R -- not dumped ", pCor._my_float.filename
+        print("R -- not dumped ", pCor._my_float.filename, flush=True)
         return None, None, None, metadata
 
 def chla_algorithm(pCor,outfile):
@@ -160,6 +160,7 @@ if input_file == 'NO_file':
     R = Rectangle(-6,36,30,46)
     PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
     for wmo in wmo_list:
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
@@ -175,12 +176,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile]
+        timestr          = INDEX_FILE['date'][iFile].decode()
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
         

@@ -126,7 +126,7 @@ for ivar, var in enumerate(VARLIST):
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req) 
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
+    print (METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
 #    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True)
 #    else:
@@ -141,17 +141,17 @@ for ivar, var in enumerate(VARLIST):
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        print sub.name
+        print (sub.name)
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
-    print "CLIM_REF_static"
-    print CLIM_REF_static
-    print "CLIM_MODEL"
-    print CLIM_MODEL
+    print ("CLIM_REF_static")
+    print (CLIM_REF_static)
+    print ("CLIM_MODEL")
+    print (CLIM_MODEL)
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
@@ -190,7 +190,7 @@ for bottom in PresDOWN:
     top = bottom
 nLayers = len(LayerList_2)
 LayerList_3=LayerList_2[:7]
-print "LayerList_3 = ", LayerList_3
+print ("LayerList_3 = ", LayerList_3)
 nLayers3 = len(LayerList_3)
 
 
@@ -206,7 +206,7 @@ for var in VARLIST:
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req)
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
+    print (METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN")
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
     CLIM_REF_static,_ = climatology.get_climatology_open(var,SUBlist, LayerList_2, TheMask,basin_expand=True,QC=True)
 #    else:
@@ -231,9 +231,9 @@ for var in VARLIST:
         if ngoodlayers>0:
             m = matchup(modsubs[good], refsubs[good])
 #            CORR[iSub,0] = m.correlation()
-	    STATS[iSub,0] = m.bias()
-	    STATS[iSub,1] = m.RMSE()
-	    STATS[iSub,2] = m.correlation()
+            STATS[iSub,0] = m.bias()
+            STATS[iSub,1] = m.RMSE()
+            STATS[iSub,2] = m.correlation()
 #    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
     writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", STATS, rows_names, ['bias','rmse','corr'])
 

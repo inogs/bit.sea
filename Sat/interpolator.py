@@ -23,17 +23,20 @@ def argument():
                                 choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24','Mesh4'],
                                 help = ''' Name of the mesh of the input sat file'''
                                 )
-    parser.add_argument(   '--outmesh', '-m',
-                                type = str,
-                                required = True,
-                                choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24','Mesh4'],
-                                help = ''' Name of the mesh of the output sat files'''
-                                )
-    parser.add_argument(   '--maskfile', '-M',
+    parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 required = True,
                                 help = ''' Path of the meshmask corresponding to output sat files'''
                                 )
+    parser.add_argument(   '--varname', '-v',
+                                type = str,
+                                required = True,
+                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO']
+                                )
+    parser.add_argument(   '--force', '-f',
+                                action='store_true',
+                                help = """Overwrite existing variables in files
+                                """)
 
     return parser.parse_args()
 
@@ -49,7 +52,6 @@ from postproc import masks
 from commons.utils import addsep
 import os
 from commons import netcdf3
-maskOut = getattr(masks,args.outmesh)
 maskIn  = getattr(masks,args.inmesh)
 
 
@@ -65,9 +67,8 @@ except:
     isParallel = False
 
 TheMask = Mask(args.maskfile)
-
-x = maskOut.lon
-y = maskOut.lat
+x = TheMask.xlevels[0,:]
+y = TheMask.ylevels[:,0]
 
 xOrig = maskIn.lon
 yOrig = maskIn.lat
@@ -79,27 +80,29 @@ INPUTDIR=addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outputdir)
 dateformat="%Y%m%d"
 
-reset = False
-
 Timestart="19500101"
 Time__end="20500101"
 
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc",prefix='',dateformat=dateformat)
 
-counter = 0
-MySize = len(TL.filelist[rank::nranks])
+
 
 for filename in TL.filelist[rank::nranks]:
-    counter += 1
-    outfile = OUTPUTDIR + os.path.basename(filename)
-    exit_condition = os.path.exists(outfile) and (not reset)
-    if exit_condition: 
-        continue
-    Mfine = Sat.readfromfile(filename)
-    Mout, usedPoints  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END, min_cov=0.0, ave_func=Sat.mean)
-    Sat.dumpGenericNativefile(outfile, Mout, 'CHL', maskOut)
-    netcdf3.write_2d_file(usedPoints, 'Points', outfile, Mout)
 
-    print "\tfile ", counter, " of ", MySize, " done by rank ", rank
+    outfile = OUTPUTDIR + os.path.basename(filename)
+    writing_mode = Sat.writing_mode(outfile)
+
+    condition_to_write = not Sat.exist_valid_variable(args.varname,outfile)
+    if args.force: condition_to_write=True
+    if not condition_to_write: continue
+
+
+    Mfine = Sat.readfromfile(filename, args.varname)
+    Mout, usedPoints  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END, min_cov=0.0, ave_func=Sat.mean)
+    Sat.dumpGenericfile(outfile, Mout, args.varname, mesh=TheMask,mode=writing_mode)
+    print(outfile)
+    if not Sat.exist_valid_variable('Points', outfile):
+        Sat.dumpGenericfile(outfile, usedPoints, 'Points', mesh=TheMask, mode='a')
+
 

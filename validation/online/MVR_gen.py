@@ -64,7 +64,7 @@ Ndates = month_lastday
 STARTTIME = args.month + '01'
 END__TIME = args.month + '%02d' %month_lastday
 
-AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59','days=1')
+AllDates = DL.getTimeList(STARTTIME + '-00:00:00',END__TIME + '-23:59:59',days=1)
 
 
 TI = TimeInterval(STARTTIME,END__TIME)
@@ -151,7 +151,7 @@ for tt in ['LOG','NOLOG']:
 
 file1 = TLsat['f1'].filelist[0]
 M1 = NC.Dataset(file1,"r")
-M_AREAS = M1.sublist.encode().split(',')[:-1]
+M_AREAS = M1.sublist.split(',')[:-1]
 AREA_NAMES = []
 indexAREAS = {}
 for sub in OGS.P.basin_list:
@@ -185,7 +185,7 @@ for tt in ['LOG','NOLOG']:
             M = NC.Dataset(filef,"r")
             for mm,metric in enumerate(METRICS_NAMES):
                 for isub,subname in enumerate(AREA_NAMES):
-                    varname = DICTmetricnames[tt][0][metric]
+                    varname = DICTmetricnames[tt][0][metric].decode()
                     MetricsSAT[tt][idate,iforecast,mm,isub] = M.variables[varname][indexAREAS[subname],1].data.copy()
         
     masknan = np.isnan(MetricsSAT[tt])
@@ -235,7 +235,7 @@ for sub in OGS.P.basin_list:
 
 file1 = TLfloat.filelist[0]
 M1 = NC.Dataset(file1,"r")
-M_AREAS = M1.sublist.encode().split(',')
+M_AREAS = M1.sublist.split(',')
 AREA_NAMES = []
 indexAREAS = {}
 for sub in OGS.P.basin_list:
@@ -249,7 +249,7 @@ ALLstring = AREA_NAMES[:]
 ALLstring.extend(METRICS_NAMES)
 max_strlenght = max(len(aa) for aa in ALLstring)
 
-M_depths = M1.layerlist.encode().split(',')
+M_depths = M1.layerlist.split(',')
 DEPTHSlist = []
 for layername in M_depths:
     top,bottom_m = layername.split('-')
@@ -277,7 +277,7 @@ for idate,datef in enumerate(AllDates):
     for mm,metric in enumerate(METRICS_NAMES):
         for isub,subname in enumerate(AREA_NAMES):
             if subname=='Aegean Sea': continue
-            varname = DICTmetricnames[0][metric]
+            varname = DICTmetricnames[0][metric].decode()
             MetricsFLOAT[idate,:,mm,isub] = M.variables[varname][0,indexAREAS[subname],:Ndepths].data.copy()
 
 masknan = np.isnan(MetricsFLOAT)
@@ -298,12 +298,12 @@ S.createDimension("forecasts"    ,len(leadtimes))
 
 ncvar = S.createVariable("area_names",'c',('areas','string_length'))
 x=np.array(ALLstring,dtype=str)
-ncvar[:] = x.view('S1').reshape(x.size,-1)[:Nsub,:]
+ncvar[:] = x.view('U1').reshape(x.size,-1)[:Nsub,:]
 setattr(S.variables['area_names'],"long_name"  ,"area names")
 setattr(S.variables['area_names'],"description","region over which statistics are aggregated")
 
 ncvar = S.createVariable("metric_names",'c',('metrics','string_length'))
-ncvar[:] = x.view('S1').reshape(x.size,-1)[Nsub:,:]
+ncvar[:] = x.view('U1').reshape(x.size,-1)[Nsub:,:]
 setattr(S.variables['metric_names'],"long_name","metric names")
 
 ncvar = S.createVariable("forecasts",'f',('forecasts',))

@@ -5,7 +5,7 @@ FLOATVARS={'O2o':'DOXY', \
            'Chla':'CHLA', \
            'vosaline':'PSAL', \
            'votemper':'TEMP',
-           'EIR':'DOWNWELLING_PAR',
+           'PAR':'DOWNWELLING_PAR',
            'POC':'BBP700',
            'P_c':'BBP700',
            'BBP532':'BBP532',
@@ -22,7 +22,7 @@ LOVFLOATVARS={'O2o':'DOXY', \
               'P_i':'CHLA', \
               'vosaline':'PSAL', \
               'votemper':'TEMP',
-              'EIR':'PAR',
+              'PAR':'PAR',
               'BBP532':'BBP532',
               'POC':'BBP700',
               'P_c':'BBP700',
@@ -101,5 +101,10 @@ SOCAT_VARS ={"votemper": "temp",
              "vosaline": "sal",
              "pCO2"    : "fCO2"
              }
-
+SAT_VARS={'kd490':'KD490',
+          'P_l':'CHL',
+          'P1l':'DIATO',
+          'P2l':'NANO',
+          'P3l':'PICO',
+          'P4l':'DINO'}
 

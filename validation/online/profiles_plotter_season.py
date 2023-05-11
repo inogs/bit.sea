@@ -117,7 +117,7 @@ class plot_container():
         seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.zeros_like(y,dtype=np.bool)
+        maskseas = np.zeros_like(y,dtype=bool)
         maskseas[sind] = True
         ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0), \
                 self.mask.zlevels, self.plotargs, \
@@ -198,9 +198,9 @@ class figure_generator():
         currenty = datetoday.year
         seasonObj = season.season()
         seasonind = seasonObj.findseason(datetoday)
-        seasdates,_ = seasonObj.get_season_dates(seasonind)
-        seas_start = seasdates.start_time.replace(year=currenty)
-        seas_end   = seasdates.end_time.replace(year=currenty)
+        seasdates,_ = seasonObj.get_season_dates(seasonind, year=currenty)
+        seas_start = seasdates.start_time
+        seas_end   = seasdates.end_time
 
         datelastDA = datetoday-timedelta(days=2)
 
@@ -226,7 +226,7 @@ LEVELS=[0,50,100,150] #m
 
 
 PLOT_LIST = []
-StyleLIST = [':g',':y',':c','-b']
+StyleLIST = [':g',':y','-b']
 for ii,yy in enumerate(LISTyear):
     PLOT_LIST.append(plot_container(np.str(yy),StyleLIST[ii],PATH[yy],Mask24))
 
@@ -246,7 +246,7 @@ for var in VARLIST[rank::nranks] :
 
     for iSub, sub in enumerate(V2.P):
         outfile = "%sProfiles.%s.%s.png" %(OUTDIR,var,sub.name)
-        print outfile
+        print(outfile)
 
         FigureGenerator=figure_generator()
         fig, axes= FigureGenerator.gen_structure(var, sub.name,LEVELS,datetoday)

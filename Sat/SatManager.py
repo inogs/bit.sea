@@ -1,7 +1,10 @@
 from postproc import masks
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import numpy as np
 import netCDF4
+from datetime import datetime
+import os
+
 
 def mean(array):
     return array.mean()
@@ -19,7 +22,7 @@ def readfromfile(filename,var='CHL'):
     '''
     returns CHL
     ''' 
-    ncIN = netCDF4.Dataset(filename,'r')
+    ncIN = NC.Dataset(filename,'r')
     varObj = ncIN.variables[var]
     ndims = len(varObj.shape)
     if ndims==2: CHL_IN=np.array(varObj)
@@ -29,14 +32,14 @@ def readfromfile(filename,var='CHL'):
     return CHL_IN
 
 def readClimatology(filename):
-    ncIN = netCDF4.Dataset(filename,'r')
+    ncIN = NC.Dataset(filename,'r')
     MEAN = np.array( ncIN.variables['Mean'])
     STD  = np.array( ncIN.variables['Std'])#(366, 253, 733)
     ncIN.close()
     return MEAN,STD
 
 def readBathymetry(filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/MODIS/Bathy_MODIS.nc"):
-    ncIN = netCDF4.Dataset(filename,'r')
+    ncIN = NC.Dataset(filename,'r')
     BATHY=np.array(ncIN.variables['bathy'])
     ncIN.close()
     return BATHY
@@ -96,7 +99,7 @@ def interpOnV1(CHL_16,bathy_threshold = 0):
                 condition = True
             if batgoods.sum() == 2:
                 diag1 = batgoods.diagonal()
-                diag2 = np.array([batgoods[0,1], batgoods[1,0]],np.bool)
+                diag2 = np.array([batgoods[0,1], batgoods[1,0]],bool)
                 if (diag1.all()) | (diag2.all()) :
                     condition=True
 
@@ -347,6 +350,77 @@ def getnextIndex(array,value):
             break
     return i
 
+def exist_valid(filename):
+    '''Returns true if file exists and is a valid NetCDF file'''
+    if not os.path.exists(filename):
+        return False
+    good = True
+    try:
+        ncIN = NC.Dataset(filename,'r')
+    except:
+        good = False
+    if good:
+        ncIN.close()
+        return True
+    else:
+        return False
 
+def exist_variable(variable, filename):
+    ncIN = NC.Dataset(filename,'r')
+    variables=ncIN.variables.keys()
+    ncIN.close()
+    return variable in variables
+
+def exist_valid_variable(variable, filename):
+    if not exist_valid(filename): return False
+    return exist_variable(variable, filename)
+
+def writing_mode(filename):
+    '''
+    Returns 'a' for valid NetCDF files, else 'w' (overwrite)
+    '''
+    writingmode='w'
+    if exist_valid(filename): writingmode='a'
+    return writingmode
+
+
+def dumpGenericfile(filename, M, varname, mesh=OneKmMesh,mode="w"):
+    '''
+    Dump sat NetCDF file
+    In append mode, it can add a NetCDF variable or overwrite an existing one
+    Arguments:
+    * filename * string of output filename
+    * M        * 2D numpy ndarray
+    * varname  * string
+    * mesh     * mesh object
+    * mode     * string, 'w' or 'a'
+    '''
+    ncOUT  = NC.Dataset(filename,mode)
+    if mode=='w':
+        ncOUT.createDimension('time', 1)
+        ncOUT.createDimension('depth',1)
+        ncOUT.createDimension('lon',mesh.jpi)
+        ncOUT.createDimension('lat',mesh.jpj)
+        ncvar = ncOUT.createVariable('depth','f',('depth',))
+        ncvar[:] = 1.47210180759
+        ncvar = ncOUT.createVariable('time','f',('time',))
+        ncvar[:] = 1.0
+        ncvar = ncOUT.createVariable('lat','f',('lat',))
+        ncvar[:] = mesh.lat
+        ncvar = ncOUT.createVariable('lon','f',('lon',))
+        ncvar[:] = mesh.lon
     
+    if exist_valid_variable(varname, filename):
+        ncvar = ncOUT.variables[varname]
+    else:
+        ncvar = ncOUT.createVariable(varname, 'f', ('time','lat','lon'), zlib=True,fill_value=fillValue)
+    chl = np.zeros((1,mesh.jpj,mesh.jpi),np.float32)
+    chl[0,:,:] = M
+    ncvar[:] = chl
+    setattr(ncvar, 'missing_value', fillValue)
+    setattr(ncvar, 'fillValue', fillValue)
+    d=datetime.now()
+    setattr(ncvar,'creation_time',  d.strftime("%Y%m%d-%H:%M:%S"))
+
+    ncOUT.close()
     

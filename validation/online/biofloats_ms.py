@@ -78,7 +78,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
 for ivar, var in enumerate(VARLIST):
-    print var
+    print (var)
     for isub, sub in enumerate(OGS.NRT3):
         Profilelist_all = bio_float.FloatSelector(FLOATVARS[var], TI, sub)
         Profilelist = bio_float.remove_bad_sensors(Profilelist_all,FLOATVARS[var])

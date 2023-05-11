@@ -2,8 +2,9 @@ import numpy as np
 from commons.mask import Mask
 import sys
 def mld(temperature,maskobj):
-    ''' Calculates of Mixed Layer Depth based on temperature 
-    mld is defined as 
+    ''' Calculates the Mixed Layer Depth based on temperature criterium of "0.2C with respect to T at 10m depth"
+    mld is defined with the following "Temperature criterium": 0.2 C absolute difference between T at 10m and MLD
+           and MLD 
      '''
     jpk,jpj,jpi=maskobj.shape
     tmask=maskobj.mask_at_level(0)
@@ -13,9 +14,9 @@ def mld(temperature,maskobj):
         for ji in range(jpi):
             if tmask[jj,ji]:
                 depth_cell=DEPTHS[jj,ji]
-                absdiff_array =  abs(temperature[:depth_cell,jj,ji]- temperature[3,jj,ji])
+                absdiff_array =  abs(temperature[:depth_cell,jj,ji]- temperature[3,jj,ji]) # the temperature[3,jj,ji] stands for temperature at 4th level that is approx. 10m
                 for k,absdiff in enumerate(absdiff_array):
-                    if absdiff > 0.1:
+                    if absdiff > 0.2:  # 0.2 is the criterium of diference
                         break
                 matrix_2D[jj,ji] = k
 
@@ -206,20 +207,25 @@ def MWB2(chl,maskobj):
     return matrixMWB,matrixIMWB,matrixCMWB,matrixI9MWB
 
 
-def NITRCL(nit,maskobj):
+def NITRCL(nit,maskobj,threshold=2.0):
     '''
+    Arguments:
+    * nit     *  3d array of nitrate
+    * maskobj *  mask object
     Calculates of nitracline depth
     based on criteria p>=2
 
+    Returns:
+    * matrixNCL   * 2d array of depths (the actual nitracline)
+    * matrixINCL  * 2d array of indexes of depth
     '''
+
     _,jpj,jpi = maskobj.shape
-    tmask = maskobj.mask_at_level(200)
-    # indlev = maskobj.getDepthIndex(0)
+    tmask = maskobj.mask_at_level(0)
     DEPTHS = maskobj.bathymetry_in_cells()
-    matrixNCL = np.zeros((jpj,jpi))
-    matrixNCL[:,:] = np.nan
-    matrixINCL = np.zeros((jpj,jpi))
-    matrixINCL[:,:] = np.nan
+    matrixNCL  = np.zeros((jpj,jpi))*np.nan
+    matrixINCL = np.zeros((jpj,jpi))*np.nan
+
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -228,15 +234,13 @@ def NITRCL(nit,maskobj):
                 profile = nit[:profile_len,jj,ji]
                 depths = maskobj.zlevels[:profile_len]
                 for iid, dd in enumerate(profile):
-                    if (dd>=2) and (depths[iid]>30):
+                    if (dd>=threshold) and (depths[iid]>30):
                         NCL = depths[iid]
                         matrixNCL[jj,ji] = NCL
                         matrixINCL[jj,ji] = iid
                         break
                 
-    
-    matrixNCL[~tmask] = np.nan
-    matrixINCL[~tmask] = np.nan
+
     return matrixNCL,matrixINCL
 
 

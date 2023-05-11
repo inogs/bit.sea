@@ -35,11 +35,11 @@ import numpy as np
 from commons.layer import Layer
 from basins import V2 as OGS
 from commons.utils import addsep
-from profiler_floats import TL
+from profiler import TL
 import scipy.io.netcdf as NC
 from commons.utils import writetable
 from datetime import datetime
-from profiler_floats import *
+from profiler import *
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)
@@ -51,18 +51,19 @@ class ncreader():
         self.nVAR = ncIN.dimensions['var']
         self.nSUB = ncIN.dimensions['sub']
         self.nDEPTH  = ncIN.dimensions['depth']
-        self.SUBLIST = ncIN.sublist.split(",")
-        self.LAYERLIST=ncIN.layerlist.split(",")
-        self.VARLIST = ncIN.varlist.split(",")
+        self.SUBLIST = ncIN.sublist.decode().split(",")
+        self.LAYERLIST=ncIN.layerlist.decode().split(",")
+        self.VARLIST = ncIN.varlist.decode().split(",")
         self.npoints = ncIN.variables['npoints'].data.copy()
         self.bias    = ncIN.variables['bias'   ].data.copy()
         self.rmse    = ncIN.variables['rmse'   ].data.copy()
+        self.ref    = ncIN.variables['ref'].data.copy()
+        self.mod    = ncIN.variables['model'].data.copy()
     def plotdata(self,VAR,var,sub,depth):
         ivar = self.VARLIST.index(var)
         isub = self.SUBLIST.index(sub)
         idepth= self.LAYERLIST.index(depth)
         return VAR[ivar,:, isub,idepth]
-
 
 
 DATAfile = ncreader(inputfile)
@@ -78,6 +79,9 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     rmse1 = DATAfile.plotdata(DATAfile.rmse   , var, sub, layer)
     numb1 = DATAfile.plotdata(DATAfile.npoints, var, sub, layer)
     
+    ref1 = DATAfile.plotdata(DATAfile.ref   , var, sub, layer)
+    mod1 = DATAfile.plotdata(DATAfile.mod   , var, sub, layer)
+
     ii=numb1==0
     rmse1[ii] = np.nan
     bias1[ii] = np.nan
@@ -94,17 +98,19 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     ax.plot(times,bias1,'m.-', label='bias')
     ax.plot(times,rmse1,'k.-', label='rmse')
     if longvar == 'Chlorophyll' : 
-	ax.set_ylim([-0.4, 0.4])
-	ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+        ax.set_ylim([-0.4, 0.4])
+        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 #	ax.ticklabel_format(axis='both', fontsize=20)
     if longvar == 'PhytoC' :
        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+    if longvar == 'POC' :
+       ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 
     if longvar == 'Nitrate'     : 
-	ax.set_ylim([-5, 5])
-	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
+        ax.set_ylim([-5, 5])
+        ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     if longvar == 'Oxygen'      :
-	ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
+        ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     #if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
         
 #    ax.set_ylabel('bias, rmse mg/m$^3$')
@@ -117,15 +123,18 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
         tick.label.set_fontsize(16)
     for l in ax2.get_yticklabels() : l.set_fontsize(16)
 
-    ii = np.zeros((len(times),) , np.bool)
+    ii = np.zeros((len(times),) , bool)
     for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
     biasm = np.nanmean(bias1[ii])
     rmsem = np.nanmean(rmse1[ii])
-    return fig, biasm, rmsem, ax, ax2
+    refm = np.nanmean(ref1[ii])
+    modm = np.nanmean(mod1[ii])
+    return fig, biasm, rmsem, ax, ax2, refm, modm
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o','P_c']
-VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen','PhytoC']
+VARLIST = ['P_l','N3n','O2o','P_c','POC']
+VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen','PhytoC','POC']
 SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)
@@ -138,13 +147,17 @@ row_names   =[sub.name for sub in SUBLIST]
 for ivar, var in enumerate(VARLIST):
     BIAS = np.zeros((nSub,nLayers),np.float32)
     RMSE = np.zeros((nSub,nLayers),np.float32)
+    REF = np.zeros((nSub,nLayers),np.float32)
+    MOD = np.zeros((nSub,nLayers),np.float32)
     for isub, sub in enumerate(SUBLIST):
         for ilayer, layer in enumerate(LAYERLIST):
             outfile = "%s%s.%s.%s.png" % (OUT_FIGDIR,var,sub.name,layer.longname())
-            print outfile
-            fig,bias,rmse,ax,ax2  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
+            print (outfile)
+            fig,bias,rmse,ax,ax2, ref, mod  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
             BIAS[isub,ilayer] = bias
             RMSE[isub,ilayer] = rmse
+            REF[isub,ilayer] = ref
+            MOD[isub,ilayer] = mod
             title = "%s %s %s " %(VARLONGNAMES[ivar], sub.extended_name, layer.string())
             fig.suptitle(title, fontsize=20)
             fig.savefig(outfile)
@@ -152,4 +165,6 @@ for ivar, var in enumerate(VARLIST):
 
     writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
     writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
+    writetable(OUT_TABLEDIR +  var + '_REF.txt',REF,row_names, column_names)
+    writetable(OUT_TABLEDIR +  var + '_MOD.txt',MOD,row_names, column_names)
     

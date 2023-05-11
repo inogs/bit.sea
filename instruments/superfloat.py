@@ -1,12 +1,12 @@
-import scipy.io.netcdf as NC
+import netCDF4
 import numpy as np
 import datetime
 import os
 import matplotlib.pyplot as pl
 from commons.utils import addsep
-from instrument import Instrument, Profile
+from instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
-from var_conversions import FLOATVARS as conversion
+from instruments.var_conversions import FLOATVARS as conversion
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -14,7 +14,7 @@ mydtype= np.dtype([
           ('lon',np.float32),
           ('time','S17'),
           ('parameters','S200')] )
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V7C/"
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + "SUPERFLOAT/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
@@ -113,10 +113,10 @@ class BioFloat(Instrument):
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
-        ncIN=NC.netcdf_file(self.filename,'r')
-        Pres    = ncIN.variables['PRES_'+var].data.copy()
-        Profile = ncIN.variables[        var].data.copy()
-        Qc      = ncIN.variables[var + "_QC"].data.copy()
+        ncIN = netCDF4.Dataset(self.filename,'r')
+        Pres    = np.array(ncIN.variables['PRES_'+var])
+        Profile = np.array(ncIN.variables[        var])
+        Qc      = np.array(ncIN.variables[var + "_QC"])
         ncIN.close()
         return Pres, Profile, Qc
 
@@ -126,19 +126,26 @@ class BioFloat(Instrument):
         Pres, Profile, Qc = self.read_raw(var)
 
         if var_mod is None:
-#           print "var_mod is " + np.str(var_mod) 
            return Pres, Profile, Qc
 
-        ii=(Pres >= 400) & (Pres <= 500) 
+        ii=(Pres >= 400) & (Pres <= 500)
         if (var_mod=='P_c'):
-            bbp470 = Profile * ( 470.0/ 700)**0.78# [m-1]
+            bbp470 = Profile * ( 470.0/ 700)**(-0.78)# [m-1]
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
-            shift=Profile[ii].mean()
-            Profile = Profile - shift
-            ii=Profile<=0
-            Profile[ii] = 0.0
+            if ii.sum() > 0 :
+                shift=Profile[ii].mean()
+                Profile = Profile - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
 
-#        if (var_mod == "POC"): 
+        if (var_mod == "POC"):
+            POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
+            if ii.sum() > 0 :
+                shift=POC[ii].mean()
+                print( "POC: adding a shift of " + np.str(shift))
+                Profile = POC - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
 
      
         return Pres, Profile, Qc
@@ -210,7 +217,7 @@ class BioFloat(Instrument):
 
         info = Info()
 
-        ncIN=NC.netcdf_file(self.filename,'r')
+        ncIN=netCDF4.Dataset(self.filename,'r')
         info.status_var=ncIN.variables[var].status_var
         info.file_orig=ncIN.file_origin
         
@@ -262,11 +269,11 @@ class BioFloat(Instrument):
 
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile]
+            timestr          = INDEX_FILE['time'][iFile].decode()
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile]
-            available_params = INDEX_FILE['parameters'][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile].decode()
+            available_params = INDEX_FILE['parameters'][iFile].decode()
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
             if filename.endswith(thefilename):
                 return BioFloat(lon,lat,float_time,filename,available_params)
@@ -294,11 +301,11 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile]
+        timestr          = INDEX_FILE['time'][iFile].decode()
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
         filename = ONLINE_REPO + "SUPERFLOAT/" + filename
 
@@ -376,8 +383,9 @@ if __name__ == '__main__':
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
-    filename="/gpfs/scratch/userexternal/gbolzon0/V7C/DEBUG_SUPERFLOAT/ONLINE/SUPERFLOAT/6902969/SR6902969_001.nc"
+    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SUPERFLOAT/6903765/SR6903765_151.nc"
     F=BioFloat.from_file(filename)
+    Pres,V, Qc = F.read(var)
     import sys
     sys.exit()
 

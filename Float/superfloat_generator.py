@@ -1,6 +1,6 @@
 from commons import calculated_depths
 import numpy as np
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import os
 
 
@@ -125,13 +125,13 @@ def synthesis_profile(pLov, pCor):
     if len(PresC)<5:
 
         if len(PresL)>5:
-            print "few values in Coriolis: using LOV"
+            print("few values in Coriolis: using LOV")
             return PresL, ValueL, QcL
         else:
-            print "few values in either dataset for " + pLov._my_float.filename
+            print("few values in either dataset for " + pLov._my_float.filename)
             return None, None, None
     if has_drift(PresC, ValueC):
-        print pCor._my_float.filename + " has drift"
+        print(pCor._my_float.filename + " has drift")
         return None, None, None
 
     if len(ValueL)> 0:
@@ -154,7 +154,7 @@ def exist_valid(filename):
         return False
     good = True
     try:
-        ncIN = NC.netcdf_file(filename,'r')
+        ncIN = NC.Dataset(filename,'r')
     except:
         good = False
     if good:
@@ -164,7 +164,7 @@ def exist_valid(filename):
         return False
 
 def exist_variable(variable, filename):
-    ncIN = NC.netcdf_file(filename,'r')
+    ncIN = NC.Dataset(filename,'r')
     variables=ncIN.variables.keys()
     ncIN.close()
     return variable in variables
@@ -278,22 +278,22 @@ if __name__=="__main__":
                 if pCor._my_float.status_var('CHLA')=='A':
                     PresC, ValueC, QcC = pCor.read('CHLA',read_adjusted=True)
                 else:
-                    print pCor._my_float.filename + " without CHLA_ADJUSTED"
+                    print(pCor._my_float.filename + " without CHLA_ADJUSTED")
                     continue
             else:
-                print pCor._my_float.filename + " without CHLA"
+                print(pCor._my_float.filename + " without CHLA")
                 continue
 
             if len(ValueC) < 5:
-                print "few values in Coriolis for " + pCor._my_float.filename
+                print("few values in Coriolis for " + pCor._my_float.filename)
                 continue
 
             if len(ValueL)<  1:
-                print "no LOV data"
+                print("no LOV data")
                 continue
 
             if has_drift(PresC, ValueC):
-                print pCor._my_float.filename + " has drift"
+                print(pCor._my_float.filename + " has drift")
                 continue
 
             ValueCorig = ValueC.copy()

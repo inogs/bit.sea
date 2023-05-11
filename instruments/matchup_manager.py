@@ -1,5 +1,5 @@
 import os,sys
-from instrument import Profile
+from instruments.instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
 import matchup.matchup
@@ -89,7 +89,7 @@ class Matchup_Manager():
             JOB_LINES.append(line)
             JOB_LINES.append("if [ $? -ne 0 ] ; then echo ERROR in aveScan; exit 1  ; fi \n")
 
-        F=file(filename,'w')
+        F=open(filename,'w')
         F.writelines(JOB_LINES)
         F.close()
 
@@ -113,7 +113,7 @@ class Matchup_Manager():
             os.system("rm -rf " + TMPSDIR)
             os.system("mkdir " + MODEL_PROFILES_DIR)
             os.system("mkdir " + TMPSDIR)
-        os.chmod(profilername, 0755)
+        os.chmod(profilername, 0o0755)
         os.system(profilername)
     @staticmethod
     def readModelProfile(filename,var, wmo):
@@ -126,9 +126,7 @@ class Matchup_Manager():
 
         M = ncIN.variables[var].data.copy()
 
-        #print('WMO = ', wmo)
-        #print('Cruise Index = ', ncIN.CruiseIndex)
-        iProfile = ncIN.CruiseIndex.rsplit(", ").index(wmo)
+        iProfile = ncIN.CruiseIndex.decode().rsplit(", ").index(wmo)
         ncIN.close()
         Profile = M[iProfile,:]
 
@@ -193,7 +191,7 @@ class Matchup_Manager():
             assert p in self.PROFILE_LIST
             Model_time = self.modeltime(p)
             if not self.TI.contains(Model_time) :
-                print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
@@ -201,7 +199,7 @@ class Matchup_Manager():
             seaPoints = ~np.isnan(ModelProfile)
 
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
-                print "No model data for ", p.ID()
+                print( "No model data for ", p.ID())
                 continue
 
 
@@ -261,20 +259,17 @@ class Matchup_Manager():
             assert p in self.PROFILE_LIST
             Model_time = self.modeltime(p)
             if not self.TI.contains(Model_time) :
-                print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
 
-            #print('Modelfile = ', Modelfile)
-            #print('Model_time = ', Model_time)
-            #print('p_ID = ', p.ID())
 
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
-                print "No model data for ", p.ID()
+                print ("No model data for ", p.ID())
                 continue
 
 
@@ -330,7 +325,7 @@ class Matchup_Manager():
             assert p in self.PROFILE_LIST
             Model_time = self.modeltime(p)
             if not self.TI.contains(Model_time) :
-                print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
 
             Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
@@ -338,7 +333,7 @@ class Matchup_Manager():
             seaPoints = ~np.isnan(ModelProfile)
 
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
-                print "No model data for ", p.ID()
+                print("No model data for ", p.ID())
                 continue
 
 
@@ -430,7 +425,7 @@ class Matchup_Manager():
         '''
         from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,501,5)
-        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+        MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
         plotvarname = [r'Chl $[mg/m^3]$',
                        r'Oxy $[mmol/m^3]$',
                        r'Nitr $[mmol/m^3]$',
@@ -449,11 +444,11 @@ class Matchup_Manager():
             Model_time = self.modeltime(p)
 
             if Model_time is None :
-                print p.time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                print(p.time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
             else:
                 if not self.TI.contains(Model_time) :
-                    print Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler")
+                    print(Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                     continue
             VARLIST = p._my_float.available_params.strip().rsplit(" ")
             if "PRES" in VARLIST: VARLIST.remove('PRES')
@@ -464,7 +459,7 @@ class Matchup_Manager():
             ref_varname = p.reference_var(model_varname)
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             if np.isnan(ModelProfile).all() : # potrebbe essere fuori dalla tmask
-                print "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat)
+                print( "No model data for (lon,lat) = (%g, %g) " %(p.lon, p.lat))
                 continue
 
             filename = outdir+"/"+Model_time.strftime('%Y%m%d') +"_"+p.name()
@@ -486,24 +481,12 @@ class Matchup_Manager():
                 if len(Pres) == 0:
                     Pres, Profile, Qc = p.read(ref_varname,var_mod=model_varname)
 
-                print model_varname, len(Profile)
+                print(model_varname, len(Profile))
                 if len(Profile) < 2 : continue
                 model_on_common_grid=np.interp(zlevels_out,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
                 float_on_common_grid=np.interp(zlevels_out,Pres,Profile).astype(np.float32)
-                ii=(zlevels_out >= 400) & (zlevels_out <= 500)
 
-                if model_varname=='POC':
-                    float_on_common_grid = float_on_common_grid *  52779.37 - 3.57 # Bellacicco 2019
-                    shift=float_on_common_grid[ii].mean()
-                    print "POC: adding a shift of " + np.str(shift)
-                    float_on_common_grid = float_on_common_grid - shift
 
-                if model_varname == 'P_c':
-                    bbp470 = float_on_common_grid * ( 470.0/700)**(-0.78)# [m-1]
-                    float_on_common_grid = 12128 * bbp470 + 0.59   # Griff et al. 2015
-                    shift=float_on_common_grid[ii].mean()
-                    print "P_c: adding a shift of " + np.str(shift)
-                    float_on_common_grid = float_on_common_grid - shift
 
                 if model_varname == "EIR": #"PAR":
                     sec = p.time.hour*3600 + p.time.minute*60

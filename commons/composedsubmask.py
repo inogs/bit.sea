@@ -43,7 +43,7 @@ class ComposedSubMask(Mask):
         else:
             raise ValueError("basin must be an instance of ComposedBasin")
         # Initialize composed mask
-        dtype = [(b.name, np.bool) for b in self._basin]
+        dtype = [(b.name, bool) for b in self._basin]
         self._mask = np.zeros_like(base_mask, dtype=dtype)
         # For each basin
         for b in basin:

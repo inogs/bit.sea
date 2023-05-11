@@ -27,8 +27,9 @@ class DataExtractor(object):
             - *rawdata* (optional): a Numpy array containing the data.
             - *rawdatafill* (optional): the fill value used inside rawdata
               (default: np.nan)
-            _ *fill_value* (optional): the value that will be used when there's
-            _ *dimvar* (optional): dimensions of the variable to be extracted
+            - *fill_value* (optional): the value that will be used when there's
+            - *dimvar* (optional) : if present, it forces the dimension of the output.
+              If dimvar=2 when we read a 3D array, a 2d array of the surface will be returned.
 
         Either rawdata or filename plus varname must be defined.
         """
@@ -42,6 +43,7 @@ class DataExtractor(object):
         if (filename is None):
             #Use rawdata
             self.__shape = rawdata.shape
+            self.dims = len(rawdata.shape)
             self.__values = rawdata
             self.__dset_fillvalue = rawdatafill
             self.__filename = 'rawdata'
@@ -55,16 +57,21 @@ class DataExtractor(object):
                 if not v in dset.variables:
                     raise NotFoundError("variable '%s' not found" % (varname, ))
                 else:
-                    ndims = len(dset.variables[v].shape)
-                    
-                    if dimvar==3:
-                        if ndims == 3 : self.__values = np.array(dset.variables[v])
-                        if ndims == 4 : self.__values = np.array(dset.variables[v])[0,:,:,:]
-                    if dimvar==2:
-                        if ndims == 2 : self.__values = np.array(dset.variables[v])
-                        if ndims == 3 : self.__values = np.array(dset.variables[v])[0,:,:]
-                        if ndims == 4 : self.__values = np.array(dset.variables[v])[0,0,:,:]
+                    nc_declared_shape = np.array(dset.variables[v].shape)
+                    one_dimensions_ind = np.nonzero(nc_declared_shape == 1 )[0]
+                    if one_dimensions_ind.size == 0: # no dimensions to remove
+                        self.__values = np.array(dset.variables[v])
+                    if one_dimensions_ind.size ==1 :
+                        if one_dimensions_ind[0]==0:
+                            self.__values = np.array(dset.variables[v])[0,:]
+
+                    if one_dimensions_ind.size==2 :
+                        if one_dimensions_ind[0] ==0 :
+                            if one_dimensions_ind[1] ==0 :
+                                self.__values = np.array(dset.variables[v])[0,0,:]
+
                     self.__shape = self.__values.shape
+                    self.dims  = len(self.__values.shape)
                     
                     for attr_name in ["missing_value","fillvalue","fillValue","FillValue"]:
                         if attr_name in dset.variables[v].ncattrs():
@@ -73,6 +80,7 @@ class DataExtractor(object):
                 dset.close()
                 self.__filename = fn
                 self.__varname = v
+                if ((self.dims==3) & (dimvar==2)) : self.__values=self.__values[0,:]
             except:
                 raise
 
@@ -80,7 +88,7 @@ class DataExtractor(object):
             raise ValueError("mask must be a Mask object")
         else:
             #test dimensions
-            if dimvar==3:
+            if self.dims==3:
                 if self.__shape[1:] != mask.shape[1:]: raise ValueError("mask must have the same shape of the data")
                 if self.__shape[0] > mask.shape[0]: raise ValueError("mask must have the same shape of the data")
                 if self.__shape[0] < mask.shape[0]:
@@ -89,7 +97,7 @@ class DataExtractor(object):
                     self.__values = np.zeros(mask.shape)
                     self.__values[:self.__shape[0],:,:] = appval
                     self.__shape = self.__values.shape
-            if dimvar==2:
+            if self.dims==2:
                 if self.__shape != mask.shape[1:] : raise ValueError("mask must have the same shape of the data")
         #Preserve mask reference
         self._mask = mask

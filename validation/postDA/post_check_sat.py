@@ -53,7 +53,7 @@ mask200 = TheMask.mask_at_level(200)
 
 
 Sup_mask = TheMask.cut_at_level(0)
-dtype = [(sub.name, np.bool) for sub in V2.P]
+dtype = [(sub.name, bool) for sub in V2.P]
 npSub = {}
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 1

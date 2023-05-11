@@ -8,7 +8,7 @@ def lon_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['lon','longitude','x']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -18,7 +18,7 @@ def lat_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['lat','latitude','y']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -28,7 +28,7 @@ def depth_dimension_name(ncObj):
         ncObj : a NetCDF object, got by NC.netcdf_file()
     '''
     for dimname in ['depth','z']:
-        if ncObj.dimensions.has_key(dimname):
+        if dimname in ncObj.dimensions.keys():
             break
     return dimname
 
@@ -43,7 +43,7 @@ def readfile(filename, var):
     return VAR
     
 
-def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
+def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False, thredds=False,seconds=0):
     '''
     Dumps a 3D array in a NetCDF file.
 
@@ -65,7 +65,7 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
         print("appending ", varname, " in ", outfile)
-        variable_exist= ncOUT.variables.has_key(varname)
+        variable_exist= varname in ncOUT.variables.keys()
         if variable_exist:
             ncvar=ncOUT.variables[varname]
         else:
@@ -80,6 +80,9 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         ncOUT.createDimension("longitude", jpi)
         ncOUT.createDimension("latitude", jpj)
         ncOUT.createDimension("depth"   , jpk)
+        if thredds:
+            ncOUT.createDimension("time"   , 0)
+            setattr(ncOUT,'Conventions'  ,'CF-1.0' )
 
         ncvar = ncOUT.createVariable('longitude','f', ('longitude',))
         setattr(ncvar, 'units'        ,'degrees_east')
@@ -111,11 +114,27 @@ def write_3d_file(M3d,varname,outfile,mask,fillValue=1.e+20, compression=False):
         setattr(ncvar,'valid_max'    , mask.zlevels.max())
         ncvar[:] = mask.zlevels
 
-        dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
-        ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
+        if thredds:
+            ncvar = ncOUT.createVariable('time','d',('time',))
+            setattr(ncvar,'units',       'seconds since 1970-01-01 00:00:00')
+            setattr(ncvar,'long_name'    ,'time')
+            setattr(ncvar,'standard_name','time')
+            setattr(ncvar,'axis'         ,'T')
+            setattr(ncvar,'calendar'     ,'standard')
+            ncvar[:] = seconds
+            ncvar=ncOUT.createVariable(varname,'f',('time','depth','latitude','longitude'),zlib=compression, fill_value=fillValue)
+            setattr(ncvar,'coordinates'  ,'time depth latitude longitude')
+            setattr(ncvar,'long_name',varname)
+            setattr(ncvar,'standard_name',varname)
+        else:
+            dims = (depth_dimension_name(ncOUT),lat_dimension_name(ncOUT),lon_dimension_name(ncOUT))
+            ncvar = ncOUT.createVariable(varname, 'f', dims, zlib=compression, fill_value=fillValue)
         setattr(ncvar,'fillValue'    ,fillValue)
 
-    ncvar[:] = M3d
+    if thredds:
+        ncvar[0,:] = M3d
+    else:
+        ncvar[:] = M3d
     ncOUT.close()
 
 def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
@@ -139,7 +158,7 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
         print("appending ", varname, " in ", outfile)
-        variable_exist= ncOUT.variables.has_key(varname)
+        variable_exist= varname in ncOUT.variables.keys()
         if variable_exist:
             ncvar2d=ncOUT.variables[varname]
         else:
@@ -193,6 +212,6 @@ def dimfile(filename, varname):
     if 'time' in var_obj.dimensions:
         truedims =ndims-1
     if 'time_counter' in var_obj.dimensions:
-        truedims =ndims-1     
+        truedims =ndims-1
     dset.close()
     return truedims

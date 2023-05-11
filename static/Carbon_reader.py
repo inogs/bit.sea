@@ -1,7 +1,7 @@
 
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
-from DatasetExtractor import DatasetExtractor
+from static.DatasetExtractor import DatasetExtractor
 from commons.utils import find_index
 
 class CarbonReader(DatasetExtractor):
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     ProfileLIST = C.Selector('xCO2', TI, Reg)
     p = ProfileLIST[0]
     a = p.read('nitrate')
-    print a
+    print(a)
     
     ProfileLIST2 = C.CruiseSelector('nitrate', 'PROSOPE')
     LIST3 = C.Selector(None, TI, Reg)

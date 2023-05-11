@@ -99,7 +99,7 @@ def dump_bbp700_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print "dumping bbp700 on " + outfile
+    print("dumping bbp700 on " + outfile, flush=True)
     bbp700_already_existing="nBBP700" in ncOUT.dimensions.keys()
     if not bbp700_already_existing : ncOUT.createDimension('nBBP700', nP)
     ncvar=ncOUT.createVariable("PRES_BBP700", 'f', ('nBBP700',))
@@ -129,6 +129,9 @@ def bbp_algorithm(pCor, outfile, metadata,writing_mode):
     else:
         Pres, Value, Qc = pCor.read('BBP700', read_adjusted=False)
     if Pres is None: return
+    if len(Pres)<5:
+        print("few values in Coriolis for BBP in " + pCor._my_float.filename, flush=True)
+        return
     dump_bbp700_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
 OUTDIR = addsep(args.outdir)
@@ -142,9 +145,10 @@ if input_file == 'NO_file':
     PROFILES_COR =bio_float.FloatSelector('BBP700', TI, R)
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
     for wmo in wmo_list:
-        print wmo
+        print(wmo, flush=True)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor,OUTDIR)
@@ -164,12 +168,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile]
+        timestr          = INDEX_FILE['date'][iFile].decode()
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 

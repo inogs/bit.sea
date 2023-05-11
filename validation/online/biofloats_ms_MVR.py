@@ -113,7 +113,7 @@ if args.basedir_clim is not None:
 
 
 for ivar, var in enumerate(VARLIST):
-    print var
+    print (var)
     for isub, sub in enumerate(OGS.MVR):
         Profilelist_all = bio_float.FloatSelector(FLOATVARS[var], TI, sub)
         Profilelist = bio_float.remove_bad_sensors(Profilelist_all,FLOATVARS[var])

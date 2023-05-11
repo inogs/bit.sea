@@ -39,7 +39,7 @@ import datetime
 import scipy.io.netcdf as NC
 from commons.utils import addsep
 from basins.region import Rectangle
-from profiler_floats import ALL_PROFILES, TL, BASEDIR
+from profiler import ALL_PROFILES, TL, BASEDIR
 from instruments import check
 Check_obj_nitrate = check.check("", verboselevel=0)
 Check_obj_chl     = check.check("", verboselevel=0)
@@ -73,17 +73,17 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 for iFrame, req in enumerate(WEEKLY):
     if req.time_interval.start_time < TL.timeinterval.start_time : req.time_interval.start_time = TL.timeinterval.start_time
     if req.time_interval.end_time   > TL.timeinterval.end_time   : req.time_interval.end_time   = TL.timeinterval.end_time
-    print req.time_interval
+    print (req.time_interval)
     for ivar, var in enumerate(VARLIST):
         if var == "N3n": Check_obj = Check_obj_nitrate
         if var == "P_l": Check_obj = Check_obj_chl
         if var == "O2o": Check_obj = None
         if var == "P_c": Check_obj = Check_obj_PhytoC
-        print var
+        print (var)
 
         for isub, sub in enumerate(OGS.NRT3):
 #          if (isub == 0):
-            print sub.name
+            print (sub.name)
             Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
             Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
@@ -102,7 +102,7 @@ for iFrame, req in enumerate(WEEKLY):
                 REF_LAYER_MEAN   = []
                 for floatmatchup in Matchup_object_list:
                     m_layer = floatmatchup.subset(layer)
-                    print ilayer, m_layer.number()
+                    print (ilayer, m_layer.number())
                     if m_layer.number() > 0:
                         REF_LAYER_MEAN.append(m_layer.Ref.mean())
                         MODEL_LAYER_MEAN.append(m_layer.Model.mean())

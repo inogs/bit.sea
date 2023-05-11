@@ -122,7 +122,7 @@ if isLOV:
     REMOVING_LIST.append("6901772/output_lovbio092e_000_00.nc") #non mi fido di time, lat,lon
     REMOVING_LIST.append("6902900/output_lovbio091e_000_00.nc")
     
-    good=np.ones((nFiles,),np.bool)
+    good=np.ones((nFiles,),bool)
     for f in REMOVING_LIST:
         ii=INDEX_FILE['file_name']=="6901772/output_lovbio092e_000_00.nc"
         good[ii]=False
@@ -136,13 +136,13 @@ FloatIndexer=addsep(ONLINE_REPO) + float_dataset + "/Float_Index.txt"
 nFiles=INDEX_FILE.size
 PROFILE_LIST = []
 for iFile in range(nFiles):
-    timestr          = INDEX_FILE['time'][iFile]
+    timestr          = INDEX_FILE['time'][iFile].decode()
     lon              = INDEX_FILE['lon' ][iFile]
     lat              = INDEX_FILE['lat' ][iFile]
-    filename         = INDEX_FILE['file_name'][iFile]
-    available_params = INDEX_FILE['parameters'][iFile]
+    filename         = INDEX_FILE['file_name'][iFile].decode()
+    available_params = INDEX_FILE['parameters'][iFile].decode()
     float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-    parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+    parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
     
 
     filename = ONLINE_REPO + float_dataset + "/" + filename
@@ -164,29 +164,42 @@ for wmo in WMOS:
         nProfiles = len(Profile_list)
         for ip in range(1,nProfiles):
             if TIMELIST[ip] <= TIMELIST[ip-1]:
-                print "\nPROBLEM in ", wmo, ip
+                print("\nPROBLEM in ", wmo, ip)
                 REMOVING_LIST.append(Profile_list[ip]._my_float.filename)
                 Profile_list.remove(Profile_list[ip])
                 nProfiles = len(Profile_list)
                 for k in range(-1,2):
                     IP = ip+k
                     if IP > nProfiles-1 : continue
-                    print IP, Profile_list[IP]._my_float.filename, TIMELIST[IP]
+                    print(IP, Profile_list[IP]._my_float.filename, TIMELIST[IP])
                 break
 
 
-good = np.ones((nFiles),np.bool)
+good = np.ones((nFiles),bool)
 LINES=[]
 for iFile in range(nFiles):
-    if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
+    if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile].decode() in REMOVING_LIST:
         good[iFile]=False
 
-np.savetxt(args.outfile, INDEX_FILE[good], fmt="%s,%f,%f,%s,%s,%s")
+
+mydtype= np.dtype([
+          ('file_name','U200'),
+          ('lat',np.float32),
+          ('lon',np.float32),
+          ('time','U17'),
+          ('parameters','U200'),
+          ('parameter_data_mode','U100')] )
+
+nOut = good.sum()
+OUT = np.zeros((nOut,), dtype=mydtype)
+OUT[:] = INDEX_FILE[good]
+np.savetxt(args.outfile, OUT, fmt="%s,%f,%f,%s,%s,%s")
+
 
 if args.erase:
     for filename in REMOVING_LIST:
         command = "rm -f  " + filename
-        print command
+        print(command)
         os.system(command)
 
 

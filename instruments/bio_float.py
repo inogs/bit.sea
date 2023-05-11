@@ -1,12 +1,13 @@
-import scipy.io.netcdf as NC
+import netCDF4
 import numpy as np
 import datetime
 import os
 from commons.utils import addsep
-from var_conversions import FLOATVARS as conversion
+from instruments.var_conversions import FLOATVARS as conversion
+import matplotlib
 import matplotlib.pyplot as pl
 
-from instrument import Instrument, Profile
+from instruments.instrument import Instrument, Profile
 from mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
@@ -20,7 +21,7 @@ mydtype= np.dtype([
           ('parameters','S200'),
           ('parameter_data_mode','S100')] )
 
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V7C/"
+GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
 FloatIndexer=addsep(ONLINE_REPO) + CORIOLIS_DIR + "Float_Index.txt"
 
@@ -98,16 +99,17 @@ class BioFloat(Instrument):
         else:
             return False
     def load_basics(self):
-        ncIN = NC.netcdf_file(self.filename,'r')
-        self.N_PROF    = ncIN.dimensions['N_PROF']
-        self.N_PARAM   = ncIN.dimensions['N_PARAM']
-        self.PARAMETER = ncIN.variables['PARAMETER'].data.copy()
-        #self.PARAMETER_DATA_MODE = ncIN.variables['PARAMETER_DATA_MODE'].data.copy()
+
+        ncIN = netCDF4.Dataset(self.filename,'r')
+        self.N_PROF    = ncIN.dimensions['N_PROF'].size
+        self.N_PARAM   = ncIN.dimensions['N_PARAM'].size
+        self.PARAMETER = np.array(ncIN.variables['PARAMETER'])
+
         ncIN.close()
         _,_,nParams,_=self.PARAMETER.shape
         self.PARAMETERS=[]
         for iParam in range(nParams):
-            Param_name=self.PARAMETER[0,0,iParam,:].tostring().replace(' ',"")
+            Param_name=self.PARAMETER[0,0,iParam,:].tobytes().decode().replace(' ',"")
             self.PARAMETERS.append(Param_name)
 
     def _searchVariable_on_parameters(self, var):
@@ -124,8 +126,8 @@ class BioFloat(Instrument):
     def __fillnan(self, ncObj,var):
         varObj = ncObj.variables[var]
         fillvalue = varObj._FillValue
-        M = varObj.data.copy()
-        if varObj.typecode()=='c':
+        M = np.array(varObj)
+        if varObj.datatype=='S1':
             M[M==fillvalue] = '0'
         else:
             M[M==fillvalue] = np.NaN;
@@ -145,7 +147,7 @@ class BioFloat(Instrument):
         return res
 
     def __merge_var_with_adjusted(self, ncObj,var):
-        N_PROF= ncObj.dimensions['N_PROF']
+        N_PROF= ncObj.dimensions['N_PROF'].size
         M     = self.__fillnan(ncObj, var)
         M_ADJ = self.__fillnan(ncObj, var + "_ADJUSTED")
         M_RES = M
@@ -173,28 +175,26 @@ class BioFloat(Instrument):
     def read_very_raw(self,var):
         '''
         Reads data from file
-        Returns 4 numpy arrays: Pres, Profile, Profile_adjusted, Qc
+        Returns 5 numpy arrays: Pres, Profile, Profile_adjusted, Qc, Qc_adjusted
         '''
         iProf = 0 #self._searchVariable_on_parameters(var)
-        ncIN=NC.netcdf_file(self.filename,'r')
+        ncIN=netCDF4.Dataset(self.filename,'r')
         PRES    = self.__merge_var_with_adjusted(ncIN, 'PRES')
 
+        M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
+        QC      = self.__fillnan(ncIN, var +"_QC")
+        QC_adj  = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
 
-        if ncIN.variables.has_key(var + "_ADJUSTED"):
-            M_ADJ   = self.__fillnan(ncIN, var + "_ADJUSTED")
-            QC      = self.__fillnan(ncIN, var +"_ADJUSTED_QC")
-        else:
-            M_ADJ   = np.zeros_like(PRES)*np.nan
-            QC      = np.zeros_like(PRES)*np.nan
         M       = self.__fillnan(ncIN, var )
 
         Profile     =     M[iProf,:]
         Profile_adj = M_ADJ[iProf,:]
         Pres        =  PRES[iProf,:]
         Qc          =    QC[iProf,:]
+        Qc_adj      =QC_adj[iProf,:]
         ncIN.close()
-        
-        return Pres, Profile,Profile_adj, Qc
+
+        return Pres, Profile,Profile_adj, Qc.astype(np.int32), Qc_adj.astype(np.int32)
 
     def read_raw(self,var,read_adjusted=True):
         '''
@@ -206,27 +206,24 @@ class BioFloat(Instrument):
           read_adjusted (logical)
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
-        rawPres, rawProfile, rawProfile_adj, rawQc = self.read_very_raw(var)
+        rawPres, rawProfile, rawProfile_adj, rawQc, rawQc_adj = self.read_very_raw(var)
 
-        
         if read_adjusted:
             rawProfile = rawProfile_adj
-        else:
-            for i in range(len(rawQc)): rawQc[i]='2' # to force goodQc = True
+            rawQc      = rawQc_adj
 
 
         # Elimination of negative pressures or nans
         nanPres = np.isnan(rawPres)
         rawPres[nanPres] = 1 # just for not complaining
         badPres    = (rawPres<=0) | nanPres
-        goodQc     = (rawQc == '2' ) | (rawQc == '1' )
         badProfile = np.isnan(rawProfile)
-        bad = badPres | badProfile #| (~goodQc )
+        bad = badPres | badProfile
 
 
         Pres    =    rawPres[~bad]
         Profile = rawProfile[~bad]
-        Qc      =     (rawQc[~bad]).astype(np.int)
+        Qc      =      rawQc[~bad]
 
         uniquePres,index=np.unique(Pres,return_index=True)
         uniqueProfile =  Profile[index]
@@ -266,7 +263,10 @@ class BioFloat(Instrument):
         if pres.size ==0:
             return pres, prof, qc
 
-        good = (qc==1) | (qc ==2 ) | (qc==8)
+        if var in ['TEMP','PSAL']:
+            good = np.ones_like(pres, dtype=bool)
+        else:
+            good = (qc==1) | (qc ==2 ) | (qc==5) | (qc==8)
         pres = pres[good]
         prof = prof[good]
         qc   =   qc[good]
@@ -321,12 +321,14 @@ class BioFloat(Instrument):
         fig, ax = f.plot(pres,profile)
         fig, ax = f.plot(pres,profile,fig,ax)
         fig, ax = f.plot(pres,profile,fig,ax, linestyle = 'dashed', linewidth = 2, color='green')
+        fig, ax = f.plot(pres,profile,fig,ax, linestyle = 'None',   marker = '.',  color='green')
 
         '''
         if (fig is None) or (ax is None):
             fig , ax = pl.subplots()
         ax.plot(profile,Pres, **kwargs)
         if not ax.yaxis_inverted(): ax.invert_yaxis()
+        ax.grid()
         return fig,ax
 
     def profiles(self, var, mean=None):
@@ -339,12 +341,12 @@ class BioFloat(Instrument):
         '''
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile]
+            timestr          = INDEX_FILE['time'][iFile].decode()
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile]
-            available_params = INDEX_FILE['parameters'][iFile]
-            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+            thefilename      = INDEX_FILE['file_name'][iFile].decode()
+            available_params = INDEX_FILE['parameters'][iFile].decode()
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
             if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
@@ -373,12 +375,12 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile]
+        timestr          = INDEX_FILE['time'][iFile].decode()
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile]
-        available_params = INDEX_FILE['parameters'][iFile]
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
+        filename         = INDEX_FILE['file_name'][iFile].decode()
+        available_params = INDEX_FILE['parameters'][iFile].decode()
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
         if var is None :
@@ -445,7 +447,7 @@ def from_lov_profile(lov_profile, verbose=True):
         DELTA_TIMES[k] = deltat.total_seconds()
     min_DeltaT = np.abs(DELTA_TIMES).min()
     if min_DeltaT > 3600*3 :
-        if verbose: print "no Coriolis file corresponding to "  + lov_profile._my_float.filename
+        if verbose: print("no Coriolis file corresponding to "  + lov_profile._my_float.filename)
         return None
     F = (A['lon'] - lov_profile.lon)**2 + (A['lat'] - lov_profile.lat)**2 +  DELTA_TIMES**2
     iFile = F.argmin()
@@ -463,29 +465,53 @@ if __name__ == '__main__':
     from commons.time_interval import TimeInterval
     import sys
 
-    var = 'NITRATE'
-    TI = TimeInterval('20150520','20220225','%Y%m%d')
+    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/CORIOLIS/6902902/SR6902902_456.nc'
+    F = BioFloat.from_file(f)
+
+    Pres, values, valuesa, Qc, Qca =F.read_very_raw('TEMP')
+    fig,ax =F.plot(Pres,values,'b')
+
+    Pres, values, Qc=F.read('TEMP', read_adjusted=False)
+    ax.plot(values,Pres,'r.')
+    fig.savefig('prova.png')
+
+    sys.exit()
+    var = 'BBP700'
+    TI = TimeInterval('20150101','20220225','%Y%m%d')
     R = Rectangle(-6,36,30,46)
+
+    PROFILE_LIST=FloatSelector(var, TI, R)
+
+    nP = len(PROFILE_LIST)
+    MAX=np.zeros((nP,))
+    MIN=np.zeros((nP,))
+    for ip, p in enumerate(PROFILE_LIST):
+        Pres, Value, Qc= p.read(var, read_adjusted=False)
+        if len(Pres)>5:
+            MIN[ip]=Value.min()
+            MAX[ip]=Value.max()
+    sys.exit()
+
     sum=0
     PROFILE_LIST=FloatSelector(var, TI, R)
     for ip, p in enumerate(PROFILE_LIST):
         if p._my_float.status_var('NITRATE') =='D':
             Pres, Value, Qc= p.read(var, read_adjusted=True)
-            print Pres.max()
+            print(Pres.max())
 
         continue
         F=p._my_float
         nP=len(Pres)
         if nP<5 :
-            print "few values for " + F.filename
+            print( "few values for " + F.filename)
             continue
         if Pres[-1]<100:
-            print "depth < 100 for "+ F.filename
+            print("depth < 100 for "+ F.filename)
             continue
 
         if Pres.max()< 600:
-            print "superficiale", p.ID()
-            #sys.exit()
+            print("superficiale", p.ID())
+           #sys.exit()
 
         if F.status_var('NITRATE')=='D':
             #if F.status_var('DOXY') =='R':
@@ -509,4 +535,3 @@ if __name__ == '__main__':
     wmo_list= get_wmo_list(PROFILE_LIST)
     for wmo in wmo_list:
         sublist = filter_by_wmo(PROFILE_LIST, wmo)
-

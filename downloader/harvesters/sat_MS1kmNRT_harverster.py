@@ -16,20 +16,30 @@ ftp_url = 'nrt.cmems-du.eu'
 user = 'MED_OGS_TRIESTE_IT'
 password = 'NEdifupa'
 
-relative_path = "SAT/MULTISENSOR/1Km/NRT/DAILY/ORIG/"
+relative_path = "SAT/CHL/NRT/DAILY/ORIG/"
+remote_path = "Core/OCEANCOLOUR_MED_BGC_L3_NRT_009_141/cmems_obs-oc_med_bgc-plankton_nrt_l3-multi-1km_P1D"
+suffix = None
+
+def dest_file(suffix,f,path):
+    if suffix is None: return None
+    return join(path,f[:8]+suffix)
 
 
 class Sat_ms1kmNRT_Harvester(HarvesterInterface):
     """
     This is the harvester in charge of download all the files from the
-    ftp server myocean.artov.isac.cnr.it.
+    ftp server nrt.cmems-du.eu.
     """
     def harvest(self, db_path, log):
         """
         Download all the files inside a remote directory of the ftp server
+        which are supposed ordered in directories yyyy/mm/
         whose modification date is after the modification date of the last
-        file in the local dir. Download the files if the contain
-        '-NRT-' in their name.
+        file in the local dir.
+        If there are existing files in local path, it looks for:
+        - all the months of the current year
+        - an eventual new year, in case we are at the end of one
+
 
         Args:
             - *db_path*: the path of the directory set in the download program.
@@ -53,9 +63,8 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
         connection.login(user=user, passwd=password)
 
 
-        connection.cwd('Core')
-        connection.cwd('OCEANCOLOUR_MED_CHL_L3_NRT_OBSERVATIONS_009_040')
-        connection.cwd('dataset-oc-med-chl-multi-l3-chl_1km_daily-rt-v02')
+        connection.cwd(remote_path)
+
         
         # List all the local files
         loc_files = [f for f in listdir(path) if f !='incomplete_download.tmp']
@@ -71,15 +80,16 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
                 for month in months:
                     connection.cwd(month)
                     files, _, perms = list_files(connection)
-                    files_to_be_downloaded = [f for f in files if '-NRT-' in f]
-                    for f in files_to_be_downloaded:
+                    for f in files:
+                        destfile=dest_file(suffix,f,path)
                         d = download_file(connection, f, path,
-                                               log, perms, False)
+                                               log, perms, destfile, False)
                         if d:
                             downloaded.append(f)
                     connection.cwd('..')
                 connection.cwd('..')
         else:
+            # daily executed
             loc_files.sort()
             last_file = loc_files[-1]
             last_year = int(last_file[0:4])
@@ -92,13 +102,12 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             for month in months:
                 connection.cwd(month)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if '-NRT-' in f]
-                for f in files_to_be_downloaded:
-                    if f > last_file:
-                        d = download_file(connection, f, path,
-                                          log, perms, True, True)
-                        if d:
-                            downloaded.append(f)
+                for f in files:
+                    #if f > last_file:
+                    destfile=dest_file(suffix,f,path)
+                    d = download_file(connection, f, path,
+                        log, perms, destfile, skip_if_exists=True)
+                    if d:downloaded.append(f)
                 connection.cwd('..')
             connection.cwd('..')    
             # Now we will download what is in the folders of the years
@@ -109,10 +118,10 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
                 for month in months:
                     connection.cwd(month)
                     files, _, perms = list_files(connection)
-                    files_to_be_downloaded = [f for f in files if '-NRT-' in f]
-                    for f in files_to_be_downloaded:
+                    for f in files:
+                        destfile=dest_file(suffix,f,path)
                         d = download_file(connection, f, path,
-                                          log, perms, True, True)
+                                          log, perms, destfile, True, True)
                         if d:
                             downloaded.append(f)
                     connection.cwd('..')
@@ -120,8 +129,8 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             # Warning if we found a lot of updates or no updates at all
             if len(downloaded) == 0:
                 log.info('No updates found!')
-            if len(downloaded) >1 : 
-                warn_message = 'Downloaded more than one file:'
+            else:
+                warn_message = 'Downloaded files :'
                 for f in downloaded:
                     warn_message += '\n   - ' + str(f)
                 log.info(warn_message, split_lines=False)
@@ -133,8 +142,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
     def rebuild(self, db_path, log):
         """
         Download all the files inside a remote directory of the ftp server. If the
-        file is already present on the local directory, rewrite it. Do not download
-        the file that contain the string '-NRT-' in their filename.
+        file is already present on the local directory, rewrite it.
 
         Args:
             - *db_path*: the path of the directory set in the download program.
@@ -158,9 +166,7 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
         connection = FTP(ftp_url)
         connection.login(user=user, passwd=password)
 
-        connection.cwd('Core')
-        connection.cwd('OCEANCOLOUR_MED_CHL_L3_NRT_OBSERVATIONS_009_040')
-        connection.cwd('dataset-oc-med-chl-multi-l3-chl_1km_daily-rt-v02')
+        connection.cwd(remote_path)
         
         _, years, _ = list_files(connection)
         for year in years:
@@ -169,10 +175,10 @@ class Sat_ms1kmNRT_Harvester(HarvesterInterface):
             for month in months:
                 connection.cwd(month)
                 files, _, perms = list_files(connection)
-                files_to_be_downloaded = [f for f in files if '-NRT-' in f]
-                for f in files_to_be_downloaded:
+                for f in files:
+                    destfile=dest_file(suffix,f,path)
                     d = download_file(connection, f, path,
-                                           log, perms, False)
+                                           log, perms, destfile, False)
                     if d:
                         downloaded.append(f)
                 connection.cwd('..')

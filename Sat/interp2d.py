@@ -34,12 +34,12 @@ def array_of_indices_for_slicing(xcoarse, xfine):
         try:
             istart, iend = get_2_indices_for_slicing(xfine, bordoW, bordoE, istart)
         except:
-            print "*******************************************************"
-            print "Warning: out of bounds."
-            print "We will use the previous istart, iend values"
-            print "COARSE GRID: Cell center, %f, West bound, %f East bound %f "  %(centrocella, bordoW, bordoE)
-            print "FINE  GRID:  ends at: ", xfine.max()
-            print "*******************************************************"
+            print("*******************************************************")
+            print("Warning: out of bounds.")
+            print("We will use the previous istart, iend values")
+            print("COARSE GRID: Cell center, %f, West bound, %f East bound %f "  %(centrocella, bordoW, bordoE))
+            print("FINE  GRID:  ends at: ", xfine.max())
+            print("*******************************************************")
         I_START[ji] = istart
         I_END[ji]   = iend
     return I_START, I_END
@@ -69,10 +69,11 @@ def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fi
         istart = I_START[ji]
         i_end  =   I_END[ji]
         # istart == iend if Coarse grid is out of Fine grid
-        if istart == i_end : continue
+        if istart == i_end : i_end=istart+1 #continue
         for jj in range(jpj):
             jstart = J_START[jj]
             j_end  =   J_END[jj]
+            if j_end==jstart: j_end=jstart+1
             if tmask[jj,ji]:
                 localcell = Mfine[jstart:j_end, istart:i_end]
                 goods = localcell>0
@@ -89,8 +90,7 @@ if __name__== "__main__":
 
     from commons.mask import Mask
     from Sat import SatManager as Sat
-    TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-    tmask = TheMask.mask_at_level(0)
+    TheMask=Mask('/g100_work/OGS_prodC/MIT/V1M-dev/V1/devel/wrkdir/POSTPROC/meshmask.nc')
 
     jpk,jpj,jpi = TheMask.shape
     x = TheMask.xlevels[0,:]
@@ -103,12 +103,11 @@ if __name__== "__main__":
     J_START, J_END = array_of_indices_for_slicing(y, y1km)
 
 
-    inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY/ORIGMESH/20010522_d-OC_CNR-L3-KD490-MedOC4AD4_SAM_1KM-MED-REP-v01.nc"
-    Kext = Sat.readfromfile(inputfile,'KD490')
+    inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/NRT/DAILY/CHECKED/20170804_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc"
+    CHL = Sat.readfromfile(inputfile,'CHL')
 
-    KEXT_16=interp_2d_by_cells_slices(Kext, TheMask, I_START, I_END, J_START, J_END)
-
-    Sat.dump_simple_V4file('test.nc',KEXT_16,'KD490')
+    Mout, Usedpoints =interp_2d_by_cells_slices(CHL, TheMask, I_START, I_END, J_START, J_END)
+    Sat.dumpGenericNativefile('test.nc', Mout, 'CHL', Sat.masks.CadeauMesh)
         
 
             

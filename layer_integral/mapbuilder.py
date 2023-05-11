@@ -11,7 +11,7 @@ from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
 from commons.dataextractor import NotFoundError
-from mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
+from layer_integral.mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
 import datetime
 import matplotlib.pyplot as pl
 
@@ -136,7 +136,7 @@ class MapBuilder(object):
 #        for f in self.__netcdffileslist: 
 #            for p in self.__plotlist:
             msg = "rank %d works on %s %s" %(rank,filename,var)
-            print msg
+            print(msg)
             de = DataExtractor(self._mask, filename=filename, varname=p.varname)
 
             for i,l in enumerate(p.layerlist):
@@ -181,6 +181,8 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer or a MapLayer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims ==2 :
+            return data_extractor.values
 
         if isinstance(layer, (Layer,)) :
             #Find Z indices
@@ -243,6 +245,9 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims ==2 :
+            return data_extractor.values
+
         if isinstance(layer, (Layer,)) :
             #Find Z indices
             top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
@@ -336,6 +341,9 @@ class MapBuilder(object):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
+        if data_extractor.dims == 2:
+            return data_extractor.values
+
         #Find Z indices
         if isinstance(layer, (Layer,)):
             top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]

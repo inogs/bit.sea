@@ -42,9 +42,9 @@ from instruments import superfloat as bio_float
 from basins.region import Rectangle
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
+from datetime import timedelta
 
-
-VARLIST=['P_l','O2o','N3n','votemper','vosaline','EIR','POC',"P_c", "pH"]
+VARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
 
 
 def figure_generator(p):
@@ -119,7 +119,7 @@ def ncreader(filename):
     f = NC.netcdf_file(filename, 'r')
     Lon= f.variables['longitude'].data.copy()
     Lat= f.variables['latitude'].data.copy()
-    time = datetime.datetime.strptime(f.time,"%Y%m%d-%H:%M:%S")
+    time = datetime.datetime.strptime(f.time.decode(),"%Y%m%d-%H:%M:%S")
     for var in VARLIST:
         A= f.variables[var + "_model"].data.copy()
         A[A > 1.e+19] =np.nan
@@ -135,8 +135,10 @@ def ncreader(filename):
 def getprofile(time,lon,lat):
     lon = float(lon)
     lat = float(lat)
-    R=Rectangle(lon,lon,lat,lat)
-    Profilelist=bio_float.FloatSelector(None,TimeInterval.fromdatetimes(time, time),R)
+    eps=0.001
+    R=Rectangle(lon-eps,lon+eps,lat-eps,lat+eps)
+    d=timedelta(minutes=30)
+    Profilelist=bio_float.FloatSelector(None,TimeInterval.fromdatetimes(time-d, time+d),R)
     profile=Profilelist[0]
     return profile
 
@@ -178,7 +180,7 @@ analysis_forecast_basenames.sort()
 only_analyis_basenames      = [os.path.basename(filename) for filename in ONLY_ANALYSIS_LIST]
 only_analyis_basenames.sort()
 
-print xmlfile
+print(xmlfile)
 dump_xml(xmlfile)
 
 
@@ -186,7 +188,7 @@ dump_xml(xmlfile)
 
 
 zlevels_out=np.arange(0,501,5)
-mapgraph = [5,6,7,1,2,8,9,3,4]
+mapgraph = [5,3,7,1,2,4,8,6,9]
 
 plotvarname = [r'Chl  $[ mg/m^3]$',
                r'Oxy  $[ mmol/m^3]$',
@@ -202,7 +204,7 @@ plotvarname = [r'Chl  $[ mg/m^3]$',
 
 for filename in analysis_forecast_basenames:
     if filename in only_analyis_basenames:
-        print filename, " matches analysis and forecast"
+        print (filename, " matches analysis and forecast")
         analyis_file = ACTUAL_DIR + filename
         forecastfile = PREVIOUS_DIR + filename
         float_f, mod_f, time, lon, lat = ncreader(forecastfile)
@@ -227,7 +229,7 @@ for filename in analysis_forecast_basenames:
         
         
     else:
-        print filename, " matches only analyis"
+        print (filename, " matches only analyis")
         #copy the previous *png
         pngfile = PREVIOUS_DIR + filename[:-3] +  ".png"
         command = "cp " + pngfile + " " + OUTDIR

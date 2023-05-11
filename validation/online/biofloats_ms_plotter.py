@@ -121,7 +121,7 @@ for ivar, var in enumerate(VARLIST):
     for isub, sub in enumerate(SUBLIST):
         for layer in LAYERLIST:
             outfile = "%s%s.%s.%s.png" % (OUTFIG_DIR,var,sub.name,layer.longname())
-            print outfile
+            print (outfile)
             fig = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string())
             fig.savefig(outfile)
             pl.close(fig)

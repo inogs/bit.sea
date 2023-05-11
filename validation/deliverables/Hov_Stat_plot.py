@@ -48,7 +48,7 @@ from commons.utils import addsep
 import matplotlib.pyplot as pl
 from instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
+from validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import datetime
 import plotter
 import plotter_oxy
@@ -97,15 +97,13 @@ bt=300
 depths=np.linspace(0,300,121)
 
 for ivar_m, var_mod in enumerate(VARLIST):
-#  if (var_mod =="O2o"):
-   if (var_mod =="P_c"):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
-        print OUTFILE
+        print (OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         if ( var_mod == 'P_c'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)
@@ -119,7 +117,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.xaxis.grid(True)
 
         nP = len(list_float_track)
-        print nP
+        print (nP)
         if nP <2 : continue
 
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
@@ -129,16 +127,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
         for ip, p in enumerate(list_float_track):
             try:
                 Pres,Prof,Qc=p.read(var,var_mod=var_mod)
-                print "HERE1"
-                print Prof
-                print "HERE2"
+                print (Prof)
             except:
-                print var_mod
+                print (var_mod)
                 timelabel_list.append(p.time)
                 continue
             ii = Pres<=bt
             if ii.sum() < 2 :
-                print "less than 2 points"
+                print ("less than 2 points")
                 timelabel_list.append(p.time)
                 continue
 
@@ -147,14 +143,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
             try:
               GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
             except:
-                print "except"
+                print ("except")
                 continue
 
             if GM.number()> 0:
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print (var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)
@@ -165,18 +161,18 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
         # PLOT HOVMOELLER OF FLOAT
         if (var_mod == 'P_l'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=0.40,cmap="viridis")# default is 'flat'
         if (var_mod == 'O2o'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=160,vmax=250)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=160,vmax=250) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=160,vmax=250)
         if (var_mod == 'N3n'):
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
         if (var_mod == 'P_c'):
            # plotmat_m = 12128 * (plotmat_m * ( 470.0/ 700)**0.78 ) + 0.59
-            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='flat',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
-            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='flat',vmin=0.00,vmax=20)
+            quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
+            quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=20)
 
         ax3.invert_yaxis()
         ax4.invert_yaxis()
@@ -194,8 +190,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
         times = timelabel_list
 
         model, ref =           A.plotdata(var_mod,'Int_0-200', only_good=False)
-        print "ref"
-        print ref
+        print ("ref")
+        print (ref)
         if np.isnan(ref).all(): continue
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
@@ -294,7 +290,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax5.set_xticklabels([])
             ax6.set_xticklabels([])
         except:
-            print "nans in figure"
+            print ("nans in figure")
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)
@@ -308,9 +304,16 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
-        ticklabs = cbar.ax.get_yticklabels()
-        cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
+#        ticklabs = cbar.ax.get_yticklabels()
+        ticklabs = cbar.get_ticks()
+        print (ticklabs)
+        if (var_mod == 'O2o'):
+#            cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
+            cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
+        else:
+            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs] , fontsize=font_s)
         
+
 #        if var_mod == 'O2o': 
 #        if var_mod == 'OXY':
         if var_mod == 'P_c':

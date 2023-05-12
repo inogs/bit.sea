@@ -52,8 +52,10 @@ TheMask  = Mask(args.maskfile)
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o','P_c']
-read_adjusted = [True,True,True,True]
-extrap = [True,False,False,False]
+VARLIST = ['P_l','N3n','O2o','P_c','POC']
+
+#read_adjusted = [True,True,True,True]
+extrap = [True,False,False,False,False]
 nSub   = len(OGS.NRT3.basin_list)
 nDepth = len(LAYERLIST)
 nVar   = len(VARLIST)
@@ -65,10 +67,14 @@ BIAS    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
 RMSE    = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
 NPOINTS = np.zeros((nVar,nFrames, nSub,nDepth), np.int32)*np.nan
 
+MOD = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
+REF = np.zeros((nVar,nFrames,nSub,nDepth), np.float32)*np.nan
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 
+#LISTcheck = []
+#LISTall = []
 
 for iFrame, req in enumerate(WEEKLY):
     if req.time_interval.start_time < TL.timeinterval.start_time : req.time_interval.start_time = TL.timeinterval.start_time
@@ -79,6 +85,7 @@ for iFrame, req in enumerate(WEEKLY):
         if var == "P_l": Check_obj = Check_obj_chl
         if var == "O2o": Check_obj = None
         if var == "P_c": Check_obj = Check_obj_PhytoC
+        if var == "POC": Check_obj = None
         print (var)
 
         for isub, sub in enumerate(OGS.NRT3):
@@ -95,6 +102,10 @@ for iFrame, req in enumerate(WEEKLY):
 #               Execute the check on FLOATS:
 #                floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar],checkobj=Check_obj)
                 floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
+#                LISTall.append(req.string + var + sub.name)
+#                if all(floatmatchup.CheckReports)==None:
+#                    LISTcheck.append(req.string + var + sub.name)
+
                 Matchup_object_list.append(floatmatchup)
     
             for ilayer, layer in enumerate(LAYERLIST):
@@ -102,7 +113,7 @@ for iFrame, req in enumerate(WEEKLY):
                 REF_LAYER_MEAN   = []
                 for floatmatchup in Matchup_object_list:
                     m_layer = floatmatchup.subset(layer)
-                    print (ilayer, m_layer.number())
+                    #print (ilayer, m_layer.number())
                     if m_layer.number() > 0:
                         REF_LAYER_MEAN.append(m_layer.Ref.mean())
                         MODEL_LAYER_MEAN.append(m_layer.Model.mean())
@@ -112,7 +123,8 @@ for iFrame, req in enumerate(WEEKLY):
                     M_LAYER = matchup(np.array(MODEL_LAYER_MEAN), np.array(REF_LAYER_MEAN))
                     BIAS[ivar, iFrame, isub, ilayer] = M_LAYER.bias()
                     RMSE[ivar, iFrame, isub, ilayer] = M_LAYER.RMSE()
-
+                    MOD[ivar, iFrame, isub, ilayer] = M_LAYER.Model.mean()
+                    REF[ivar, iFrame, isub, ilayer] = M_LAYER.Ref.mean()
 
 
 #import sys
@@ -138,5 +150,9 @@ ncvar=ncOUT.createVariable('rmse', 'f', ('var','time','sub','depth'))
 ncvar[:] = RMSE
 ncvar=ncOUT.createVariable('npoints', 'i', ('var','time','sub','depth'))
 ncvar[:] = NPOINTS
+ncvar=ncOUT.createVariable('model', 'f', ('var','time', 'sub','depth'))
+ncvar[:] = MOD
+ncvar=ncOUT.createVariable('ref', 'f', ('var','time', 'sub','depth'))
+ncvar[:] = REF
 
 ncOUT.close()

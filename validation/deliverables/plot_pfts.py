@@ -1,6 +1,33 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Similar to plot_timeseries_STD.py,
+    it works for four PFTs validation together
+    It generates two pictures, one with four pfts in four separate axes,
+    and one with four pfts plotted together.
+
+    ''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required = True,
+                                help = ''' input dir with 4 pkl files'''
+                                )
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                required = True,
+                                help = ''' Output dir of png files'''
+                                )
+
+    return parser.parse_args()
+
+args = argument()
 import pickle
 import matplotlib.pyplot as pl
 from basins import V2 as OGS
+from commons.utils import addsep
 
 class filereader():
     def __init__(self, filename):
@@ -17,7 +44,8 @@ class filereader():
         
 
 
-INPUTDIR="/Users/gbolzon/Documents/workspace/bit.sea/"
+INPUTDIR=addsep(args.inputdir)
+OUTDIR=addsep(args.outdir)
 
 VARLIST= ["P1l","P2l","P3l","P4l"]
 
@@ -30,38 +58,59 @@ MATRIX_LIST=[filereader(INPUTDIR + var  +'_open_sea.pkl') for var in VARLIST]
 
 
 
-isub = 0
-sub = OGS.alb
-pl.close('all')
-fig = pl.figure(figsize=(10, 10))
-ax1 = fig.add_subplot(411)
-ax2 = fig.add_subplot(412)
-ax3 = fig.add_subplot(413)
-ax4 = fig.add_subplot(414)
+for isub,sub in enumerate(OGS.P):
+    pl.close('all')
+    fig = pl.figure(figsize=(10, 10))
+    ax1 = fig.add_subplot(411)
+    ax2 = fig.add_subplot(412)
+    ax3 = fig.add_subplot(413)
+    ax4 = fig.add_subplot(414)
 
-AXES_LIST=[ax1, ax2, ax3, ax4]
-
-
-model_label='MODEL'
-units="[mg/m$^3$]"
-var_label = 'Sat' + " " + units
+    AXES_LIST=[ax1, ax2, ax3, ax4]
 
 
-for ivar,var in enumerate(VARLIST):
-    ax = AXES_LIST[ivar]    
-    Pl = MATRIX_LIST[ivar]
-    ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'og',label=' SAT')
-    ax.fill_between(Pl.TIMES,Pl.SAT___MEAN[:,isub]-Pl.SAT____STD[:,isub],Pl.SAT___MEAN[:,isub]+Pl.SAT____STD[:,isub],color='palegreen')
-    ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-k',label=model_label)
-    ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]-Pl.MODEL__STD[:,isub],':k')
-    ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]+Pl.MODEL__STD[:,isub],':k')
-    ax.grid(True)
-    ax.set_ylabel("%s - %s" %(var,units))
-    if ax != ax4: ax.set_xticklabels([])
+    model_label='MODEL'
+    units="[mg/m$^3$]"
+    var_label = 'Sat' + " " + units
 
-ax1.set_title("%s" %(sub.name.upper()  ) ).set_fontsize(14)
-ax1.legend()
-xlabels = ax4.get_xticklabels()
-pl.setp(xlabels, rotation=30)    
 
-fig.show()
+    for ivar,var in enumerate(VARLIST):
+        outfile="%spfts_separated_%s.png" %(OUTDIR,sub.name)
+        ax = AXES_LIST[ivar]
+        Pl = MATRIX_LIST[ivar]
+        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'og',label=' SAT')
+        ax.fill_between(Pl.TIMES,Pl.SAT___MEAN[:,isub]-Pl.SAT____STD[:,isub],Pl.SAT___MEAN[:,isub]+Pl.SAT____STD[:,isub],color='palegreen')
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-k',label=model_label)
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]-Pl.MODEL__STD[:,isub],':k')
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]+Pl.MODEL__STD[:,isub],':k')
+        ax.grid(True)
+        ax.set_ylabel("%s - %s" %(var,units))
+        ymin, ymax=ax.get_ylim()
+        ax.set_ylim(0,ymax)
+        if ax != ax4: ax.set_xticklabels([])
+
+    ax1.set_title("PFTs  %s" %(sub.name.upper()  ) ).set_fontsize(13)
+    ax1.legend()
+    xlabels = ax4.get_xticklabels()
+    pl.setp(xlabels, rotation=30)
+
+    fig.savefig(outfile)
+
+    # plot with all pfts together
+    outfile="%spfts_%s.png" %(OUTDIR,sub.name)
+    colors =['r','b','m','k']
+    fig = pl.figure(figsize=(10, 4))
+    ax = fig.add_subplot(111)
+    for ivar,var in enumerate(VARLIST):
+        Pl = MATRIX_LIST[ivar]
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-',color=colors[ivar],label=var + " Model")
+        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--', color=colors[ivar])
+
+
+    ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--',color=colors[ivar], label= var + " Sat")
+    ax.set_ylabel("%s" %(units))
+    ax.legend()
+    ax.grid(True )
+    ax.set_title("PFTs  %s" %(sub.name.upper()  ) ).set_fontsize(13)
+    fig.savefig(outfile)
+

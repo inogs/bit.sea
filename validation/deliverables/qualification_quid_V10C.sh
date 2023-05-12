@@ -54,6 +54,8 @@ for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
 
 done
 
+mkdir -p pfts/
+opa_prex_or_die "python plot_pfts.py -i $PWD -o $PWD/pfts/ "
 exit 0
 
 

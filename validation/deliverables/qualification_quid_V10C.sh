@@ -32,7 +32,7 @@ for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
      COAST_PKL=${VAR}_coast.pkl
 
    MODELDIR=$INPUTDIR
-   SAT_DIR=SAT_CHLWEEKLY_DIR
+   SAT_DIR=$SAT_CHLWEEKLY_DIR
    if [ $VAR == 'P_l' ] ; then MODELDIR=$INPUT_AGGR_DIR; fi
    if [ $VAR == 'kd490' ] ; then 
         MODELDIR=$KD_MODEL_DIR

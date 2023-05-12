@@ -22,7 +22,7 @@ ORIGDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/KD
 CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/DAILY/CHECKED/SIGMA_2.0/
 
 mkdir -p $CHECKED_DIR
-my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v KD490 --QI 2.0 "
+my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v KD490 --QI 2.0 --Kd_min 0.021"
 
 
 WEEKLY_DIR1km=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_1km

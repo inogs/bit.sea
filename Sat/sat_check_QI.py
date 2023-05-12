@@ -41,6 +41,11 @@ def argument():
                                 type=str,
                                 help = """QI threshold, usually 2, 2.5 or 3
                                 """)
+    parser.add_argument(   '--Kd_min',
+                                required=False,
+                                type=str,
+                                help = """Kd minimum value threshold; default Kd_min=0.021
+                                 """)
 
 
     return parser.parse_args()
@@ -59,6 +64,7 @@ from Sat import SatManager as Sat
 ORIGDIR = addsep(args.origdir)
 CHECKDIR = addsep(args.checkdir)
 THRESHOLD = float(args.QI)
+Kd_min = float(args.Kd_min)
 
 maskSat = getattr(masks,args.mesh)
 
@@ -81,6 +87,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
         QI = Sat.readfromfile(filename, "QI_CHL")
     VALUES = Sat.readfromfile(filename,args.varname)   
 
+    if args.varname == 'KD490':
+        VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
     
     bad = np.abs(QI) > THRESHOLD # 2.0
     VALUES[bad] = Sat.fillValue

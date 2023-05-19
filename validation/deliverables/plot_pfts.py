@@ -48,6 +48,9 @@ INPUTDIR=addsep(args.inputdir)
 OUTDIR=addsep(args.outdir)
 
 VARLIST= ["P1l","P2l","P3l","P4l"]
+PFT_NAME=['Diatoms','Nanophytoplankton','Picophytoplankton','Dinoflagellates']
+COLOR  = ['tab:blue','tab:orange','tab:green','tab:purple']
+LIGHTCOLOR  = ['lightsteelblue','moccasin','palegreen','plum']
 
 MATRIX_LIST=[filereader(INPUTDIR + var  +'_open_sea.pkl') for var in VARLIST]
 
@@ -76,41 +79,41 @@ for isub,sub in enumerate(OGS.P):
 
     for ivar,var in enumerate(VARLIST):
         outfile="%spfts_separated_%s.png" %(OUTDIR,sub.name)
+        color = COLOR[ivar]
         ax = AXES_LIST[ivar]
         Pl = MATRIX_LIST[ivar]
-        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'og',label=' SAT')
-        ax.fill_between(Pl.TIMES,Pl.SAT___MEAN[:,isub]-Pl.SAT____STD[:,isub],Pl.SAT___MEAN[:,isub]+Pl.SAT____STD[:,isub],color='palegreen')
-        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-k',label=model_label)
-        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]-Pl.MODEL__STD[:,isub],':k')
-        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]+Pl.MODEL__STD[:,isub],':k')
+        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'o', color=color)
+        ax.fill_between(Pl.TIMES,Pl.SAT___MEAN[:,isub]-Pl.SAT____STD[:,isub],Pl.SAT___MEAN[:,isub]+Pl.SAT____STD[:,isub],color=LIGHTCOLOR[ivar])
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-',color=color)
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]-Pl.MODEL__STD[:,isub],':',color=color)
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]+Pl.MODEL__STD[:,isub],':',color=color)
         ax.grid(True)
-        ax.set_ylabel("%s - %s" %(var,units))
-        ymin, ymax=ax.get_ylim()
-        ax.set_ylim(0,ymax)
+        ax.set_ylabel("%s" %(PFT_NAME[ivar]))
+        ax.set_ylim(0,0.25)
         if ax != ax4: ax.set_xticklabels([])
 
-    ax1.set_title("PFTs  %s" %(sub.name.upper()  ) ).set_fontsize(13)
-    ax1.legend()
+    ax1.set_title("PFTs  %s - %s" %(sub.name.upper(), units ) ).set_fontsize(13)
     xlabels = ax4.get_xticklabels()
-    pl.setp(xlabels, rotation=30)
+    #pl.setp(xlabels, rotation=30)
 
     fig.savefig(outfile)
 
     # plot with all pfts together
     outfile="%spfts_%s.png" %(OUTDIR,sub.name)
-    colors =['r','b','m','k']
+
     fig = pl.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)
     for ivar,var in enumerate(VARLIST):
         Pl = MATRIX_LIST[ivar]
-        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-',color=colors[ivar],label=var + " Model")
-        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--', color=colors[ivar])
+        ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub],'-',color=COLOR[ivar], label=PFT_NAME[ivar])
+        ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--', color=COLOR[ivar])
 
 
-    ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--',color=colors[ivar], label= var + " Sat")
-    ax.set_ylabel("%s" %(units))
+    ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--',color=COLOR[ivar])
+    ax.set_ylabel("PFTs %s" %(units))
+    ax.set_ylim(0,0.25)
     ax.legend()
     ax.grid(True )
-    ax.set_title("PFTs  %s" %(sub.name.upper()  ) ).set_fontsize(13)
+    ax.set_title("PFTs %s" %(sub.name.upper()  ) ).set_fontsize(13)
     fig.savefig(outfile)
 

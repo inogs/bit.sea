@@ -88,7 +88,8 @@ for iTime, filename in enumerate(TL_orig.filelist):
     VALUES = Sat.readfromfile(filename,args.varname)   
 
     if args.varname == 'KD490':
-        VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
+       # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
+        VALUES[(VALUES<Kd_min) & (VALUES>0)] = Sat.fillValue   # Filter out values below Kd490_min threshold
     
     bad = np.abs(QI) > THRESHOLD # 2.0
     VALUES[bad] = Sat.fillValue

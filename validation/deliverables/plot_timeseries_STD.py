@@ -58,7 +58,16 @@ else:
 
 var_label = SAT_VARS[args.var] + " " + units
 
+vmin=0.0
+vmax=0.25
 
+if (args.var == "P_l"): 
+    vmin=0.0
+    vmax=0.6
+
+if (args.var == "kd490"):
+    vmin=0.02
+    vmax=0.09
 
 for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue
@@ -79,11 +88,14 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
     ax.tick_params(axis='both', labelsize=12)
-    pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
+#    pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
+    pl.ylim(vmin,vmax)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30)
+    pl.setp(xlabels, rotation=30,fontsize=10)
     outfilename="%s%s_%s_STD.png"  %(OUTDIR, args.var, sub.name)
+    ylabels = ax.get_yticklabels()
+    pl.setp(ylabels, fontsize=10)
     pl.savefig(outfilename)

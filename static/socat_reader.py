@@ -1,7 +1,7 @@
 
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
-from DatasetExtractor import DatasetExtractor
+from static.DatasetExtractor import DatasetExtractor
 from commons.utils import find_index
 
 class CO2_socat_reader(DatasetExtractor):

@@ -53,7 +53,7 @@ OUTPUTDIR = args.outdir
 
 TI = TimeInterval('20190101','20200101',"%Y%m%d") # VALID FOR REANALYSIS RUN
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc", prefix="", dateformat="%Y%m%d")
-print TL.Timelist
+print (TL.Timelist)
 
 
 #MY_YEAR = TimeInterval('20190101','20200101',"%Y%m%d") 
@@ -83,15 +83,16 @@ var = 'SATchl'
 
 #fig,ax     = mapplot({'varname':var, 'clim':[0,0.4], 'layer':layer, 'data':Sat2d, 'date':'annual'},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-ax.set_xlim([-9,16])
+ax.set_xlim([-6,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-ax.ticklabel_format(fontsize=10)
+#ax.ticklabel_format(fontsize=10)
+ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-9,16,4))
+ax.xaxis.set_ticks(np.arange(-6,36,4))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
@@ -103,15 +104,16 @@ pl.close(fig)
 
 
 fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
-ax.set_xlim([-9,16])
+ax.set_xlim([-6,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-ax.ticklabel_format(fontsize=10)
+#ax.ticklabel_format(fontsize=10)
+ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
 #ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 outfile    = OUTPUTDIR + "Maplog_" + var + "_" + req_label +  ".png"
-ax.xaxis.set_ticks(np.arange(-9,16,6))
+ax.xaxis.set_ticks(np.arange(-6,16,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
 ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()

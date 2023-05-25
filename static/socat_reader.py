@@ -79,7 +79,7 @@ if __name__ == '__main__':
     ProfileLIST = C.Selector('fCO2', TI, Reg)
     p = ProfileLIST[0]
     a = p.read('fCO2')
-    print a
+    print (a)
     
     LIST3 = C.Selector(None, TI, Reg)
 

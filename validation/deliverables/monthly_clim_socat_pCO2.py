@@ -12,9 +12,9 @@ CLIM_STD=np.zeros((nSUB, 12),np.float32)*np.nan
 nP_month=np.zeros((nSUB, 12),np.int32)*np.nan
 
 for isub, sub in enumerate(OGS.P):
-    print sub
+    print(sub)
     for imonth in range(12):
-        print imonth
+        print(imonth)
         monthly_req= timerequestors.Clim_month(imonth+1)
         values=S.clim_month_selector('pCO2', imonth+1, sub)
         nP = len(values)
@@ -23,7 +23,7 @@ for isub, sub in enumerate(OGS.P):
             CLIM[isub,imonth]=V.mean()
             CLIM_STD[isub,imonth]=V.std()
             nP_month[isub,imonth]=nP
-            print nP
+            print(nP)
 #         Profilelist=S.Selector('fCO2', monthly_req, sub)
 #         nP = len(Profilelist)
 #         if nP >0:

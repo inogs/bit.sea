@@ -9,7 +9,7 @@ export ONLINE_REPO=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/DA/TRANSITION/
 
          INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.15/wrkdir/MODEL/AVE_FREQ_2/ 
    INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.15/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
-#STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
+STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 
 
 SAT_KD_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY_24/
@@ -229,19 +229,19 @@ cp $DIR/pH-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt   $DIR/pCO2-PROF-Y-CLASS4-CLIM-CORR
 # table4.15: PCO-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt 
 mkdir -p table4.15 Fig4.20 Fig4.21
 # First generate climatology tables:
-python monthly_clim_socat_pCO2.py
-#python monthly_2017.py
 
-mkdir -p monthly_2020_surf/
-python monthly_2020.py -i $STAT_PROFILES_DIR -o monthly_2020_surf/
+MONTHLY_SURF=monthly_surf
+mkdir -p $MONTHLY_SURF
+opa_prex_or_die "python monthly_clim_socat_pCO2.py"
+opa_prex_or_die "python monthly_surf.py -i $STAT_PROFILES_DIR -o $MONTHLY_SURF -y 2019"
+opa_prex_or_die "python table_pCO2vsSOCAT.py -i $MONTHLY_SURF"
 
-python table_pCO2vsSOCAT.py -i monthly_2020_surf/
 mv pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt table4.15/.
 mv TOT_RMSD_pCO2vsSOCAT.txt table4.15/.
 
 # generate new figure 4.20: comparison pCO2 BFM vs SOCAT dataset
 
-python plot_month_pCO2vsSOCAT.py
+opa_prex_or_die "python plot_month_pCO2vsSOCAT.py"
 mv pCO2_monthly_tseries_Fig4.20.png Fig4.20/.
 
 # generate new figure 4.21: comparison pCO2 and CO2ariflux vs REAN (CLIM)

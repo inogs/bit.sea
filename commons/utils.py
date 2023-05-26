@@ -180,6 +180,8 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
     for ii in range(ncols):
         if 'f' in fmtlist[ii]: typelist.append(np.float32)
         if 's' in fmtlist[ii]: typelist.append('S15')
+        if 'd' in fmtlist[ii]: typelist.append(int)
+        
     for ii,col_name in enumerate(column_names_list):
         dtype.append((col_name,typelist[ii]))
         headerstr = headerstr + col_name + "\t "

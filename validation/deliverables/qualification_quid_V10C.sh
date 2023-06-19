@@ -1,26 +1,22 @@
-# Descriptor of CMEMS-Med-biogeochemistry-ScQP-v1.3.docx
+# Descriptor of CMEMS-Med-biogeochemistry-ScQP-v3.1.docx
 
 # QUID REANALYSIS
 # SECTION 4:
 . ../online/profile.inc
 
 export MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
-export ONLINE_REPO=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/DA/TRANSITION/
+export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/
 
-         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.15/wrkdir/MODEL/AVE_FREQ_2/ 
-   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.15/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
-STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V9C/2019/run4.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
+         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/MODEL/AVE_FREQ_2/
+   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 
-
-SAT_KD_WEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/WEEKLY_24/
-SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.5/WEEKLY_4_24
-SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_24
-
+#SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_24
+SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/lfeudale/KD490/SAT/KD490/DT/SIGMA_2.0_KDmin0.022/WEEKLY_4_24/
 SAT_CHLWEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/WEEKLY_4_24
-
-KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.15/wrkdir/POSTPROC/output/AVE_FREQ_3/KD_WEEKLY/
-
-
+SAT_CHLPFTsWEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/WEEKLY_4_24
+KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_3/KD_WEEKLY/
+BASEDIR=/g100_scratch/userexternal/lfeudale/validation/V10C/run4.19/PROFILATORE/
 
 
 # CREATE Directories for SAT:
@@ -33,10 +29,19 @@ for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
 
    MODELDIR=$INPUTDIR
    SAT_DIR=$SAT_CHLWEEKLY_DIR
-   if [ $VAR == 'P_l' ] ; then MODELDIR=$INPUT_AGGR_DIR; fi
+   if [ $VAR == 'P_l' ] ; then 
+        MODELDIR=$INPUT_AGGR_DIR #; fi
+        SAT_DIR=$SAT_CHLWEEKLY_DIR
+    fi
    if [ $VAR == 'kd490' ] ; then 
         MODELDIR=$KD_MODEL_DIR
         SAT_DIR=$SAT_KD_WEEKLY_DIR
+    fi
+ 
+   if [$VAR == P1l] | [$VAR == P2l] | [$VAR == P3l] | [$VAR == P4l]; then 
+   # Plot PFTs comparison with HPLC dataset:
+       INDIR_HPLC_CLIM=/g100_scratch/userexternal/lfeudale/validation/V10C/run4.19/bit.sea/validation/deliverables/
+       opa_prex_or_die "python plot_HPLC_clim.py -i $INDIR_HPLC_CLIM -p $VAR "
     fi
 
    LAYER=10
@@ -56,29 +61,25 @@ done
 
 mkdir -p pfts/
 opa_prex_or_die "python plot_pfts.py -i $PWD -o $PWD/pfts/ "
-exit 0
 
 
-
+######################
 
 # CREATE MAP PPN INTEGRAL 0-200m (python2 che python3 ha un errore sul name "long")
-mkdir -p Fig4.7refScale
-python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101
+opa_prex_or_die "mkdir -p Fig4.7refScale"
+opa_prex_or_die "python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101"
 
-exit 0
 
 # FLOAT SECTION:
 
 # HOVMOELLER:
 opa_prex_or_die "mkdir -p Fig4.4 Fig4.6 Fig4.12 Fig4.13 Fig4.15 tmp_nc table4.4 table4.8"
-opa_prex_or_die "BASEDIR=/g100_scratch/userexternal/lfeudale/validation/V9C/run4.0/PROFILATORE/"
 NCDIR=tmp_nc
 OUTDIR=Fig4.4
 opa_prex_or_die "echo python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR"
 opa_prex_or_die "python SingleFloat_vs_Model_Stat_Timeseries.py -m $MASKFILE -b $BASEDIR -o $NCDIR"
 opa_prex_or_die "echo python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR"
 opa_prex_or_die "python Hov_Stat_plot.py -m $MASKFILE -i $NCDIR -o $OUTDIR -b $BASEDIR"
-#python Hov_flots+model_vars.py -m $MASKFILE -o $OUTDIR
 opa_prex_or_die "cp $OUTDIR/*N3n*.png Fig4.12"
 opa_prex_or_die "cp $OUTDIR/*O2o*.png Fig4.15"
 
@@ -123,47 +124,45 @@ opa_prex_or_die "cp $OUTFIGDIR/*O2o* Fig4.16"
 
 
 ####
-
-
-
+# PLOTTING LAYER MAPS:
 
 #OUTDIR=spaghettiplots
 #mkdir -p $OUTDIR
 #python plot_layer_timeseries_on_profiles.py -i $STAT_PROFILES_DIR -m $MASKFILE -o $OUTDIR
 
-mkdir -p Fig4.1/ Fig4.7 Fig4.9 Fig4.10 Fig4.18 Fig4.19 Fig4.7bis
+opa_prex_or_die "mkdir -p Fig4.1/ Fig4.7 Fig4.9 Fig4.10 Fig4.18 Fig4.19 Fig4.7bis"
 
 
 COMMONS_PARAMS="-m $MASKFILE -o LayerMaps/  -l Plotlist_bio.xml -s 20190101 -e 20200101"
 
-mkdir -p LayerMaps
-python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS      # Fig4.1 CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-python averager_and_plot_map.py -i $INPUTDIR        -v N3n  -t mean $COMMONS_PARAMS      # Fig4.10 NIT-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PARAMS      # Fig4.9  PHOS-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
-#INPUTDIR_PPN=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/
-#python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral $COMMONS_PARAMS  # Fig4.7 NPP-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN per lo 0-200m
-#python averager_and_plot_map_ppn.py -i $INPUTDIR_PPN        -v ppn  -t integral -m $MASKFILE -o Fig4.7bis -l Plotlist_bio_ppn20m.xml -s 20170101 -e 20180101
+opa_prex_or_die "mkdir -p LayerMaps"
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_l  -t mean $COMMONS_PARAMS"      # Fig4.1 CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v N3n  -t mean $COMMONS_PARAMS"     # Fig4.10 NIT-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v N1p  -t mean $COMMONS_PARAMS"      # Fig4.9  PHOS-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v N4n  -t mean $COMMONS_PARAMS"
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v N5s  -t mean $COMMONS_PARAMS"
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v O2o  -t mean $COMMONS_PARAMS"  # DO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> Not showed for lack of ref
+opa_prex_or_die "python averager_and_plot_map_ppn.py -i $INPUT_AGGR_DIR  -v P_c  -t mean -m $MASKFILE -o LayerMaps/  -l Plotlist_bio_Int.xml -s 20190101 -e 20200101"
+opa_prex_or_die "python averager_and_plot_map_ppn.py -i $INPUT_AGGR_DIR  -v Z_c -t integral $COMMONS_PARAMS"
 
-python averager_and_plot_map.py -i $INPUTDIR        -v ALK   -t mean $COMMONS_PARAMS   # Ac-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN  --> not requested in the ScQP
-python averager_and_plot_map.py -i $INPUTDIR        -v DIC  -t mean $COMMONS_PARAMS   # DIC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> not requested in the ScQP
-cp LayerMaps/*P_l* Fig4.1/
-cp LayerMaps/*N3n* Fig4.10/
-cp LayerMaps/*N1p* Fig4.9/
-cp LayerMaps/*ppn* Fig4.7/
-cp LayerMaps/*ALK* Fig4.18/
-cp LayerMaps/*DIC* Fig4.19/
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v ALK   -t mean $COMMONS_PARAMS"   # Ac-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN  --> not requested in the ScQP
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v DIC  -t mean $COMMONS_PARAMS"   # DIC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> not requested in the ScQP
+opa_prex_or_die "python averager_and_plot_map.py -i $INPUTDIR        -v CO2airflux -t mean $COMMONS_PARAMS"
+opa_prex_or_die "cp LayerMaps/*P_l* Fig4.1/"
+opa_prex_or_die "cp LayerMaps/*N3n* Fig4.10/"
+opa_prex_or_die "cp LayerMaps/*N1p* Fig4.9/"
+opa_prex_or_die "cp LayerMaps/*ppn* Fig4.7/"
+opa_prex_or_die "cp LayerMaps/*ALK* Fig4.18/"
+opa_prex_or_die "cp LayerMaps/*DIC* Fig4.19/"
 
-# python averager_and_plot_map.py -i $INPUTDIR        -v O2o  -t mean $COMMONS_PARAMS  # DO-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> Not showed for lack of ref
-# python averager_and_plot_map.py -i $INPUT_AGGR_DIR  -v P_c  -t mean $COMMONS_PARAMS  # PHYC-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN --> Not showed for lack of ref
 
 #CHL-LAYER-Y-CLASS1-[CLIM/LIT]-MEAN from SATELLITE:
-#python sat_ave_and_plot.py      -i $SAT_MONTHLY_DIR -m $MASKFILE  -o Fig4.1/
+opa_prex_or_die "python sat_ave_and_plot.py      -i $SAT_CHLWEEKLY_DIR -m $MASKFILE  -o Fig4.1/"
+opa_prex_or_die "python sat_model_RMSD_and_plot.py -s $SAT_CHLWEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE  -o Fig4.1/ -st 20190101 -et 20200101"
 
-
-mkdir -p Fig4.8
-INTEGRALS_PPN=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_01/wrkdir/POSTPROC/out/AVE_FREQ_2/INTEGRALS/PPN/
-#INTEGRALS_PPN=/gpfs/scratch/userexternal/ateruzzi/MULTIVARIATE_24/TEST_02/wrkdir/POSTPROC/output/PPN_MONTHLY/INTEGRALS/PPN/
-python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
+#mkdir -p Fig4.8
+#INTEGRALS_PPN=/g100_scratch/userexternal/gbolzon0/V9C/2019/TEST_01/wrkdir/POSTPROC/out/AVE_FREQ_2/INTEGRALS/PPN/
+#python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.8
 
 
 #########################   static dataset climatology section ###################################
@@ -180,69 +179,72 @@ python read_ppn_from_avescan_do_plot.py -c open_sea   -i $INTEGRALS_PPN -o Fig4.
 # PH-PROF-Y-CLASS4-[CLIM/LIT]-MEAN
 # pCO-PROF-Y-CLASS4-[CLIM/LIT]-MEAN
 
+############
+# COMPARISON WITH EMODnet CLIMATOLOGY:
+
 #STAT_PROFILES_MONTHLY_DIR=/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v20_1/wrkdir/POSTPROC/output/MONTHLY/STAT_PROFILES/
 #STAT_PROFILES_MONTHLY_DIR=/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_05/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 # Figures 4.11 and 4.17 (previously named 4.19)
-mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.17 sim_vs_clim_profiles_OpenSea
+opa_prex_or_die "mkdir -p sim_vs_clim_profiles/ Fig4.11 Fig4.17 sim_vs_clim_profiles_OpenSea"
 #python simulation_vs_clim.py -i $STAT_PROFILES_MONTHLY_DIR -o sim_vs_clim_profiles/ -s 20170101 -e 20180101 -m $MASKFILE
-python simulation_vs_clim_extended.py  -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 20190101 -e 20200101 -m $MASKFILE
-mkdir -p sim_vs_clim_profiles_OpenSea
-python simulation_vs_clim_extended_OpenSea.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles_OpenSea -s 20190101 -e 20200101 -m $MASKFILE
-cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11
-cp sim_vs_clim_profiles/Fig_4.17*png Fig4.17
+opa_prex_or_die "python simulation_vs_clim_extended.py  -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles/ -s 20190101 -e 20200101 -m $MASKFILE"
+opa_prex_or_die "mkdir -p sim_vs_clim_profiles_OpenSea"
+opa_prex_or_die "python simulation_vs_clim_extended_OpenSea.py -i $STAT_PROFILES_DIR -o sim_vs_clim_profiles_OpenSea -s 20190101 -e 20200101 -m $MASKFILE"
+opa_prex_or_die "cp sim_vs_clim_profiles/Fig_4.11*png Fig4.11"
+opa_prex_or_die "cp sim_vs_clim_profiles/Fig_4.17*png Fig4.17"
 
 DIR=static_clim
-mkdir -p $DIR table4.6 table4.7 table4.10/ table4.11 table4.13/ table4.14
+opa_prex_or_die "mkdir -p $DIR table4.6 table4.7 table4.10/ table4.11 table4.13/ table4.14"
 # -------------------------------------------------------------------------
 
 #python static_clim_validation_STD.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20170101 -e 20180101
 #python static_clim_validation_STD_pH.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20170101 -e 20180101
-python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101
+opa_prex_or_die "python static_clim_validation.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101"
 
 DIR=static_clim_OpenSea
-mkdir $DIR
-python static_clim_validation_OpenSea.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101
+opa_prex_or_die "mkdir $DIR"
+opa_prex_or_die "python static_clim_validation_OpenSea.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101"
 
 # -------------------------------------------------------------------------
-cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.6/
-cp $DIR/O2o-LAYER-Y-CLASS4-CLIM.txt                                  table4.10/
+opa_prex_or_die "cp $DIR/N1p-LAYER-Y-CLASS4-CLIM.txt $DIR/N3n-LAYER-Y-CLASS4-CLIM.txt table4.6/"
+opa_prex_or_die "cp $DIR/O2o-LAYER-Y-CLASS4-CLIM.txt                                  table4.10/"
 
 # PH-PROF-Y-CLASS4-CLIM-[BIAS/RMSD/CORR]-BASIN
 # PCO-PROF-Y-CLASS4-CLIM-[BIAS/RMSD/CORR]-BASIN
 
 #cp $DIR/Ac-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.13/
-cp $DIR/ALK-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.13/
-cp $DIR/pH-LAYER-Y-CLASS4-CLIM.txt  $DIR/pCO2-LAYER-Y-CLASS4-CLIM.txt table4.13/
+opa_prex_or_die "cp $DIR/ALK-LAYER-Y-CLASS4-CLIM.txt $DIR/DIC-LAYER-Y-CLASS4-CLIM.txt  table4.13/"
+opa_prex_or_die "cp $DIR/pH-LAYER-Y-CLASS4-CLIM.txt  $DIR/pCO2-LAYER-Y-CLASS4-CLIM.txt table4.13/"
 
 # ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN calculated on 14 layers --> in table4.14
 # DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN calculated on 14 layers --> in table4.14
 
-cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt $DIR/N3n-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.7
-cp $DIR/O2o-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt                                            table4.11
+opa_prex_or_die "cp $DIR/N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt $DIR/N3n-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.7"
+opa_prex_or_die "cp $DIR/O2o-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt                                            table4.11"
 #cp $DIR/Ac-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt  $DIR/DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14
-cp $DIR/ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt  $DIR/DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14
-cp $DIR/pH-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt   $DIR/pCO2-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14
+opa_prex_or_die "cp $DIR/ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt  $DIR/DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14"
+opa_prex_or_die "cp $DIR/pH-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt   $DIR/pCO2-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt table4.14"
 
 ### SECTION WITH NEW FIGURES FOR pCO2 COMPARISON/ANALYSIS ###
 # Compare pCO2 vs SOCAT dataset: 
 # Fig4.20  : PCO-SURF-M-CLASS4-CLIM-MEAN-BASIN
 # table4.15: PCO-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt 
-mkdir -p table4.15 Fig4.20 Fig4.21
+opa_prex_or_die "mkdir -p table4.15 Fig4.20 Fig4.21"
 # First generate climatology tables:
 
 MONTHLY_SURF=monthly_surf
-mkdir -p $MONTHLY_SURF
+opa_prex_or_die "mkdir -p $MONTHLY_SURF"
 opa_prex_or_die "python monthly_clim_socat_pCO2.py"
 opa_prex_or_die "python monthly_surf.py -i $STAT_PROFILES_DIR -o $MONTHLY_SURF -y 2019"
 opa_prex_or_die "python table_pCO2vsSOCAT.py -i $MONTHLY_SURF"
 
-mv pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt table4.15/.
-mv TOT_RMSD_pCO2vsSOCAT.txt table4.15/.
+opa_prex_or_die "mv pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt table4.15/."
+opa_prex_or_die "mv TOT_RMSD_pCO2vsSOCAT.txt table4.15/."
 
 # generate new figure 4.20: comparison pCO2 BFM vs SOCAT dataset
 
 opa_prex_or_die "python plot_month_pCO2vsSOCAT.py"
-mv pCO2_monthly_tseries_Fig4.20.png Fig4.20/.
+opa_prex_or_die "mv pCO2_monthly_tseries_Fig4.20.png Fig4.20/. "
 
 # generate new figure 4.21: comparison pCO2 and CO2ariflux vs REAN (CLIM)
 # Fig4.21: airseaCO2flux-SURF-M-CLASS4-CLIM-MEAN-BASIN

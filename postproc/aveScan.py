@@ -502,7 +502,7 @@ if args.pointlist:
     MeasPoints = read_Positions_for_Pointprofiles(args.pointlist) 
     nCruise         = len(MeasPoints)
     CruiseDescr =""
-    for i in MeasPoints['Name']: CruiseDescr+=i.decode() + ", "
+    for i in MeasPoints['Name']: CruiseDescr+=i + ", "
 
 doStatistics    = args.s
 #nstat           =  5

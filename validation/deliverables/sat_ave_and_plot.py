@@ -29,7 +29,8 @@ def argument():
 args = argument()
 
 import numpy as np
-
+import matplotlib
+matplotlib.use('Agg')
 from commons.time_interval import TimeInterval
 from commons.Timelist import TimeList
 from commons.mask import Mask

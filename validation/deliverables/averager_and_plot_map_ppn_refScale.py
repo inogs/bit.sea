@@ -65,6 +65,8 @@ def argument():
 args = argument()
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 
 from commons.time_interval import TimeInterval

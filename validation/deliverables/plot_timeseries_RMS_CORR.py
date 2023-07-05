@@ -40,6 +40,8 @@ def argument():
 args = argument()
 
 import pickle
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 import sys

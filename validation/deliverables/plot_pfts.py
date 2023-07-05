@@ -25,6 +25,8 @@ def argument():
 
 args = argument()
 import pickle
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 from basins import V2 as OGS
 from commons.utils import addsep

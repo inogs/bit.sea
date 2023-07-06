@@ -35,7 +35,9 @@ def argument():
 
 args = argument()
 
-
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.ticker as mticker
 import os,sys
 from commons.mask import Mask
 from commons.Timelist import TimeList, TimeInterval
@@ -117,7 +119,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.xaxis.grid(True)
 
         nP = len(list_float_track)
-        print (nP)
+
         if nP <2 : continue
 
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
@@ -127,7 +129,6 @@ for ivar_m, var_mod in enumerate(VARLIST):
         for ip, p in enumerate(list_float_track):
             try:
                 Pres,Prof,Qc=p.read(var,var_mod=var_mod)
-                print (Prof)
             except:
                 print (var_mod)
                 timelabel_list.append(p.time)
@@ -140,17 +141,14 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
             timelabel_list.append(p.time)
 
-            try:
-              GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
-            except:
-                print ("except")
-                continue
+            GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, forced_depth=depths, extrapolation=extrap[ivar_m])
+
 
             if GM.number()> 0:
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        print (var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
+        #print (var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)
@@ -190,8 +188,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
         times = timelabel_list
 
         model, ref =           A.plotdata(var_mod,'Int_0-200', only_good=False)
-        print ("ref")
-        print (ref)
+
         if np.isnan(ref).all(): continue
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
@@ -306,12 +303,13 @@ for ivar_m, var_mod in enumerate(VARLIST):
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
 #        ticklabs = cbar.ax.get_yticklabels()
         ticklabs = cbar.get_ticks()
-        print (ticklabs)
+        ticks_loc = cbar.ax.get_yticks().tolist()
+        cbar.ax.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
         if (var_mod == 'O2o'):
 #            cbar.ax.set_yticklabels(ticklabs, fontsize=font_s)
             cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
         else:
-            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs] , fontsize=font_s)
+            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs], fontsize=font_s)
         
 
 #        if var_mod == 'O2o': 

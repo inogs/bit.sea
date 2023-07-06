@@ -194,7 +194,7 @@ class check():
             if flag1: flag=1
             line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
             nexcl=nP
-            FLAG = np.zeros((1), np.int)
+            FLAG = np.zeros((nP), np.int)
             FLAG[0] =1
             if self.verboselevel ==1 :
                 outncfile="%s%s_%s.nc"  %(self.outdir + 'O2o.', p.time.strftime("%Y%m%d"), p._my_float.wmo )

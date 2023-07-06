@@ -53,10 +53,10 @@ from instruments import check
 
 BASEDIR = addsep(args.basedir)
 OUTDIR = addsep(args.outdir)
-Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
-Check_obj_chl     = check.check(OUTDIR + "/chla_check/")
-Check_obj_phytoC = check.check(OUTDIR + "/phytoC_check/")
-Check_obj_oxygen = check.check(OUTDIR + "/oxygen_check/")
+Check_obj_nitrate = check.check(OUTDIR + "nitrate_check/")
+Check_obj_chl     = check.check(OUTDIR + "chla_check/")
+Check_obj_phytoC = check.check(OUTDIR + "phytoC_check/")
+Check_obj_oxygen = check.check(OUTDIR + "oxygen_check/")
 
 
 TheMask=Mask(args.maskfile, loadtmask=False)
@@ -67,13 +67,27 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 
 
+class variable():
+    def __init__(self, name, extrap, check_obj):
+        ''' Arguments:
+        * name *  string, like N3n
+        * extrap * logical
+        * check_obj * a check object defined in instruments.check
+        '''
+        self.name = name
+        self.extrap = extrap
+        self.check_obj = check_obj
+
 layer=Layer(0,200)
 layer300=Layer(0,350)
 layer1000=Layer(200,1000)
 
-VARLIST = ['P_l','N3n','O2o','P_c']
-Adj = [True,True,True,True]
-extrap = [True,False,False,False]
+P_l = variable('P_l', True, Check_obj_chl)
+N3n = variable('N3n', False, Check_obj_nitrate)
+O2o = variable('O2o', False, Check_obj_oxygen)
+P_c = variable('P_c', False, Check_obj_phytoC)
+VARLIST = [P_l,N3n,O2o,P_c]
+
 
 nVar = len(VARLIST)
 
@@ -88,12 +102,10 @@ iz300 = TheMask.getDepthIndex(350)+1 # Max Index for depth 300m for Nitracl def
 iz10 = TheMask.getDepthIndex(10.8)+1
 iz1000 = TheMask.getDepthIndex(1000)+1 # Max Index for depth 1000
 
-for ivar, var_mod in enumerate(VARLIST):
+for V in VARLIST:
+    var_mod=V.name
     var = FLOATVARS[var_mod]
-    if var_mod == "N3n": Check_obj = Check_obj_nitrate
-    if var_mod == "P_l": Check_obj = Check_obj_chl
-    if var_mod == "O2o": Check_obj = Check_obj_oxygen
-    if var_mod == "P_c": Check_obj = Check_obj_phytoC
+
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
@@ -112,13 +124,7 @@ for ivar, var_mod in enumerate(VARLIST):
 
           # Pres,Profile,Qc=p.read(var,var_mod=var_model) # IT IS NOT USED; LEFT JUST FOR CHECK
 
-            try:
-
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
-
-            except:
-                print (p.ID()  + " not found in " + BASEDIR)
-                continue
+            GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=V.check_obj, extrapolation=V.extrap)
 
 
             if GM.number() == 0 :
@@ -167,9 +173,7 @@ for ivar, var_mod in enumerate(VARLIST):
 
             if (var_mod == "O2o"):
                 A_float[itime,8] = oxy_sat(p)
-                
-                print (gm1000.Ref)
-                print (gm1000.Depth)
+
                 if len(gm1000.Ref) > 1:
                     A_float[itime,9] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
                     A_model[itime,9] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 

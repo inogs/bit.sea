@@ -105,7 +105,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
-        print (OUTFILE)
+        print (OUTFILE,flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         if ( var_mod == 'P_c'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)

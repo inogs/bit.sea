@@ -42,6 +42,8 @@ def argument():
 
 args = argument()
 
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 from commons.mask import Mask
 from commons.submask import SubMask

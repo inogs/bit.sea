@@ -110,7 +110,7 @@ for V in VARLIST:
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
         OUTFILE = "%s%s_%s.nc" %(OUTDIR, var_mod, wmo )
-        print (OUTFILE)
+        print (OUTFILE, flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         nTime = len(list_float_track)
         A_float = np.zeros(( nTime, nStat), np.float32 ) * np.nan

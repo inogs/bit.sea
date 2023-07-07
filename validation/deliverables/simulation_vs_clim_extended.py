@@ -31,7 +31,8 @@ def argument():
 
 args = argument()
 
-
+import matplotlib
+matplotlib.use('Agg')
 
 from commons.layer import Layer
 import basins.V2 as basV2

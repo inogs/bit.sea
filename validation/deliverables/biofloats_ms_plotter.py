@@ -11,14 +11,14 @@ def argument():
                                 required = True,
                                 help = '')
 
-    parser.add_argument(   '--figdir', '-f',
+    parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
                                 required = True,
                                 help = "")
-    parser.add_argument(   '--tabledir', '-t',
+    parser.add_argument(   '--var', '-v',
                                 type = str,
-                                default = None,
+                                choices = ['P_l','N3n','O2o','P_c','POC'],
                                 required = True,
                                 help = "")
 
@@ -37,13 +37,13 @@ from basins import V2 as OGS
 from commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
-from commons.utils import writetable
+from commons.utils import writetable, nanmean_without_warnings
 from datetime import datetime
 from profiler import *
 
-OUT_FIGDIR        = addsep(args.figdir)
-OUT_TABLEDIR       = addsep(args.tabledir)
+OUTDIR        = addsep(args.outdir)
 inputfile        = args.inputfile
+var=args.var
 
 class ncreader():
     def __init__(self, filename):
@@ -125,46 +125,45 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
 
     ii = np.zeros((len(times),) , bool)
     for k,t in enumerate(times) : ii[k] = timeinterval.contains(t)
-    biasm = np.nanmean(bias1[ii])
-    rmsem = np.nanmean(rmse1[ii])
-    refm = np.nanmean(ref1[ii])
-    modm = np.nanmean(mod1[ii])
+    biasm = nanmean_without_warnings(bias1[ii])
+    rmsem = nanmean_without_warnings(rmse1[ii])
+    refm  = nanmean_without_warnings(ref1[ii])
+    modm  = nanmean_without_warnings(mod1[ii])
     return fig, biasm, rmsem, ax, ax2, refm, modm
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
-VARLIST = ['P_l','N3n','O2o','P_c']
-VARLIST = ['P_l','N3n','O2o','P_c','POC']
-VARLONGNAMES=['Chlorophyll','Nitrate','Oxygen','PhytoC','POC']
+VARLONGNAMES={'P_l':'Chlorophyll', 'N3n':'Nitrate', 'O2o':'Oxygen','P_c':'PhytoC', 'POC':'POC'}
+
 SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)
-#ti_restrict = TimeInterval("20150101","20170101","%Y%m%d")
+
 ti_restrict = TimeInterval(DATESTART,DATE__END,"%Y%m%d")
 
 column_names=[layer.string() for layer in LAYERLIST]
 row_names   =[sub.name for sub in SUBLIST]
 
-for ivar, var in enumerate(VARLIST):
-    BIAS = np.zeros((nSub,nLayers),np.float32)
-    RMSE = np.zeros((nSub,nLayers),np.float32)
-    REF = np.zeros((nSub,nLayers),np.float32)
-    MOD = np.zeros((nSub,nLayers),np.float32)
-    for isub, sub in enumerate(SUBLIST):
-        for ilayer, layer in enumerate(LAYERLIST):
-            outfile = "%s%s.%s.%s.png" % (OUT_FIGDIR,var,sub.name,layer.longname())
-            print (outfile)
-            fig,bias,rmse,ax,ax2, ref, mod  = single_plot(VARLONGNAMES[ivar],var,sub.name,layer.string(), ti_restrict)
-            BIAS[isub,ilayer] = bias
-            RMSE[isub,ilayer] = rmse
-            REF[isub,ilayer] = ref
-            MOD[isub,ilayer] = mod
-            title = "%s %s %s " %(VARLONGNAMES[ivar], sub.extended_name, layer.string())
-            fig.suptitle(title, fontsize=20)
-            fig.savefig(outfile)
-            pl.close(fig)
 
-    writetable(OUT_TABLEDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
-    writetable(OUT_TABLEDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
-    writetable(OUT_TABLEDIR +  var + '_REF.txt',REF,row_names, column_names)
-    writetable(OUT_TABLEDIR +  var + '_MOD.txt',MOD,row_names, column_names)
+BIAS = np.zeros((nSub,nLayers),np.float32)
+RMSE = np.zeros((nSub,nLayers),np.float32)
+REF = np.zeros((nSub,nLayers),np.float32)
+MOD = np.zeros((nSub,nLayers),np.float32)
+for isub, sub in enumerate(SUBLIST):
+    for ilayer, layer in enumerate(LAYERLIST):
+        outfile = "%s%s.%s.%s.png" % (OUTDIR,var,sub.name,layer.longname())
+        print (outfile,flush=True)
+        fig,bias,rmse,ax,ax2, ref, mod  = single_plot(VARLONGNAMES[var],var,sub.name,layer.string(), ti_restrict)
+        BIAS[isub,ilayer] = bias
+        RMSE[isub,ilayer] = rmse
+        REF[isub,ilayer] = ref
+        MOD[isub,ilayer] = mod
+        title = "%s %s %s " %(VARLONGNAMES[var], sub.extended_name, layer.string())
+        fig.suptitle(title, fontsize=20)
+        fig.savefig(outfile)
+        pl.close(fig)
+
+writetable(OUTDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
+writetable(OUTDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
+writetable(OUTDIR +  var + '_REF.txt' ,REF,row_names , column_names)
+writetable(OUTDIR +  var + '_MOD.txt' ,MOD,row_names , column_names)
     

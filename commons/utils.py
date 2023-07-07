@@ -279,6 +279,11 @@ def nan_compare(array_with_nan,operator, value):
     if operator=='<=' : out[~ii] = array_with_nan[~ii] <= value
     return out
 
+def nanmean_without_warnings(array):
+    if len(array)==0: return np.nan
+    if np.isnan(array).all(): return np.nan
+    return np.nanmean(array)
+
 if __name__ == '__main__':
     A=np.random.randn(3,2)
     writetable("tmp.txt", A, ["A1","A2","A3"], ['field1','field2'])

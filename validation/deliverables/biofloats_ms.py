@@ -52,7 +52,6 @@ TheMask  = Mask(args.maskfile)
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 VARLIST = ['P_l','N3n','O2o','P_c']
-VARLIST = ['P_l','N3n','O2o','P_c','POC']
 
 #read_adjusted = [True,True,True,True]
 extrap = [True,False,False,False,False]
@@ -86,7 +85,7 @@ for iFrame, req in enumerate(WEEKLY):
         if var == "O2o": Check_obj = None
         if var == "P_c": Check_obj = Check_obj_PhytoC
         if var == "POC": Check_obj = None
-        print (var)
+        print (var,flush=True)
 
         for isub, sub in enumerate(OGS.NRT3):
 #          if (isub == 0):

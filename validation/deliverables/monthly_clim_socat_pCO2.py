@@ -1,3 +1,28 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+    Writes 3 files:
+    - monthly_clim_socat.txt
+    - monthly_clim_socat_STD.txt
+    - monthly_num_socat.txt
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "Output dir")
+
+    return parser.parse_args()
+
+args = argument()
+
+from commons.utils import addsep
+OUTDIR=addsep(args.outdir)
+
+
 from basins import V2 as OGS
 from static import socat_reader
 import numpy as np
@@ -36,6 +61,6 @@ for isub, sub in enumerate(OGS.P):
 
 rows_names_list=[sub.name for sub in OGS.P]
 column_names_list=[str(i) for i in range(1,13)]
-writetable("monthly_clim_socat.txt", CLIM, rows_names_list, column_names_list)
-writetable("monthly_clim_socat_STD.txt", CLIM_STD, rows_names_list, column_names_list)
-writetable("monthly_num_socat.txt", nP_month, rows_names_list, column_names_list)
+writetable(OUTDIR + "monthly_clim_socat.txt", CLIM, rows_names_list, column_names_list)
+writetable(OUTDIR + "monthly_clim_socat_STD.txt", CLIM_STD, rows_names_list, column_names_list)
+writetable(OUTDIR + "monthly_num_socat.txt", nP_month, rows_names_list, column_names_list)

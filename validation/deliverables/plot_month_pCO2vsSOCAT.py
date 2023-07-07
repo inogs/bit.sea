@@ -1,3 +1,31 @@
+import argparse
+def argument():
+    parser = argparse.ArgumentParser(description = '''
+
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument(   '--inputdir', '-i',
+                                type = str,
+                                required = True,
+                                help = '''DIRECTORY of MONTHLY MODEL DATA''')
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "Output dir")
+
+    return parser.parse_args()
+
+args = argument()
+
+from commons.utils import addsep
+INPUTDIR=addsep(args.inputdir)
+OUTDIR=addsep(args.outdir)
+
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import matplotlib as plt
 import matplotlib.cm as cm
@@ -5,8 +33,8 @@ import matplotlib.mlab as mlab
 import matplotlib.pyplot as pl
 from basins import V2 as OGS
 
-socat=np.loadtxt("monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
-model=np.loadtxt("monthly_2019_surf/monthly_pCO2.txt",skiprows=1,usecols=range(1,13))
+socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
+model=np.loadtxt(INPUTDIR + "monthly_pCO2.txt",skiprows=1,usecols=range(1,13))
 
 nSUB = len(OGS.P.basin_list)
 
@@ -87,7 +115,7 @@ for ns,sub in enumerate(OGS.P.basin_list[12:16]):
 
 
 fig.suptitle('BFMv5 pCO2 (solid) vs SOCAT pCO2 (dashed)')
-fig.savefig('pCO2_monthly_tseries_Fig4.20.png', dpi=150)
+fig.savefig(OUTDIR + 'pCO2_monthly_tseries_Fig4.20.png', dpi=150)
 
 import sys
 sys.exit()

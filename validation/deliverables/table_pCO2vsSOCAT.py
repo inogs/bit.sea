@@ -30,8 +30,8 @@ import numpy as np
 from basins import V2
 from commons.utils import writetable
 
-socat=np.loadtxt("monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
-num_socat=np.loadtxt("monthly_num_socat.txt",skiprows=1,usecols=range(1,13))
+socat=np.loadtxt(INPUTDIR +"monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
+num_socat=np.loadtxt(INPUTDIR +"monthly_num_socat.txt",skiprows=1,usecols=range(1,13))
 model=np.loadtxt(filemodel,skiprows=1,usecols=range(1,13))
 
 nSUB = len(V2.P.basin_list)

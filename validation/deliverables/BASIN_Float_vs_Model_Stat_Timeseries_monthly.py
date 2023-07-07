@@ -43,11 +43,10 @@ from commons.mask import Mask
 from instruments import superfloat as bio_float
 from instruments.matchup_manager import Matchup_Manager
 from instruments.var_conversions import FLOATVARS
-from commons.utils import addsep
+from commons.utils import addsep, nanmean_without_warnings
 from commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
 from metrics2 import *
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from basins.V2 import NRT3 as OGS
 import commons.timerequestors as requestors
 from instruments import check
@@ -62,9 +61,25 @@ layer=Layer(0,200)
 layer300=Layer(0,350)
 layer1000=Layer(200,1000)
 
-VARLIST = ['P_l','N3n','O2o','P_c']
-Adj = [True,True,True,True]
-extrap = [True,False,False,False]
+class variable():
+    def __init__(self, name, extrap, check_obj):
+        ''' Arguments:
+        * name *  string, like N3n
+        * extrap * logical
+        * check_obj * a check object defined in instruments.check
+        '''
+        self.name = name
+        self.extrap = extrap
+        self.check_obj = check_obj
+
+
+P_l = variable('P_l', True, Check_obj_chl)
+N3n = variable('N3n', False, Check_obj_nitrate)
+O2o = variable('O2o', False, None)
+P_c = variable('P_c', False, Check_obj_PhytoC )
+VARLIST = [P_l,N3n,O2o,P_c]
+
+
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
@@ -82,14 +97,10 @@ iz200 = TheMask.getDepthIndex(200)+1 # Max Index for depth 200m
 A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 A_model = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 
-for ivar, var_mod in enumerate(VARLIST):
+for ivar, V in enumerate(VARLIST):
+    var_mod = V.name
     var = FLOATVARS[var_mod]
-    adj=Adj[ivar]
 
-    if var_mod == "N3n": Check_obj = Check_obj_nitrate
-    if var_mod == "P_l": Check_obj = Check_obj_chl
-    if var_mod == "O2o": Check_obj = None
-    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
 
     for itime, Req in enumerate(MonthlyRequestors):
         if Req.time_interval.end_time > TL.timeinterval.end_time : 
@@ -98,8 +109,7 @@ for ivar, var_mod in enumerate(VARLIST):
         for iSub, Sub in enumerate(OGS.basin_list):
             BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
             BASIN_PROFILES_float = bio_float.remove_bad_sensors(BASIN_PROFILES_float_raw,var)
-#            print ("RAW  : " + np.str(len(BASIN_PROFILES_float_raw)))
-#            print ("FILT.: " + np.str(len(BASIN_PROFILES_float)))
+
             A_float[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             A_model[ivar,itime,iSub,6] = len(BASIN_PROFILES_float)
             if len(BASIN_PROFILES_float) == 0: continue
@@ -115,9 +125,7 @@ for ivar, var_mod in enumerate(VARLIST):
                     Pres,Profile,Qc=p.read(var) #,True)
 
                 if len(Pres) < 10 : continue
-#		GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, interpolation_on_Float=False)
-                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
-
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=V.check_obj, extrapolation=V.extrap)
 
                 if GM.number() == 0 :
                     print (p.ID() + " excluded")
@@ -131,31 +139,29 @@ for ivar, var_mod in enumerate(VARLIST):
                 izmax = min(nLevels,iz200)
 
                 Flo[ip,0] = np.nansum(gm200.Ref  *TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
-                Flo[ip,1] = gm200.correlation()
+                if gm200.Ref.std()>0 : Flo[ip,1] = gm200.correlation()
+
                 Flo[ip,5] = gm200.Ref[0] # Surf Value
-                print (Flo[ip,0])
-                print (Flo[ip,1])
-                print (Flo[ip,6])
 
 
                 Mod[ip,0] = np.nansum(gm200.Model*TheMask.dz[:izmax])/TheMask.dz[:izmax].sum() # Integral
-                print (Mod[ip,0])
-                Mod[ip,1] = gm200.correlation()
+                if gm200.Ref.std()>0 : Mod[ip,1] = gm200.correlation()
+
                 Mod[ip,5] = gm200.Model[0] # Surf Value
 
 
-                if (VARLIST[ivar] == "P_l"):
+                if (var_mod == "P_l"):
                     Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
                     Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
                     Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
                     Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
 
-                if (VARLIST[ivar] == "N3n"):
+                if (var_mod == "N3n"):
                     Flo[ip,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
                     Mod[ip,4] = find_NITRICL(gm200.Model,gm200.Depth)
   
-                if (VARLIST[ivar] == "O2o"):
+                if (var_mod == "O2o"):
                     if ( len(gm1000.Model) > 2):
                         Flo[ip,7] = find_OMZ(gm1000.Ref, gm1000.Depth) # Oxygen Minimum Zone
                         Mod[ip,7] = find_OMZ(gm1000.Model, gm1000.Depth) # Oxygen Minimum Zone 
@@ -169,14 +175,12 @@ for ivar, var_mod in enumerate(VARLIST):
 
             for iStat, sStat in enumerate(METRICS):
                 if (iStat == 6): continue
-                print (Flo[ip,0])
-                print (Flo[ip,1])
 #                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[ip,iStat])
 #                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[ip,iStat])
-                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[:,iStat])
-                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[:,iStat])
-                print (A_float[3,:,6,6])
+                A_float[ivar,itime,iSub,iStat] = nanmean_without_warnings(Flo[:,iStat])
+                A_model[ivar,itime,iSub,iStat] = nanmean_without_warnings(Mod[:,iStat])
+#                print (A_float[3,:,6,6])
 
-    print (var)
+
 np.save(OUTDIR + 'Basin_Statistics_FLOAT',A_float)
 np.save(OUTDIR + 'Basin_Statistics_MODEL',A_model)

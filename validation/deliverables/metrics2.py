@@ -58,7 +58,7 @@ def MLD(Temperature,Salinity,Pres):
 
 def t_p_cline(Profile,Pres):  # calculation of thermocline (Temp) - pycnocline (Dens)
         T = Profile
-        dT = np.diff(T)/np.diff(Pres)
+        dT = abs(np.diff(T))/np.diff(Pres)
         ip = dT.argmax()
         return Pres[ip] 
 

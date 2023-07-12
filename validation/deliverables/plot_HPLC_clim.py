@@ -9,12 +9,19 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = '')
+    parser.add_argument(   '--outdir','-o',
+                                type = str,
+                                required = True,
+                                help = '')
 
     parser.add_argument(   '--ptype','-p',
                                 type = str,
                                 required = True,
                                 help = 'Phytoplankton Functional Type')
     return parser.parse_args()
+
+import matplotlib
+matplotlib.use('Agg')
 
 import pandas as pd
 from datetime import datetime
@@ -25,6 +32,7 @@ import matplotlib.dates as mdates
 args = argument()
 
 INDIR=addsep(args.inputdir)
+OUTDIR=addsep(args.outdir)
 P_type=args.ptype
 
 #INDIR="/g100_scratch/userexternal/lfeudale/validation/V10C/run4.19/bit.sea/validation/deliverables/"
@@ -35,8 +43,8 @@ if (P_type=="P2l"): P_name="NANO"
 if (P_type=="P3l"): P_name="PICO"
 if (P_type=="P4l"): P_name="DINO"
 
-infile_MEAN=INDIR + "HPLC_data/" + P_type + "_OPTION3_newSeasons3_means.csv"
-infile_STD=INDIR + "HPLC_data/" + P_type + "_OPTION3_newSeasons3_std.csv"
+infile_MEAN=INDIR + P_type + "_OPTION3_newSeasons3_means.csv"
+infile_STD=INDIR  + P_type + "_OPTION3_newSeasons3_std.csv"
 
 headers = ["LAYER","meanWref","meanWmod","meanSref","meanSmod"]
 headers_STD = ["LAYER","stdWref","stdWmod","stdSref","stdSmod"]
@@ -89,7 +97,7 @@ ax2.set_title("SUMMER")
 fig.suptitle(P_name)
 #ax.invert_xaxis()                                                                                               
 #ax.invert_yaxis() 
-fig.savefig('HPLC_profiles_comparison_STD_' + P_type + '_seasons.png') 
+fig.savefig(OUTDIR + 'HPLC_profiles_comparison_STD_' + P_type + '_seasons.png')
 #plt.savefig('HPLC_profiles.png') 
 
 plt.close(fig) 

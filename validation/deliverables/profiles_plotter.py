@@ -9,7 +9,7 @@ def argument():
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
-                                required = False,
+                                required = True,
                                 help = ''' Path of maskfile''')
 
     parser.add_argument(   '--outdir', '-o',
@@ -177,7 +177,7 @@ class figure_generator():
 ##### USER SETTINGS #######################################
 
 Mask24=Mask(args.maskfile,loadtmask=False)
-OUTDIR= addsep(args.maskfile)
+OUTDIR= addsep(args.outdir)
 
 mydtype=np.dtype([ ('label','U20'), ('linestyle','U5'), ('PATH','U100')  ])
 
@@ -185,7 +185,7 @@ A=np.loadtxt(args.settings_file,dtype=mydtype)
 
 PLOT_LIST = []
 for p in A:
-    P = plot_container(p['label'],p['linestyle'],p['PATH'],Mask24)
+    P = plot_container(p['label'],p['linestyle'],addsep(p['PATH']),Mask24)
     PLOT_LIST.append(P)
 
 

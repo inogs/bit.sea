@@ -6,11 +6,11 @@
 <var name="N1p" ></var>
 <var name="N3n" ></var>
 <var name="O2o" ></var>
-<var name="N5s" ></var>
 </native>
 
 <aggregate>
 <aggvar name="P_l" formula="P_l = P1l + P2l + P3l + P4l" > </aggvar>
+<aggvar name="P_c" formula="P_c = P1c + P2c + P3c + P4c" > </aggvar>
 
 </aggregate>
 </vars_for_All_Statistics>

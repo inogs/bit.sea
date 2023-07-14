@@ -92,6 +92,7 @@ class Matchup_Manager():
         F=open(filename,'w')
         F.writelines(JOB_LINES)
         F.close()
+        os.chmod(filename, 0o0755)
 
 
 

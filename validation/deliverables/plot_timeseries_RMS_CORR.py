@@ -170,7 +170,7 @@ mat[:,15] = MEAN_REF_win
 mat[:,16] = MEAN_MOD_sum
 mat[:,17] = MEAN_REF_sum
 
-outfiletable = OUTDIR + "table4.1_" + args.var + ".dat"
+outfiletable = OUTDIR + "table4.1_" + args.var + ".txt"
 print (outfiletable)
 rows_names=[sub.name for sub in OGS.P.basin_list]
 #column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum']

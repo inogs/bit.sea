@@ -50,18 +50,6 @@ BFMv2_dict={    'ALK':'Ac',
              'ruPBAc':'ppb',
            'rcalCARc':'CaCO3flux_dic' }
 
-try:
-    from mpi4py import MPI
-    comm  = MPI.COMM_WORLD
-    rank  = comm.Get_rank()
-    nranks =comm.size
-    isParallel = True
-except:
-    rank   = 0
-    nranks = 1
-    isParallel = False
-
-
 class plot_container():
     def __init__(self, labelstring, color, path,maskobj):
         self.name=labelstring
@@ -196,7 +184,7 @@ VARLIST=["N1p", "N3n", "N4n", "O2o", "P_l", "P_c", "DIC", "ppn", "ALK", "DIC", '
 
 ##################################################################
 
-for var in VARLIST[rank::nranks] :
+for var in VARLIST:
     os.system('mkdir -p ' + OUTDIR + var +"/")
     for p in PLOT_LIST: p.load(var)
 

@@ -167,7 +167,7 @@ class figure_generator():
 Mask24=Mask(args.maskfile,loadtmask=False)
 OUTDIR= addsep(args.outdir)
 
-mydtype=np.dtype([ ('label','U20'), ('linestyle','U5'), ('PATH','U100')  ])
+mydtype=np.dtype([ ('label','U20'), ('linestyle','U5'), ('PATH','U1024')  ])
 
 A=np.loadtxt(args.settings_file,dtype=mydtype)
 

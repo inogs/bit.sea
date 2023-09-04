@@ -290,9 +290,12 @@ class MapBuilder(object):
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
                     top_index[jj,ii] =  np.where(data_extractor._mask.zlevels >= layer.top[jj,ii])[0][0]
-                    bottom_index[jj,ii] = np.where(data_extractor._mask.zlevels < layer.bottom[jj,ii])[0][-1]
-                    #Workaround for Python ranges
-                    bottom_index[jj,ii] += 1
+                    if layer.bottom[jj,ii] < data_extractor._mask.zlevels[0]:
+                        bottom_index[jj,ii]=0
+                    else:
+                        bottom_index[jj,ii] = np.where(data_extractor._mask.zlevels < layer.bottom[jj,ii])[0][-1]
+                        #Workaround for Python ranges
+                        bottom_index[jj,ii] += 1
             #Min top index
             min_top_index = top_index.min()
             #Max bottom index

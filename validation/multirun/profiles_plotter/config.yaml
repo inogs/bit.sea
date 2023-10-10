@@ -1,0 +1,35 @@
+sources:
+  enea_raw:
+    path: /media/internal/disk2TiB/data/FORCINGS_ENEA_RAW_CONVERTED/AVESCAN_OUTPUT/STAT_PROFILES_COMPACT
+    meshmask: /media/internal/disk2TiB/data/FORCINGS_ENEA_RAW_CONVERTED/meshmask_MITgcm.nc
+  enea_interpolated:
+    path: /somewhere/else
+    meshmask: /media/internal/disk2TiB/data/FORCINGS_ENEA_RAW_CONVERTED/meshmask_MITgcm.nc
+
+variable_selections:
+  v1: [P_l, N3n, N1p, N4n, N5s, P_c, O2o]
+  v2: [N1p, N3n, N4n, O2o, P_l, P_c, DIC, ppn, ALK, DIC, pH, pCO2, O3c, O3h]
+  var_enea: [THETA, SALT]
+
+levels: ["0", "0 - 20", "100", "150"] # in meters
+
+plots:
+  enea_original:
+    source: enea_raw
+    variables: var_enea
+    color: red
+    alpha_for_time_series: 0.2
+    zorder: 1
+    legend: enea
+
+  enea_trend:
+    source: enea_raw
+    variables: var_enea
+    active: true
+    color: blue
+    alpha: 1
+    zorder: 1
+    filter: MovingAverage(10y)
+    draw_depth_profile: false
+
+output_dir: /dev/shm

@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from os import path
 from collections.abc import Iterable
 
@@ -110,8 +111,8 @@ class PlotDrawer:
                         end_level_index = None
                     else:
                         end_level_index = plot_meshmask.getDepthIndex(level[-1])
-                        # This is because we want to include the level inside
-                        # the average
+                        # This is because we want to include the last level
+                        # inside the average
                         end_level_index += 1
 
                     level_slice = slice(start_level_index, end_level_index)
@@ -278,8 +279,30 @@ class PlotDrawer:
         return fig
 
 
+def configure_argparse():
+    parser = ArgumentParser()
+    parser.description = (
+        "The MultirunProfilePlotter is a script to plot temporal series and "
+        "depth profiles of several different runs of one or more models. "
+        "You may configure the behaviour of the script by setting the values "
+        "of the config.yaml file in the main directory of this script or "
+        "writing another configuration file yourself."
+    )
+    parser.add_argument(
+        'config_file',
+        type=str,
+        nargs='?',
+        default=CONFIG_FILE,
+        help='The path of the config file used by this script. By default, it '
+             'uses {}'.format(CONFIG_FILE)
+    )
+    return parser.parse_args()
+
+
 def main():
-    config = read_config_from_file(CONFIG_FILE)
+    args = configure_argparse()
+
+    config = read_config_from_file(args.config_file)
 
     # Create a list of all the variables (for all the plots) and of all the
     # meshmasks

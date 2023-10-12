@@ -125,7 +125,41 @@ class BathymetricPolygon(Region):
     """
     def __init__(self, lon_list, lat_list, bathymetric_min=None,
                  bathymetric_max=None):
-        pass
+        self.polygon = Polygon(lon_list, lat_list)
+
+        if bathymetric_min is None and bathymetric_max is None:
+            raise ValueError(
+                'At least one between bathymetric_min and bathymetric_max must '
+                'be different from None. Otherwise, simply use a Polygon'
+            )
+
+        self.bathymetric_min = bathymetric_min
+        self.bathymetric_max = bathymetric_max
+
+    def is_inside(self, lon, lat):
+        inside_poly = self.polygon.is_inside(lon, lat)
+
+        # TODO: find a way to compute points depth
+        # Possible optimization: compute the point_depth only for the points
+        # that are inside_poly and set a 0 for the others
+        point_depth = np.ones_like(lon)
+
+        if self.bathymetric_min is not None:
+            bathymetric_ok_min = point_depth > self.bathymetric_min
+        else:
+            bathymetric_ok_min = np.ones_like(lon, dtype=bool)
+
+        if self.bathymetric_max is not None:
+            bathymetric_ok_max = point_depth < self.bathymetric_max
+        else:
+            bathymetric_ok_max = np.ones_like(lon, dtype=bool)
+
+        bathymetric_ok = np.logical_and(
+            bathymetric_ok_min,
+            bathymetric_ok_max
+        )
+
+        return np.logical_and(inside_poly, bathymetric_ok)
 
 
 class RegionUnion(Region):

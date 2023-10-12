@@ -3,6 +3,7 @@
 import numpy as np
 from matplotlib.path import Path
 
+
 class Region(object):
     def is_inside(self, lon, lat):
         raise NotImplementedError
@@ -13,7 +14,7 @@ class Region(object):
 
 class EmptyRegion(Region):
     def is_inside(self, lon, lat):
-        if hasattr(lon,"__len__"):
+        if hasattr(lon, "__len__"):
             assert len(lon) == len(lat)
             return np.zeros((len(lon),), dtype=np.bool_)
         else:
@@ -43,19 +44,19 @@ class Polygon(Region):
         
         # Create a path object
         codes = [Path.LINETO] * len(lon_list)
-        codes[0]  = Path.MOVETO
+        codes[0] = Path.MOVETO
         codes[-1] = Path.CLOSEPOLY
         
-        coords = [ (lon_list[i], lat_list[i]) for i in range(len(lon_list))]
+        coords = [(lon_list[i], lat_list[i]) for i in range(len(lon_list))]
         
         self.path = Path(coords, codes)
         
     def is_inside(self, lon, lat):
-        points_coord = np.array((lon,lat)).T
+        points_coord = np.array((lon, lat)).T
 
         reshaped = False
         if len(points_coord.shape) < 2:
-            points_coord = points_coord.reshape(1,2)
+            points_coord = points_coord.reshape(1, 2)
             reshaped = True
 
         inside = self.path.contains_points(points_coord)
@@ -93,8 +94,8 @@ class Polygon(Region):
             return another_region.cross(self)
         elif isinstance(another_region, EmptyRegion):
             return False
-        else:
-            raise NotImplementedError
+
+        return NotImplemented
 
 
 class Rectangle(Polygon):
@@ -109,13 +110,22 @@ class Rectangle(Polygon):
 
         super(Rectangle, self).__init__(lonlist, latlist)
 
-
     def is_inside(self, lon, lat):
-        lat_inside = (lat>= self.latmin) * (lat <= self.latmax) 
-        lon_inside = (lon >= self.lonmin) * (lon <= self.lonmax)
-        inside = np.bool_(lat_inside * lon_inside)
+        lat_inside = np.logical_and(lat >= self.latmin, lat <= self.latmax)
+        lon_inside = np.logical_and(lon >= self.lonmin, lon <= self.lonmax)
+        inside = np.logical_and(lat_inside, lon_inside)
         return inside
 
+
+class BathymetricPolygon(Region):
+    """
+    This region is defined as a 2D polygon on the surface and with a bathymetric
+    condition. The region is the part of the polygon where the bathymetry
+    satisfies the condition
+    """
+    def __init__(self, lon_list, lat_list, bathymetric_min=None,
+                 bathymetric_max=None):
+        pass
 
 
 class RegionUnion(Region):

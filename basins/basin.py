@@ -3,6 +3,7 @@
 import numpy as np
 from basins.region import Region, EmptyRegion
 
+
 class Basin(object):
 
     def __init__(self, name, extended_name=None):
@@ -40,10 +41,15 @@ class SimpleBasin(Basin):
     def is_inside(self, lon, lat):
         return self.region.is_inside(lon, lat)
 
+
 class SimplePolygonalBasin(SimpleBasin):
     @property
     def borders(self):
         return self.region.borders
+
+
+class SimpleBathymetricBasin(SimpleBasin):
+    pass
 
 
 class ComposedBasin(Basin):

@@ -1,12 +1,14 @@
 from argparse import ArgumentParser
 from os import path
+from collections import namedtuple
 from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from basins import V2
+from basins import V2, Basin
 from commons.mask import Mask
+from commons.submask import SubMask
 from tools.read_config import read_config_from_file
 
 try:
@@ -25,9 +27,16 @@ MAIN_DIR = path.dirname(path.realpath(__file__))
 CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
 
 
+# A BasinSliceVolume describes a slices among vertical levels of a specific
+# basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
+# Sea (accordingly to a specific meshmask). The levels field should be a tuple
+# with two elements: the start and the end of the interval in meters.
+BasinSlice = namedtuple('BasinSlice', ['basin_index', 'meshmask', 'levels'])
+
+
 class PlotDrawer:
     def __init__(self, plots: Iterable, variable, levels: Iterable,
-                 meshmask_objects=None):
+                 meshmask_objects=None, average_volume_weights=None):
         self._plots = tuple(plots)
         self._levels = tuple(levels)
         self._variable = variable
@@ -36,6 +45,10 @@ class PlotDrawer:
             self._meshmask_objects = {}
         else:
             self._meshmask_objects = meshmask_objects.copy()
+        if average_volume_weights is None:
+            self._average_volume_weights = {}
+        else:
+            self._average_volume_weights = average_volume_weights
 
         draw_depth_profile = False
         draw_time_series = False
@@ -69,11 +82,13 @@ class PlotDrawer:
             self._loaded_data[plot.name] = plot.get_plot_data(self._variable)
 
     def _get_plot_mask(self, plot):
-        if plot.source.meshmask in self._meshmask_objects:
-            return self._meshmask_objects[plot.source.meshmask]
-        return Mask(plot.source.meshmask, loadtmask=False)
+        real_path = path.realpath(plot.source.meshmask)
+        if real_path in self._meshmask_objects:
+            return self._meshmask_objects[real_path]
+        return Mask(plot.source.meshmask, loadtmask=True)
 
-    def _plot_time_series(self, axis_dict, basin_index: int, indicator=0):
+    def _plot_time_series(self, axis_dict, basin_index: int, basin,
+                          indicator=0):
         for plot in self._plots:
             if not plot.draw_time_series:
                 continue
@@ -91,31 +106,29 @@ class PlotDrawer:
                 # If level is a tuple, we have to compute the average between
                 # its first number and the second
                 if isinstance(level, tuple):
-                    if len(level) != 2:
-                        raise ValueError(
-                            'Levels must be a number of a tuple with two '
-                            'elements (the start and the end of the interval '
-                            'where an average will be computed). Submitted a '
-                            'tuple with {} elements: {}'.format(
-                                len(level),
-                                level
-                            )
-                        )
-                    if level[0] is None:
-                        start_level_index = None
-                    else:
-                        start_level_index = plot_meshmask.getDepthIndex(
-                            level[0]
-                        )
-                    if level[-1] is None:
-                        end_level_index = None
-                    else:
-                        end_level_index = plot_meshmask.getDepthIndex(level[-1])
-                        # This is because we want to include the last level
-                        # inside the average
-                        end_level_index += 1
+                    # Let us check if we already have the weights for this
+                    # average
+                    requested_slice = BasinSlice(
+                        basin_index,
+                        path.realpath(plot.source.meshmask),
+                        level
+                    )
 
-                    level_slice = slice(start_level_index, end_level_index)
+                    level_slice = from_interval_to_slice(
+                        level,
+                        plot_meshmask
+                    )
+
+                    if requested_slice in self._average_volume_weights:
+                        average_weights = \
+                            self._average_volume_weights[requested_slice]
+                    else:
+                        submask = SubMask(basin, maskobject=plot_meshmask)
+                        average_weights = compute_slice_volume(
+                            level_slice,
+                            plot_meshmask,
+                            submask
+                        )
 
                     with plot_data:
                         y_data_domain = plot_data.get_values(
@@ -124,12 +137,13 @@ class PlotDrawer:
                             level_index=level_slice,
                             indicator=indicator  # Zero is the mean
                         )
-                    plot_y_data = np.mean(
+                    plot_y_data = np.average(
                         y_data_domain,
                         axis=plot_data.get_axis(
                             'level',
                             while_fixing={'basin', 'coasts'}
-                        )
+                        ),
+                        weights=average_weights
                     )
                 else:
                     level_index = plot_meshmask.getDepthIndex(level)
@@ -240,12 +254,12 @@ class PlotDrawer:
             )
         current_axis.legend()
 
-    def plot(self, basin_index, **fig_kw):
+    def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
             raise ValueError('Required a plot from an empty PlotDrawer')
 
         if not self._draw_time_series:
-            fig, axis = plt.subplot()
+            fig, axis = plt.subplot(**fig_kw)
             axis_dict = {'P': axis}
         else:
             plot_structure = [
@@ -269,10 +283,13 @@ class PlotDrawer:
                     labelbottom=False,
                     labeltop=False
                 )
-                current_axis.xaxis.offsetText.set_visible(False)
+                # If there are more than 3 time series, hide all the x-ticks
+                # on each plot beside the bottom one
+                if len(self._levels[:-1]) > 3:
+                    current_axis.xaxis.offsetText.set_visible(False)
 
         if self._draw_time_series:
-            self._plot_time_series(axis_dict, basin_index)
+            self._plot_time_series(axis_dict, basin_index, basin)
         if self._draw_depth_profile:
             self._plot_depth_profile(axis_dict, basin_index)
 
@@ -299,24 +316,115 @@ def configure_argparse():
     return parser.parse_args()
 
 
+def from_interval_to_slice(level_interval: tuple, meshmask: Mask):
+    """
+    Given an interval in meters, return the slice that identifies that interval
+    as z-levels of the model.
+
+    :param level_interval: a tuple with two numbers (in meters)
+    :param meshmask: the meshmask of the model
+    :return: a slice that, when applied to the levels of the model, returns the
+    cells whose depth is among the values specified in level_interval
+    """
+    if len(level_interval) != 2:
+        raise ValueError(
+            'Levels must be a number of a tuple with two '
+            'elements (the start and the end of the interval '
+            'where an average will be computed). Submitted a '
+            'tuple with {} elements: {}'.format(
+                len(level_interval),
+                level_interval
+            )
+        )
+    if level_interval[0] is None:
+        start_level_index = None
+    else:
+        start_level_index = meshmask.getDepthIndex(
+            level_interval[0]
+        )
+    if level_interval[-1] is None:
+        end_level_index = None
+    else:
+        end_level_index = meshmask.getDepthIndex(level_interval[-1])
+        # This is because we want to include the last level
+        # inside the average
+        end_level_index += 1
+
+    level_slice = slice(start_level_index, end_level_index)
+    return level_slice
+
+
+def compute_slice_volume(level_slice: slice, meshmask: Mask,
+                         basin_submask: SubMask) -> np.ndarray:
+    """
+    Compute the volume of each level for a specific mask and basin
+
+    :param level_slice: Level slice is a slice that selects the levels where we
+    want to compute the volumes. This is a slice for the levels, it is not in
+    meters
+    :param meshmask: The meshmask of the model
+    :param basin_submask: The submask of the basin
+    :return:
+    A 1D array `v` such that `v[i]` is the volume of the i-th level of the slice
+    """
+    e1t = meshmask.e1t
+    e2t = meshmask.e2t
+    e3t = meshmask.e3t[level_slice, :]
+
+    slice_volume = np.sum(
+        e1t * e2t * e3t,
+        axis=(1, 2),
+        where=basin_submask.mask[level_slice, :]
+    )
+    return slice_volume
+
+
 def main():
     args = configure_argparse()
 
     config = read_config_from_file(args.config_file)
 
+    # Check if at least one of the specified levels requires
+    averages_in_levels = False
+    for level in config.levels:
+        if isinstance(level, tuple):
+            averages_in_levels = True
+            break
+
     # Create a list of all the variables (for all the plots) and of all the
     # meshmasks
     variables = set()
     meshmask_objects = {}
-
     for plot in config.plots:
         variables.update(plot.variables)
         meshmask_path = path.realpath(plot.source.meshmask)
+        # Here we read in advance the  meshmask objects, so that we can share
+        # the information among different plots (if they use the same meshmask).
+        # If we need to compute the volumes of the levels (because there are
+        # some averages that must be computed), we also read the tmask
         if meshmask_path not in meshmask_objects:
             meshmask_objects[meshmask_path] = Mask(
                 meshmask_path,
-                loadtmask=False
+                loadtmask=averages_in_levels
             )
+
+    # And now we prepare the weights for the levels averages
+    average_volume_weights = {}
+    if averages_in_levels:
+        for meshmask_path, meshmask_object in meshmask_objects.items():
+            for basin_index, basin in enumerate(V2.P):
+                submask = SubMask(basin, maskobject=meshmask_object)
+                for level in config.levels:
+                    if not isinstance(level, tuple):
+                        continue
+                    level_slice = from_interval_to_slice(level, meshmask_object)
+                    selection_weights = compute_slice_volume(
+                        level_slice,
+                        meshmask_object,
+                        submask
+                    )
+                    basin_slice = BasinSlice(basin_index, meshmask_path, level)
+                    average_volume_weights[basin_slice] = selection_weights
 
     # Now we sort the variables, so we ensure that the list is in the same order
     # on all the processes
@@ -328,7 +436,8 @@ def main():
             config.plots,
             var_name,
             config.levels,
-            meshmask_objects
+            meshmask_objects,
+            average_volume_weights
         )
         if plot_drawer.is_empty():
             continue
@@ -343,6 +452,7 @@ def main():
 
             fig = plot_drawer.plot(
                 basin_index=basin_index,
+                basin=basin,
                 figsize=(10, 10)
             )
             fig.suptitle('{} {}'.format(var_name, basin.name))

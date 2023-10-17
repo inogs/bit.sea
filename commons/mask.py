@@ -1,8 +1,16 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from __future__ import print_function
+
 import numpy as np
 import netCDF4
+
+from commons.bathymetry import Bathymetry
+
+
+class OutsideMaskDomain(ValueError):
+    pass
+
 
 class Mask(object):
     """
@@ -129,9 +137,15 @@ class Mask(object):
         min_lat = self._ylevels.min()-r
         max_lat = self._ylevels.max()+r
         if lon > max_lon or lon < min_lon:
-            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min_lon, max_lon))
+            raise OutsideMaskDomain(
+                "Invalid longitude value: {} (must be between {} and "
+                "{})".format(lon, min_lon, max_lon)
+            )
         if lat > max_lat or lat < min_lat:
-            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min_lat, max_lat))
+            raise OutsideMaskDomain(
+                "Invalid latitude value: {} (must be between {} and "
+                "{})".format(lat, min_lat, max_lat)
+            )
 
         #Longitude distances matrix
         d_lon = np.array(self._xlevels - lon)
@@ -341,6 +355,95 @@ class Mask(object):
         dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
         regular = dist == 0
         return regular
+
+
+class MaskBathymetry(Bathymetry):
+    """
+    This class is a bathymetry,  generated starting from a mask, i.e., it
+    returns the z-coordinate of the bottom face of the deepest cell of the
+    column that contains the point (lon, lat).
+    """
+    def __init__(self, mask):
+        self._mask = mask
+        self._bathymetry_data = mask.bathymetry()
+
+    def __repr__(self):
+        return "{}({})".format(self.__class__.__name__, repr(self._mask))
+
+    def is_inside_domain(self, lon, lat):
+        r = 1
+        min_lon = self._mask.xlevels.min() - r
+        max_lon = self._mask.xlevels.max() + r
+        min_lat = self._mask.ylevels.min() - r
+        max_lat = self._mask.ylevels.max() + r
+
+        inside_lon = np.logical_and(lon >= min_lon, lon <= max_lon)
+        inside_lat = np.logical_and(lat >= min_lat, lat <= max_lat)
+        return np.logical_and(inside_lon, inside_lat)
+
+    def __call__(self, lon, lat):
+        # This is the case when lon and lat are just numbers
+        if not hasattr(lon, "__len__") and not hasattr(lat, "__len__"):
+            lon_index, lat_index = \
+                self._mask.convert_lon_lat_to_indices(lon, lat)
+            return self._bathymetry_data[lon_index, lat_index]
+
+        # Now the more complicated case: a bathymetry must be able to handle
+        # also numpy arrays. Unfortunately, the method we have used before,
+        # convert_lon_lat_to_indices, accepts only two floats.
+        # Therefore, we need to perform an iteration. This is not as trivial as
+        # it may seem, because we need to take into account the fact that the
+        # numpy array may broadcast or the fact that one element may be a numpy
+        # array but the other could be a number. First of all, we need to
+        # find the right dtype for the output vector.
+        data_dtypes = []
+        if hasattr(lon, "__len__"):
+            data_dtypes.append(np.asarray(lon).dtype)
+        else:
+            data_dtypes.append(lon)
+
+        if hasattr(lat, "__len__"):
+            data_dtypes.append(np.asarray(lat).dtype)
+        else:
+            data_dtypes.append(lat)
+        result_dtype = np.result_type(*data_dtypes)
+
+        # Now we check the right shape
+        broadcast_shape = np.broadcast(lon, lat).shape
+
+        lon_broadcast = np.empty(shape=broadcast_shape, dtype=result_dtype)
+        lon_broadcast[:] = lon
+
+        lat_broadcast = np.empty(shape=broadcast_shape, dtype=result_dtype)
+        lat_broadcast[:] = lat
+
+        # This is the vector that we will return as output
+        output = np.empty(
+            shape=broadcast_shape,
+            dtype=self._bathymetry_data.dtype
+        )
+
+        # And this is an iterator over the indices of our arrays
+        shape_iterator = np.nditer(output, flags=['multi_index'])
+        for _ in shape_iterator:
+            current_position = shape_iterator.multi_index
+
+            current_lon = lon_broadcast[current_position]
+            current_lat = lat_broadcast[current_position]
+
+            try:
+                lon_index, lat_index = self._mask.convert_lon_lat_to_indices(
+                    current_lon,
+                    current_lat
+                )
+
+                output[current_position] = \
+                    self._bathymetry_data[lat_index, lon_index]
+            except OutsideMaskDomain:
+                output[current_position] = 0.
+
+        return output
+
 
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices

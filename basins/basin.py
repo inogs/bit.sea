@@ -67,13 +67,13 @@ class ComposedBasin(Basin):
     
     def is_inside(self, lon, lat):
         if len(self.basin_list) == 0:
-            if hasattr(lon,"__len__"):
-                assert len(lon) == len(lat)
-                return np.zeros((len(lon),), dtype=np.bool_)
+            if hasattr(lon, "__len__") or hasattr(lat, "__len__"):
+                output_shape = np.broadcast(lon, lat).shape
+                return np.zeros(shape=output_shape, dtype=bool)
             else:
                 return False
-        else:
-            output = self.basin_list[0].is_inside(lon, lat)
-            for i in range(1, len(self.basin_list)):
-                output = np.logical_or(output, self.basin_list[i].is_inside(lon, lat))
-            return output
+
+        output = self.basin_list[0].is_inside(lon, lat)
+        for current_basin in self.basin_list[1:]:
+            output = np.logical_or(output, current_basin.is_inside(lon, lat))
+        return output

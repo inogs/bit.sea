@@ -1,6 +1,9 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
 from basins.region import Region, EmptyRegion
 
 
@@ -28,6 +31,44 @@ class Basin(object):
             return self.region.cross(region_or_basin.region)
         elif isinstance(region_or_basin, Region):
             return self.region.cross(region_or_basin)
+
+    def plot(self, lon_window=(-8, 38), lat_window=(30, 47), lon_points=100,
+             lat_points=100, color="tab:blue", alpha=1, axes=None):
+        lon_grid = np.linspace(
+            lon_window[0],
+            lon_window[1],
+            lon_points,
+            endpoint=True
+        )
+        lat_grid = np.linspace(
+            lat_window[0],
+            lat_window[1],
+            lat_points,
+            endpoint=True
+        )
+
+        inside_domain = self.is_inside(
+            lon_grid,
+            lat_grid.reshape((lat_points, 1))
+        )
+
+        if axes is None:
+            axes = plt.gca()
+
+        cm = LinearSegmentedColormap.from_list(
+            "none",
+            ('black', color),
+            N=2
+        )
+
+        axes.contourf(
+            lon_grid,
+            lat_grid,
+            inside_domain,
+            [0.1, 1],
+            cmap=cm,
+            alpha=(alpha,)
+        )
 
 
 class SimpleBasin(Basin):

@@ -52,17 +52,33 @@ class Polygon(Region):
         self.path = Path(coords, codes)
         
     def is_inside(self, lon, lat):
-        points_coord = np.array((lon, lat)).T
+        points_coord = np.stack(np.broadcast_arrays(lon, lat), axis=-1)
+        assert points_coord.shape[-1] == 2
 
+        # path.contains_points accepts only 1d arrays of pairs. reshaping for
+        # single numbers and more complicated shapes
         reshaped = False
+        undo_reshaping = None
+        # Check if we have a vector of just two elements (i.e., shape (2,))
         if len(points_coord.shape) < 2:
             points_coord = points_coord.reshape(1, 2)
             reshaped = True
 
+            def undo_reshaping(x):
+                return x[0]
+
+        elif len(points_coord.shape) > 2:
+            current_shape = points_coord.shape
+            points_coord = points_coord.reshape((-1, 2))
+            reshaped = True
+
+            def undo_reshaping(x):
+                return x.reshape(current_shape[:-1])
+
         inside = self.path.contains_points(points_coord)
 
         if reshaped:
-            return inside[0]
+            return undo_reshaping(inside)
         else:
             return inside
     

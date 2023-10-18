@@ -75,8 +75,7 @@ class Mask(object):
                 self.e2t = np.array(dset.variables['e2t'][0,:,:]).astype(np.float32)
             self._area = self.e1t*self.e2t
             self._dz = self.e3t[:,0,0]
-        except:
-            raise
+        self._regular = None
 
     @property
     def mask(self):
@@ -349,12 +348,13 @@ class Mask(object):
         Returns True if a mesh is regular, False if is not.
         Regular means that (xlevels, ylevels) can be obtained by np.meshgrid(xlevels[k,:], ylevels[:,k])
         '''
-        x1d_0 = self._xlevels[0,:]
-        y1d_0 = self._ylevels[:,0]
-        X2D,Y2D = np.meshgrid(x1d_0, y1d_0)
-        dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
-        regular = dist == 0
-        return regular
+        if self._regular is None:
+            x1d_0 = self._xlevels[0,:]
+            y1d_0 = self._ylevels[:,0]
+            X2D, Y2D = np.meshgrid(x1d_0, y1d_0)
+            dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
+            self._regular = dist == 0
+        return self._regular
 
 
 class MaskBathymetry(Bathymetry):

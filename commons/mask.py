@@ -437,8 +437,11 @@ class MaskBathymetry(Bathymetry):
                     current_lat
                 )
 
-                output[current_position] = \
-                    self._bathymetry_data[lat_index, lon_index]
+                if self._mask.mask[0, lat_index, lon_index]:
+                    output[current_position] = \
+                        self._bathymetry_data[lat_index, lon_index]
+                else:
+                    output[current_position] = 0
             except OutsideMaskDomain:
                 output[current_position] = 0.
 

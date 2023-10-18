@@ -165,6 +165,8 @@ class BathymetricPolygon(Region):
 
         point_depth = self.bathymetry(lon, lat)
 
+        bathymetry_domain = self.bathymetry.is_inside_domain(lon, lat)
+
         if self.lower_than is not None:
             bathymetric_ok_min = point_depth > self.lower_than
         else:
@@ -178,6 +180,10 @@ class BathymetricPolygon(Region):
         bathymetric_ok = np.logical_and(
             bathymetric_ok_min,
             bathymetric_ok_max
+        )
+        bathymetric_ok = np.logical_and(
+            bathymetric_ok,
+            bathymetry_domain
         )
 
         return np.logical_and(inside_poly, bathymetric_ok)

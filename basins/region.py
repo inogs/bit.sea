@@ -135,40 +135,45 @@ class Rectangle(Polygon):
 
 class BathymetricPolygon(Region):
     """
-    This region is defined as a 2D polygon on the surface and with a bathymetric
-    condition. The region is the part of the polygon where the bathymetry
-    satisfies the condition
+    This region is defined as a 2D polygon on the surface coupled with a
+    bathymetric condition. The region is the part of the polygon where the
+    bathymetry satisfies the condition.
+
+    By definition, lower_than means "all the points whose bathymetry is STRICTLY
+    greater than submitted number", while upper_than means "all the points whose
+    bathymetry is smaller OR EQUAL than the submitted number". This avoids
+    intersections between basins when using the same pivot numbers (for example,
+    a basin with lower_than=100 and another with upper_than=100).
     """
-    def __init__(self, lon_list, lat_list, bathymetric_min=None,
-                 bathymetric_max=None):
+    def __init__(self, lon_list, lat_list, bathymetry, lower_than=None,
+                 upper_than=None):
         self.polygon = Polygon(lon_list, lat_list)
 
-        if bathymetric_min is None and bathymetric_max is None:
+        self.bathymetry = bathymetry
+
+        if lower_than is None and upper_than is None:
             raise ValueError(
                 'At least one between bathymetric_min and bathymetric_max must '
                 'be different from None. Otherwise, simply use a Polygon'
             )
 
-        self.bathymetric_min = bathymetric_min
-        self.bathymetric_max = bathymetric_max
+        self.lower_than = lower_than
+        self.upper_than = upper_than
 
     def is_inside(self, lon, lat):
         inside_poly = self.polygon.is_inside(lon, lat)
 
-        # TODO: find a way to compute points depth
-        # Possible optimization: compute the point_depth only for the points
-        # that are inside_poly and set a 0 for the others
-        point_depth = np.ones_like(lon)
+        point_depth = self.bathymetry(lon, lat)
 
-        if self.bathymetric_min is not None:
-            bathymetric_ok_min = point_depth > self.bathymetric_min
+        if self.lower_than is not None:
+            bathymetric_ok_min = point_depth > self.lower_than
         else:
-            bathymetric_ok_min = np.ones_like(lon, dtype=bool)
+            bathymetric_ok_min = True
 
-        if self.bathymetric_max is not None:
-            bathymetric_ok_max = point_depth < self.bathymetric_max
+        if self.upper_than is not None:
+            bathymetric_ok_max = point_depth <= self.upper_than
         else:
-            bathymetric_ok_max = np.ones_like(lon, dtype=bool)
+            bathymetric_ok_max = True
 
         bathymetric_ok = np.logical_and(
             bathymetric_ok_min,

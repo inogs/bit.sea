@@ -18,14 +18,14 @@ class Mask(object):
     """
     def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t", loadtmask=True):
         filename = str(filename)
-        try:
-            dset = netCDF4.Dataset(filename)
-            if (maskvarname in dset.variables) and (loadtmask):
+
+        with netCDF4.Dataset(filename, 'r') as dset:
+            if (maskvarname in dset.variables) and loadtmask:
                 m = dset.variables[maskvarname]
                 if len(m.shape) == 4:
-                    self._mask = np.array(m[0,:,:,:], dtype=bool)
+                    self._mask = np.array(m[0, :, :, :], dtype=bool)
                 elif len(m.shape) == 3:
-                    self._mask = np.array(m[:,:,:], dtype=bool)
+                    self._mask = np.array(m[:, :, :], dtype=bool)
                 else:
                     raise ValueError("Wrong shape: %s" % (m.shape,))
                 self._shape = self._mask.shape

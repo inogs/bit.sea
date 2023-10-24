@@ -44,8 +44,8 @@ def argument():
     parser.add_argument(   '--Kd_min',
                                 required=False,
                                 type=str,
-                                help = """Kd minimum value threshold; default Kd_min=0.021
-                                 """)
+                                default="0.021",
+                                help = '''Kd minimum value threshold''')
 
 
     return parser.parse_args()
@@ -68,8 +68,8 @@ Kd_min = float(args.Kd_min)
 
 maskSat = getattr(masks,args.mesh)
 
-Timestart="20190101"
-Time__end="20200110"
+Timestart="19501231"
+Time__end="20500101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 

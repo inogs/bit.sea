@@ -2,10 +2,13 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from __future__ import print_function
 
+from abc import ABC
 import numpy as np
+from scipy import spatial
 import netCDF4
 
 from commons.bathymetry import Bathymetry
+from commons.utils import search_closest_sorted
 
 
 class OutsideMaskDomain(ValueError):
@@ -234,7 +237,7 @@ class Mask(object):
                 jk_m=jk
         return jk_m
 
-    def mask_at_level(self,z):
+    def mask_at_level(self, z):
         '''
         Returns a 2d map of logicals, for the depth (m) provided as argument.
         as a slice of the tmask.
@@ -249,10 +252,11 @@ class Mask(object):
         (jk_m +1)  TTTTTTTTTTTTTTTT
         (jk_m +2)  TTTTTTTTTTTTTTTT
         '''
-        if z<self.zlevels[0]: return self.mask[0,:,:].copy()
+        if z < self.zlevels[0]:
+            return self.mask[0, :, :].copy()
 
         jk_m = self.getDepthIndex(z)
-        level_mask = self.mask[jk_m+1,:,:].copy()
+        level_mask = self.mask[jk_m+1, :, :].copy()
         return level_mask
 
     def bathymetry_in_cells(self):
@@ -357,7 +361,7 @@ class Mask(object):
         return self._regular
 
 
-class MaskBathymetry(Bathymetry):
+class MaskBathymetry(Bathymetry, ABC):
     """
     This class is a bathymetry,  generated starting from a mask, i.e., it
     returns the z-coordinate of the bottom face of the deepest cell of the
@@ -366,6 +370,11 @@ class MaskBathymetry(Bathymetry):
     def __init__(self, mask):
         self._mask = mask
         self._bathymetry_data = mask.bathymetry()
+
+        # Fix the bathymetry of the land cells to 0 (to be coherent with the
+        # behaviour of the bathymetry classes). Otherwise, if we let the land
+        # points to have bathymetry = 1e20, they will be in every depth basin
+        self._bathymetry_data[np.logical_not(self._mask.mask[0, :, :])] = 0
 
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, repr(self._mask))
@@ -381,71 +390,62 @@ class MaskBathymetry(Bathymetry):
         inside_lat = np.logical_and(lat >= min_lat, lat <= max_lat)
         return np.logical_and(inside_lon, inside_lat)
 
+    @staticmethod
+    def build_bathymetry(mask):
+        if mask.is_regular():
+            return RegularMaskBathymetry(mask)
+        return NonRegularMaskBathymetry(mask)
+
+
+class RegularMaskBathymetry(MaskBathymetry):
+    def __init__(self, mask):
+        if not mask.is_regular():
+            raise ValueError(
+                'A RegularMaskBathymetry can be generated only from a '
+                'regular mask'
+            )
+        super().__init__(mask)
+
+        assert np.all(self._mask.lon[1:] - self._mask.lon[:-1] < 0), \
+            "lon array is not ordered"
+        assert np.all(self._mask.lat[1:] - self._mask.lat[:-1] < 0), \
+            "lat array is not ordered"
+
     def __call__(self, lon, lat):
-        # This is the case when lon and lat are just numbers
-        if not hasattr(lon, "__len__") and not hasattr(lat, "__len__"):
-            lon_index, lat_index = \
-                self._mask.convert_lon_lat_to_indices(lon, lat)
-            return self._bathymetry_data[lon_index, lat_index]
+        lon_index = search_closest_sorted(self._mask.lon, lon)
+        lat_index = search_closest_sorted(self._mask.lat, lat)
+        return self._bathymetry_data[lat_index, lon_index]
 
-        # Now the more complicated case: a bathymetry must be able to handle
-        # also numpy arrays. Unfortunately, the method we have used before,
-        # convert_lon_lat_to_indices, accepts only two floats.
-        # Therefore, we need to perform an iteration. This is not as trivial as
-        # it may seem, because we need to take into account the fact that the
-        # numpy array may broadcast or the fact that one element may be a numpy
-        # array but the other could be a number. First of all, we need to
-        # find the right dtype for the output vector.
-        data_dtypes = []
-        if hasattr(lon, "__len__"):
-            data_dtypes.append(np.asarray(lon).dtype)
-        else:
-            data_dtypes.append(lon)
 
-        if hasattr(lat, "__len__"):
-            data_dtypes.append(np.asarray(lat).dtype)
-        else:
-            data_dtypes.append(lat)
-        result_dtype = np.result_type(*data_dtypes)
-
-        # Now we check the right shape
-        broadcast_shape = np.broadcast(lon, lat).shape
-
-        lon_broadcast = np.empty(shape=broadcast_shape, dtype=result_dtype)
-        lon_broadcast[:] = lon
-
-        lat_broadcast = np.empty(shape=broadcast_shape, dtype=result_dtype)
-        lat_broadcast[:] = lat
-
-        # This is the vector that we will return as output
-        output = np.empty(
-            shape=broadcast_shape,
-            dtype=self._bathymetry_data.dtype
+class NonRegularMaskBathymetry(MaskBathymetry):
+    def __init__(self, mask):
+        super().__init__(mask)
+        data = np.stack(
+            (self._mask.xlevels, self._mask.ylevels),
+            axis=-1
         )
+        data = data.reshape(-1, 2)
 
-        # And this is an iterator over the indices of our arrays
-        shape_iterator = np.nditer(output, flags=['multi_index'])
-        for _ in shape_iterator:
-            current_position = shape_iterator.multi_index
+        self._kdtree = spatial.KDTree(data)
 
-            current_lon = lon_broadcast[current_position]
-            current_lat = lat_broadcast[current_position]
+    def __call__(self, lon, lat):
+        return_float = True
+        if hasattr(lon, "__len__") or hasattr(lat, "__len__"):
+            return_float = False
 
-            try:
-                lon_index, lat_index = self._mask.convert_lon_lat_to_indices(
-                    current_lon,
-                    current_lat
-                )
+        lon, lat = np.broadcast_arrays(lon, lat)
 
-                if self._mask.mask[0, lat_index, lon_index]:
-                    output[current_position] = \
-                        self._bathymetry_data[lat_index, lon_index]
-                else:
-                    output[current_position] = 0
-            except OutsideMaskDomain:
-                output[current_position] = 0.
+        query_data = np.stack((lon, lat), axis=-1)
+        assert query_data.shape[-1] == 2
 
-        return output
+        _, center_indices = self._kdtree.query(query_data)
+
+        if return_float:
+            assert center_indices.shape == (1,) or center_indices.shape == ()
+            if center_indices.shape == (1,):
+                center_indices = center_indices[0]
+
+        return self._bathymetry_data.flatten()[center_indices]
 
 
 if __name__ == '__main__':

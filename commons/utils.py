@@ -1,7 +1,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from __future__ import print_function
-import os,sys
+import os, sys
 import numpy as np
 import re
 """Helper functions"""
@@ -279,10 +279,68 @@ def nan_compare(array_with_nan,operator, value):
     if operator=='<=' : out[~ii] = array_with_nan[~ii] <= value
     return out
 
+
 def nanmean_without_warnings(array):
     if len(array)==0: return np.nan
     if np.isnan(array).all(): return np.nan
     return np.nanmean(array)
+
+
+def search_closest_sorted(a, b):
+    """
+    Returns an array `k` of the same shape of `b`. If `j` is the value of
+    `k[i]`, this means that `a[j]` is the closest element (among all the
+    elements of `a`) to `b[i]`.
+    The vector `a` must be sorted (`a[i]` < `a[j]` for each `i` < `j`).
+
+    In other words, this function behaves like `numpy.search_sorted` but,
+    instead of returning always the element on the left (or on the right),
+    it returns the closest one.
+
+    :param a: 1D *sorted* numpy array
+    :param b: numpy array or float
+    """
+    is_float = not hasattr(b, "__len__")
+    b = np.asarray(b)
+
+    a = np.asarray(a)
+    if len(a.shape) != 1:
+        raise ValueError('a must be a 1D array')
+
+    if a.shape[0] == 0:
+        raise ValueError('a can not be an empty array')
+
+    on_left = b <= a[0]
+    on_right = b > a[-1]
+    inside_array = np.logical_not(np.logical_or(on_left, on_right))
+
+    output = np.empty_like(b, dtype=np.int32)
+
+    b_inside = b[inside_array]
+
+    right_neighbour = np.searchsorted(a, b_inside, side="left")
+    left_neighbour = right_neighbour - 1
+
+    left_distances = np.abs(a[left_neighbour] - b_inside)
+    right_distances = np.abs(a[right_neighbour] - b_inside)
+    choose_left = left_distances < right_distances
+
+    left_b_mask = np.zeros_like(b, dtype=bool)
+    right_b_mask = np.zeros_like(b, dtype=bool)
+    left_b_mask[inside_array] = choose_left
+    right_b_mask[inside_array] = np.logical_not(choose_left)
+
+    output[on_left] = 0
+    output[on_right] = a.shape[0] - 1
+
+    output[left_b_mask] = left_neighbour[choose_left]
+    output[right_b_mask] = right_neighbour[np.logical_not(choose_left)]
+
+    if is_float:
+        return output[0]
+
+    return output
+
 
 if __name__ == '__main__':
     A=np.random.randn(3,2)

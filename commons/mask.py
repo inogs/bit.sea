@@ -406,9 +406,9 @@ class RegularMaskBathymetry(MaskBathymetry):
             )
         super().__init__(mask)
 
-        assert np.all(self._mask.lon[1:] - self._mask.lon[:-1] < 0), \
+        assert np.all(self._mask.lon[1:] - self._mask.lon[:-1] > 0), \
             "lon array is not ordered"
-        assert np.all(self._mask.lat[1:] - self._mask.lat[:-1] < 0), \
+        assert np.all(self._mask.lat[1:] - self._mask.lat[:-1] > 0), \
             "lat array is not ordered"
 
     def __call__(self, lon, lat):

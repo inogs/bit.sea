@@ -67,7 +67,7 @@ class Basin(object):
             inside_domain,
             [0.1, 1],
             cmap=cm,
-            alpha=(alpha,)
+            alpha=alpha
         )
 
 
@@ -75,7 +75,7 @@ class SimpleBasin(Basin):
     def __init__(self, name, region, extended_name=None):
         super(SimpleBasin, self).__init__(name, extended_name)
         self.region = region
-    
+
     def __iter__(self):
         return [self].__iter__()
 

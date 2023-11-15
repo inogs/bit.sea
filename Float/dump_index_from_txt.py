@@ -29,7 +29,7 @@ mydtype= np.dtype([
           ('latitude',np.float32),
           ('longitude',np.float32),
           ('ocean','S10'),
-          ('profiler_type',np.int),
+          ('profiler_type',int),
           ('institution','S10'),
           ('parameters','S200'),
           ('parameter_data_mode','S100'),
@@ -45,7 +45,7 @@ Float_Index_dtype= np.dtype([
           ('file_name',np.unicode_,200),
           ('lat',np.float64),
           ('lon',np.float64),
-          ('time',np.unicode,17),
+          ('time',np.unicode_,17),
           ('parameters',np.unicode_,200),
           ('parameter_data_mode',np.unicode_,200)] )
 

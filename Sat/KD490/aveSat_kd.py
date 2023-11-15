@@ -103,7 +103,7 @@ for req in TIME_reqs[rank::nranks]:
         idate = TLCheck.Timelist[j]
         date8 = idate.strftime('%Y%m%d')
     CHL_OUT = Sat.averager(M)
-    Sat.dumpGenericNativefile(outpathfile, CHL_OUT, varname='KD490', mesh=maskSat)
+    Sat.dumpGenericfile(outpathfile, CHL_OUT, varname='KD490', mesh=maskSat)
 
 
 

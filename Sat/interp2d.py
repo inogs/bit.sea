@@ -24,8 +24,8 @@ def array_of_indices_for_slicing(xcoarse, xfine):
     
     jpi = len(xcoarse)
     deltax = np.diff(xcoarse).mean() # 1./16
-    I_START = np.zeros((jpi,),np.int)
-    I_END   = np.zeros((jpi,),np.int)
+    I_START = np.zeros((jpi,),int)
+    I_END   = np.zeros((jpi,),int)
     istart = 0
     for ji in range(jpi):
         centrocella = xcoarse[ji]

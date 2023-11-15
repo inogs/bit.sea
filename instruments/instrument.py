@@ -41,7 +41,7 @@ class ContainerProfile(Profile):
         Return pres, profile, Qc
         Qc is a dummy np.array of 2
         '''
-        return self.pres, self.profile, np.ones_like(self.pres, np.int)*2
+        return self.pres, self.profile, np.ones_like(self.pres, int)*2
 
     def name(self):
         return self._name

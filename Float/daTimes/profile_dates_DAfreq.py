@@ -43,9 +43,9 @@ import commons.genUserDateList as DL
 import datetime
 import numpy as np
 
-DAfreq = np.int(args.dafreq) # days
+DAfreq = int(args.dafreq) # days
 varMODEL = args.varda
-hourDA = np.int(args.hourda)
+hourDA = int(args.hourda)
 
 deltatimeDA = datetime.timedelta(DAfreq)
 

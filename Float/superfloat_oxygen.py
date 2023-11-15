@@ -229,7 +229,7 @@ def trend_analysis(p, Profilelist_hist, Dataset):
     Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
 
     df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
-    ARGO       = Rectangle(np.float(p.lon) , np.float(p.lon) , np.float(p.lat) , np.float(p.lat))
+    ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
 

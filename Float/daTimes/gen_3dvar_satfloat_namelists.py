@@ -37,17 +37,17 @@ def dump_template(ORIG, outfile,SAT_OBS,ARGO,ASS_P_l,ASS_N3n,ASS_O2o):
         newline=line
         if (line.find("@@SAT_OBS@@") != -1):  newline=line.replace("@@SAT_OBS@@",SAT_OBS)
         if (line.find("@@ARGO@@")   != -1):   newline=line.replace("@@ARGO@@"   ,  ARGO)
-        if (line.find("@@ASS_P_l@@") != -1):  newline=line.replace("@@ASS_P_l@@",np.str(np.int(ASS_P_l)+np.int(SAT_OBS)))
+        if (line.find("@@ASS_P_l@@") != -1):  newline=line.replace("@@ASS_P_l@@",str(int(ASS_P_l)+int(SAT_OBS)))
         if (line.find("@@ASS_N3n@@") != -1):  newline=line.replace("@@ASS_N3n@@",ASS_N3n)
         if (line.find("@@ASS_O2o@@") != -1):  newline=line.replace("@@ASS_O2o@@",ASS_O2o)
         ASS_P_lN3n = '0'
         if (ASS_P_l=='1') and (ASS_N3n=='0') :
             ASS_P_lN3n = '1'
-        if (line.find("@@ASS_P_lN3n@@") != -1):  newline=line.replace("@@ASS_P_lN3n@@",np.str(np.int(ASS_P_lN3n)))
+        if (line.find("@@ASS_P_lN3n@@") != -1):  newline=line.replace("@@ASS_P_lN3n@@",str(int(ASS_P_lN3n)))
         ASS_N3nO2o = '0'
         if (ASS_N3n=='1') or (ASS_O2o=='1') :
             ASS_N3nO2o = '1'
-        if (line.find("@@ASS_N3nO2o@@") != -1):  newline=line.replace("@@ASS_N3nO2o@@",np.str(np.int(ASS_N3nO2o)))
+        if (line.find("@@ASS_N3nO2o@@") != -1):  newline=line.replace("@@ASS_N3nO2o@@",str(int(ASS_N3nO2o)))
         LINES.append(newline + "\n")
     fid=open(filename,"w")
     fid.writelines(LINES)

@@ -32,7 +32,7 @@ def argument():
 args = argument()
 
 
-import scipy.io.netcdf as NC
+import scipy.io as NC
 import datetime
 import os,glob
 import numpy as np

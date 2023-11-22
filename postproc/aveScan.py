@@ -80,7 +80,7 @@ def argument():
 
 args = argument()
 
-import scipy.io.netcdf as NC
+import scipy.io as NC
 import netCDF4 as NC4
 from commons.dataextractor import DataExtractor
 import glob

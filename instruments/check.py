@@ -69,7 +69,7 @@ class check():
             if (flag1  & flag2) : flag=3
             line="%s\t%s\t%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , nobs, nexcl, flag )
         
-            FLAG = np.zeros((nP), np.int)
+            FLAG = np.zeros((nP), int)
             FLAG[flag1_array] =1
             FLAG[flag2_array] =2
             FLAG[flag3_array] =-1
@@ -113,7 +113,7 @@ class check():
             # if (flag1  & flag2) : flag=3
             line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
             nexcl=nP
-            FLAG = np.zeros((nP), np.int)
+            FLAG = np.zeros((nP), int)
             FLAG[flag1_array] =1
             # FLAG[flag2_array] =2
             if self.verboselevel ==1 :
@@ -154,7 +154,7 @@ class check():
             # if (flag1  & flag2) : flag=3
             line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
             nexcl=nP
-            FLAG = np.zeros((nP), np.int)
+            FLAG = np.zeros((nP), int)
             FLAG[flag1_array] =1
             if self.verboselevel ==1 :
                 outncfile="%s%s_%s.nc"  %(self.outdir + 'P_c.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
@@ -194,7 +194,7 @@ class check():
             if flag1: flag=1
             line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
             nexcl=nP
-            FLAG = np.zeros((nP), np.int)
+            FLAG = np.zeros((nP), int)
             FLAG[0] =1
             if self.verboselevel ==1 :
                 outncfile="%s%s_%s.nc"  %(self.outdir + 'O2o.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
@@ -228,7 +228,7 @@ class check():
                 if CR.reason in [1,3,-1]:
                     Pres  = np.array([],np.float32)
                     Value = np.array([],np.float32)
-                    Qc    = np.array([],np.int)
+                    Qc    = np.array([],int)
                 if (CR.reason==2):
                     for iid in range(len(Pres)):
                         if Pres[iid]>CR.depthexc:
@@ -245,21 +245,21 @@ class check():
             if CR.line != '':
                 Pres  = np.array([],np.float32)
                 Value = np.array([],np.float32)
-                Qc    = np.array([],np.int)
+                Qc    = np.array([],int)
 
         if varname=='P_c':
             CR = self.phytoC_check(Model, Value, Pres, p)
             if CR.line != '':
                 Pres  = np.array([],np.float32)
                 Value = np.array([],np.float32)
-                Qc    = np.array([],np.int)
+                Qc    = np.array([],int)
 
         if varname=='O2o':
             CR = self.oxygen_check(Model, Value, Pres, p)
             if CR.line != '':
                 Pres  = np.array([],np.float32)
                 Value = np.array([],np.float32)
-                Qc    = np.array([],np.int)
+                Qc    = np.array([],int)
 
         return Pres, Value, Qc, CR
 

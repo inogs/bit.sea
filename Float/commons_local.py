@@ -51,7 +51,7 @@ def save_report(OUTPATH_NAME, indexlenght, columns_list, values_list):
        df  = pd.DataFrame(index=np.arange(0, indexlenght), columns= columns_list  )
    dftmp = pd.DataFrame(index=np.arange(0,1), columns= columns_list )
    dftmp = pd.Series(values_list , columns_list)
-   df =  df.append(dftmp , ignore_index=True)
+   df = pd.concat((df, dftmp),ignore_index=True)
    df.drop_duplicates(inplace=True)
    df = df.sort_values(by="DATE_DAY")
    df.to_csv(OUTPATH_NAME)

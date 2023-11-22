@@ -31,7 +31,7 @@ def get_nitrate(timeobj,lat,lon, pres,temp, psal, doxy):
     temp = float(temp)
     psal = float(psal)
     doxy = float(doxy)
-    doy=np.int(timeobj.strftime('%j'))*360./365
+    doy=int(timeobj.strftime('%j'))*360./365
     
     if lon>180: lon=lon-360
     data=[lat/90,  np.abs(1-np.mod(lon-110,360)/180.), np.abs(1-np.mod(lon-20,360)/180.), temp,psal,doxy,pres/2e4+1./(1+np.exp(-pres/300.))**3 ]

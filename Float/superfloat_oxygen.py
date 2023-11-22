@@ -266,9 +266,9 @@ def clim_check(p, df_report, NAME_BASIN, tmp):
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
     TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
     if TREND_null:
-        OFFSET  = np.float(tmp.VAR.iloc[-1]) - VALCLIM
+        OFFSET  = float(tmp.VAR.iloc[-1]) - VALCLIM
     else:
-        Corrrected_val = np.float(tmp.VAR.iloc[-1]) - np.float(df_report.TREND_TIME_SERIES.iloc[0])
+        Corrrected_val = float(tmp.VAR.iloc[-1]) - float(df_report.TREND_TIME_SERIES.iloc[0])
         OFFSET  = Corrrected_val - VALCLIM
     STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
     STDCLIM_2 = 2*STDCLIM
@@ -293,17 +293,17 @@ def apply_detrend(Pres, Prof_Coriolis, df_report):
     Constant between 600m and bottom
     '''
     DEPTH=600
-    Mask = [Pres<=DEPTH]
+    Mask = Pres<=DEPTH
     Profile = Prof_Coriolis.copy()
     z_depth = np.array([Pres[0], DEPTH])
-    x_var   = np.array([0, np.float(df_report.TREND_TIME_SERIES.iloc[0])])
+    x_var   = np.array([0, float(df_report.TREND_TIME_SERIES.iloc[0])])
     if np.isnan(np.sum(x_var)):
         pass
     else:
         fittval = np.polyfit(z_depth, x_var, 1)
         polyval = np.polyval(fittval, Pres[Mask]  )
         Profile[0:len(polyval)] = Profile[Mask]   -   polyval
-        Mask_deep = [Pres>DEPTH]
+        Mask_deep = Pres>DEPTH
         Profile[len(polyval):]  = Profile[Mask_deep] - polyval[-1]
     return Profile
 

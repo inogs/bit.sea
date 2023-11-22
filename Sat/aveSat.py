@@ -120,7 +120,7 @@ for req in TIME_reqs[rank::nranks]:
             if not condition_to_write: continue
 
 
-    print(outfile)
+    print(outfile, flush=True)
     dateweek = []
     if nFiles < 3 : 
         print(req, "less than 3 files - Skipping average generation")

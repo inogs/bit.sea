@@ -93,7 +93,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     
     bad = np.abs(QI) > THRESHOLD # 2.0
     VALUES[bad] = Sat.fillValue
-    print(outfile)
+    print(outfile, flush=True)
     Sat.dumpGenericfile(outfile, VALUES, args.varname, mesh=maskSat,mode=writing_mode)
     
 

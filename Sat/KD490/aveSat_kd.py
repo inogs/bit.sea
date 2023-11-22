@@ -94,7 +94,7 @@ for req in TIME_reqs[rank::nranks]:
     if (os.path.exists(outpathfile)) and (not reset):
         continue
 
-    print (outfile)
+    print (outfile, flush=True)
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]

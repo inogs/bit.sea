@@ -101,7 +101,7 @@ for filename in TL.filelist[rank::nranks]:
     Mfine = Sat.readfromfile(filename, args.varname)
     Mout, usedPoints  = interp2d.interp_2d_by_cells_slices(Mfine, TheMask, I_START, I_END, J_START, J_END, min_cov=0.0, ave_func=Sat.mean)
     Sat.dumpGenericfile(outfile, Mout, args.varname, mesh=TheMask,mode=writing_mode)
-    print(outfile)
+    print(outfile,flush=True)
     if not Sat.exist_valid_variable('Points', outfile):
         Sat.dumpGenericfile(outfile, usedPoints, 'Points', mesh=TheMask, mode='a')
 

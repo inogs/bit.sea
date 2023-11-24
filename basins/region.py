@@ -145,20 +145,20 @@ class BathymetricPolygon(Region):
     intersections between basins when using the same pivot numbers (for example,
     a basin with lower_than=100 and another with upper_than=100).
     """
-    def __init__(self, lon_list, lat_list, bathymetry, lower_than=None,
-                 upper_than=None):
+    def __init__(self, lon_list, lat_list, bathymetry, deeper_than=None,
+                 shallower_than=None):
         self.polygon = Polygon(lon_list, lat_list)
 
         self.bathymetry = bathymetry
 
-        if lower_than is None and upper_than is None:
+        if deeper_than is None and shallower_than is None:
             raise ValueError(
-                'At least one between bathymetric_min and bathymetric_max must '
-                'be different from None. Otherwise, simply use a Polygon'
+                'At least one between bathymetric_min and bathymetric_max'
+                'must be different from None. Otherwise, simply use a Polygon'
             )
 
-        self.lower_than = lower_than
-        self.upper_than = upper_than
+        self.deeper_than = deeper_than
+        self.shallower_than = shallower_than
 
     def is_inside(self, lon, lat):
         inside_poly = self.polygon.is_inside(lon, lat)
@@ -167,13 +167,13 @@ class BathymetricPolygon(Region):
 
         bathymetry_domain = self.bathymetry.is_inside_domain(lon, lat)
 
-        if self.lower_than is not None:
-            bathymetric_ok_min = point_depth > self.lower_than
+        if self.deeper_than is not None:
+            bathymetric_ok_min = point_depth > self.deeper_than
         else:
             bathymetric_ok_min = True
 
-        if self.upper_than is not None:
-            bathymetric_ok_max = point_depth <= self.upper_than
+        if self.shallower_than is not None:
+            bathymetric_ok_max = point_depth <= self.shallower_than
         else:
             bathymetric_ok_max = True
 

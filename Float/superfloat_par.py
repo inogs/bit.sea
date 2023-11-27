@@ -45,7 +45,7 @@ from basins.region import Rectangle
 import superfloat_generator
 from commons.utils import addsep
 import os
-import scipy.io.netcdf as NC
+import scipy.io as NC
 import numpy as np
 import datetime
 

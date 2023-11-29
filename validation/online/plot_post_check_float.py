@@ -50,6 +50,7 @@ MonthlyTL = DL.getTimeList(START_TIME,END___TIME,months=1)
 Ntot = TL['P_l'].nTimes
 
 mmTL = TimeList(MonthlyTL)
+mmTL.inputFrequency='monthly' # added for tests with a single month
 MonthList = mmTL.getOwnList()
 
 

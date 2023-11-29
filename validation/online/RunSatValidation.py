@@ -112,7 +112,7 @@ for RUNDAY in range(1,8)[rank::nranks]:
         LOCAL_FC = "%s%s/%s" %(ARCHIVEDIR, FC_RUNDATE.strftime('%Y%m%d'),avefile)
         SAT_FILE = SAT_DAILY_DIR + day + SUFFIX[args.var]
         CLIM_FILE= climfilename(CLIM_DIR, month, args.var)
-        f_name = OUTDIR + 'Validation_f' + np.str(fc_day+1) + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day + '.nc'
+        f_name = OUTDIR + 'Validation_f' + str(fc_day+1) + '_' + FC_RUNDATE.strftime('%Y%m%d') + '_on_daily_Sat.' + day + '.nc'
         SatValidation(args.var, LOCAL_FC,SAT_FILE,CLIM_FILE,TheMask,f_name,SUB,COASTNESS_LIST,COASTNESS,nSUB)
 
     # PERSISTENCY  

@@ -142,7 +142,7 @@ class BioFloat(Instrument):
             POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
             if ii.sum() > 0 :
                 shift=POC[ii].mean()
-                print( "POC: adding a shift of " + np.str(shift))
+                print( "POC: adding a shift of " + str(shift))
                 Profile = POC - shift
                 ii=Profile<=0
                 Profile[ii] = 0.0

@@ -178,7 +178,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        print(var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
+        print(var_mod + " " + str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)

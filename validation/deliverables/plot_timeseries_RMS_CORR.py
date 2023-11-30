@@ -84,6 +84,7 @@ for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue
     print (sub.name)
     fig, ax = pl.subplots()
+    fig.set_size_inches(12,4)
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
     ax.plot(TIMES,BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
     ax.set_ylabel(sub.name.upper() + ' - ' + var_label).set_fontsize(14)

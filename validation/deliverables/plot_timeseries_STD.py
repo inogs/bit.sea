@@ -75,6 +75,7 @@ for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue
     print (sub.name)
     fig, ax = pl.subplots()
+    fig.set_size_inches(12,4)
     ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
     ax.fill_between(TIMES,SAT___MEAN[:,isub]-SAT____STD[:,isub],SAT___MEAN[:,isub]+SAT____STD[:,isub],color='palegreen')
     ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=model_label)

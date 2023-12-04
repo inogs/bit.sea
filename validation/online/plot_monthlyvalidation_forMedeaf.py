@@ -105,7 +105,7 @@ array_satstats[array_satstats>1.e+19] = np.nan
 
 dates_datetime = []
 for dd in dates:
-    ddordinal = np.int(dd) + datetime.datetime(1970,1,1).toordinal()
+    ddordinal = int(dd) + datetime.datetime(1970,1,1).toordinal()
     dd_datetime = datetime.datetime.fromordinal(ddordinal)
     dates_datetime.append(dd_datetime)
 
@@ -157,14 +157,14 @@ for isub,subname in enumerate(DICTdim_sat['areas'][0]):
     for iim,mm in enumerate(DICTdim_sat['metrics'][0]):
         #print (mm)
         nax = DICTvargroup[mm]
-        ix_ax = np.int(np.floor(nax/2))
+        ix_ax = int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         plt.sca(axs[ix_ax,iy_ax])
         for iif,ff in enumerate(DICTdim_sat['forecasts'][0]):
             if 'reference' in mm:
                 label = mm
             else:
-                label = mm + ' ' + np.str(ff)
+                label = mm + ' ' + str(ff)
             if ff<0:
                 linestyle=':'
             else:
@@ -211,7 +211,7 @@ for sub in OGS.MVR.basin_list:
     for iim,mm in enumerate(DICTdim_sat['metrics'][0]):
         #print (mm)
         nax = DICTvargroup[mm]
-        ix_ax = np.int(np.floor(nax/2))
+        ix_ax = int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         plt.sca(axs[ix_ax,iy_ax])
         label = mm

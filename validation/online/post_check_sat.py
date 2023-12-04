@@ -80,7 +80,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
         chlsub = chlmisf[SUB[sub.name]]
         if np.all(np.isnan(chlsub))==False:
             misfmean[0,isub] = (np.nanmean(chlsub**2))**.5
-        misfmean[3,isub] = np.float(np.sum(np.isfinite(chlsub)))/npSub[sub.name]
+        misfmean[3,isub] = float(np.sum(np.isfinite(chlsub)))/npSub[sub.name]
         chlsub = chlmisf[SUB[sub.name] & (mask200==True)]
         if np.all(np.isnan(chlsub))==False:
             misfmean[1,isub] = (np.nanmean(chlsub**2))**.5

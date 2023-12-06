@@ -1,11 +1,19 @@
 from collections import namedtuple
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 import yaml
 from pathlib import Path
+from sys import version_info
 from typing import Any
 
 from tools.data_object import PickleDataObject
+from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
+    read_depth_profile_mode
 from filters.read_filter_description import read_filter_description
+
+if version_info[1] < 9:
+    from typing import Callable
+else:
+    from collections.abc import Callable
 
 
 EXPECTED_FIELDS = {
@@ -13,6 +21,7 @@ EXPECTED_FIELDS = {
     'variable_selections',
     'plots',
     'levels',
+    'depth_profile_mode',
     'output_dir'
 }
 
@@ -27,7 +36,7 @@ class InvalidPlotConfig(InvalidConfigFile):
 
 Config = namedtuple(
     'Config',
-    ('plots', 'levels', 'output_dir')
+    ('plots', 'levels', 'depth_profile_mode', 'output_dir')
 )
 
 Source = namedtuple('Source', ('path', 'meshmask'))
@@ -265,7 +274,9 @@ def read_config(config_datastream):
             )
         if 'meshmask' not in source_config:
             raise InvalidConfigFile(
-                'No field "meshmask" specified for source {}'.format(source_name)
+                'No field "meshmask" specified for source {}'.format(
+                    source_name
+                )
             )
         source_path = Path(str(source_config['path']))
         source_meshmask = Path(str(source_config['meshmask']))
@@ -326,6 +337,13 @@ def read_config(config_datastream):
         levels.append(read_number(raw_level))
     levels = tuple(levels)
 
+    if 'depth_profile_mode' in yaml_content:
+        depth_profile_mode = read_depth_profile_mode(
+            yaml_content['depth_profile_mode']
+        )
+    else:
+        depth_profile_mode = DEFAULT_DEPTH_PROFILE_MODE
+
     # Read the output dir
     if 'output_dir' not in yaml_content:
         raise InvalidConfigFile(
@@ -355,8 +373,11 @@ def read_config(config_datastream):
         plots.append(current_plot)
     plots = tuple(p for p in plots if p.is_active())
 
+    print(depth_profile_mode)
+
     return Config(
         plots=plots,
         levels=levels,
+        depth_profile_mode=depth_profile_mode,
         output_dir=output_dir
     )

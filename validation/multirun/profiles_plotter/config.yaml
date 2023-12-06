@@ -13,6 +13,8 @@ variable_selections:
 
 levels: ["0", "0 - 20", "100", "150"] # in meters
 
+depth_profile_mode: "standard"
+
 plots:
   enea_original:
     source: enea_raw

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 import matplotlib.pyplot as plt
 import numpy as np
 
-from basins import V2, Basin
+from basins import V2
 from commons.mask import Mask
 from commons.submask import SubMask
 from tools.read_config import read_config_from_file
@@ -365,7 +365,8 @@ def compute_slice_volume(level_slice: slice, meshmask: Mask,
     :param meshmask: The meshmask of the model
     :param basin_submask: The submask of the basin
     :return:
-    A 1D array `v` such that `v[i]` is the volume of the i-th level of the slice
+    A 1D array `v` such that `v[i]` is the volume of the i-th level of the
+    slice
     """
     e1t = meshmask.e1t
     e2t = meshmask.e2t
@@ -384,7 +385,8 @@ def main():
 
     config = read_config_from_file(args.config_file)
 
-    # Check if at least one of the specified levels requires
+    # Check if at least one of the specified levels requires to compute an
+    # average
     averages_in_levels = False
     for level in config.levels:
         if isinstance(level, tuple):
@@ -398,10 +400,11 @@ def main():
     for plot in config.plots:
         variables.update(plot.variables)
         meshmask_path = path.realpath(plot.source.meshmask)
-        # Here we read in advance the  meshmask objects, so that we can share
-        # the information among different plots (if they use the same meshmask).
-        # If we need to compute the volumes of the levels (because there are
-        # some averages that must be computed), we also read the tmask
+        # Here we read in advance the meshmask objects, so that we can share
+        # the information among different plots (if they use the same
+        # meshmask). If we need to compute the volumes of the levels
+        # (because there are some averages that must be computed), we also read
+        # the t-mask
         if meshmask_path not in meshmask_objects:
             meshmask_objects[meshmask_path] = Mask(
                 meshmask_path,
@@ -417,7 +420,10 @@ def main():
                 for level in config.levels:
                     if not isinstance(level, tuple):
                         continue
-                    level_slice = from_interval_to_slice(level, meshmask_object)
+                    level_slice = from_interval_to_slice(
+                        level,
+                        meshmask_object
+                    )
                     selection_weights = compute_slice_volume(
                         level_slice,
                         meshmask_object,
@@ -426,8 +432,8 @@ def main():
                     basin_slice = BasinSlice(basin_index, meshmask_path, level)
                     average_volume_weights[basin_slice] = selection_weights
 
-    # Now we sort the variables, so we ensure that the list is in the same order
-    # on all the processes
+    # Now we sort the variables, so we ensure that the list is in the same
+    # order on all the processes
     variables = tuple(sorted(list(variables)))
 
     # Here we produce the plots

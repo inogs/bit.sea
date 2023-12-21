@@ -122,6 +122,10 @@ def get_outfile(p,outdir):
     return filename
 
 def bbp_algorithm(pCor, outfile, metadata,writing_mode):
+    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        return
     os.system('mkdir -p ' + os.path.dirname(outfile))
     metadata.status_var = pCor._my_float.status_var('BBP700')
     if metadata.status_var in ['A', 'D']:

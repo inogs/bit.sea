@@ -149,6 +149,10 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
 
 
 def nitrate_algorithm(p, outfile, metadata, writing_mode):
+    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        return
     F = p._my_float
     if F.status_var('NITRATE')=='R': return
 

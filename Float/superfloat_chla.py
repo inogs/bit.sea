@@ -145,6 +145,10 @@ def treating_coriolis(pCor):
         return None, None, None, metadata
 
 def chla_algorithm(pCor,outfile):
+    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        return
     os.system('mkdir -p ' + os.path.dirname(outfile))
 
     Pres, CHL, Qc, metadata = treating_coriolis(pCor)

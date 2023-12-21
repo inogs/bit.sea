@@ -315,7 +315,10 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     * Dataset          * dictionary, provided by load_history()
     '''
     Pres, Value, Qc  = Dataset[p.ID()]
-
+    PresT, _, _ = p.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + p._my_float.filename, flush=True)
+        return
 #     Pres, Value, Qc = read_doxy(p)
 #     if Pres is None: return
 #

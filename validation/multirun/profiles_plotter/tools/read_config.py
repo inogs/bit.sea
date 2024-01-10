@@ -373,8 +373,6 @@ def read_config(config_datastream):
         plots.append(current_plot)
     plots = tuple(p for p in plots if p.is_active())
 
-    print(depth_profile_mode)
-
     return Config(
         plots=plots,
         levels=levels,

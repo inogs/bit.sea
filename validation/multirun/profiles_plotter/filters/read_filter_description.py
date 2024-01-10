@@ -1,5 +1,6 @@
 import re
 from filters.filter import ComposedFilter, InvalidFilterDescription
+from filters.crop_time import TimeCroppingFilter
 from filters.moving_average_filter import MovingAverageFilter
 
 
@@ -11,7 +12,8 @@ FILTER_DESCRIPTION_MASK = re.compile(
 # Add here the name of the filter with its association every time you introduce
 # a new filter
 _FILTER_ASSOCIATION = {
-    'movingaverage': MovingAverageFilter
+    'movingaverage': MovingAverageFilter,
+    'croptime': TimeCroppingFilter
 }
 
 

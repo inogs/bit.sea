@@ -3,7 +3,7 @@ import re
 
 import numpy as np
 
-from filters.filter import Filter, FilteredObject
+from filters.filter import SimpleFilter, FilteredObject
 from tools.data_object import DataObject
 
 
@@ -76,7 +76,7 @@ class MovingAverageFilteredObject(FilteredObject):
                 basin=basin,
                 level_index=level_index,
                 indicator=indicator,
-                shores=coasts
+                coasts=coasts
             )
 
         if isinstance(time_steps, int):
@@ -119,7 +119,7 @@ class MovingAverageFilteredObject(FilteredObject):
         return moving_average
 
 
-class MovingAverageFilter(Filter):
+class MovingAverageFilter(SimpleFilter):
     WINDOW_DESCRIPTION_MASK = re.compile(
         r'^(?P<size>\d+)\s{0,2}(?P<unit>(d|D|m|M|y|Y)?)\s*$'
     )

@@ -18,7 +18,7 @@ class DataObject(ABC):
     @abstractmethod
     def get_values(self, time_steps: SLICE_TYPE, basin: SLICE_TYPE,
                    level_index: SLICE_TYPE, indicator: SLICE_TYPE,
-                   shores: SLICE_TYPE = 1):
+                   coasts: SLICE_TYPE = 1):
         raise NotImplementedError
 
     @abstractmethod
@@ -132,10 +132,10 @@ class PickleDataObject(DataObject):
         self._time_steps = time_steps.Timelist
         self._loaded = True
 
-    def get_values(self, time_steps, basin, level_index, indicator, shores=1):
+    def get_values(self, time_steps, basin, level_index, indicator, coasts=1):
         if not self._loaded:
             self.load()
-        return self._data[time_steps, basin, shores, level_index, indicator]
+        return self._data[time_steps, basin, coasts, level_index, indicator]
 
     def get_time_steps(self):
         if not self._loaded:

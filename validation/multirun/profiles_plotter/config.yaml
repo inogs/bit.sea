@@ -17,6 +17,11 @@ variable_labels:
   T: "temperature [°C]"
   pH: "pH [-]"
 
+time_series:
+  show_legend: bottom
+  show_depth: false
+  x_label: years
+
 depth_profile_mode: "standard"
 
 plots:

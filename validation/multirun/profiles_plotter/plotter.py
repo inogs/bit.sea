@@ -9,7 +9,7 @@ import numpy as np
 from basins import V2
 from commons.mask import Mask
 from commons.submask import SubMask
-from tools.read_config import read_config_from_file
+from tools.read_config import Config, read_config_from_file
 
 try:
     from mpi4py import MPI
@@ -35,10 +35,11 @@ BasinSlice = namedtuple('BasinSlice', ['basin_index', 'meshmask', 'levels'])
 
 
 class PlotDrawer:
-    def __init__(self, plots: Iterable, variable, levels: Iterable,
-                 meshmask_objects=None, average_volume_weights=None):
-        self._plots = tuple(plots)
-        self._levels = tuple(levels)
+    def __init__(self, config: Config, variable, meshmask_objects=None,
+                 average_volume_weights=None):
+        self._config = config
+        self._plots = tuple(config.plots)
+        self._levels = tuple(config.levels)
         self._variable = variable
 
         if meshmask_objects is None:
@@ -152,9 +153,23 @@ class PlotDrawer:
                             time_steps=slice(None),
                             basin=basin_index,
                             level_index=level_index,
+                            coasts=1,
                             indicator=indicator  # Zero is the mean
                         )
+                current_axis = axis_dict['L{}'.format(i)]
+                plt.sca(current_axis)
 
+                # x and y labels
+                if self._variable in self._config.variable_labels:
+                    var_label = self._config.variable_labels[self._variable]
+                    plt.ylabel(var_label)
+
+                # If we are drawing the last plot, add also the x_label
+                if i == len(self._levels) - 1:
+                    if self._config.time_series_options.x_label is not None:
+                        plt.xlabel(self._config.time_series_options.x_label)
+
+                # If there are no data, we skip this plot
                 if np.all(np.isnan(plot_y_data)):
                     continue
 
@@ -165,13 +180,31 @@ class PlotDrawer:
                 if plot.alpha_for_time_series is not None:
                     plot_kwargs['alpha'] = plot.alpha_for_time_series
 
-                current_axis = axis_dict['L{}'.format(i)]
                 current_axis.plot(
                     plot_x_data,
                     plot_y_data,
                     label=plot.legend,
                     **plot_kwargs
                 )
+
+        # Now we add the legends to each plot
+        show_legend_flag = self._config.time_series_options.show_legend
+        if show_legend_flag != "no":
+            only_one_legend = show_legend_flag in ("top", "bottom")
+
+            axis_iterable = [
+                axis_dict['L{}'.format(i)] for i in range(len(self._levels))
+            ]
+
+            if show_legend_flag == "bottom":
+                axis_iterable = reversed(axis_iterable)
+
+            for current_axis in axis_iterable:
+                plt.sca(current_axis)
+                if len(current_axis.lines) > 0:
+                    plt.legend()
+                    if only_one_legend:
+                        break
 
         # Add the title to each plot; we need to do this here so the limits
         # of the plots are already defined
@@ -198,16 +231,17 @@ class PlotDrawer:
                 depth_str = '{}m'.format(level)
             axis_title += depth_str
 
-            title_x_pos = plot_left + (plot_right - plot_left) * 0.03
-            title_y_pos = plot_top - (plot_top - plot_bottom) * 0.05
-            current_axis.text(
-                title_x_pos,
-                title_y_pos,
-                axis_title,
-                fontsize=10,
-                ha='left',
-                va='top'
-            )
+            if self._config.time_series_options.show_depth:
+                title_x_pos = plot_left + (plot_right - plot_left) * 0.03
+                title_y_pos = plot_top - (plot_top - plot_bottom) * 0.05
+                current_axis.text(
+                    title_x_pos,
+                    title_y_pos,
+                    axis_title,
+                    fontsize=10,
+                    ha='left',
+                    va='top'
+                )
 
     def _plot_depth_profile(self, axis_dict, basin_index: int):
         current_axis = axis_dict['P']
@@ -230,7 +264,7 @@ class PlotDrawer:
                 plot_data = plot.get_plot_data(self._variable)
 
             with plot_data:
-                plot_x_data = np.mean(
+                plot_x_data = np.ma.mean(
                     plot_data.get_values(
                         time_steps=slice(None),
                         basin=basin_index,
@@ -283,10 +317,6 @@ class PlotDrawer:
                     labelbottom=False,
                     labeltop=False
                 )
-                # If there are more than 3 time series, hide all the x-ticks
-                # on each plot beside the bottom one
-                if len(self._levels[:-1]) > 3:
-                    current_axis.xaxis.offsetText.set_visible(False)
 
         if self._draw_time_series:
             self._plot_time_series(axis_dict, basin_index, basin)
@@ -439,9 +469,8 @@ def main():
     # Here we produce the plots
     for var_name in variables[rank::nranks]:
         plot_drawer = PlotDrawer(
-            config.plots,
+            config,
             var_name,
-            config.levels,
             meshmask_objects,
             average_volume_weights
         )

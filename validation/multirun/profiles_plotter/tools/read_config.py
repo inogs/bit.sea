@@ -4,7 +4,7 @@ import yaml
 from pathlib import Path
 import re
 from sys import version_info
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Dict, Mapping, Tuple, Union
 
 from tools.data_object import PickleDataObject
 from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
@@ -28,6 +28,7 @@ EXPECTED_FIELDS = {
     'variable_labels',
     'plots',
     'levels',
+    'time_series',
     'depth_profile_mode',
     'output'
 }
@@ -51,8 +52,8 @@ class InvalidPlotConfig(InvalidConfigFile):
 Config = namedtuple(
     'Config',
     (
-        'plots', 'levels', 'variable_labels', 'depth_profile_mode',
-        'output_options'
+        'plots', 'levels', 'variable_labels', 'time_series_options',
+        'depth_profile_mode', 'output_options'
     )
 )
 
@@ -61,6 +62,11 @@ Source = namedtuple('Source', ('path', 'meshmask'))
 OutputOptions = namedtuple(
     'OutputOptions',
     OUTPUT_FIELDS
+)
+
+TimeSeriesOptions = namedtuple(
+    'TimeSeriesOptions',
+    ('show_legend', 'show_depth', 'x_label')
 )
 
 
@@ -86,6 +92,66 @@ def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
     height_size = int(str_match.group('height'))
 
     return width_size, height_size
+
+
+def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
+        -> TimeSeriesOptions:
+    show_legend_default = False
+    show_depth_default = False
+    x_label_default = None
+
+    if option_dict is None:
+        return TimeSeriesOptions(
+            show_legend=show_legend_default,
+            show_depth=show_depth_default,
+            x_label=x_label_default
+        )
+
+    for key in option_dict:
+        if key not in ('show_legend', 'show_depth', 'x_label'):
+            raise ValueError(
+                'Invalid key inside the time series option dictionary: '
+                '{}'.format(key)
+            )
+
+    x_label = x_label_default
+    if 'x_label' in option_dict:
+        x_label = option_dict['x_label']
+
+    show_legend = show_legend_default
+    if 'show_legend' in option_dict:
+        show_legend_raw = option_dict['show_legend']
+        if show_legend_raw is None:
+            show_legend = 'no'
+        elif isinstance(show_legend_raw, bool):
+            show_legend = 'all' if show_legend_raw else 'no'
+        else:
+            show_legend = str(show_legend_raw).strip().lower()
+            if show_legend not in ('all', 'bottom', 'top', 'no'):
+                raise ValueError(
+                    'time_series:show_legend field must contain either "all" '
+                    'or "bottom" or "top" or "no"; received {}'.format(
+                        show_legend
+                    )
+                )
+
+    show_depth = show_depth_default
+    if 'show_depth' in option_dict:
+        if not isinstance(option_dict['show_depth'], bool):
+            if option_dict['show_depth'] is not None:
+                raise ValueError(
+                    'time_series:show_depth field must contain a boolean value'
+                )
+        if option_dict['show_depth'] is None:
+            show_depth = False
+        else:
+            show_depth = bool(option_dict['show_depth'])
+
+    return TimeSeriesOptions(
+        show_legend=show_legend,
+        show_depth=show_depth,
+        x_label=x_label
+    )
 
 
 class PlotConfig:
@@ -390,6 +456,13 @@ def read_config(config_datastream):
         levels.append(read_number(raw_level))
     levels = tuple(levels)
 
+    if 'time_series' in yaml_content:
+        time_series_options = read_time_series_options(
+            yaml_content['time_series']
+        )
+    else:
+        time_series_options = read_time_series_options()
+
     if 'depth_profile_mode' in yaml_content:
         depth_profile_mode = read_depth_profile_mode(
             yaml_content['depth_profile_mode']
@@ -467,6 +540,7 @@ def read_config(config_datastream):
         plots=plots,
         levels=levels,
         variable_labels=variable_labels,
+        time_series_options=time_series_options,
         depth_profile_mode=depth_profile_mode,
         output_options=output_options
     )

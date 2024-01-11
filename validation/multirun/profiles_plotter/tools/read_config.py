@@ -2,8 +2,9 @@ from collections import namedtuple
 from collections.abc import Iterable
 import yaml
 from pathlib import Path
+import re
 from sys import version_info
-from typing import Any
+from typing import Any, Mapping, Tuple, Union
 
 from tools.data_object import PickleDataObject
 from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
@@ -16,14 +17,26 @@ else:
     from collections.abc import Callable
 
 
+DEFAULT_OUTPUT_NAME = 'Multirun_Profiles.${VAR}.${BASIN}.png'
+DEFAULT_DPI = 300
+DEFAULT_FIG_SIZE = (10, 10)
+
+
 EXPECTED_FIELDS = {
     'sources',
     'variable_selections',
     'plots',
     'levels',
     'depth_profile_mode',
-    'output_dir'
+    'output'
 }
+
+OUTPUT_FIELDS = (
+    'output_name',
+    'output_dir',
+    'dpi',
+    'fig_size'
+)
 
 
 class InvalidConfigFile(Exception):
@@ -36,17 +49,39 @@ class InvalidPlotConfig(InvalidConfigFile):
 
 Config = namedtuple(
     'Config',
-    ('plots', 'levels', 'depth_profile_mode', 'output_dir')
+    ('plots', 'levels', 'depth_profile_mode', 'output_options')
 )
 
 Source = namedtuple('Source', ('path', 'meshmask'))
 
+OutputOptions = namedtuple(
+    'OutputOptions',
+    OUTPUT_FIELDS
+)
 
-def read_number(number_str):
+
+def read_number(number_str: str) -> Union[int, float]:
     try:
         return int(number_str)
     except ValueError:
         return float(number_str)
+
+
+FIG_SIZE_MASK = re.compile(
+    r'^\s*\(\s*(?P<width>\d+)\s*,\s*(?P<height>\d+)\s*\)\s*$'
+)
+
+
+def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
+    str_match = FIG_SIZE_MASK.match(fig_size_str)
+    if str_match is None:
+        raise ValueError(
+            'Invalid string for fig_size: {}'.format(fig_size_str)
+        )
+    width_size = int(str_match.group('width'))
+    height_size = int(str_match.group('height'))
+
+    return (width_size, height_size)
 
 
 class PlotConfig:
@@ -344,12 +379,49 @@ def read_config(config_datastream):
     else:
         depth_profile_mode = DEFAULT_DEPTH_PROFILE_MODE
 
-    # Read the output dir
-    if 'output_dir' not in yaml_content:
+    # Read the output options
+    if 'output' not in yaml_content:
         raise InvalidConfigFile(
-            'Field "output_dir" not found inside the config file'
+            'Field "output" not found inside the config file'
         )
-    output_dir = Path(str(yaml_content['output_dir']))
+    output = yaml_content['output']
+    if not isinstance(output, Mapping):
+        raise InvalidConfigFile(
+            'Field "output" must be a dictionary with several fields: '
+            '{}...'.format(', '.join(sorted(list(OUTPUT_FIELDS))))
+        )
+    for key in output:
+        if key not in OUTPUT_FIELDS:
+            raise InvalidConfigFile(
+                'Field "{}" is not allowed inside field "output"'.format(
+                    key
+                )
+            )
+    dpi = DEFAULT_DPI
+    if 'dpi' in output:
+        dpi = int(output['dpi'])
+    if 'output_dir' not in output:
+        raise InvalidConfigFile(
+            'output_dir has not been specified in the output section'
+        )
+    output_dir = Path(str(output['output_dir']))
+
+    fig_size = DEFAULT_FIG_SIZE
+    if 'fig_size' in output:
+        try:
+            fig_size = read_fig_size(output['fig_size'])
+        except ValueError:
+            raise InvalidConfigFile('Invalid fig_size parameter')
+
+    output_name = DEFAULT_OUTPUT_NAME
+    if 'output_name' in output:
+        output_name = str(output_name)
+    output_options = OutputOptions(
+        output_name=output_name,
+        dpi=dpi,
+        fig_size=fig_size,
+        output_dir=output_dir
+    )
 
     # Finally, the most complicated part; reading the plots
     if 'plots' not in yaml_content:
@@ -377,5 +449,5 @@ def read_config(config_datastream):
         plots=plots,
         levels=levels,
         depth_profile_mode=depth_profile_mode,
-        output_dir=output_dir
+        output_options=output_options
     )

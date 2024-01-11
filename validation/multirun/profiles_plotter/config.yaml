@@ -34,4 +34,8 @@ plots:
     filter: MovingAverage(10y)
     draw_depth_profile: false
 
-output_dir: /dev/shm
+output:
+  output_name: 'Multirun_Profiles.${VAR}.${BASIN}.png'
+  output_dir: /dev/shm
+  dpi: 300
+  fig_size: (10, 10)

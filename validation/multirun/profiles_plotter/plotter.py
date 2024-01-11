@@ -449,17 +449,22 @@ def main():
             continue
         plot_drawer.load_data()
 
-        for basin_index, basin in enumerate(V2.P):
-            outfile_name = 'Multirun_Profiles.{}.{}.png'.format(
-                var_name,
+        for basin_index, basin in enumerate(basins):
+            outfile_name = config.output_options.output_name.replace(
+                '${VAR}',
+                var_name
+            )
+            outfile_name = outfile_name.replace(
+                '${BASIN}',
                 basin.name
             )
-            outfile_path = config.output_dir / outfile_name
+            outfile_path = config.output_options.output_dir / outfile_name
 
             fig = plot_drawer.plot(
                 basin_index=basin_index,
                 basin=basin,
-                figsize=(10, 10)
+                dpi=config.output_options.dpi,
+                figsize=config.output_options.fig_size
             )
             fig.suptitle('{} {}'.format(var_name, basin.name))
 

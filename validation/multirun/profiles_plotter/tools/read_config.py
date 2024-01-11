@@ -25,6 +25,7 @@ DEFAULT_FIG_SIZE = (10, 10)
 EXPECTED_FIELDS = {
     'sources',
     'variable_selections',
+    'variable_labels',
     'plots',
     'levels',
     'depth_profile_mode',
@@ -49,7 +50,10 @@ class InvalidPlotConfig(InvalidConfigFile):
 
 Config = namedtuple(
     'Config',
-    ('plots', 'levels', 'depth_profile_mode', 'output_options')
+    (
+        'plots', 'levels', 'variable_labels', 'depth_profile_mode',
+        'output_options'
+    )
 )
 
 Source = namedtuple('Source', ('path', 'meshmask'))
@@ -81,7 +85,7 @@ def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
     width_size = int(str_match.group('width'))
     height_size = int(str_match.group('height'))
 
-    return (width_size, height_size)
+    return width_size, height_size
 
 
 class PlotConfig:
@@ -339,6 +343,20 @@ def read_config(config_datastream):
         variable_selections[str(selection_name)] = \
             tuple(str(i) for i in selection_vars)
 
+    # Read the labels that we will use for variables
+    if 'variable_labels' not in yaml_content:
+        variable_labels = {}
+    else:
+        variable_labels_field = yaml_content['variable_labels']
+        if not isinstance(variable_labels_field, Mapping):
+            raise InvalidConfigFile(
+                'The field variable_labels must be a dictionary that '
+                'associates a variable name to its corresponding label'
+            )
+        variable_labels = {
+            v: str(variable_labels_field[v]) for v in variable_labels_field
+        }
+
     # Read levels, ensuring that they are a list of integers or floats
     if 'levels' not in yaml_content:
         raise InvalidConfigFile(
@@ -448,6 +466,7 @@ def read_config(config_datastream):
     return Config(
         plots=plots,
         levels=levels,
+        variable_labels=variable_labels,
         depth_profile_mode=depth_profile_mode,
         output_options=output_options
     )

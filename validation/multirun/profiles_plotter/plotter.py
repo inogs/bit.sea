@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from os import path
 from collections import namedtuple
-from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,6 +79,8 @@ class PlotDrawer:
     def load_data(self):
         self._loaded_data = {}
         for plot in self._plots:
+            if self._variable not in plot.variables:
+                continue
             self._loaded_data[plot.name] = plot.get_plot_data(self._variable)
 
     def _get_plot_mask(self, plot):
@@ -92,6 +93,9 @@ class PlotDrawer:
                           indicator=0):
         for plot in self._plots:
             if not plot.draw_time_series:
+                continue
+
+            if self._variable not in plot.variables:
                 continue
 
             plot_meshmask = self._get_plot_mask(plot)

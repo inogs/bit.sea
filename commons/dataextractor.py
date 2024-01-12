@@ -16,8 +16,13 @@ class DataExtractor(object):
 
     This class is meant to be used to read data from a model file and provide
     some facilities to access to the data
+    Mask object is required.
+    Nevertheless, consistency in depth between data and mask is not required.
+
+
+
     """
-    def __init__(self, mask, filename=None, varname=None, rawdata=None, rawdatafill=np.nan, fill_value=np.nan,dimvar=3):
+    def __init__(self, mask, filename=None, varname=None, rawdata=None, rawdatafill=np.nan, fill_value=np.nan,dimvar=3, verbose=True):
         """DataExtractor constructor.
 
         Args:
@@ -30,6 +35,7 @@ class DataExtractor(object):
             - *fill_value* (optional): the value that will be used when there's
             - *dimvar* (optional) : if present, it forces the dimension of the output.
               If dimvar=2 when we read a 3D array, a 2d array of the surface will be returned.
+            - * verbose * : logical, if True warnings are printed when data and mask are not consistent.
 
         Either rawdata or filename plus varname must be defined.
         """
@@ -90,9 +96,14 @@ class DataExtractor(object):
             #test dimensions
             if self.dims==3:
                 if self.__shape[1:] != mask.shape[1:]: raise ValueError("mask must have the same shape of the data")
-                if self.__shape[0] > mask.shape[0]: raise ValueError("mask must have the same shape of the data")
-                if self.__shape[0] < mask.shape[0]:
-                    print('WARNING: loading field limited to a certain level NOT complete full 3d dataset')
+                data_jpk=self.__shape[0]
+                mask_jpk=  mask.shape[0]
+                if data_jpk > mask_jpk: # working with reduced mask
+                    if verbose: print('WARNING: slicing 3D field in range 0 -',mask_jpk )
+                    self.__values=self.values[:mask_jpk,:,:]
+
+                if data_jpk < mask_jpk:
+                    if (verbose) : print('WARNING: 3D file is a subset of mask domain')
                     appval = self.__values
                     self.__values = np.zeros(mask.shape)
                     self.__values[:self.__shape[0],:,:] = appval

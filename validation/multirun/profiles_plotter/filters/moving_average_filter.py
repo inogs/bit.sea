@@ -4,20 +4,20 @@ import re
 import numpy as np
 
 from filters.filter import SimpleFilter, FilteredObject
-from tools.data_object import DataObject
+from plot_inputs import PlotInputData
 
 
 class MovingAverageFilteredObject(FilteredObject):
-    def __init__(self, data_object: DataObject, window_size: int):
-        super().__init__(data_object)
+    def __init__(self, original_input: PlotInputData, window_size: int):
+        super().__init__(original_input)
 
         self._window_size = int(window_size)
 
-        # How many points to we lose because of the average (the ones on the
+        # How many points do we loose because of the average (the ones on the
         # boundary of the time series)
         lost_points = self._window_size - 1
 
-        original_times = self._original_data.get_time_steps()
+        original_times = self._input_data.get_time_steps()
 
         if self._window_size % 2 == 1:
             lost_per_side = lost_points // 2
@@ -38,18 +38,14 @@ class MovingAverageFilteredObject(FilteredObject):
     def get_time_steps(self):
         return self._time_steps
 
-    def get_values(self, time_steps, basin, level_index, indicator, coasts=1):
-        fixed_axis = set()
+    def get_values(self, time_steps, basin, level_index):
+        fixed_axis = {'coasts', 'indicator'}
         if not isinstance(basin, slice):
             fixed_axis.add('basin')
         if not isinstance(level_index, slice):
             fixed_axis.add('level')
-        if not isinstance(coasts, slice):
-            fixed_axis.add('coasts')
-        if not isinstance(indicator, slice):
-            fixed_axis.add('indicator')
 
-        time_axis = self.get_axis('time', fixed_axis)
+        time_axis = self._data_object.get_axis('time', fixed_axis)
 
         if isinstance(time_steps, slice):
             if time_steps.stop is None:
@@ -70,14 +66,11 @@ class MovingAverageFilteredObject(FilteredObject):
                 time_slice_stop = time_steps
             time_slice = slice(time_slice_start, time_slice_stop)
 
-        with self._original_data:
-            original_data = self._original_data.get_values(
-                time_steps=time_slice,
-                basin=basin,
-                level_index=level_index,
-                indicator=indicator,
-                coasts=coasts
-            )
+        original_data = self._input_data.get_values(
+            time_steps=time_slice,
+            basin=basin,
+            level_index=level_index
+        )
 
         if isinstance(time_steps, int):
             if original_data.shape[time_axis] != self._window_size:
@@ -121,7 +114,7 @@ class MovingAverageFilteredObject(FilteredObject):
 
 class MovingAverageFilter(SimpleFilter):
     WINDOW_DESCRIPTION_MASK = re.compile(
-        r'^(?P<size>\d+)\s{0,2}(?P<unit>(d|D|m|M|y|Y)?)\s*$'
+        r'^(?P<size>\d+)\s{0,2}(?P<unit>([dDmMyY])?)\s*$'
     )
 
     def __init__(self, window_description: str):
@@ -129,8 +122,8 @@ class MovingAverageFilter(SimpleFilter):
         if mask_match is None:
             raise ValueError(
                 'The string that describes the window size of the moving '
-                'average filter must be an integer, optionally followed by one '
-                'of the following letters: d, m or y'
+                'average filter must be an integer, optionally followed by '
+                'one of the following letters: d, m or y'
             )
         self._window_size = int(mask_match.group('size'))
         if mask_match.group('unit') is not None:
@@ -138,12 +131,12 @@ class MovingAverageFilter(SimpleFilter):
         else:
             self._unit = None
 
-    def get_filtered_object(self, data_object):
+    def get_filtered_object(self, input_data: PlotInputData):
         # If there are no units, we can simply return the filtered object as is
         if self._unit is None:
             return MovingAverageFilteredObject(
-                data_object,
-                window_size=self._windows_size
+                input_data,
+                window_size=self._window_size
             )
 
         # Otherwise, we need to estimate the new size of the window
@@ -154,7 +147,7 @@ class MovingAverageFilter(SimpleFilter):
         else:
             unit_time = timedelta(days=365)
 
-        time_steps = data_object.get_time_steps()
+        time_steps = input_data.get_time_steps()
         time_index = 0
         for time_index, current_time in enumerate(time_steps):
             if current_time - time_steps[0] >= unit_time:
@@ -164,7 +157,7 @@ class MovingAverageFilter(SimpleFilter):
             raise ValueError('No time steps found in the data_object')
 
         window_size = self._window_size * time_index
-        return MovingAverageFilteredObject(data_object, window_size=window_size)
+        return MovingAverageFilteredObject(input_data, window_size=window_size)
 
     @staticmethod
     def initialize_from_string(args_str):

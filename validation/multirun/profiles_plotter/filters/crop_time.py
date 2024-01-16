@@ -5,7 +5,7 @@ from typing import Union
 import numpy as np
 
 from filters.filter import SimpleFilter, FilteredObject
-from tools.data_object import DataObject
+from plot_inputs import PlotInputData
 
 
 class AllPointsCropped(ValueError):
@@ -13,12 +13,12 @@ class AllPointsCropped(ValueError):
 
 
 class TimeCroppedObject(FilteredObject):
-    def __init__(self, data_object: DataObject,
+    def __init__(self, input_data: PlotInputData,
                  start_time: Union[datetime, None] = None,
                  end_time: Union[datetime, None] = None):
-        super().__init__(data_object)
+        super().__init__(input_data)
 
-        old_time_steps = data_object.get_time_steps()
+        old_time_steps = input_data.get_time_steps()
 
         start_index = 0
         if start_time is not None:
@@ -59,7 +59,7 @@ class TimeCroppedObject(FilteredObject):
     def end_time(self):
         return self._end_time
 
-    def get_values(self, time_steps, basin, level_index, indicator, coasts=0):
+    def get_values(self, time_steps, basin, level_index):
         if isinstance(time_steps, slice):
             if time_steps.start is None:
                 original_slice_start = self._start_index
@@ -100,14 +100,11 @@ class TimeCroppedObject(FilteredObject):
                 time_steps += len(self._time_steps)
             original_time_slice = time_steps + self._start_index
 
-        with self._original_data:
-            original_data = self._original_data.get_values(
-                time_steps=original_time_slice,
-                basin=basin,
-                level_index=level_index,
-                indicator=indicator,
-                coasts=coasts
-            )
+        original_data = self._input_data.get_values(
+            time_steps=original_time_slice,
+            basin=basin,
+            level_index=level_index,
+        )
 
         return original_data
 
@@ -120,9 +117,9 @@ class TimeCroppingFilter(SimpleFilter):
         self._start_time = start_time
         self._end_time = end_time
 
-    def get_filtered_object(self, data_object) -> TimeCroppedObject:
+    def get_filtered_object(self, input_data) -> TimeCroppedObject:
         return TimeCroppedObject(
-            data_object=data_object,
+            input_data=input_data,
             start_time=self._start_time,
             end_time=self._end_time
         )

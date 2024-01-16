@@ -2,21 +2,30 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 from typing import Union
 
-from tools.data_object import DataObject
+from plot_inputs import PlotInputData
 
 
 class InvalidFilterDescription(Exception):
     pass
 
 
-class FilteredObject(DataObject, ABC):
-    def __init__(self, data_object: DataObject):
-        self._original_data = data_object
+class FilteredObject(PlotInputData, ABC):
+    def __init__(self, input_data: PlotInputData):
+        super().__init__(input_data._data_object)
+        self._input_data = input_data
+
+    def __enter__(self):
+        self._input_data.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._input_data.__exit__(exc_type, exc_val, exc_tb)
+        return
 
 
 class Filter(ABC):
     @abstractmethod
-    def get_filtered_object(self, data_object) -> FilteredObject:
+    def get_filtered_object(self, input_data) -> FilteredObject:
         raise NotImplementedError
 
 
@@ -31,8 +40,8 @@ class ComposedFilter(Filter):
     def __init__(self, filters: Sequence[Filter]):
         self._filters = tuple(filters)
 
-    def get_filtered_object(self, data_object):
-        current_data = data_object
-        for filter in reversed(self._filters):
-            current_data = filter.get_filtered_object(current_data)
+    def get_filtered_object(self, input_data):
+        current_data = input_data
+        for current_filter in reversed(self._filters):
+            current_data = current_filter.get_filtered_object(current_data)
         return current_data

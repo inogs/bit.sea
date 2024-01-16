@@ -6,7 +6,9 @@ import re
 from sys import version_info
 from typing import Any, Dict, Mapping, Tuple, Union
 
-from tools.data_object import PickleDataObject
+from tools.data_object import DataObject, PickleDataObject
+from plot_inputs import PlotInputData
+from plot_inputs.single_line_plot import SingleLineInputData
 from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
     read_depth_profile_mode
 from filters.read_filter_description import read_filter_description
@@ -20,6 +22,9 @@ else:
 DEFAULT_OUTPUT_NAME = 'Multirun_Profiles.${VAR}.${BASIN}.png'
 DEFAULT_DPI = 300
 DEFAULT_FIG_SIZE = (10, 10)
+
+DEFAULT_COAST_INDEX = 1
+DEFAULT_INDICATOR = 0
 
 
 EXPECTED_FIELDS = {
@@ -57,12 +62,12 @@ Config = namedtuple(
     )
 )
 
-Source = namedtuple('Source', ('path', 'meshmask'))
-
-OutputOptions = namedtuple(
-    'OutputOptions',
-    OUTPUT_FIELDS
+Source = namedtuple(
+    'Source',
+    ('path', 'meshmask', 'coast_index')
 )
+
+OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
 
 TimeSeriesOptions = namedtuple(
     'TimeSeriesOptions',
@@ -158,6 +163,8 @@ class PlotConfig:
     CONFIG_FIELDS = {
         'source',
         'variables',
+        'coast_index',
+        'indicator',
         'active',
         'color',
         'legend',
@@ -171,31 +178,34 @@ class PlotConfig:
 
     PLOT_NAMES = set()
 
-    def __init__(self, name, source, variables, data_filter=None, active=True,
-                 color=None, alpha=None, alpha_for_time_series=None,
-                 legend=None, zorder=None, draw_time_series=True,
-                 draw_depth_profile=True):
+    def __init__(self, name: str, source: Source, variables: Tuple[str, ...],
+                 plot_builder: Callable[[DataObject], PlotInputData],
+                 data_filter=None, active=True, color=None, alpha=None,
+                 alpha_for_time_series=None, legend=None, zorder=None,
+                 draw_time_series=True, draw_depth_profile=True):
         if name in self.PLOT_NAMES:
             raise ValueError(
                 'A plot named "{}" has already been created'.format(name)
             )
         self.PLOT_NAMES.add(name)
 
-        self.name = name
-        self._source = source
-        self.variables = variables
+        self.name: str = name
+        self._source: Source = source
+        self.variables: Tuple[str, ...] = variables
+        self._plot_builder: Callable[[DataObject], PlotInputData] = \
+            plot_builder
 
-        self._active = active
+        self._active: bool = active
         self._filter = data_filter
 
         self._color = color
         self._alpha = alpha
         self._alpha_for_time_series = alpha_for_time_series
-        self._legend = legend
-        self._zorder = zorder
+        self._legend: Union[str, None] = legend
+        self._zorder: Union[int, None] = zorder
 
-        self._draw_time_series = bool(draw_time_series)
-        self._draw_depth_profile = bool(draw_depth_profile)
+        self._draw_time_series: bool = bool(draw_time_series)
+        self._draw_depth_profile: bool = bool(draw_depth_profile)
 
     def get_plot_data(self, variable):
         if variable not in self.variables:
@@ -207,16 +217,17 @@ class PlotConfig:
             )
 
         data_object = PickleDataObject(self.source.path, variable)
+        plot_input = self._plot_builder(data_object)
         if self._filter is None:
-            return data_object
+            return plot_input
 
-        return self._filter.get_filtered_object(data_object)
+        return self._filter.get_filtered_object(plot_input)
 
     @property
-    def source(self):
+    def source(self) -> Source:
         return self._source
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self._active
 
     @property
@@ -232,19 +243,19 @@ class PlotConfig:
         return self._alpha_for_time_series
 
     @property
-    def legend(self):
+    def legend(self) -> str:
         return self.name if self._legend is None else self._legend
 
     @property
-    def zorder(self):
+    def zorder(self) -> int:
         return self._zorder
 
     @property
-    def draw_time_series(self):
+    def draw_time_series(self) -> bool:
         return self._draw_time_series
 
     @property
-    def draw_depth_profile(self):
+    def draw_depth_profile(self) -> bool:
         return self._draw_depth_profile
 
     @staticmethod
@@ -285,6 +296,21 @@ class PlotConfig:
             )
         variables = variable_selections[variable_selection_name]
 
+        if 'coast_index' not in plot_config:
+            if plot_source.coast_index is not None:
+                coast_index = plot_source.coast_index
+            else:
+                coast_index = DEFAULT_COAST_INDEX
+        else:
+            coast_index = int(plot_config['coast_index'])
+
+        indicator = DEFAULT_INDICATOR
+        if 'indicator' in plot_config:
+            indicator = int(plot_config['indicator'])
+
+        def plot_builder(data_object):
+            return SingleLineInputData(data_object, coast_index, indicator)
+
         plot_config_kwargs = {}
 
         def read_boolean(field_name):
@@ -324,6 +350,7 @@ class PlotConfig:
             plot_name,
             plot_source,
             variables,
+            plot_builder,
             data_filter=plot_filter,
             **plot_config_kwargs
         )
@@ -366,7 +393,7 @@ def read_config(config_datastream):
                 '{}'.format(source_name, source_config)
             )
         for field in source_config:
-            if field not in ('path', 'meshmask'):
+            if field not in ('path', 'meshmask', 'coast_index'):
                 raise InvalidConfigFile(
                     'Invalid field "{}" for source "{}"'.format(
                         source_name,
@@ -385,7 +412,17 @@ def read_config(config_datastream):
             )
         source_path = Path(str(source_config['path']))
         source_meshmask = Path(str(source_config['meshmask']))
-        sources[str(source_name)] = Source(source_path, source_meshmask)
+
+        if 'coast_index' not in source_config:
+            coast_index = None
+        else:
+            coast_index = int(source_config['coast_index'])
+
+        sources[str(source_name)] = Source(
+            source_path,
+            source_meshmask,
+            coast_index
+        )
 
     if 'variable_selections' not in yaml_content:
         raise InvalidConfigFile(

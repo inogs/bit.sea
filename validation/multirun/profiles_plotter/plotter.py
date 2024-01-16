@@ -139,8 +139,7 @@ class PlotDrawer:
                         y_data_domain = plot_data.get_values(
                             time_steps=slice(None),
                             basin=basin_index,
-                            level_index=level_slice,
-                            indicator=indicator  # Zero is the mean
+                            level_index=level_slice
                         )
                     plot_y_data = np.average(
                         y_data_domain,
@@ -156,9 +155,7 @@ class PlotDrawer:
                         plot_y_data = plot_data.get_values(
                             time_steps=slice(None),
                             basin=basin_index,
-                            level_index=level_index,
-                            coasts=1,
-                            indicator=indicator  # Zero is the mean
+                            level_index=level_index
                         )
                 current_axis = axis_dict['L{}'.format(i)]
                 plt.sca(current_axis)
@@ -272,8 +269,7 @@ class PlotDrawer:
                     plot_data.get_values(
                         time_steps=slice(None),
                         basin=basin_index,
-                        level_index=slice(None),
-                        indicator=0
+                        level_index=slice(None)
                     ),
                     axis=0
                 )

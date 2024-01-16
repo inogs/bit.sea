@@ -26,6 +26,8 @@ DEFAULT_FIG_SIZE = (10, 10)
 DEFAULT_COAST_INDEX = 1
 DEFAULT_INDICATOR = 0
 
+DEFAULT_MASK_VAR_NAME = 'tmask'
+
 
 EXPECTED_FIELDS = {
     'sources',
@@ -64,7 +66,7 @@ Config = namedtuple(
 
 Source = namedtuple(
     'Source',
-    ('path', 'meshmask', 'coast_index')
+    ('path', 'meshmask', 'coast_index', 'mask_var_name')
 )
 
 OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
@@ -385,6 +387,7 @@ def read_config(config_datastream):
             'Field "sources" must be a dictionary that associates a '
             'name to a path'
         )
+    source_fields = {'path', 'meshmask', 'coast_index', 'mask_var_name'}
     for source_name, source_config in sources_raw.items():
         if not isinstance(source_config, dict):
             raise InvalidConfigFile(
@@ -393,7 +396,7 @@ def read_config(config_datastream):
                 '{}'.format(source_name, source_config)
             )
         for field in source_config:
-            if field not in ('path', 'meshmask', 'coast_index'):
+            if field not in source_fields:
                 raise InvalidConfigFile(
                     'Invalid field "{}" for source "{}"'.format(
                         source_name,
@@ -418,10 +421,16 @@ def read_config(config_datastream):
         else:
             coast_index = int(source_config['coast_index'])
 
+        if 'mask_var_name' in source_config:
+            mask_var_name = str(source_config['mask_var_name'])
+        else:
+            mask_var_name = DEFAULT_MASK_VAR_NAME
+
         sources[str(source_name)] = Source(
             source_path,
             source_meshmask,
-            coast_index
+            coast_index,
+            mask_var_name
         )
 
     if 'variable_selections' not in yaml_content:

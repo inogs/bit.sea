@@ -87,7 +87,11 @@ class PlotDrawer:
         real_path = path.realpath(plot.source.meshmask)
         if real_path in self._meshmask_objects:
             return self._meshmask_objects[real_path]
-        return Mask(plot.source.meshmask, loadtmask=True)
+        return Mask(
+            plot.source.meshmask,
+            maskvarname=plot.source.mask_var_name,
+            loadtmask=True
+        )
 
     def _plot_time_series(self, axis_dict, basin_index: int, basin,
                           indicator=0):
@@ -143,10 +147,7 @@ class PlotDrawer:
                         )
                     plot_y_data = np.average(
                         y_data_domain,
-                        axis=plot_data.get_axis(
-                            'level',
-                            while_fixing={'basin', 'coasts'}
-                        ),
+                        axis=-1,
                         weights=average_weights
                     )
                 else:
@@ -438,6 +439,7 @@ def main():
         if meshmask_path not in meshmask_objects:
             meshmask_objects[meshmask_path] = Mask(
                 meshmask_path,
+                maskvarname=plot.source.mask_var_name,
                 loadtmask=averages_in_levels
             )
 

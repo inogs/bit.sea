@@ -25,6 +25,8 @@ except ModuleNotFoundError:
 MAIN_DIR = path.dirname(path.realpath(__file__))
 CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
 
+BASINS = tuple(V2.P.basin_list)
+
 
 # A BasinSliceVolume describes a slices among vertical levels of a specific
 # basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
@@ -480,7 +482,7 @@ def main():
             continue
         plot_drawer.load_data()
 
-        for basin_index, basin in enumerate(basins):
+        for basin_index, basin in enumerate(BASINS):
             outfile_name = config.output_options.output_name.replace(
                 '${VAR}',
                 var_name

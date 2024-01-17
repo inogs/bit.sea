@@ -127,7 +127,9 @@ for isub, sub in enumerate(OGS.P):
             EAN_BIAS[it,isub] = EAN_BIAS_w[isub]
         else:
             EAN_BIAS[it,isub] = EAN_BIAS_s[isub]
-    ax1.plot(times,EAN_BIAS[:,isub],marker='_',color='red',linewidth=2.0, label="EAN")
+    new_times, new_yBIAS = avoid_diagonals_in_jumps(times, EAN_BIAS[:,isub])
+#    ax1.plot(times,EAN_BIAS[:,isub],marker='_',color='red',linewidth=2.0, label="EAN")
+    ax1.plot(new_times, new_yBIAS,marker='_',color='red',linewidth=2.0, label="EAN")
 
     
     ax1.set_title(sub.extended_name + " (" + coast + ")",fontsize=14)

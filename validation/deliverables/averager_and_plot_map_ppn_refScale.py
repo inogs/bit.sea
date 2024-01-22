@@ -191,7 +191,13 @@ for il, layer in enumerate(PLOT.layerlist):
     CS.ax.set_ylabel('Lat').set_fontsize(12)
 #    CS.ax.ticklabel_format(fontsize=10)
     ax.tick_params(axis='x', labelsize=10)
-    CS.ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+# CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
+if (var=="ppn"):
+        CS.ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        title = "%s %s %s" % ('annual', 'npp', layer.__repr__())
+    else:
+        CS.ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        title = "%s %s %s" % ('annual', var, layer.__repr__())
 
     CS.ax.xaxis.set_ticks(np.arange(-2,36,6))
     CS.ax.yaxis.set_ticks(np.arange(30,46,4))
@@ -202,7 +208,6 @@ for il, layer in enumerate(PLOT.layerlist):
     CS.ax.set_ylim([30, 46])
 #########
     CS.ax.grid()
-    title = "%s %s %s" % ('annual', var, layer.__repr__())
     if (var == "pH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
     if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
     pl.suptitle(title)

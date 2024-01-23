@@ -61,6 +61,19 @@ import numpy as np
 import os
 from Sat import SatManager as Sat
 
+
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
+
 ORIGDIR = addsep(args.origdir)
 CHECKDIR = addsep(args.checkdir)
 THRESHOLD = float(args.QI)
@@ -73,7 +86,7 @@ Time__end="20500101"
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 
-for iTime, filename in enumerate(TL_orig.filelist):
+for filename in TL_orig.filelist[rank::nranks]:
     outfile = CHECKDIR + os.path.basename(filename)
     writing_mode = Sat.writing_mode(outfile)
 
@@ -89,7 +102,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     VALUES = Sat.readfromfile(filename,args.varname)
 
     if args.varname == 'KD490':
-       # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
+        # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
         VALUES[(VALUES<Kd_min) & (VALUES>0)] = Sat.fillValue   # Filter out values below Kd490_min threshold
     
     bad = np.abs(QI) > THRESHOLD # 2.0

@@ -37,7 +37,7 @@ def argument():
     parser.add_argument(   '--varname', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO']
+                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670']
                                 )
 
     parser.add_argument(   '--timeaverage', '-t',

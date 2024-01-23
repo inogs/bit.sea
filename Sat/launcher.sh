@@ -8,9 +8,11 @@
 #SBATCH --partition=g100_meteo_prod
 #SBATCH --qos=qos_meteo
 
-#cd $SLURM_SUBMIT_DIR
+cd $SLURM_SUBMIT_DIR
 
 . ./profile.inc
+
+source /g100_work/OGS23_PRACE_IT/COPERNICUS/sequence3.sh
 
 unset I_MPI_PMI_LIBRARY
 export UCX_TLS=ib
@@ -19,11 +21,22 @@ MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
 
 #####  REFLECTANCE SECTION ###########
 ORIGDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/OCEANCOLOUR_MED_BGC_L3_MY_009_143/preproc_download/Download/my.cmems-du.eu/Core/OCEANCOLOUR_MED_BGC_L3_MY_009_143/cmems_obs-oc_med_bgc-reflectance_my_l3-multi-1km_P1D/2019/01
-CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V11C/SAT/DAILY/CHECKED
+       ORIGDIR=/g100_scratch/userexternal/gbolzon0/V11C/SAT/DAILY/ORIG
+   CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V11C/SAT/DAILY/CHECKED
+ WEEKLY_DIR1km=/g100_scratch/userexternal/gbolzon0/V11C/SAT/WEEKLY_1km
+   WEEKLYDATES=/g100_scratch/userexternal/gbolzon0/V11C/SAT/WEEKLYDATES
+ WEEKLY_DIR_24=/g100_scratch/userexternal/gbolzon0/V11C/SAT/WEEKLY_24
 
-mkdir -p $CHECKED_DIR
 
-my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v RRS490 --QI 3.0"
+mkdir -p $CHECKED_DIR $WEEKLY_DIR1km $WEEKLYDATES $WEEKLY_DIR_24
+MPI="mpirun -np 24"
+for nm in 412 443 490 510 555 670; do
+   var=RRS${nm}
+   my_prex_or_die "$MPI python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v $var --QI 3.0"
+   my_prex_or_die "$MPI python aveSat.py -i $CHECKED_DIR -o $WEEKLY_DIR1km -m SAT1km_mesh -t weekly_thursday -d $WEEKLYDATES -v $var"
+   my_prex_or_die "$MPI python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v $var "
+
+done
 
 exit 0
 

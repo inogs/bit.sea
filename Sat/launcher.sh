@@ -17,6 +17,16 @@ export UCX_TLS=ib
 export SLURM_PMIX_DIRECT_CONN_UCX=false
 MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
 
+#####  REFLECTANCE SECTION ###########
+ORIGDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/OCEANCOLOUR_MED_BGC_L3_MY_009_143/preproc_download/Download/my.cmems-du.eu/Core/OCEANCOLOUR_MED_BGC_L3_MY_009_143/cmems_obs-oc_med_bgc-reflectance_my_l3-multi-1km_P1D/2019/01
+CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V11C/SAT/DAILY/CHECKED
+
+mkdir -p $CHECKED_DIR
+
+my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v RRS490 --QI 3.0"
+
+exit 0
+
 ##############   KD490 SECTION ##########################################################
 ORIGDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/KD490/DT/DAILY/ORIG/
 CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/DAILY/CHECKED/SIGMA_2.0/
@@ -24,6 +34,7 @@ CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/DAILY/CHECKED/
 mkdir -p $CHECKED_DIR
 my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v KD490 --QI 2.0 --Kd_min 0.021"
 
+exit 0
 
 WEEKLY_DIR1km=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_1km
   WEEKLYDATES=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/WEEKLY_4_AVEDATES

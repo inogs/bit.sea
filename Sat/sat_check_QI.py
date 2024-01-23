@@ -29,7 +29,7 @@ def argument():
     parser.add_argument(   '--varname', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO'],
+                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670'],
                                 help = '''Var name, corresponding to P_l, kd490, P1l, P2l P3l, P4l'''
                                 )
     parser.add_argument(   '--force', '-f',
@@ -80,12 +80,13 @@ for iTime, filename in enumerate(TL_orig.filelist):
     condition_to_write = not Sat.exist_valid_variable(args.varname,outfile)
     if args.force: condition_to_write=True
     if not condition_to_write: continue    
-    
-    if args.varname == 'KD490':
-        QI = Sat.readfromfile(filename,'QI_KD490')
-    else:
+
+
+    if args.varname in ["DIATO","NANO","PICO","DINO"]:
         QI = Sat.readfromfile(filename, "QI_CHL")
-    VALUES = Sat.readfromfile(filename,args.varname)   
+    else:
+        QI = Sat.readfromfile(filename, "QI_" + args.varname)
+    VALUES = Sat.readfromfile(filename,args.varname)
 
     if args.varname == 'KD490':
        # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min

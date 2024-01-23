@@ -184,30 +184,29 @@ for il, layer in enumerate(PLOT.layerlist):
 
     CS=ax.contourf(TheMask.xlevels, TheMask.ylevels,integrated_masked,levels,colors=colors)
     cbar=fig.colorbar(CS,ticks=levels)
-    CS.ax.set_xlim([-5,36])
+    ax.set_xlim([-5,36])
 
-    CS.ax.set_ylim([30,46])
-    CS.ax.set_xlabel('Lon').set_fontsize(11)
-    CS.ax.set_ylabel('Lat').set_fontsize(12)
-#    CS.ax.ticklabel_format(fontsize=10)
+    ax.set_ylim([30,46])
+    ax.set_xlabel('Lon').set_fontsize(11)
+    ax.set_ylabel('Lat').set_fontsize(12)
     ax.tick_params(axis='x', labelsize=10)
 # CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
-if (var=="ppn"):
-        CS.ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+    if (var=="ppn"):
+        ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
         title = "%s %s %s" % ('annual', 'npp', layer.__repr__())
     else:
-        CS.ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
         title = "%s %s %s" % ('annual', var, layer.__repr__())
 
-    CS.ax.xaxis.set_ticks(np.arange(-2,36,6))
-    CS.ax.yaxis.set_ticks(np.arange(30,46,4))
+    ax.xaxis.set_ticks(np.arange(-2,36,6))
+    ax.yaxis.set_ticks(np.arange(30,46,4))
 ##########
     #Draw coastline
-    CS.ax.plot(clon,clat, color='#000000',linewidth=0.5)
-    CS.ax.set_xlim([-6, 36])
-    CS.ax.set_ylim([30, 46])
+    ax.plot(clon,clat, color='#000000',linewidth=0.5)
+    ax.set_xlim([-6, 36])
+    ax.set_ylim([30, 46])
 #########
-    CS.ax.grid()
+    ax.grid()
     if (var == "pH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
     if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
     pl.suptitle(title)

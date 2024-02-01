@@ -245,8 +245,8 @@ class PlotConfig:
         return self._alpha_for_time_series
 
     @property
-    def legend(self) -> str:
-        return self.name if self._legend is None else self._legend
+    def legend(self) -> Union[str, None]:
+        return self._legend
 
     @property
     def zorder(self) -> int:
@@ -334,13 +334,24 @@ class PlotConfig:
                 )
 
         add_to_kwargs('color')
-        add_to_kwargs('legend')
         add_to_kwargs('zorder', int)
         add_to_kwargs('alpha', float)
         add_to_kwargs('alpha_for_time_series', float)
         add_to_kwargs('active', read_boolean('active'))
         add_to_kwargs('draw_depth_profile', read_boolean('draw_depth_profile'))
         add_to_kwargs('draw_time_series', read_boolean('draw_time_series'))
+
+        # If the legend is not specified, is the name of the plot. If it is
+        # "None" or "False", it is None
+        if 'legend' in plot_config:
+            if plot_config['legend'] is None:
+                plot_config_kwargs['legend'] = None
+            elif bool(plot_config['legend']) is False:
+                plot_config_kwargs['legend'] = None
+            else:
+                plot_config_kwargs['legend'] = str(plot_config['legend'])
+        else:
+            plot_config_kwargs['legend'] = plot_name
 
         plot_filter = None
         if 'filter' in plot_config:
@@ -569,8 +580,8 @@ def read_config(config_datastream):
     plots_raw = yaml_content['plots']
     if not isinstance(plots_raw, dict):
         raise InvalidConfigFile(
-            'Fields "plots" must be a dictionary tat associates to a plot name'
-            'its configuration'
+            'Fields "plots" must be a dictionary that associates to a plot'
+            'name its configuration'
         )
     for plot_name, plot_config in plots_raw.items():
         current_plot = PlotConfig.read_plot_config(

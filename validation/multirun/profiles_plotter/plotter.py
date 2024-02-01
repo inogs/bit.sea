@@ -95,8 +95,8 @@ class PlotDrawer:
             loadtmask=True
         )
 
-    def _plot_time_series(self, axis_dict, basin_index: int, basin,
-                          indicator=0):
+    def _plot_time_series(self, axis_dict, basin_index: int, basin):
+        elements_in_legend = False
         for plot in self._plots:
             if not plot.draw_time_series:
                 continue
@@ -166,7 +166,11 @@ class PlotDrawer:
                 # x and y labels
                 if self._variable in self._config.variable_labels:
                     var_label = self._config.variable_labels[self._variable]
-                    plt.ylabel(var_label)
+                    use_latex = False
+                    if var_label.startswith('LaTeX:'):
+                        use_latex = True
+                        var_label = var_label[len('LaTeX:'):]
+                    plt.ylabel(var_label, usetex=use_latex)
 
                 # If we are drawing the last plot, add also the x_label
                 if i == len(self._levels) - 1:
@@ -184,16 +188,19 @@ class PlotDrawer:
                 if plot.alpha_for_time_series is not None:
                     plot_kwargs['alpha'] = plot.alpha_for_time_series
 
+                if plot.legend is not None:
+                    plot_kwargs['label'] = plot.legend
+                    elements_in_legend = True
+
                 current_axis.plot(
                     plot_x_data,
                     plot_y_data,
-                    label=plot.legend,
                     **plot_kwargs
                 )
 
         # Now we add the legends to each plot
         show_legend_flag = self._config.time_series_options.show_legend
-        if show_legend_flag != "no":
+        if show_legend_flag != "no" and elements_in_legend:
             only_one_legend = show_legend_flag in ("top", "bottom")
 
             axis_iterable = [
@@ -283,10 +290,12 @@ class PlotDrawer:
                 if getattr(plot, field) is not None:
                     plot_kwargs[field] = getattr(plot, field)
 
+            if plot.legend is not None:
+                plot_kwargs['label'] = plot.legend
+
             current_axis.plot(
                 plot_x_data,
                 plot_y_data,
-                label=plot.legend,
                 **plot_kwargs
             )
         current_axis.legend()

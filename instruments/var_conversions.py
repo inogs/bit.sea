@@ -106,5 +106,6 @@ SAT_VARS={'kd490':'KD490',
           'P1l':'DIATO',
           'P2l':'NANO',
           'P3l':'PICO',
-          'P4l':'DINO'}
+          'P4l':'DINO',
+          'RRS412':'RRS412'}
 

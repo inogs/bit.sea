@@ -44,7 +44,7 @@ def argument():
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l'],
+                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l','RRS412'],
                                 help = ''' model var name'''
                                 )
     return parser.parse_args()

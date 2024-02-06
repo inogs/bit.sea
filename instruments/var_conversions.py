@@ -107,5 +107,11 @@ SAT_VARS={'kd490':'KD490',
           'P2l':'NANO',
           'P3l':'PICO',
           'P4l':'DINO',
-          'RRS412':'RRS412'}
+          'RRS412':'RRS412',
+          'RRS433':'RRS433',
+          'RRS490':'RRS490',
+          'RRS510':'RRS510',
+          'RRS555':'RRS555',
+          'RRS670':'RRS670',
+          }
 

@@ -21,7 +21,7 @@ def argument():
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 required = True,
-                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l'],
+                                choices = ['P_l','kd490','P1l','P2l','P3l','P4l','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670'],
                                 help = ''' model var name'''
                                 )
     
@@ -70,6 +70,10 @@ if (args.var == "P_l"):
 if (args.var == "kd490"):
     vmin=0.02
     vmax=0.09
+if (args.var.startswith('RRS')):
+    vmin=0.0
+    vmax=0.024
+
 
 for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue

@@ -104,9 +104,9 @@ class DatasetExtractor():
         
         values = values[good]
         
-        year    = self.DATA[ 0,good]
-        month   = self.DATA[ 1,good]
-        day     = self.DATA[ 2,good]
+        year    = self.DATA[ 0,good].astype(int)
+        month   = self.DATA[ 1,good].astype(int)
+        day     = self.DATA[ 2,good].astype(int)
         lat     = self.DATA[ 3,good]
         lon     = self.DATA[ 4,good]
         depth   = self.DATA[ 5,good]

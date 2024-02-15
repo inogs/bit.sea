@@ -32,14 +32,19 @@ class Basin(object):
         elif isinstance(region_or_basin, Region):
             return self.region.cross(region_or_basin)
 
-    def plot(self, lon_window=(-8, 38), lat_window=(30, 47), lon_points=100,
-             lat_points=100, color="tab:blue", alpha=1, axes=None):
+    def grid(self, lon_window=(-8, 38), lat_window=(30, 47), lon_points=100,
+             lat_points=100):
+        """
+        Generate a grid of equally spaced points inside a rectangular domain
+        and check which ones of those points are inside the current basin
+        """
         lon_grid = np.linspace(
             lon_window[0],
             lon_window[1],
             lon_points,
             endpoint=True
         )
+
         lat_grid = np.linspace(
             lat_window[0],
             lat_window[1],
@@ -51,24 +56,45 @@ class Basin(object):
             lon_grid,
             lat_grid.reshape((lat_points, 1))
         )
+        return lon_grid, lat_grid, inside_domain
+
+    def plot(self, lon_window=(-8, 38), lat_window=(30, 47), lon_points=100,
+             lat_points=100, color="tab:blue", alpha=1, axes=None, filled=True):
+        lon_grid, lat_grid, inside_domain = self.grid(
+            lon_window,
+            lat_window,
+            lon_points,
+            lat_points
+        )
 
         if axes is None:
             axes = plt.gca()
 
-        cm = LinearSegmentedColormap.from_list(
-            "none",
-            ('black', color),
-            N=2
-        )
+        kwargs = {}
 
-        axes.contourf(
+        if filled:
+            plot_f = axes.contourf
+            cm = LinearSegmentedColormap.from_list(
+                "none",
+                ['black', color],
+                N=2
+            )
+            kwargs['cmap'] = cm
+        else:
+            plot_f = axes.contour
+            kwargs['colors'] = [color]
+
+        current_plot = plot_f(
             lon_grid,
             lat_grid,
             inside_domain,
             [0.1, 1],
-            cmap=cm,
-            alpha=alpha
+            alpha=alpha,
+            **kwargs
         )
+
+        return current_plot
+
 
 
 class SimpleBasin(Basin):

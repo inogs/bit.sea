@@ -7,16 +7,19 @@ from matplotlib.path import Path
 class Region(object):
     def is_inside(self, lon, lat):
         raise NotImplementedError
-    
+
     def __add__(self, r):
         return RegionUnion(self, r)
-    
+
+    def intersect(self, r):
+        return RegionIntersection(self, r)
+
 
 class EmptyRegion(Region):
     def is_inside(self, lon, lat):
         if hasattr(lon, "__len__"):
             assert len(lon) == len(lat)
-            return np.zeros((len(lon),), dtype=np.bool_)
+            return np.zeros((len(lon),), dtype=bool)
         else:
             return False
 
@@ -32,7 +35,7 @@ class Polygon(Region):
         # Check that input is a list
         lon_list = list(lon_list)
         lat_list = list(lat_list)
-        
+
         # Save the longitude and the latitude lists
         self.__lon_list = lon_list
         self.__lat_list = lat_list
@@ -41,16 +44,16 @@ class Polygon(Region):
         if lon_list[-1] != lon_list[0] or lat_list[-1] != lat_list[0]:
             lon_list.append(lon_list[0])
             lat_list.append(lat_list[0])
-        
+
         # Create a path object
         codes = [Path.LINETO] * len(lon_list)
         codes[0] = Path.MOVETO
         codes[-1] = Path.CLOSEPOLY
-        
+
         coords = [(lon_list[i], lat_list[i]) for i in range(len(lon_list))]
-        
+
         self.path = Path(coords, codes)
-        
+
     def is_inside(self, lon, lat):
         points_coord = np.stack(np.broadcast_arrays(lon, lat), axis=-1)
         assert points_coord.shape[-1] == 2
@@ -81,16 +84,16 @@ class Polygon(Region):
             return undo_reshaping(inside)
         else:
             return inside
-    
-    @property 
+
+    @property
     def border_latitudes(self):
         return self.__lat_list
 
-    @property 
+    @property
     def border_longitudes(self):
         return self.__lon_list
 
-    @property 
+    @property
     def borders(self):
         output = []
         for i in range(len(self.__lon_list)):
@@ -193,13 +196,32 @@ class RegionUnion(Region):
     def __init__(self, r1, r2):
         self._r1 = r1
         self._r2 = r2
-    
+
     def is_inside(self, lon, lat):
         ins1 = self._r1.is_inside(lon,lat)
         ins2 = self._r2.is_inside(lon,lat)
-        return np.bool_(ins1 + ins2)
+        return np.logical_or(ins1, ins2)
 
     def cross(self, another_region):
         cross1 = self._r1.cross(another_region)
         cross2 = self._r2.cross(another_region)
-        return np.bool_(cross1+cross2)
+        return bool(cross1 + cross2)
+
+
+class RegionIntersection(Region):
+    def __init__(self, *args):
+        self._regions = tuple(args)
+
+    def is_inside(self, lon, lat):
+        if len(self._regions) == 0:
+            return np.full_like(np.broadcast(lon, lat), True, dtype=bool)
+
+        lon, lat = np.broadcast_arrays(lon, lat)
+
+        out_values = self._regions[0].is_inside(lon, lat)
+        for r in self._regions[1:]:
+            out_values[out_values] = r.is_inside(
+                lon[out_values],
+                lat[out_values]
+            )
+        return out_values

@@ -1,8 +1,19 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from __future__ import print_function
+
+from abc import ABC
 import numpy as np
+from scipy import spatial
 import netCDF4
+
+from commons.bathymetry import Bathymetry
+from commons.utils import search_closest_sorted
+
+
+class OutsideMaskDomain(ValueError):
+    pass
+
 
 class Mask(object):
     """
@@ -10,14 +21,14 @@ class Mask(object):
     """
     def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t", loadtmask=True):
         filename = str(filename)
-        try:
-            dset = netCDF4.Dataset(filename)
-            if (maskvarname in dset.variables) and (loadtmask):
+
+        with netCDF4.Dataset(filename, 'r') as dset:
+            if (maskvarname in dset.variables) and loadtmask:
                 m = dset.variables[maskvarname]
                 if len(m.shape) == 4:
-                    self._mask = np.array(m[0,:,:,:], dtype=bool)
+                    self._mask = np.array(m[0, :, :, :], dtype=bool)
                 elif len(m.shape) == 3:
-                    self._mask = np.array(m[:,:,:], dtype=bool)
+                    self._mask = np.array(m[:, :, :], dtype=bool)
                 else:
                     raise ValueError("Wrong shape: %s" % (m.shape,))
                 self._shape = self._mask.shape
@@ -67,8 +78,7 @@ class Mask(object):
                 self.e2t = np.array(dset.variables['e2t'][0,:,:]).astype(np.float32)
             self._area = self.e1t*self.e2t
             self._dz = self.e3t[:,0,0]
-        except:
-            raise
+        self._regular = None
 
     @property
     def mask(self):
@@ -129,9 +139,15 @@ class Mask(object):
         min_lat = self._ylevels.min()-r
         max_lat = self._ylevels.max()+r
         if lon > max_lon or lon < min_lon:
-            raise ValueError("Invalid longitude value: %f (must be between %f and %f)" % (lon, min_lon, max_lon))
+            raise OutsideMaskDomain(
+                "Invalid longitude value: {} (must be between {} and "
+                "{})".format(lon, min_lon, max_lon)
+            )
         if lat > max_lat or lat < min_lat:
-            raise ValueError("Invalid latitude value: %f (must be between %f and %f)" % (lat, min_lat, max_lat))
+            raise OutsideMaskDomain(
+                "Invalid latitude value: {} (must be between {} and "
+                "{})".format(lat, min_lat, max_lat)
+            )
 
         #Longitude distances matrix
         d_lon = np.array(self._xlevels - lon)
@@ -221,7 +237,7 @@ class Mask(object):
                 jk_m=jk
         return jk_m
 
-    def mask_at_level(self,z):
+    def mask_at_level(self, z):
         '''
         Returns a 2d map of logicals, for the depth (m) provided as argument.
         as a slice of the tmask.
@@ -236,10 +252,11 @@ class Mask(object):
         (jk_m +1)  TTTTTTTTTTTTTTTT
         (jk_m +2)  TTTTTTTTTTTTTTTT
         '''
-        if z<self.zlevels[0]: return self.mask[0,:,:].copy()
+        if z < self.zlevels[0]:
+            return self.mask[0, :, :].copy()
 
         jk_m = self.getDepthIndex(z)
-        level_mask = self.mask[jk_m+1,:,:].copy()
+        level_mask = self.mask[jk_m+1, :, :].copy()
         return level_mask
 
     def bathymetry_in_cells(self):
@@ -335,12 +352,101 @@ class Mask(object):
         Returns True if a mesh is regular, False if is not.
         Regular means that (xlevels, ylevels) can be obtained by np.meshgrid(xlevels[k,:], ylevels[:,k])
         '''
-        x1d_0 = self._xlevels[0,:]
-        y1d_0 = self._ylevels[:,0]
-        X2D,Y2D = np.meshgrid(x1d_0, y1d_0)
-        dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
-        regular = dist == 0
-        return regular
+        if self._regular is None:
+            x1d_0 = self._xlevels[0,:]
+            y1d_0 = self._ylevels[:,0]
+            X2D, Y2D = np.meshgrid(x1d_0, y1d_0)
+            dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
+            self._regular = dist == 0
+        return self._regular
+
+
+class MaskBathymetry(Bathymetry, ABC):
+    """
+    This class is a bathymetry,  generated starting from a mask, i.e., it
+    returns the z-coordinate of the bottom face of the deepest cell of the
+    column that contains the point (lon, lat).
+    """
+    def __init__(self, mask):
+        self._mask = mask
+        self._bathymetry_data = mask.bathymetry()
+
+        # Fix the bathymetry of the land cells to 0 (to be coherent with the
+        # behaviour of the bathymetry classes). Otherwise, if we let the land
+        # points to have bathymetry = 1e20, they will be in every depth basin
+        self._bathymetry_data[np.logical_not(self._mask.mask[0, :, :])] = 0
+
+    def __repr__(self):
+        return "{}({})".format(self.__class__.__name__, repr(self._mask))
+
+    def is_inside_domain(self, lon, lat):
+        r = 1
+        min_lon = self._mask.xlevels.min() - r
+        max_lon = self._mask.xlevels.max() + r
+        min_lat = self._mask.ylevels.min() - r
+        max_lat = self._mask.ylevels.max() + r
+
+        inside_lon = np.logical_and(lon >= min_lon, lon <= max_lon)
+        inside_lat = np.logical_and(lat >= min_lat, lat <= max_lat)
+        return np.logical_and(inside_lon, inside_lat)
+
+    @staticmethod
+    def build_bathymetry(mask):
+        if mask.is_regular():
+            return RegularMaskBathymetry(mask)
+        return NonRegularMaskBathymetry(mask)
+
+
+class RegularMaskBathymetry(MaskBathymetry):
+    def __init__(self, mask):
+        if not mask.is_regular():
+            raise ValueError(
+                'A RegularMaskBathymetry can be generated only from a '
+                'regular mask'
+            )
+        super().__init__(mask)
+
+        assert np.all(self._mask.lon[1:] - self._mask.lon[:-1] > 0), \
+            "lon array is not ordered"
+        assert np.all(self._mask.lat[1:] - self._mask.lat[:-1] > 0), \
+            "lat array is not ordered"
+
+    def __call__(self, lon, lat):
+        lon_index = search_closest_sorted(self._mask.lon, lon)
+        lat_index = search_closest_sorted(self._mask.lat, lat)
+        return self._bathymetry_data[lat_index, lon_index]
+
+
+class NonRegularMaskBathymetry(MaskBathymetry):
+    def __init__(self, mask):
+        super().__init__(mask)
+        data = np.stack(
+            (self._mask.xlevels, self._mask.ylevels),
+            axis=-1
+        )
+        data = data.reshape(-1, 2)
+
+        self._kdtree = spatial.KDTree(data)
+
+    def __call__(self, lon, lat):
+        return_float = True
+        if hasattr(lon, "__len__") or hasattr(lat, "__len__"):
+            return_float = False
+
+        lon, lat = np.broadcast_arrays(lon, lat)
+
+        query_data = np.stack((lon, lat), axis=-1)
+        assert query_data.shape[-1] == 2
+
+        _, center_indices = self._kdtree.query(query_data)
+
+        if return_float:
+            assert center_indices.shape == (1,) or center_indices.shape == ()
+            if center_indices.shape == (1,):
+                center_indices = center_indices[0]
+
+        return self._bathymetry_data.flatten()[center_indices]
+
 
 if __name__ == '__main__':
     #Test of convert_lon_lat_wetpoint_indices

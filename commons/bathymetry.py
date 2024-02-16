@@ -28,6 +28,7 @@ class Bathymetry(ABC, Callable):
         raise NotImplementedError
 
 
+
 class GEBCOBathymetry(Bathymetry):
     def __init__(self, data_file_path):
         self._path = data_file_path
@@ -72,3 +73,44 @@ class GEBCOBathymetry(Bathymetry):
             lat <= self._lat[-1],
         )
         return np.logical_and(inside_lon, inside_lat)
+
+
+
+class SmoothBathymetry(Bathymetry):
+    def __init__(self, bathymetry, size, n_points=5):
+        self._bathymetry = bathymetry
+        self._size = size
+        self._n_points = int(n_points)
+
+        point_deltas = np.linspace(-size, size, self._n_points)
+        self._delta_lons = np.empty((self._n_points, self._n_points))
+        self._delta_lats = np.empty_like(self._delta_lons)
+
+        self._delta_lons[:, :] = point_deltas.reshape((-1, 1))
+        self._delta_lats[:, :] = point_deltas
+
+
+    def __call__(self, lon, lat):
+        lon = np.expand_dims(lon, axis=(-2, -1))
+        lat = np.expand_dims(lat, axis=(-2, -1))
+
+        lon = lon + self._delta_lons
+        lat = lat + self._delta_lats
+
+        bathymetric_values = self._bathymetry(lon, lat)
+        return np.mean(bathymetric_values, axis=(-2, -1))
+
+    def is_inside_domain(self, lon, lat):
+        size = self._size
+        return np.logical_and.reduce((
+            self._bathymetry.is_inside_domain(lon, lat),
+            self._bathymetry.is_inside_domain(lon - size, lat),
+            self._bathymetry.is_inside_domain(lon + size, lat),
+            self._bathymetry.is_inside_domain(lon, lat - size),
+            self._bathymetry.is_inside_domain(lon, lat + size),
+            self._bathymetry.is_inside_domain(lon - size, lat - size),
+            self._bathymetry.is_inside_domain(lon + size, lat + size),
+            self._bathymetry.is_inside_domain(lon + size, lat - size),
+            self._bathymetry.is_inside_domain(lon - size, lat + size),
+        ))
+

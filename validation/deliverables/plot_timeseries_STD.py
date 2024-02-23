@@ -49,7 +49,7 @@ fid = open(args.inputfile,'rb')
 LIST = pickle.load(fid)
 fid.close()
 
-TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR = LIST
+TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR,NUMB = LIST
 
 model_label=' MODEL'
 
@@ -62,6 +62,8 @@ var_label = SAT_VARS[args.var] + " " + units
 
 vmin=0.0
 vmax=0.25
+color="tab:green"
+lightcolor="palegreen"
 
 if (args.var == "P_l"): 
     vmin=0.0
@@ -70,6 +72,8 @@ if (args.var == "P_l"):
 if (args.var == "kd490"):
     vmin=0.02
     vmax=0.09
+    color="tab:blue"
+    lightcolor="lightsteelblue"
 if (args.var.startswith('RRS')):
     vmin=0.0
     vmax=0.024
@@ -80,8 +84,8 @@ for isub,sub in enumerate(OGS.P):
     print (sub.name)
     fig, ax = pl.subplots()
     fig.set_size_inches(12,4)
-    ax.plot(TIMES,SAT___MEAN[:,isub],'og',label=' SAT')
-    ax.fill_between(TIMES,SAT___MEAN[:,isub]-SAT____STD[:,isub],SAT___MEAN[:,isub]+SAT____STD[:,isub],color='palegreen')
+    ax.plot(TIMES,SAT___MEAN[:,isub],'o',label=' SAT',color=color)
+    ax.fill_between(TIMES,SAT___MEAN[:,isub]-SAT____STD[:,isub],SAT___MEAN[:,isub]+SAT____STD[:,isub],color=lightcolor)
     ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=model_label)
     ax.plot(TIMES,MODEL_MEAN[:,isub]-MODEL__STD[:,isub],':k')
     ax.plot(TIMES,MODEL_MEAN[:,isub]+MODEL__STD[:,isub],':k')

@@ -47,6 +47,16 @@ def argument():
                                 choices = ['P_l','kd490','P1l','P2l','P3l','P4l','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670'],
                                 help = ''' model var name'''
                                 )
+    parser.add_argument(   '--datestart', '-t',
+                                type = str,
+                                required =True,
+                                help = ''' Date start for time interval to consider for validation, format %Y%m%d'''
+                                )
+    parser.add_argument(   '--dateend', '-e',
+                                type = str,
+                                required =True,
+                                help = ''' Date end for time interval to consider for validation,format %Y%m%d'''
+                                )
     return parser.parse_args()
 
 
@@ -69,7 +79,6 @@ from commons.layer import Layer
 from commons.utils import addsep
 import pickle
 from instruments.var_conversions import SAT_VARS
-from profiler import DATESTART, DATE__END
 
 def weighted_mean(Conc, Weight):
 
@@ -89,13 +98,7 @@ outfile  = args.outfile
 modvarname=args.var
 satvarname = SAT_VARS[modvarname]
 
-    
-
-
-Timestart=DATESTART
-Time__end=DATE__END
-TI    = TimeInterval(Timestart,Time__end,"%Y%m%d")
-print (TI)
+TI    = TimeInterval(args.datestart,args.dateend,"%Y%m%d")
 dateformat ="%Y%m%d"
 
 sat_TL   = TimeList.fromfilenames(TI, REF_DIR  ,"*.nc", prefix="", dateformat=dateformat)
@@ -137,6 +140,7 @@ SAT____STD                         = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_CORR_SURF_BASIN     = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG  = np.zeros((nFrames,nSUB),np.float32)
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = np.zeros((nFrames,nSUB),np.float32)
+BGC_CLASS4_CHL_POINTS_SURF_BASIN   = np.zeros((nFrames,nSUB),np.float32)
 
 # This is the surface layer choosen to match satellite chl data
 surf_layer = Layer(0,args.layer)
@@ -162,6 +166,7 @@ for itime, modeltime in enumerate(model_TL.Timelist):
 
     for isub, sub in enumerate(OGS.P):
         selection = SUB[sub.name] & (~nodata) & coastmask
+        BGC_CLASS4_CHL_POINTS_SURF_BASIN[itime,isub]  = M.number()
         if selection.sum() == 0: continue
         M = matchup.matchup(Model[selection], Sat[selection])
         BGC_CLASS4_CHL_RMS_SURF_BASIN[itime,isub]  = M.RMSE()
@@ -179,7 +184,7 @@ BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
 BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
 
 
-LIST   =[i for i in range(10)]
+LIST   =[i for i in range(11)]
 
 LIST[0]=model_TL.Timelist
 LIST[1]=BGC_CLASS4_CHL_RMS_SURF_BASIN
@@ -191,6 +196,7 @@ LIST[6]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
 LIST[7]=MODEL__STD
 LIST[8]=SAT____STD
 LIST[9]=BGC_CLASS4_CHL_CORR_SURF_BASIN
+LIST[10]=BGC_CLASS4_CHL_POINTS_SURF_BASIN
 
 fid = open(outfile,'wb')
 pickle.dump(LIST, fid)

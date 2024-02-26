@@ -9,6 +9,15 @@ from basins import V2
 from commons.mask import Mask
 from commons.submask import SubMask
 from tools.read_config import Config, read_config_from_file
+from tools.depth_profile_algorithms import get_depth_profile_plot_grid
+
+try:
+    from math import lcm
+except ImportError:
+    from math import gcd
+
+    def lcm(a, b):
+        return abs(a * b) // gcd(a, b)
 
 try:
     from mpi4py import MPI
@@ -255,7 +264,9 @@ class PlotDrawer:
                 )
 
     def _plot_depth_profile(self, axis_dict, basin_index: int):
-        current_axis = axis_dict['P']
+        current_axis = axis_dict['P_0_0']
+
+        elements_in_legend = False
 
         ytick_labels = (0, 200, 400, 600, 800, 1000)
         current_axis.set_ylim([0, 1000])
@@ -292,28 +303,62 @@ class PlotDrawer:
 
             if plot.legend is not None:
                 plot_kwargs['label'] = plot.legend
+                elements_in_legend = True
 
             current_axis.plot(
                 plot_x_data,
                 plot_y_data,
                 **plot_kwargs
             )
-        current_axis.legend()
+
+        show_legend_flag = self._config.depth_profiles_options.show_legend
+        if show_legend_flag != "no" and elements_in_legend:
+            current_axis.legend()
 
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
             raise ValueError('Required a plot from an empty PlotDrawer')
 
+        # In this case, the plot grid is made only from the depth profile plots
         if not self._draw_time_series:
-            fig, axis = plt.subplot(**fig_kw)
-            axis_dict = {'P': axis}
+            plot_grid_rows, plot_grid_columns = get_depth_profile_plot_grid(
+                self._config.depth_profiles_options.mode
+            )
+            if plot_grid_rows == 1 and plot_grid_columns == 1:
+                fig, axis = plt.subplot(**fig_kw)
+                axis_dict = {'P_0_0': axis}
+            else:
+                plot_structure = []
+                for row in range(plot_grid_rows):
+                    plot_structure.append(
+                        ['P_{}_{}'.format(row, col) for col in
+                            range(plot_grid_columns)]
+                    )
+                fig, axis_dict = plt.subplot_mosaic(
+                    plot_structure,
+                    **fig_kw
+                )
+        # Now the most general case
         else:
-            plot_structure = [
-                ['L{}'.format(i)] for i in range(len(self._levels))
-            ]
             if self._draw_depth_profile:
-                for plot_row in plot_structure:
-                    plot_row.append('P')
+                dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
+                    self._config.depth_profiles_options.mode
+                )
+            else:
+                dp_grid_rows, dp_grid_columns = 1, 1
+            grid_rows = lcm(len(self._levels), dp_grid_rows)
+            plot_structure = []
+            for row in range(grid_rows):
+                current_level = row // (grid_rows // len(self._levels))
+                current_dp_row = row // (grid_rows // dp_grid_rows)
+                current_row = ['L{}'.format(current_level)] * dp_grid_columns
+                if self._draw_depth_profile:
+                    current_row.extend(
+                        ['P_{}_{}'.format(current_dp_row, c)
+                            for c in range(dp_grid_columns)]
+                    )
+                plot_structure.append(current_row)
+
             fig, axis_dict = plt.subplot_mosaic(
                 plot_structure,
                 **fig_kw

@@ -22,7 +22,8 @@ time_series:
   show_depth: false
   x_label: years
 
-depth_profile_mode: "standard"
+depth_profiles:
+  mode: "standard"
 
 plots:
   enea_original:

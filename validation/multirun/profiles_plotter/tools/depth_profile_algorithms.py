@@ -1,5 +1,6 @@
 from collections import namedtuple
 from enum import Enum
+from typing import Tuple
 import re
 
 
@@ -26,7 +27,10 @@ DepthProfileMode = namedtuple(
 )
 
 
-DEFAULT_DEPTH_PROFILE_MODE = (DepthProfileAlgorithm.STANDARD, ())
+DEFAULT_DEPTH_PROFILE_MODE = DepthProfileMode(
+    algorithm=DepthProfileAlgorithm.STANDARD,
+    config=()
+)
 
 
 MODE_DESCRIPTION_MASK = re.compile(
@@ -111,3 +115,15 @@ def read_depth_profile_mode(read_profile_raw):
         options = (i_value,)
 
     return DepthProfileMode(algorithm, options)
+
+
+def get_depth_profile_plot_grid(depth_profile_mode: DepthProfileMode) \
+        -> Tuple[int, int]:
+    algorithm = depth_profile_mode.algorithm
+    if algorithm == DepthProfileAlgorithm.STANDARD:
+        return 1, 1
+    elif algorithm == DepthProfileAlgorithm.EVOLUTION:
+        return 1, 1
+    elif algorithm == DepthProfileAlgorithm.SEASONAL:
+        return 2, 2
+    raise ValueError('Unknown algorithm: {}'.format(algorithm))

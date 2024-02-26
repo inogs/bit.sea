@@ -36,7 +36,7 @@ EXPECTED_FIELDS = {
     'plots',
     'levels',
     'time_series',
-    'depth_profile_mode',
+    'depth_profiles',
     'output'
 }
 
@@ -60,7 +60,7 @@ Config = namedtuple(
     'Config',
     (
         'plots', 'levels', 'variable_labels', 'time_series_options',
-        'depth_profile_mode', 'output_options'
+        'depth_profiles_options', 'output_options'
     )
 )
 
@@ -74,6 +74,11 @@ OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
 TimeSeriesOptions = namedtuple(
     'TimeSeriesOptions',
     ('show_legend', 'show_depth', 'x_label')
+)
+
+DepthProfilesOptions = namedtuple(
+    'DepthProfilesOptions',
+    ('mode', 'show_legend')
 )
 
 
@@ -103,7 +108,7 @@ def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
 
 def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
         -> TimeSeriesOptions:
-    show_legend_default = False
+    show_legend_default = "no"
     show_depth_default = False
     x_label_default = None
 
@@ -159,6 +164,45 @@ def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
         show_depth=show_depth,
         x_label=x_label
     )
+
+
+def read_depth_profiles_options(option_dict: Union[Dict[str, Any], None] = None) \
+        -> DepthProfilesOptions:
+    mode = DEFAULT_DEPTH_PROFILE_MODE
+    show_legend_default = "all"
+
+    if option_dict is None:
+        return DepthProfilesOptions(mode=mode, show_legend=show_legend_default)
+
+    show_legend = show_legend_default
+    if 'show_legend' in option_dict:
+        show_legend_raw = option_dict['show_legend']
+        if show_legend_raw is None:
+            show_legend = 'no'
+        elif isinstance(show_legend_raw, bool):
+            show_legend = 'all' if show_legend_raw else 'no'
+        else:
+            show_legend = str(show_legend_raw).strip().lower()
+            if show_legend not in ('all', 'yes', 'no'):
+                raise ValueError(
+                    'depth_profiles:show_legend field must contain either'
+                    '"yes" or "no"; received {}'.format(
+                        show_legend
+                    )
+                )
+            if show_legend == 'yes':
+                show_legend = "all"
+
+    for key in option_dict:
+        if key not in ('mode', 'show_legend'):
+            raise ValueError(
+                'Invalid key inside the depth profiles option dictionary: '
+                '{}'.format(key)
+            )
+        if key == 'mode':
+            mode = read_depth_profile_mode(option_dict[key])
+
+    return DepthProfilesOptions(mode=mode, show_legend=show_legend)
 
 
 class PlotConfig:
@@ -520,12 +564,12 @@ def read_config(config_datastream):
     else:
         time_series_options = read_time_series_options()
 
-    if 'depth_profile_mode' in yaml_content:
-        depth_profile_mode = read_depth_profile_mode(
-            yaml_content['depth_profile_mode']
+    if 'depth_profiles' in yaml_content:
+        depth_profiles_options = read_depth_profiles_options(
+            yaml_content['depth_profiles']
         )
     else:
-        depth_profile_mode = DEFAULT_DEPTH_PROFILE_MODE
+        depth_profiles_options = read_depth_profiles_options()
 
     # Read the output options
     if 'output' not in yaml_content:
@@ -553,6 +597,12 @@ def read_config(config_datastream):
             'output_dir has not been specified in the output section'
         )
     output_dir = Path(str(output['output_dir']))
+
+    # If output dir does not exist, create it
+    if not output_dir.exists():
+        if not output_dir.parent.exists():
+            raise IOError('Directory {} does not exists'.format(output_dir))
+        output_dir.mkdir(exist_ok=True)
 
     fig_size = DEFAULT_FIG_SIZE
     if 'fig_size' in output:
@@ -598,6 +648,6 @@ def read_config(config_datastream):
         levels=levels,
         variable_labels=variable_labels,
         time_series_options=time_series_options,
-        depth_profile_mode=depth_profile_mode,
+        depth_profiles_options=depth_profiles_options,
         output_options=output_options
     )

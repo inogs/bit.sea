@@ -17,9 +17,12 @@ class Region(object):
 
 class EmptyRegion(Region):
     def is_inside(self, lon, lat):
-        if hasattr(lon, "__len__"):
-            assert len(lon) == len(lat)
-            return np.zeros((len(lon),), dtype=bool)
+        if hasattr(lon, "__len__") or hasattr(lat, "__len__"):
+            lon, lat = np.broadcast_arrays(
+                np.asarray(lon),
+                np.asarray(lat)
+            )
+            return np.zeros_like(lon, dtype=bool)
         else:
             return False
 
@@ -108,7 +111,7 @@ class Polygon(Region):
             another_region = another_region.region
 
         if isinstance(another_region, Polygon):
-            return np.bool_(self.path.intersects_path(another_region.path, filled=True))
+            return self.path.intersects_path(another_region.path, filled=True)
         elif isinstance(another_region, RegionUnion):
             return another_region.cross(self)
         elif isinstance(another_region, EmptyRegion):
@@ -217,6 +220,15 @@ class RegionIntersection(Region):
             return np.full_like(np.broadcast(lon, lat), True, dtype=bool)
 
         lon, lat = np.broadcast_arrays(lon, lat)
+
+        # This is the case when lon and lat are just numbers and not an array
+        if len(lon.shape) == 0:
+            out_value = self._regions[0].is_inside(lon, lat)
+            for r in self._regions[1:]:
+                if not out_value:
+                    break
+                out_value = r.is_inside(lon, lat)
+            return out_value
 
         out_values = self._regions[0].is_inside(lon, lat)
         for r in self._regions[1:]:

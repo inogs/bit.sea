@@ -1,16 +1,26 @@
+from os import PathLike
+from pathlib import Path
+from typing import Union
 
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 from static.DatasetExtractor import DatasetExtractor
 from commons.utils import find_index
 
+
+DEFAULT_FILENAME = Path(
+    "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
+    "Carbon/Dataset_Med_CarbSys_RIC.nc"
+)
+
+
 class CarbonReader(DatasetExtractor):
     
-    def __init__(self):
+    def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Carbon/Dataset_Med_CarbSys_RIC.nc"
+        self.filename = filename
         self.DataExtractor = DatasetExtractor(self.filename,'Carbon')
 
         # DATA ELIMINATION in order to not duplicate values with nutrients dataset
@@ -109,7 +119,7 @@ class CarbonReader(DatasetExtractor):
 
 if __name__ == '__main__':
     
-    var= 'nitrate';
+    var= 'nitrate'
     TI = TimeInterval('19900101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     C = CarbonReader()

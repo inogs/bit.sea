@@ -41,13 +41,17 @@ class DataExtractor(object):
 
         Either rawdata or filename plus varname must be defined.
         """
-        if filename is None and varname is None:
+        if filename is None and rawdata is None:
             raise ValueError(
-                "At least one between filename and varname must be defined"
+                "At least one between filename and rawdata must be defined"
             )
         if filename is not None and rawdata is not None:
             raise ValueError(
                 "filename and rawdata can not be submitted at the same time"
+            )
+        if filename is not None and varname is None:
+            raise ValueError(
+                "filename and varname must be submitted at the same time"
             )
 
         self.fill_value = fill_value
@@ -156,3 +160,11 @@ class DataExtractor(object):
         output = np.copy(self.__values)
         output[self.__values == self.__dset_fillvalue] = self.fill_value
         return output
+
+if __name__ == "__main__":
+    TheMask= Mask('/g100_work/OGS_devC/Benchmark/SETUP/PREPROC/MASK/meshmask.nc')
+    filename="/g100_work/OGS_prodC/OPA/V10C-prod/wrkdir/forecast/0/MODEL/AVE_FREQ_1/ave.20240229-12:00:00.N1p.nc"
+    De = DataExtractor(TheMask,filename=filename,varname='N1p')
+    M3d = De.values*3
+    De= DataExtractor(TheMask,rawdata=M3d)
+

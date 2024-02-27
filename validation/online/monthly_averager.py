@@ -55,7 +55,7 @@ TheMask=Mask(args.maskfile)
 TL=TimeList.fromfilenames(None, INPUTDIR, "ave*N1p.nc", filtervar="N1p")
 
 
-VARLIST=['P_l','O2o','N3n','P_c','N1p','ppn','pH','O3c','CO2airflux', 'pCO2','N4n','O3h','N5s','Z_c', 'kd490']
+VARLIST=['P_l','O2o','N3n','P_c','N1p','ppn','pH','O3c','CO2airflux', 'pCO2','N4n','O3h','N5s','Z_c', 'kd490','P1l','P2l','P3l','P4l','P1c','P2c','P3c','P4c']
 
 MONTHLY_REQS = TL.getMonthlist()
 req=MONTHLY_REQS[0]

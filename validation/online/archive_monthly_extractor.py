@@ -37,7 +37,7 @@ archive_dir= args.arcdir
 TI=req.time_interval
 
 
-for var in ['P_l','O2o','N3n','P_c','N1p','ppn','pH','O3c','CO2airflux', 'pCO2','N4n','O3h','N5s','Z_c','kd490']:
+for var in ['P_l','O2o','N3n','P_c','N1p','ppn','pH','O3c','CO2airflux', 'pCO2','N4n','O3h','N5s','Z_c','kd490','P1l','P2l','P3l','P4l','P1c','P2c','P3c','P4c']:
     T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc")
     T_bio.extract_analysis(LOC, command="ln -fs $INFILE $OUTFILE", remove_ext=False)
 

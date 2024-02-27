@@ -4,6 +4,8 @@ import sys
 import os
 import numpy as np
 import netCDF4
+import warnings
+
 
 #Mask object
 from commons.mask import Mask
@@ -39,14 +41,18 @@ class DataExtractor(object):
 
         Either rawdata or filename plus varname must be defined.
         """
-        if not ((filename is None) ^ (rawdata is None)):
-            raise ValueError("Either rawdata or filename plus varname must be defined")
-        elif (not (filename is None)) and (varname is None):
-            raise ValueError("filename and varname must be both defined")
+        if filename is None and varname is None:
+            raise ValueError(
+                "At least one between filename and varname must be defined"
+            )
+        if filename is not None and rawdata is not None:
+            raise ValueError(
+                "filename and rawdata can not be submitted at the same time"
+            )
 
         self.fill_value = fill_value
 
-        if (filename is None):
+        if filename is None:
             #Use rawdata
             self.__shape = rawdata.shape
             self.dims = len(rawdata.shape)
@@ -57,59 +63,76 @@ class DataExtractor(object):
         else:
             fn = str(filename)
             v = str(varname)
-            try:
-                #Try open the NetCDF file and search for var
-                dset = netCDF4.Dataset(fn)
-                if not v in dset.variables:
-                    raise NotFoundError("variable '%s' not found" % (varname, ))
+
+            # Try open the NetCDF file and search for var
+            dset = netCDF4.Dataset(fn)
+            if v not in dset.variables:
+                raise NotFoundError("variable '%s' not found" % (varname, ))
+
+            nc_declared_shape = np.array(dset.variables[v].shape)
+            one_dimensions_ind = np.nonzero(nc_declared_shape == 1 )[0]
+            if one_dimensions_ind.size == 0:  # no dimensions to remove
+                self.__values = np.array(dset.variables[v])
+            if one_dimensions_ind.size ==1 :
+                if one_dimensions_ind[0]==0:
+                    self.__values = np.array(dset.variables[v])[0,:]
+
+            nc_declared_shape = dset.variables[v].shape
+
+            v_slices = [slice(None) for _ in range(len(nc_declared_shape))]
+
+            # Remove useless dimension at the beginning of the vector
+            k = 0
+            while k < len(v_slices):
+                if nc_declared_shape[k] == 1:
+                    v_slices[k] = 0
                 else:
-                    nc_declared_shape = np.array(dset.variables[v].shape)
-                    one_dimensions_ind = np.nonzero(nc_declared_shape == 1 )[0]
-                    if one_dimensions_ind.size == 0: # no dimensions to remove
-                        self.__values = np.array(dset.variables[v])
-                    if one_dimensions_ind.size ==1 :
-                        if one_dimensions_ind[0]==0:
-                            self.__values = np.array(dset.variables[v])[0,:]
+                    break
+                k += 1
 
-                    if one_dimensions_ind.size==2 :
-                        if one_dimensions_ind[0] ==0 :
-                            if one_dimensions_ind[1] ==0 :
-                                self.__values = np.array(dset.variables[v])[0,0,:]
+            new_shape = nc_declared_shape[k:]
 
-                    self.__shape = self.__values.shape
-                    self.dims  = len(self.__values.shape)
-                    
-                    for attr_name in ["missing_value","fillvalue","fillValue","FillValue"]:
-                        if attr_name in dset.variables[v].ncattrs():
-                            fv = getattr(dset.variables[v], attr_name)
-                            self.__dset_fillvalue = fv
-                dset.close()
-                self.__filename = fn
-                self.__varname = v
-                if ((self.dims==3) & (dimvar==2)) : self.__values=self.__values[0,:]
-            except:
-                raise
+            if len(new_shape) == 3 and dimvar == 2:
+                v_slices[-3] = 0
+
+            self.__values = np.array(dset.variables[v][tuple(v_slices)])
+
+            self.__shape = self.__values.shape
+            self.dims = len(self.__values.shape)
+
+            for attr_name in ["missing_value","fillvalue","fillValue","FillValue"]:
+                if attr_name in dset.variables[v].ncattrs():
+                    fv = getattr(dset.variables[v], attr_name)
+                    self.__dset_fillvalue = fv
+
+            self.__filename = fn
+            self.__varname = v
 
         if not isinstance(mask, (Mask,)):
             raise ValueError("mask must be a Mask object")
-        else:
-            #test dimensions
-            if self.dims==3:
-                if self.__shape[1:] != mask.shape[1:]: raise ValueError("mask must have the same shape of the data")
-                data_jpk=self.__shape[0]
-                mask_jpk=  mask.shape[0]
-                if data_jpk > mask_jpk: # working with reduced mask
-                    if verbose: print('WARNING: slicing 3D field in range 0 -',mask_jpk )
-                    self.__values=self.values[:mask_jpk,:,:]
 
-                if data_jpk < mask_jpk:
-                    if (verbose) : print('WARNING: 3D file is a subset of mask domain')
-                    appval = self.__values
-                    self.__values = np.zeros(mask.shape)
-                    self.__values[:self.__shape[0],:,:] = appval
-                    self.__shape = self.__values.shape
-            if self.dims==2:
-                if self.__shape != mask.shape[1:] : raise ValueError("mask must have the same shape of the data")
+        #test dimensions
+        if self.dims==3:
+            if self.__shape[1:] != mask.shape[1:]:
+                raise ValueError("mask must have the same shape of the data")
+            data_jpk=self.__shape[0]
+            mask_jpk=  mask.shape[0]
+            if data_jpk > mask_jpk: # working with reduced mask
+                if verbose:
+                    warnings.warn('WARNING: slicing 3D field in range 0 - {}'.format(mask_jpk))
+                self.__values=self.values[:mask_jpk,:,:]
+
+            if data_jpk < mask_jpk:
+                if verbose:
+                    warnings.warn('WARNING: 3D file is a subset of mask domain')
+                appval = self.__values
+                self.__values = np.zeros(mask.shape)
+                self.__values[:self.__shape[0],:,:] = appval
+                self.__shape = self.__values.shape
+        if self.dims==2:
+            if self.__shape != mask.shape[1:]:
+                raise ValueError("mask must have the same shape of the data")
+
         #Preserve mask reference
         self._mask = mask
 

@@ -34,7 +34,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as pl
 import numpy as np
 import matplotlib.patches as mpatches
-import scipy.io.netcdf as NC
+import scipy.io as NC
 from layer_integral import coastline
 import glob,os
 import datetime

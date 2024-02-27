@@ -79,10 +79,10 @@ LISTforecast = ['f%d' %ii for ii in range(1,4)]
 LISTforecast.append('pers')
 Nforecast = len(LISTforecast)
 
-leadtimes = np.zeros((Nforecast,),np.int)
+leadtimes = np.zeros((Nforecast,),int)
 for iforecast,ff in enumerate(LISTforecast):
     if ff[0]=='f':
-        nday = np.int(ff[1])
+        nday = int(ff[1])
         leadtimes[iforecast] = 12+24*iforecast
     if 'p' in ff:
         leadtimes[iforecast] = -12
@@ -253,8 +253,8 @@ M_depths = M1.layerlist.split(',')
 DEPTHSlist = []
 for layername in M_depths:
     top,bottom_m = layername.split('-')
-    if np.float(top)>150 : continue
-    bottom = np.float(bottom_m[:-1])
+    if float(top)>150 : continue
+    bottom = float(bottom_m[:-1])
     DEPTHSlist.append(bottom)
 Ndepths = len(DEPTHSlist)
 

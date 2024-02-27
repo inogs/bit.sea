@@ -98,11 +98,11 @@ def single_plot(longvar, var, sub, layer ):
     ax.set_title(longvar, fontsize=20)
 
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label1.set_fontsize(16)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label1.set_fontsize(16)
     for tick in ax2.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label1.set_fontsize(16)
         ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
     for l in ax2.get_yticklabels() : l.set_fontsize(16)
 

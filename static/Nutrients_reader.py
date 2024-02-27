@@ -16,6 +16,12 @@ DEFAULT_FILENAME = Path(
 
 
 class NutrientsReader():
+
+    DATA_VARS = (
+        'nitrate', 'phosphate', 'silicate', 'oxygen', 'nitrite', 'ammonium',
+        'chlorophyll', 'total_chlorophyll'
+    )
+
     def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
         '''
         Reads the NetCDF Dataset
@@ -121,7 +127,7 @@ class NutrientsReader():
          '''
         if var is None:
             Profilelist=list()
-            for myvar in ['nitrate','phosphate','silicate','oxygen','nitrite','ammonium','chlorophyll','total_chlorophyll']:
+            for myvar in self.DATA_VARS:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
                     if not p in Profilelist: Profilelist.append(p)

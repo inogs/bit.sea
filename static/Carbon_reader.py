@@ -15,6 +15,11 @@ DEFAULT_FILENAME = Path(
 
 
 class CarbonReader(DatasetExtractor):
+
+    DATA_VARS = (
+        'nitrate', 'phosphate', 'oxygen', 'silicate', 'DIC', 'ALK', 'temp',
+        'salinity', 'pH25_T', 'xCO2', 'pCO2'
+    )
     
     def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
         '''
@@ -109,7 +114,7 @@ class CarbonReader(DatasetExtractor):
 
         if var is None:
             Profilelist = list()
-            for myvar in ['nitrate','phosphate','oxygen','silicate','DIC','ALK','temp','salinity','pH25_T','xCO2','pCO2']:
+            for myvar in self.DATA_VARS:
                 Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
             return Profilelist
         return self.DataExtractor.selector(var, T_int, region)

@@ -33,4 +33,4 @@ GoskuSeyhanCeyhan = Polygon([33.54166794,34.54166794,34.54166794,35.04166794,35.
               [35.77083206,35.77083206,36.22916794,36.22916794,36.06250000,36.06250000,37.22916794,37.22916794])
 GoskuSeyhanCeyhan = SimplePolygonalBasin('GoskuSeyhanCeyhan', GoskuSeyhanCeyhan, 'Gosku-Seyhan-Ceyhan box')
 
-riv = ComposedBasin('rivers',[Ebro,Po,Rhone,Buna,Neretva,Meric,Manavgat,GoskuSeyhanCeyhan],'River boxes')
+P = ComposedBasin('rivers',[Ebro,Po,Rhone,Buna,Neretva,Meric,Manavgat,GoskuSeyhanCeyhan],'River boxes')

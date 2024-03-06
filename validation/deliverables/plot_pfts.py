@@ -37,7 +37,7 @@ class filereader():
         fid = open(filename,'rb')
         LIST = pickle.load(fid)
         fid.close()
-        TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR = LIST
+        TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR, NUMB = LIST
         self.TIMES = TIMES
         self.MODEL_MEAN = MODEL_MEAN
         self.SAT___MEAN  = SAT___MEAN

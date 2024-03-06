@@ -1,3 +1,6 @@
+from os import PathLike
+from pathlib import Path
+from typing import Union
 
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
@@ -5,15 +8,25 @@ from static.DatasetExtractor import DatasetExtractor
 import numpy as np
 from commons.utils import find_index
 
+
+DEFAULT_FILENAME = Path(
+    "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
+    "Nutrients/Dataset_Med_Nutrients.nc"
+)
+
+
 class NutrientsReader():
-    
-    
-    
-    def __init__(self):
+
+    DATA_VARS = (
+        'nitrate', 'phosphate', 'silicate', 'oxygen', 'nitrite', 'ammonium',
+        'chlorophyll', 'total_chlorophyll'
+    )
+
+    def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
         '''
         Reads the NetCDF Dataset
         '''
-        self.filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/Nutrients/Dataset_Med_Nutrients.nc"
+        self.filename = filename
         self.DataExtractor = DatasetExtractor(self.filename, 'Nutrients')
 
         # QC  section ----------------
@@ -114,7 +127,7 @@ class NutrientsReader():
          '''
         if var is None:
             Profilelist=list()
-            for myvar in ['nitrate','phosphate','silicate','oxygen','nitrite','ammonium','chlorophyll','total_chlorophyll']:
+            for myvar in self.DATA_VARS:
                 sublist=self.DataExtractor.selector(myvar, T_int, region)
                 for p in sublist: 
                     if not p in Profilelist: Profilelist.append(p)

@@ -13,19 +13,22 @@ mydtype= np.dtype([
           ('lat',np.float32),
           ('lon',np.float32),
           ('time','S17'),
-          ('parameters','S200')] )
-GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/"
+          ('parameters','S200'),
+          ('prof_flags' ,'S200')]
+          )
+GSS_DEFAULT_LOC ='/g100_work/OGS_devC/camadio/PPCON/SUPERFLOAT_PPCon_202312/'
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "PPCON/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + "/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
-    def __init__(self, time, lon, lat, my_float, available_params,mean=None):
+    def __init__(self, time, lon, lat, my_float, available_params , profile_flags ,mean=None):
         self.time = time
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
         self.available_params = available_params
+        self.profile_flags= profile_flags
         self.mean = mean
         self.has_adjusted=False
 
@@ -47,10 +50,25 @@ class BioFloatProfile(Profile):
         * read_adjusted * IS NOT USED, but we leave it here because there is a lot of calls using it
                           Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
 
-        Returns 3 numpy arrays: Pres, Profile, Qc '''
+        Returns 3 numpy arrays: Pres, Profile, Qc
+        ProfileType codes= 1 take all profiles || 2 take insitu only || 3 take ppcon only
+        ProfileType default=1
+        '''
 
         return self._my_float.read(var,var_mod)
 
+    def status_profile(self,var):
+        return self._my_float.status_profile(var)
+
+    def has_insitu(self, var, flags_code):
+        if flags_code   == 'I': return(True)
+        else: return False
+    def has_ppcon(self,  var, flags_code):
+        if flags_code == 'P': return(True)
+        else: return False
+    def has_insitu_and_ppcon(self, var, flags_code):
+        if flags_code == 'B': return(True)
+        else: return False
 
     def read_fitted(self,var, func):
         '''
@@ -81,21 +99,16 @@ class BioFloat(Instrument):
 
     default_mean = None
 
-    def __init__(self,lon,lat,time,filename,available_params):
+    def __init__(self,lon,lat,time,filename,available_params, profile_flags):
         self.lon = lon
         self.lat = lat
         self.time = time
         self.filename = filename
         self.available_params = available_params
-        #istart=filename.index("/",filename.index('SUPERFLOAT/'))
-        #iend  =filename.index("/",istart+1)
+        self.profile_flags    = profile_flags
         wmo, cycle = os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
         self.cycle = int(cycle[:3])
-        #self.wmo = filename[istart+1:iend]
-        #cycle = os.path.splitext(os.path.basename(filename))[0].rsplit("_")[1]
-        #self.cycle = int(cycle)
-
 
     def __eq__(self,other):
         if isinstance(other, BioFloat):
@@ -108,22 +121,65 @@ class BioFloat(Instrument):
 
 
 
-    def read_raw(self,var):
+    def status_profile(self,var):
+        """return code or extended nomenclature for insitu, ppcon, both
+        """
+        li = list(self.available_params.split(" "))[1:] # first elenent is empty
+        lf = self.profile_flags[1:]    # first element is empty
+        iParam = li.index(var)
+        flags_code = lf[iParam]
+        #if Extended_info:
+        #    if flags_code=='I':
+        #       flags_code = 'insitu'
+        #    elif flags_code=='P':
+        #         flags_code = 'ppcon'
+        #    elif flags_code=='B':
+        #         flags_code = 'insitu_and_ppcon'
+        #    else:
+        #        sys.exit('error in labelling the profile code')
+        return (flags_code)
+
+
+    def has_insitu(self, var, flags_code):
+        if flags_code   == 'I': return(True)
+        else: return False
+    def has_ppcon(self,  var, flags_code):
+        if flags_code == 'P': return(True)
+        else: return False
+    def has_insitu_and_ppcon(self, var, flags_code):
+        if flags_code == 'B': return(True)
+        else: return False
+
+
+    def read_raw(self , var , flags_code):
         '''
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
         ncIN = netCDF4.Dataset(self.filename,'r')
-        Pres    = np.array(ncIN.variables['PRES_'+var])
-        Profile = np.array(ncIN.variables[        var])
-        Qc      = np.array(ncIN.variables[var + "_QC"])
+        if self.has_insitu(var,flags_code ) :
+           Pres    = np.array(ncIN.variables['PRES_'+var])
+           Profile = np.array(ncIN.variables[        var])
+           Qc      = np.array(ncIN.variables[var    + "_QC"])
+        elif self.has_insitu_and_ppcon(var, flags_code) :
+           Pres    = np.array(ncIN.variables['PRES_'+var])
+           Profile = np.array(ncIN.variables[        var])
+           Qc      = np.array(ncIN.variables[var    + "_QC"])
+        else:
+           print('carol')
+           print (flags_code)
+           Pres    = np.array(ncIN.variables['PRES_'+var+'_PPCON'])
+           Profile = np.array(ncIN.variables[        var+'_PPCON'])
+           Qc      = np.array(ncIN.variables[var+'_PPCON' + "_QC"])
+
         ncIN.close()
         return Pres, Profile, Qc
 
 
     def read(self,var,var_mod=None):
 
-        Pres, Profile, Qc = self.read_raw(var)
+        flags_code = self.status_profile(var) # get flag insitu ppcon both none
+        Pres, Profile, Qc = self.read_raw(var, flags_code)
 
         if var_mod is None:
            return Pres, Profile, Qc
@@ -179,12 +235,6 @@ class BioFloat(Instrument):
 
         qc       = np.ones_like(pres_new)*2
 
-        #import matplotlib.pyplot as plt
-        #plt.plot(prof, -pres, 'm', label='Profile')
-        #plt.plot(prof_new, -pres_new, 'b', label='Curve fit')
-        #plt.legend(loc='best')
-        #plt.show()
-        
         if pres_new.size ==0:
             return pres_new, prof_new, qc
 
@@ -274,9 +324,10 @@ class BioFloat(Instrument):
             lat              = INDEX_FILE['lat' ][iFile]
             thefilename      = INDEX_FILE['file_name'][iFile].decode()
             available_params = INDEX_FILE['parameters'][iFile].decode()
+            profile_flags    = INDEX_FILE['profile_flags'][iFile].decode()
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
             if filename.endswith(thefilename):
-                return BioFloat(lon,lat,float_time,filename,available_params)
+                return BioFloat(lon,lat,float_time,filename,available_params, profile_flags)
         return None
 
 
@@ -306,8 +357,9 @@ def FloatSelector(var, T, region):
         lat              = INDEX_FILE['lat' ][iFile]
         filename         = INDEX_FILE['file_name'][iFile].decode()
         available_params = INDEX_FILE['parameters'][iFile].decode()
+        profile_flags    = INDEX_FILE['prof_flags'][iFile].decode()
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + "SUPERFLOAT/" + filename
+        filename = ONLINE_REPO + filename
 
         if var is None :
             VarCondition = True
@@ -316,8 +368,8 @@ def FloatSelector(var, T, region):
 
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
-                thefloat = BioFloat(lon,lat,float_time,filename,available_params)
-                selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,None))
+                thefloat = BioFloat(lon,lat,float_time,filename,available_params, profile_flags)
+                selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,profile_flags,None))
 
     return selected
 

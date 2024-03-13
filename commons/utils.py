@@ -100,6 +100,17 @@ def is_valid_path(path, is_dir_check=False):
             return path
     else:
         die("'%s' is not a valid path." % (path,))
+def isvalidpath(path, is_dir_check=False):
+    if os.path.exists(path):
+        if is_dir_check:
+            if os.path.isdir(path):
+                return True
+            else:
+                return False
+        else:
+            return True
+    else:
+        return False
 
 
 def ticklabels_degree(ax,fsize=7,intdeg=True):

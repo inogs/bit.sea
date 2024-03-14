@@ -45,7 +45,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self,var,var_mod=None):
+    def read(self,var,var_mod=None,sourcedata='best'):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -59,20 +59,8 @@ class BioFloatProfile(Profile):
         ProfileType default=1
         '''
 
-        return self._my_float.read(var,var_mod)
+        return self._my_float.read(var,var_mod,sourcedata)
 
-    def status_profile(self,var):
-        return self._my_float.status_profile(var)
-
-    def has_insitu(self, var, flags_code):
-        if flags_code   == 'I': return(True)
-        else: return False
-    def has_ppcon(self,  var, flags_code):
-        if flags_code == 'P': return(True)
-        else: return False
-    def has_insitu_and_ppcon(self, var, flags_code):
-        if flags_code == 'B': return(True)
-        else: return False
 
     def read_fitted(self,var, func):
         '''
@@ -108,7 +96,10 @@ class BioFloat(Instrument):
         self.lat = lat
         self.time = time
         self.filename = filename
-        self.available_params = available_params
+        if available_params[0]==" ":
+            self.available_params = available_params[1:]
+        else:
+            self.available_params = available_params
         self.profile_flags    = profile_flags.replace(" ","")
         wmo, cycle = os.path.basename(filename).rsplit("_")
         self.wmo = wmo[2:]
@@ -132,36 +123,27 @@ class BioFloat(Instrument):
         lf = self.profile_flags
         iParam = li.index(var)
         flags_code = lf[iParam]
-        #if Extended_info:
-        #    if flags_code=='I':
-        #       flags_code = 'insitu'
-        #    elif flags_code=='P':
-        #         flags_code = 'ppcon'
-        #    elif flags_code=='B':
-        #         flags_code = 'insitu_and_ppcon'
-        #    else:
-        #        sys.exit('error in labelling the profile code')
         return (flags_code)
 
 
-    def has_insitu(self, var, flags_code):
-        if flags_code  in ['I','B']: return True
+    def has_insitu(self, var):
+        if self.status_profile(var) in ['I','B']: return True
         return False
-    def has_ppcon(self,  var, flags_code):
-        if flags_code in ['P','B']: return True
+    def has_ppcon(self,  var):
+        if self.status_profile(var) in['P','B']: return True
         return False
-    def has_insitu_and_ppcon(self, var, flags_code):
-        if flags_code == 'B': return True
+    def has_insitu_and_ppcon(self, var):
+        if self.status_profile(var) == 'B': return True
         return False
 
 
-    def read_raw(self , var , flags_code):
+    def read_raw(self , var , flag_code):
         '''
         Reads data from file
         Returns 3 numpy arrays: Pres, Profile, Qc
         '''
         ncIN = netCDF4.Dataset(self.filename,'r')
-        if self.has_insitu(var,flags_code ) :
+        if flag_code in ['I','B'] :
             Pres    = np.array(ncIN.variables['PRES_'+var])
             Profile = np.array(ncIN.variables[        var])
             Qc      = np.array(ncIN.variables[var    + "_QC"])
@@ -174,13 +156,29 @@ class BioFloat(Instrument):
         return Pres, Profile, Qc
 
 
-    def read(self,var,var_mod=None):
+    def read(self,var,var_mod=None,sourcedata='best'):
+        '''
+        With sourcedata='best' gives priority to insitu
 
-        flags_code = self.status_profile(var) # get flag insitu ppcon both none
-        Pres, Profile, Qc = self.read_raw(var, flags_code)
+        '''
+
+        assert sourcedata in ["best","insitu","ppcon"]
+
+        if sourcedata=='best':
+            flag_code = self.status_profile(var) # get flag insitu ppcon both none
+            Pres, Profile, Qc = self.read_raw(var, flag_code)
+
+        if sourcedata=="insitu":
+            assert self.has_insitu(var)
+            Pres, Profile, Qc  =  self.read_raw(var, 'I')
+        if sourcedata=="ppcon":
+            assert self.has_ppcon(var)
+            Pres, Profile, Qc = self.read_raw(var, 'P')
 
         if var_mod is None:
-           return Pres, Profile, Qc
+            return Pres, Profile, Qc
+
+        assert var_mod in ['P_c', 'POC']
 
         ii=(Pres >= 400) & (Pres <= 500)
         if (var_mod=='P_c'):
@@ -350,12 +348,12 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile].decode()
+        timestr          = INDEX_FILE['time'][iFile]
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        profile_flags    = INDEX_FILE['prof_flags'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        profile_flags    = INDEX_FILE['prof_flags'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
         filename = ONLINE_REPO + filename
 
@@ -425,24 +423,32 @@ def remove_bad_sensors(Profilelist,var):
 
 
 if __name__ == '__main__':
-    filename="/g100_scratch/userexternal/camadio0/ONLINE_REPO_202403/PPCON/3902483/SR3902483_016.nc"
+    filename="/g100_scratch/userexternal/camadio0/ONLINE_REPO_202403/PPCON/5907088/SR5907088_016.nc"
     F=BioFloat.from_file(filename)
     print("profile_flags=",F.profile_flags)
     print("status_profile=", F.status_profile('NITRATE'))
-    print("has_insitu", F.has_insitu('NITRATE', 'P'))
-    
-    import sys
-    sys.exit()
+    print("has_insitu", F.has_insitu('NITRATE'))
+    F.read('DOXY')
+    F.read('DOXY',sourcedata='insitu')
+    Pres_P,Value_P, _ =F.read('CHLA',sourcedata='ppcon')
+    Pres_I,Value_I, Qc=F.read('CHLA',sourcedata='insitu')
+    Pres,Value, Qc=F.read('CHLA',sourcedata='best')
+    assert (Value == Value_I).all()
+
     
     from basins.region import Rectangle
     from commons.time_interval import TimeInterval
 
-    var = 'TEMP'
-    TI = TimeInterval('20120101','20170130','%Y%m%d')
+    var = 'NITRATE'
+    TI = TimeInterval('20240201','20240301','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
+    for p in PROFILE_LIST:
+        print(p._my_float.has_insitu('NITRATE'))
 
+    import sys
+    sys.exit()
     
     Pres,V, Qc = F.read(var)
     import sys

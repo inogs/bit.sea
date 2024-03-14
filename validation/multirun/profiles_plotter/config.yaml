@@ -13,6 +13,18 @@ variable_selections:
 
 levels: ["0", "0 - 20", "100", "150"] # in meters
 
+variable_labels:
+  T: "temperature [°C]"
+  pH: "pH [-]"
+
+time_series:
+  show_legend: bottom
+  show_depth: false
+  x_label: years
+
+depth_profiles:
+  mode: "standard"
+
 plots:
   enea_original:
     source: enea_raw
@@ -32,4 +44,8 @@ plots:
     filter: MovingAverage(10y)
     draw_depth_profile: false
 
-output_dir: /dev/shm
+output:
+  output_name: 'Multirun_Profiles.${VAR}.${BASIN}.png'
+  output_dir: /dev/shm
+  dpi: 300
+  fig_size: (10, 10)

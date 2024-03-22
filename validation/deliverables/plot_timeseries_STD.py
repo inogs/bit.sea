@@ -109,4 +109,5 @@ for isub,sub in enumerate(OGS.P):
     outfilename="%s%s_%s_STD.png"  %(OUTDIR, args.var, sub.name)
     ylabels = ax.get_yticklabels()
     pl.setp(ylabels, fontsize=10)
+    pl.tight_layout()
     pl.savefig(outfilename)

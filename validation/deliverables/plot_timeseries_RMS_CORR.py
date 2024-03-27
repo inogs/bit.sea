@@ -106,6 +106,7 @@ for isub,sub in enumerate(OGS.P):
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
     outfilename="%s%s-RMS-BIAS_%s.png"  %(OUTDIR, args.var, sub.name) #  args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
+    pl.tight_layout()
     pl.savefig(outfilename)
     pl.close(fig)
 

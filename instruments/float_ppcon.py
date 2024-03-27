@@ -31,7 +31,10 @@ class BioFloatProfile(Profile):
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
-        self.available_params = available_params
+        if available_params[0]==" ":
+           self.available_params = available_params[1:]
+        else:
+           self.available_params = available_params
         self.profile_flags= profile_flags
         self.mean = mean
         self.has_adjusted=False
@@ -55,8 +58,8 @@ class BioFloatProfile(Profile):
                           Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
 
         Returns 3 numpy arrays: Pres, Profile, Qc
-        ProfileType codes= 1 take all profiles || 2 take insitu only || 3 take ppcon only
-        ProfileType default=1
+        ProfileType codes= "best" take all profiles || "insitu" take insitu only || "ppcon" take ppcon only
+        ProfileType default=> "best"
         '''
 
         return self._my_float.read(var,var_mod,sourcedata)
@@ -171,14 +174,17 @@ class BioFloat(Instrument):
         if sourcedata=="insitu":
             assert self.has_insitu(var)
             Pres, Profile, Qc  =  self.read_raw(var, 'I')
+            if (Qc <0).any() : sys.exit("the sourcedata flag is uncorrect")
+
         if sourcedata=="ppcon":
             assert self.has_ppcon(var)
             Pres, Profile, Qc = self.read_raw(var, 'P')
+            if (Qc >0).any() : sys.exit("the sourcedata flag is uncorrect")   
 
         if var_mod is None:
             return Pres, Profile, Qc
 
-        assert var_mod in ['P_c', 'POC']
+        #assert var_mod in ['P_c', 'POC']
 
         ii=(Pres >= 400) & (Pres <= 500)
         if (var_mod=='P_c'):

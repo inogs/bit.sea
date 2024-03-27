@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-def make_ds(training_folder, INDIR):
+def make_ds(training_folder,  INDIR):
     if training_folder == "SUPERFLOAT":
         from make_ds_clustering import make_pandas_df
 
@@ -14,6 +14,6 @@ def make_ds(training_folder, INDIR):
         if not os.path.exists( INDIR   + "/clustering/ds_sf_clustering.csv"):
             print("making ds...")
             make_pandas_df(    INDIR   + '/SUPERFLOAT/Float_Index.txt' , INDIR   + "/clustering/ds_sf_clustering.csv", INDIR)
-            print("superfloat clustering complete ds created")
+            print("superfloat clustering complete dataset created")
 
     return

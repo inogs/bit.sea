@@ -1,3 +1,4 @@
+import argparse
 import os
 import numpy as np
 import pandas as pd
@@ -5,48 +6,71 @@ import netCDF4 as nc
 import torch
 from torch.utils.data import DataLoader
 import sys
-sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/CODE_loss_attention_max_PPCon/')
+#sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/CODE_loss_attention_max_PPCon/')
+sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/')
 from discretization import *
 from make_ds.make_superfloat_ds import discretize
 from utils import upload_and_evaluate_model, get_output
 from dataset import FloatDataset as FloatDebug
 from dataset_with_float_names import FloatDataset
 
-print("netcdf created in superfloat")
+print("start filling outdir")
 
 
 """ Amadio """
-import argparse
-from commons.utils import addsep
 sys.path.append("/g100_work/OGS23_PRACE_IT/COPERNICUS/bit.sea/")
+from commons.utils import addsep
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    inputdir is generally in pwd es: V7C/results/
-    ds is the folder that contain the SUPERFLOAT directory (e.g. V7C)
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument(   '--inputdir', '-i',
+    parser.add_argument(   '--inputdir', '-t',
                             type = str,
                             required = True,
                             default = './',
-                            help = 'Input dir')
-    parser.add_argument(   '--outdir', '-o',
+                            help = 'ONLINE_REPO/clustering ')
+    parser.add_argument(   '--modeldir', '-m',
                             type = str,
                             required = True,
                             default = 'results',
-                            help = 'output dir, default results')
-    parser.add_argument(   '--superfloatdir', '-s',
+                            help = 'PPCON_MODELDIR:  default results')
+    parser.add_argument(   '--ppcondir', '-p',
                             type = str,
                             required = True,
-                            default = 'SUPERFLOAT',
+                            default = 'PPCON',
                             help = 'output dir, where save new profiles')
     return parser.parse_args()
 
-INDIR   = addsep(args.inputdir)
-OUTDIR  = addsep(args.outdir)
-SUPERFLOAT_DIR= = addsep(args.superfloatdir)
+args   = argument()
 
+INDIR   = addsep(args.inputdir)   #online_repo
+MODELDIR  = addsep(args.modeldir)     #CODE_PPCON/results
+FLOAT_DIR = addsep(args.ppcondir) # #ONLINE_repo/ppcon
+
+
+def treating_chla_like_coriolis(pres_chla, chla_ppcon):
+    ii=(pres_chla >= 400) & (pres_chla <= 600)
+    if ii.sum() > 0:
+        shift = chla_ppcon[ii].mean()
+        chla_ppcon = chla_ppcon - shift
+    ii=chla_ppcon  <=0
+    chla_ppcon[ii] = 0.005
+    return(chla_ppcon)
+
+def treating_nitrate_like_coriolis(pres_nitrate, nitrate_ppcon):
+    z_interp = pres_nitrate 
+    ii = (nitrate_ppcon < 0) & (pres_nitrate < 50) # if nitrate 0-50 m replace
+    nitrate_ppcon[ii] = 0.05
+    ii = nitrate_ppcon > 0 # if neg nitrate at depth > 50m interpoklate 
+    if len(z_interp) != len(pres_nitrate[ii]):
+        nitrate_ppcon = nitrate_ppcon[ii]
+        nitrate_ppcon=np.interp( z_interp, pres_nitrate[ii], nitrate_ppcon)
+        return(nitrate_ppcon)
+    else:
+       pres_nitrate = pres_nitrate[ii]
+       nitrate_ppcon = nitrate_ppcon[ii]
+       return(nitrate_ppcon)
 
 """ end Amadio """
 
@@ -70,14 +94,14 @@ date_nitrate = dict_models["NITRATE"][0]
 date_chla = dict_models["CHLA"][0]
 date_BBP700 = dict_models["BBP700"][0]
 
-dir_model_nitrate = OUTDIR + f"/NITRATE/{date_nitrate}/model"
-dir_model_chla =    OUTDIR + f"/CHLA/{date_chla}/model"
-dir_model_BBP700 =  OUTDIR + f"/BBP700/{date_BBP700}/model"
+dir_model_nitrate = MODELDIR + f"/NITRATE/{date_nitrate}/model"
+dir_model_chla =    MODELDIR + f"/CHLA/{date_chla}/model"
+dir_model_BBP700 =  MODELDIR + f"/BBP700/{date_BBP700}/model"
 
 # Upload the input information
-info_nitrate = pd.read_csv( OUTDIR + f"/NITRATE/{date_nitrate}/info.csv")
-info_chla    = pd.read_csv( OUTDIR + f"/CHLA/{date_chla}/info.csv")
-info_BBP700  = pd.read_csv( OUTDIR + f"/BBP700/{date_BBP700}/info.csv")
+info_nitrate = pd.read_csv( MODELDIR + f"/NITRATE/{date_nitrate}/info.csv")
+info_chla    = pd.read_csv( MODELDIR + f"/CHLA/{date_chla}/info.csv")
+info_BBP700  = pd.read_csv( MODELDIR + f"/BBP700/{date_BBP700}/info.csv")
 
 # Upload and evaluate the model
 model_day_nitrate, model_year_nitrate, model_lat_nitrate, model_lon_nitrate, model_nitrate = upload_and_evaluate_model(
@@ -88,7 +112,7 @@ model_day_BBP700, model_year_BBP700, model_lat_BBP700, model_lon_BBP700, model_B
     dir_model=dir_model_BBP700, info_model=info_BBP700, ep=dict_models["BBP700"][1])
 
 # read the float number + sampling number from the dataset
-path_df = INDIR + f"/clustering/ds_sf_clustering.csv"  # BUG!!!!!!!
+path_df = INDIR + f"/ds_sf_clustering.csv"  
 # path_debug = os.getcwd() + f"/../ds/CHLA/float_ds_sf.csv"
 dataset = FloatDataset(path_df)
 # dataset_debug = FloatDebug(path_debug)
@@ -101,22 +125,34 @@ pres_chla = np.arange(0, dict_max_pressure["CHLA"], dict_interval["CHLA"])
 pres_BBP700 = np.arange(0, dict_max_pressure["BBP700"], dict_interval["BBP700"])
 
 qc = np.ones(200) * -9999
+#amadio from tensor to dataframe
+my_df=my_ds.dataset.df.T
+my_df.columns=['year', 'day_rad', 'lat', 'lon', 'temp', 'psal', 'doxy', 'nitrate', 'chla', 'BBP700']
+my_df['name_float']= my_df.index
+my_df.index=np.arange(0,len(my_df))
+my_df=my_df.iloc[1:,:]
+my_df['name_float'] = my_df.name_float.str.split("/").str[-1]
+# end amadio from tensor to dataframe
 
 print('____________________________________________')
-print("total numer of profiles to generate \n" + str(len(my_ds) ))
+print("total numer of profiles to generate \n" + str(len(my_df) ))
 print('____________________________________________')
-ITERATION=0
-for sample in my_ds:
-    ITERATION+=1
+
+
+#for sample in my_ds:
+for III in range(0,len(my_df)):
+    sample = dataset.__getitem__(III)
     year, day_rad, lat, lon, temp, psal, doxy, nitrate, chla, BBP700, name_float = sample
-    sample_prediction = sample[:-1]
-
-    name_file = name_float[0]
-    main_dir = name_float[0][2:-4]
-    print(f"generating profiles {name_file}")
-    print("Processed profile #: " + str(ITERATION) +'/'+ str(len( my_ds)))
+    tmp = my_df.iloc[III,:]
+    if name_float != tmp.name_float:
+       sys.exit("Error in selecting rows of the tensor")
+    sample_prediction = list(sample[:-1])
+    name_file = name_float
+    main_dir = name_float[2:-4]
+    print(f"generating profiles   "+  name_float )
+    print("Processed profile #: " + str(III+1) +'/'+ str(len(my_df )))
     # open the netcfd file in the "ds/SUP?>,ERFLOAT" directory
-    path_superfloat = SUPERFLOAT_DIR + f"/{main_dir}/{name_file}.nc"
+    path_superfloat = FLOAT_DIR + f"/{main_dir}/{name_file}.nc"
     ds = nc.Dataset(path_superfloat, 'a')  # ds = nc.Dataset(path_superfloat)
 
     pres_temp_nc = ds["PRES_TEMP"][:]
@@ -129,14 +165,14 @@ for sample in my_ds:
     doxy_nc = ds["DOXY"][:]
 
     # create the dimension relative to the PPCon prediction
-    if {'nNITRATE_PPCON', 'nCHLA_PPCON', 'nBBP700_PPCON'} & set(ds.dimensions.keys()):
-        continue
+    #if {'nNITRATE_PPCON', 'nCHLA_PPCON', 'nBBP700_PPCON'} & set(ds.dimensions.keys()):
+    #    continue
 
     ds.createDimension('nNITRATE_PPCON', 200)
     ds.createDimension('nCHLA_PPCON', 200)
     ds.createDimension('nBBP700_PPCON', 200)
 
-    # NITRATE routine
+    # NITRATE routine  -177-182 - 
     nitrate_ppcon = get_output(sample=sample_prediction, model_day=model_day_nitrate, model_year=model_year_nitrate,
                                model_lat=model_lat_nitrate, model_lon=model_lon_nitrate, model=model_nitrate)
     nitrate_ppcon = nitrate_ppcon.detach()
@@ -145,24 +181,13 @@ for sample in my_ds:
 
     # check if the variable is contained in the ds - if not insert the variable generate also as "NITRATE"
     if "NITRATE" not in ds.variables.keys():
-        ds.createDimension('nNITRATE', 200)
-
-        nc_nitrate = ds.createVariable('NITRATE', "f", ('nNITRATE',))
-        nc_nitrate.units = "mmol/m3"
-        nc_nitrate[:] = nitrate_ppcon
-
-        nc_pres_nitrate = ds.createVariable('PRES_NITRATE', "f", ('nNITRATE',))
-        nc_pres_nitrate.units = "m"
-        nc_pres_nitrate[:] = pres_nitrate
-
-        nc_qc_nitrate = ds.createVariable('NITRATE_QC', "f", ('nNITRATE',))
-        nc_qc_nitrate[:] = qc
+        pass
 
     # add the "NITRATE_PPCon" variable and "PRES" in any case
     nc_nitrate_ppcon = ds.createVariable('NITRATE_PPCON', "f", ('nNITRATE_PPCON',))
     nc_nitrate_ppcon.units = "mmol/m3"
-    nc_nitrate_ppcon[:] = nitrate_ppcon
-
+    # correct nitrate at surface 0-50m <0 --> 0.05
+    nc_nitrate_ppcon[:] = treating_nitrate_like_coriolis(pres_nitrate, nitrate_ppcon)
     nc_pres_nitrate_ppcon = ds.createVariable('PRES_NITRATE_PPCON', "f", ('nNITRATE_PPCON',))
     nc_pres_nitrate_ppcon.units = "m"
     nc_pres_nitrate_ppcon[:] = pres_nitrate
@@ -175,35 +200,35 @@ for sample in my_ds:
     psal_chla = discretize(pres_psal_nc, psal_nc, max_pres_chla, interval_chla)
     doxy_chla = discretize(pres_doxy_nc, doxy_nc, max_pres_chla, interval_chla)
 
-    sample_prediction[4] = temp_chla.unsqueeze(0)
-    sample_prediction[5] = psal_chla.unsqueeze(0)
-    sample_prediction[6] = doxy_chla.unsqueeze(0)
+    if len(temp_chla.shape) ==1:
+       # is vector
+       sample_prediction[4] = temp_chla
+       sample_prediction[5] = psal_chla
+       sample_prediction[6] = doxy_chla
+
+    elif len(temp_chla.shape) ==0:
+       # is scalar # add one dimension 
+       sample_prediction[4] = temp_chla.unsqueeze(0)
+       sample_prediction[5] = psal_chla.unsqueeze(0)
+       sample_prediction[6] = doxy_chla.unsqueeze(0)
+
+    else:
+       sys.exit("Check the dimension of temp_chla, psal_chla ,doxy_chla") 
 
     chla_ppcon = get_output(sample=sample_prediction, model_day=model_day_chla, model_year=model_year_chla,
                             model_lat=model_lat_chla, model_lon=model_lon_chla, model=model_chla)
+
     chla_ppcon = chla_ppcon.detach()
     chla_ppcon = torch.squeeze(chla_ppcon)
     chla_ppcon = chla_ppcon.numpy()
 
     if "CHLA" not in ds.variables.keys():
-        ds.createDimension('nCHLA', 200)
-
-        nc_chla = ds.createVariable('CHLA', "f", ('nCHLA',))
-        nc_chla.units = "mg/m3"
-        nc_chla[:] = chla_ppcon
-
-        nc_pres_chla = ds.createVariable('PRES_CHLA', "f", ('nCHLA',))
-        nc_pres_chla.units = "m"
-        nc_pres_chla[:] = pres_chla
-
-        nc_qc_chla = ds.createVariable('CHLA_QC', "f", ('nCHLA',))
-        nc_qc_chla[:] = qc
+        pass
 
     # add the "CHLA_PPCon" variable and "PRES" in any case
     nc_chla_ppcon = ds.createVariable('CHLA_PPCON', "f", ('nCHLA_PPCON',))
     nc_chla_ppcon.units = "mg/m3"
-    nc_chla_ppcon[:] = chla_ppcon
-
+    nc_chla_ppcon[:] =treating_chla_like_coriolis( pres_chla  ,chla_ppcon) # --> check if deep [chla] is negative or [high]
     nc_pres_chla_ppcon = ds.createVariable('PRES_CHLA_PPCON', "f", ('nCHLA_PPCON',))
     nc_pres_chla_ppcon.units = "m"
     nc_pres_chla_ppcon[:] = pres_chla
@@ -216,9 +241,20 @@ for sample in my_ds:
     psal_BBP700 = discretize(pres_psal_nc, psal_nc, max_pres_BBP700, interval_BBP700)
     doxy_BBP700 = discretize(pres_doxy_nc, doxy_nc, max_pres_BBP700, interval_BBP700)
 
-    sample_prediction[4] = temp_BBP700.unsqueeze(0)
-    sample_prediction[5] = psal_BBP700.unsqueeze(0)
-    sample_prediction[6] = doxy_BBP700.unsqueeze(0)
+    if len(temp_BBP700.shape) ==1:
+       # is vector  
+       sample_prediction[4] = temp_BBP700
+       sample_prediction[5] = psal_BBP700
+       sample_prediction[6] = doxy_BBP700
+
+    elif len(temp_BBP700.shape) ==0:
+       # is scalar # add one dimension
+       sample_prediction[4] = temp_BBP700.unsqueeze(0)
+       sample_prediction[5] = psal_BBP700.unsqueeze(0)
+       sample_prediction[6] = doxy_BBP700.unsqueeze(0) 
+
+    else:
+       sys.exit("Check the dimension of temp_BBP700, psal_BBP700, doxy_BBP700")
 
     BBP700_ppcon = get_output(sample=sample_prediction, model_day=model_day_BBP700, model_year=model_year_BBP700,
                               model_lat=model_lat_BBP700, model_lon=model_lon_BBP700, model=model_BBP700)
@@ -228,18 +264,7 @@ for sample in my_ds:
     BBP700_ppcon = BBP700_ppcon.numpy()
 
     if "BBP700" not in ds.variables.keys():
-        ds.createDimension('nBBP700', 200)
-
-        nc_BBP700 = ds.createVariable('BBP700', "f", ('nBBP700',))
-        nc_BBP700.units = "1/m"
-        nc_BBP700[:] = BBP700_ppcon
-
-        nc_pres_BBP700 = ds.createVariable('PRES_BBP700', "f", ('nBBP700',))
-        nc_pres_BBP700.units = "m"
-        nc_pres_BBP700[:] = pres_BBP700
-
-        nc_qc_BBP700 = ds.createVariable('BBP700_QC', "f", ('nBBP700',))
-        nc_qc_BBP700[:] = qc
+        pass 
 
     # add the "BBP700_PPCon" variable and "PRES" in any case
     nc_BBP700_ppcon = ds.createVariable('BBP700_PPCON', "f", ('nBBP700_PPCON',))

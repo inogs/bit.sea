@@ -107,20 +107,26 @@ def upload_and_evaluate_model(dir_model, info_model, ep):
 
 def get_output(sample, model_day, model_year, model_lat, model_lon, model):
     year, day_rad, lat, lon, temp, psal, doxy, _, _, _ = sample
-    # year, day_rad, lat, lon, temp, psal, doxy = sample
 
+    # amadio#
+    is_scalar = len(day_rad.shape) == 0
+    if is_scalar:
+       day_rad = day_rad.unsqueeze(0)
+       year    = year.unsqueeze(0)
+       lat, lon, temp, psal, doxy = lat.unsqueeze(0), lon.unsqueeze(0), temp.unsqueeze(0), psal.unsqueeze(0), doxy.unsqueeze(0) 
+   
     output_day = model_day(day_rad.unsqueeze(1))
     output_year = model_year(year.unsqueeze(1))
     output_lat = model_lat(lat.unsqueeze(1))
     output_lon = model_lon(lon.unsqueeze(1))
-
     output_day = torch.transpose(output_day.unsqueeze(0), 0, 1)
     output_year = torch.transpose(output_year.unsqueeze(0), 0, 1)
     output_lat = torch.transpose(output_lat.unsqueeze(0), 0, 1)
     output_lon = torch.transpose(output_lon.unsqueeze(0), 0, 1)
-    temp = torch.transpose(temp.unsqueeze(0), 0, 1)
-    psal = torch.transpose(psal.unsqueeze(0), 0, 1)
-    doxy = torch.transpose(doxy.unsqueeze(0), 0, 1)
+
+    temp = torch.transpose(temp.unsqueeze(1), 0, 1)
+    psal = torch.transpose(psal.unsqueeze(1), 0, 1)
+    doxy = torch.transpose(doxy.unsqueeze(1), 0, 1)
 
     x = torch.cat((output_day, output_year, output_lat, output_lon, temp, psal, doxy), 1)
     output_model = model(x.float())

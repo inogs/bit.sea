@@ -215,6 +215,7 @@ VARLIST           = ['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", 
 PPCON_VARLIST_mod = ['P_l','N3n','POC']
 VARLIST_obs       = ['CHLA','NITRATE','BBP700']
 
+
 for filename in analysis_forecast_basenames:
     if filename in only_analyis_basenames:
         print (filename, " matches analysis and forecast")
@@ -223,7 +224,6 @@ for filename in analysis_forecast_basenames:
         float_f, mod_f, time, lon, lat = ncreader(forecastfile)
         float_a, mod_a, time, lon, lat = ncreader(analyis_file) # float_f and float_f are identical
         p = getprofile(time, lon, lat) # p belong to ppcon_floar
-        print(p.profile_flags)
         fig, axs = figure_generator(p)
         for i,var in enumerate(VARLIST):
             ax=axs[mapgraph[i]]
@@ -242,14 +242,20 @@ for filename in analysis_forecast_basenames:
                       float_var = float_f[var] 
 
                    if p._my_float.status_profile(var_fl) == 'P':
-                      ax.plot(float_var,zlevels_out, COLOR_LIST[-1])    
+                       if var_fl in ['CHLA', 'BBP700', 'POC']: #ppcon plotted as 0-200m profile
+                           ax.plot(float_var[zlevels_out<=200],zlevels_out[zlevels_out<=200], COLOR_LIST[-1])
+                       else: 
+                           ax.plot(float_var,zlevels_out, COLOR_LIST[-1])    
 
                    elif p._my_float.status_profile(var_fl) =='B': # insitu  and  ppcon
-                      pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  )    # force to read ppcon           print(pp_qc)
-                      if var_fl =='BBP700': pp_var= bellacicco_conversion(pp_var, zlevels_out)
-
+                      pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
+                      if var_fl =='BBP700': pp_var= bellacicco_conversion(pp_var, zlevels_out) 
                       ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
-                      ax.plot(ppcon_varinterp ,zlevels_out, COLOR_LIST[-1]  )
+                      if var_fl in ['CHLA', 'BBP700', 'POC']: #ppcon plotted as 0-200m profile   
+                         ax.plot(ppcon_varinterp[zlevels_out<=200] ,zlevels_out[zlevels_out<=200], COLOR_LIST[-1]  )
+                      else:
+                         ax.plot(ppcon_varinterp,zlevels_out, COLOR_LIST[-1]  )
+
                       ax.plot(float_var,zlevels_out, COLOR_LIST[2])
 
                    if p._my_float.status_profile(var_fl) =='I': 

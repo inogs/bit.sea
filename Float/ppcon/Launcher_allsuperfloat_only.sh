@@ -7,40 +7,38 @@
 #SBATCH --partition=g100_usr_interactive
 #SBATCH --gres=gpu:1
 
-source /g100_scratch/userexternal/camadio0/PPCON/bit.sea/Sat/profile.inc
-my_prex_or_die "command"
-
-#/g100_work/OGS_prodC/OPA/V10C/prod/inpdir/ONLINE/SUPERFLOAT/
+source ../../Sat/profile.inc
 source /g100_work/OGS23_PRACE_IT/COPERNICUS/py_env_3.9.18/bin/activate
-BASEPPCON=/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/
-ONLINE_REPO=/g100_scratch/userexternal/camadio0/ONLINE_REPO_202403/
-ONLINE_REPO_CLUSTERING=${ONLINE_REPO}clustering/
 
 
 
-############################################################
-############# 1 Creo il file tensor csv ####################
-###############salva in dir cluster ########################
-############################################################
-
-FILE_INPUT=${ONLINE_REPO}SUPERFLOAT/Float_Index.txt   
-my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $FILE_INPUT -o $ONLINE_REPO_CLUSTERING"
+TRAIN_DIR=/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/results #inputs
 
 
 
+ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/
+ONLINE_REPO_CLUSTERING=${ONLINE_REPO}/PPCON/clustering/
+
+mkdir -p $ONLINE_REPO_CLUSTERING
+
+cp -r ${ONLINE_REPO}/SUPERFLOAT/* $ONLINE_REPO/PPCON
+
+for YEAR in 2024; do
+
+    FILE_INPUT=${ONLINE_REPO}/PPCON/year.txt
+    grep ${YEAR} ${ONLINE_REPO}SUPERFLOAT/Float_Index.txt > $FILE_INPUT
+
+    my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $FILE_INPUT -o $ONLINE_REPO_CLUSTERING"
+
+    my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $TRAIN_DIR -p $ONLINE_REPO/PPCON"
 
 
-############################################################
-############# 2. creo il dataset chiamato : PPCON ##########
-############################################################
-PPCON=PPCON/
-PPCON_MODELDIR=$BASEPPCON/results/    #inputs
-mkdir -p $ONLINE_REPO${NEW_DIR}
-# --> GB:  cp -r $ONLINE_REPO${SUPERFLOAT}/* $ONLINE_REPO${PPCON}
-cp -r ${ONLINE_REPO}/SUPERFLOAT/* $ONLINE_REPO${PPCON}
+done
 
-my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $PPCON_MODELDIR -p $ONLINE_REPO${PPCON}"
-#                                                      |legge cluster.csv | legge /results | PPCON dataset
+
+
+
+
 
 
 ############################################################
@@ -49,4 +47,4 @@ my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLIN
 my_prex_or_die "python dump_index.py -i $ONLINE_REPO${PPCON} -o $ONLINE_REPO${PPCON}/Float_Index.txt -t ppcon_float"
 
 
-exit 0
+

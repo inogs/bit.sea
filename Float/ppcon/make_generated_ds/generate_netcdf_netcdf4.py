@@ -50,7 +50,7 @@ FLOAT_DIR = addsep(args.ppcondir) # #ONLINE_repo/ppcon
 
 
 def treating_chla_like_coriolis(pres_chla, chla_ppcon):
-    ii=(pres_chla >= 400) & (pres_chla <= 600)
+    ii=(pres_chla >= 180) & (pres_chla <= 200)
     if ii.sum() > 0:
         shift = chla_ppcon[ii].mean()
         chla_ppcon = chla_ppcon - shift

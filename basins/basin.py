@@ -6,6 +6,11 @@ from matplotlib.colors import LinearSegmentedColormap
 
 from basins.region import Region, EmptyRegion
 
+import csv
+import re
+from commons.utils import addsep
+import ntpath
+import sys
 
 class Basin(object):
 
@@ -95,6 +100,35 @@ class Basin(object):
 
         return current_plot
 
+    def read_WKT_coords(filenametxt):
+        
+        polyname=ntpath.basename(filenametxt)[:-4]     
+        polyList=[]  
+        csv.field_size_limit(sys.maxsize)
+
+        with open(filenametxt, "r") as f:
+            reader = csv.reader(f, delimiter="\t")
+            for i, line in enumerate(reader):
+                polyList.append(line[0])
+        stringPoly=' '.join(polyList)
+        stringPolySel=stringPoly[15:]
+        
+        singlePolygons=re.findall("\((.*?)\)", stringPolySel)
+        nPoly=len(singlePolygons)
+        if nPoly>1:
+            raise ValueError("filename containing more than one polygon")# case to be implemented
+        else:
+            pat = re.compile(r'''(-*\d+\.\d+ -*\d+\.\d+),*''')
+            matches = pat.findall(singlePolygons[0])
+            if matches:
+                 lst = [tuple(map(float, m.split())) for m in matches]
+                 nCoords=len(lst)
+                 LON=[]
+                 LAT=[]  
+                 for ii in range(nCoords-1):#last element is equal to the first one, to be neglected
+                    LON.append(lst[ii][0])
+                    LAT.append(lst[ii][1]) 
+            return LON, LAT
 
 
 class SimpleBasin(Basin):

@@ -4,12 +4,9 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 import sys
-sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/CODE_loss_attention_max_PPCon_CA/')
 import matplotlib.pyplot as plt
-#from analysis.utils_analysis import from_day_rad_to_day
 from dataset_clustering import FloatDataset
 import sys
-sys.path.append("/g100_scratch/userexternal/camadio0/PPCON/bit.sea/")
 from commons.utils import addsep
 from commons.time_interval import TimeInterval
 

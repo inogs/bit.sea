@@ -6,8 +6,6 @@ import netCDF4 as nc
 import torch
 from torch.utils.data import DataLoader
 import sys
-#sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/CODE_loss_attention_max_PPCon/')
-sys.path.append('/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/')
 from discretization import *
 from make_ds.make_superfloat_ds import discretize
 from utils import upload_and_evaluate_model, get_output
@@ -18,7 +16,6 @@ print("start filling outdir")
 
 
 """ Amadio """
-sys.path.append("/g100_work/OGS23_PRACE_IT/COPERNICUS/bit.sea/")
 from commons.utils import addsep
 def argument():
     parser = argparse.ArgumentParser(description = '''

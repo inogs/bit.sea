@@ -31,9 +31,7 @@ def argument():
 
 args = argument()
 import sys
-sys.path.append("/g100_work/OGS23_PRACE_IT/COPERNICUS/bit.sea/")
 
-#import scipy.io.netcdf as NC
 from scipy.io import netcdf_file 
 
 import datetime

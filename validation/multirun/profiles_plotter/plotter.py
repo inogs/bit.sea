@@ -8,19 +8,25 @@ import numpy as np
 from basins import V2
 from commons.mask import Mask
 from commons.submask import SubMask
+from commons.Timelist import TimeList
+from commons import timerequestors
+from commons import season
 from tools.read_config import Config, read_config_from_file
-from tools.depth_profile_algorithms import get_depth_profile_plot_grid
+from tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
+    DepthProfileAlgorithm
 
 try:
     from math import lcm
 except ImportError:
     from math import gcd
 
+
     def lcm(a, b):
         return abs(a * b) // gcd(a, b)
 
 try:
     from mpi4py import MPI
+
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     nranks = comm.size
@@ -30,12 +36,10 @@ except ModuleNotFoundError:
     nranks = 1
     isParallel = False
 
-
 MAIN_DIR = path.dirname(path.realpath(__file__))
 CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
 
 BASINS = tuple(V2.P.basin_list)
-
 
 # A BasinSliceVolume describes a slices among vertical levels of a specific
 # basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
@@ -315,6 +319,84 @@ class PlotDrawer:
         if show_legend_flag != "no" and elements_in_legend:
             current_axis.legend()
 
+    def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
+
+        seasonObj = season.season()
+
+        # seasreq = timerequestors.Clim_season(seasonind, seasonObj)
+        # sind, _ = TimeList(self.timelist).select(seasreq)
+        # maskseas = np.zeros_like(y, dtype=bool)
+        # maskseas[sind] = True
+        # ax.plot(self.values[maskseas, iSub, iCoast, :, 0].mean(axis=0), \
+        #         self.mask.zlevels, self.plotargs, \
+        #         label=self.name + ' ' + seasonstr)
+        elements_in_legend = False
+
+        for seasonind in range(4):
+
+            pi = seasonind // 2
+            pj = seasonind % 2
+
+            seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
+            seasreq = timerequestors.Clim_season(seasonind, seasonObj)
+
+            current_axis = axis_dict[f'P_{pi}_{pj}']
+
+            ytick_labels = (0, 200, 400, 600, 800, 1000)
+            current_axis.set_ylim([0, 1000])
+            current_axis.set_yticks(ytick_labels)
+            current_axis.grid()
+            current_axis.invert_yaxis()
+            current_axis.set_title(seasonstr)
+
+            for plot in self._plots:
+
+                if not plot.draw_depth_profile:
+                    continue
+
+                plot_meshmask = self._get_plot_mask(plot)
+
+                if plot.name in self._loaded_data:
+                    plot_data = self._loaded_data[plot.name]
+                else:
+                    plot_data = plot.get_plot_data(self._variable)
+
+                with plot_data:
+
+                    time_list = TimeList(plot_data.get_time_steps())
+
+                    sind, sweights = time_list.select(seasreq)
+
+                    plot_x_all_data = plot_data.get_values(
+                        time_steps=slice(None), basin=basin_index,
+                        level_index=slice(None))
+
+                    plot_x_season_data = np.sum(
+                        plot_x_all_data[sind, :] * sweights.reshape((-1, 1)),
+                        axis=0
+                    ) / np.sum(sweights)
+
+                plot_y_data = plot_meshmask.zlevels
+
+                plot_kwargs = {}
+                for field in ('alpha', 'color', 'zorder'):
+                    if getattr(plot, field) is not None:
+                        plot_kwargs[field] = getattr(plot, field)
+
+                if plot.legend is not None:
+                    plot_kwargs['label'] = plot.legend
+                    elements_in_legend = True
+
+                current_axis.plot(
+                    plot_x_season_data,
+                    plot_y_data,
+                    **plot_kwargs
+                )
+
+            show_legend_flag = self._config.depth_profiles_options.show_legend
+            if show_legend_flag != "no" and elements_in_legend:
+                current_axis.legend()
+
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
             raise ValueError('Required a plot from an empty PlotDrawer')
@@ -332,7 +414,7 @@ class PlotDrawer:
                 for row in range(plot_grid_rows):
                     plot_structure.append(
                         ['P_{}_{}'.format(row, col) for col in
-                            range(plot_grid_columns)]
+                         range(plot_grid_columns)]
                     )
                 fig, axis_dict = plt.subplot_mosaic(
                     plot_structure,
@@ -355,7 +437,7 @@ class PlotDrawer:
                 if self._draw_depth_profile:
                     current_row.extend(
                         ['P_{}_{}'.format(current_dp_row, c)
-                            for c in range(dp_grid_columns)]
+                         for c in range(dp_grid_columns)]
                     )
                 plot_structure.append(current_row)
 
@@ -378,8 +460,11 @@ class PlotDrawer:
         if self._draw_time_series:
             self._plot_time_series(axis_dict, basin_index, basin)
         if self._draw_depth_profile:
-            self._plot_depth_profile(axis_dict, basin_index)
-
+            if self._config.depth_profiles_options.mode.algorithm is \
+                    DepthProfileAlgorithm.SEASONAL:
+                self._plot_seasonal_depth_profile(axis_dict, basin_index)
+            else:
+                self._plot_depth_profile(axis_dict, basin_index)
         return fig
 
 

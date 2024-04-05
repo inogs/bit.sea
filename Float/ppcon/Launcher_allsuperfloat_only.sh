@@ -8,25 +8,31 @@
 #SBATCH --gres=gpu:1
 
 source ../../Sat/profile.inc
-source /g100_work/OGS23_PRACE_IT/COPERNICUS/py_env_3.9.18/bin/activate
-
+source /g100_work/OGS23_PRACE_IT/COPERNICUS/sequence3.sh
 
 
 TRAIN_DIR=/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/results #inputs
 
 
 
-ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/
+export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/
 ONLINE_REPO_CLUSTERING=${ONLINE_REPO}/PPCON/clustering/
 
 mkdir -p $ONLINE_REPO_CLUSTERING
 
-cp -r ${ONLINE_REPO}/SUPERFLOAT/* $ONLINE_REPO/PPCON
+
 
 for YEAR in 2024; do
 
-    FILE_INPUT=${ONLINE_REPO}/PPCON/year.txt
-    grep ${YEAR} ${ONLINE_REPO}SUPERFLOAT/Float_Index.txt > $FILE_INPUT
+    FILE_INPUT=${ONLINE_REPO}/PPCON/Float_Index_${YEAR}.txt
+    grep ${YEAR} ${ONLINE_REPO}/SUPERFLOAT/Float_Index.txt > $FILE_INPUT
+
+    echo "Start copying from SUPERFLOAT"
+    for filename in $( cat ${FILE_INPUT} | cut -d "," -f1 ) ; do
+       cp ${ONLINE_REPO}/SUPERFLOAT/$filename ${ONLINE_REPO}/PPCON/${filename}
+    done
+    echo "... done"
+
 
     my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $FILE_INPUT -o $ONLINE_REPO_CLUSTERING"
 

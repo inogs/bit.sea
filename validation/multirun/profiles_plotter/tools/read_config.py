@@ -1,20 +1,51 @@
 from collections import namedtuple
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 import yaml
 from pathlib import Path
-from typing import Any
+import re
+from sys import version_info
+from typing import Any, Dict, Mapping, Tuple, Union
 
-from tools.data_object import PickleDataObject
+from tools.data_object import DataObject, PickleDataObject
+from plot_inputs import PlotInputData
+from plot_inputs.single_line_plot import SingleLineInputData
+from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
+    read_depth_profile_mode
 from filters.read_filter_description import read_filter_description
+
+if version_info[1] < 9:
+    from typing import Callable
+else:
+    from collections.abc import Callable
+
+
+DEFAULT_OUTPUT_NAME = 'Multirun_Profiles.${VAR}.${BASIN}.png'
+DEFAULT_DPI = 300
+DEFAULT_FIG_SIZE = (10, 10)
+
+DEFAULT_COAST_INDEX = 1
+DEFAULT_INDICATOR = 0
+
+DEFAULT_MASK_VAR_NAME = 'tmask'
 
 
 EXPECTED_FIELDS = {
     'sources',
     'variable_selections',
+    'variable_labels',
     'plots',
     'levels',
-    'output_dir'
+    'time_series',
+    'depth_profiles',
+    'output'
 }
+
+OUTPUT_FIELDS = (
+    'output_name',
+    'output_dir',
+    'dpi',
+    'fig_size'
+)
 
 
 class InvalidConfigFile(Exception):
@@ -27,23 +58,159 @@ class InvalidPlotConfig(InvalidConfigFile):
 
 Config = namedtuple(
     'Config',
-    ('plots', 'levels', 'output_dir')
+    (
+        'plots', 'levels', 'variable_labels', 'time_series_options',
+        'depth_profiles_options', 'output_options'
+    )
 )
 
-Source = namedtuple('Source', ('path', 'meshmask'))
+Source = namedtuple(
+    'Source',
+    ('path', 'meshmask', 'coast_index', 'mask_var_name')
+)
+
+OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
+
+TimeSeriesOptions = namedtuple(
+    'TimeSeriesOptions',
+    ('show_legend', 'show_depth', 'x_label')
+)
+
+DepthProfilesOptions = namedtuple(
+    'DepthProfilesOptions',
+    ('mode', 'show_legend')
+)
 
 
-def read_number(number_str):
+def read_number(number_str: str) -> Union[int, float]:
     try:
         return int(number_str)
     except ValueError:
         return float(number_str)
 
 
+FIG_SIZE_MASK = re.compile(
+    r'^\s*\(\s*(?P<width>\d+)\s*,\s*(?P<height>\d+)\s*\)\s*$'
+)
+
+
+def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
+    str_match = FIG_SIZE_MASK.match(fig_size_str)
+    if str_match is None:
+        raise ValueError(
+            'Invalid string for fig_size: {}'.format(fig_size_str)
+        )
+    width_size = int(str_match.group('width'))
+    height_size = int(str_match.group('height'))
+
+    return width_size, height_size
+
+
+def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
+        -> TimeSeriesOptions:
+    show_legend_default = "no"
+    show_depth_default = False
+    x_label_default = None
+
+    if option_dict is None:
+        return TimeSeriesOptions(
+            show_legend=show_legend_default,
+            show_depth=show_depth_default,
+            x_label=x_label_default
+        )
+
+    for key in option_dict:
+        if key not in ('show_legend', 'show_depth', 'x_label'):
+            raise ValueError(
+                'Invalid key inside the time series option dictionary: '
+                '{}'.format(key)
+            )
+
+    x_label = x_label_default
+    if 'x_label' in option_dict:
+        x_label = option_dict['x_label']
+
+    show_legend = show_legend_default
+    if 'show_legend' in option_dict:
+        show_legend_raw = option_dict['show_legend']
+        if show_legend_raw is None:
+            show_legend = 'no'
+        elif isinstance(show_legend_raw, bool):
+            show_legend = 'all' if show_legend_raw else 'no'
+        else:
+            show_legend = str(show_legend_raw).strip().lower()
+            if show_legend not in ('all', 'bottom', 'top', 'no'):
+                raise ValueError(
+                    'time_series:show_legend field must contain either "all" '
+                    'or "bottom" or "top" or "no"; received {}'.format(
+                        show_legend
+                    )
+                )
+
+    show_depth = show_depth_default
+    if 'show_depth' in option_dict:
+        if not isinstance(option_dict['show_depth'], bool):
+            if option_dict['show_depth'] is not None:
+                raise ValueError(
+                    'time_series:show_depth field must contain a boolean value'
+                )
+        if option_dict['show_depth'] is None:
+            show_depth = False
+        else:
+            show_depth = bool(option_dict['show_depth'])
+
+    return TimeSeriesOptions(
+        show_legend=show_legend,
+        show_depth=show_depth,
+        x_label=x_label
+    )
+
+
+def read_depth_profiles_options(option_dict: Union[Dict[str, Any], None] = None) \
+        -> DepthProfilesOptions:
+    mode = DEFAULT_DEPTH_PROFILE_MODE
+    show_legend_default = "all"
+
+    if option_dict is None:
+        return DepthProfilesOptions(mode=mode, show_legend=show_legend_default)
+
+    show_legend = show_legend_default
+    if 'show_legend' in option_dict:
+        show_legend_raw = option_dict['show_legend']
+        if show_legend_raw is None:
+            show_legend = 'no'
+        elif isinstance(show_legend_raw, bool):
+            show_legend = 'all' if show_legend_raw else 'no'
+        else:
+            show_legend = str(show_legend_raw).strip().lower()
+            if show_legend not in ('all', 'yes', 'no'):
+                raise ValueError(
+                    'depth_profiles:show_legend field must contain either'
+                    '"yes" or "no"; received {}'.format(
+                        show_legend
+                    )
+                )
+            if show_legend == 'yes':
+                show_legend = "all"
+
+    for key in option_dict:
+        if key not in ('mode', 'show_legend'):
+            raise ValueError(
+                'Invalid key inside the depth profiles option dictionary: '
+                '{}'.format(key)
+            )
+        if key == 'mode':
+            mode = read_depth_profile_mode(option_dict[key])
+
+    return DepthProfilesOptions(mode=mode, show_legend=show_legend)
+
+
 class PlotConfig:
     CONFIG_FIELDS = {
         'source',
         'variables',
+        'coast_index',
+        'indicator',
         'active',
         'color',
         'legend',
@@ -57,31 +224,34 @@ class PlotConfig:
 
     PLOT_NAMES = set()
 
-    def __init__(self, name, source, variables, data_filter=None, active=True,
-                 color=None, alpha=None, alpha_for_time_series=None,
-                 legend=None, zorder=None, draw_time_series=True,
-                 draw_depth_profile=True):
+    def __init__(self, name: str, source: Source, variables: Tuple[str, ...],
+                 plot_builder: Callable[[DataObject], PlotInputData],
+                 data_filter=None, active=True, color=None, alpha=None,
+                 alpha_for_time_series=None, legend=None, zorder=None,
+                 draw_time_series=True, draw_depth_profile=True):
         if name in self.PLOT_NAMES:
             raise ValueError(
                 'A plot named "{}" has already been created'.format(name)
             )
         self.PLOT_NAMES.add(name)
 
-        self.name = name
-        self._source = source
-        self.variables = variables
+        self.name: str = name
+        self._source: Source = source
+        self.variables: Tuple[str, ...] = variables
+        self._plot_builder: Callable[[DataObject], PlotInputData] = \
+            plot_builder
 
-        self._active = active
+        self._active: bool = active
         self._filter = data_filter
 
         self._color = color
         self._alpha = alpha
         self._alpha_for_time_series = alpha_for_time_series
-        self._legend = legend
-        self._zorder = zorder
+        self._legend: Union[str, None] = legend
+        self._zorder: Union[int, None] = zorder
 
-        self._draw_time_series = bool(draw_time_series)
-        self._draw_depth_profile = bool(draw_depth_profile)
+        self._draw_time_series: bool = bool(draw_time_series)
+        self._draw_depth_profile: bool = bool(draw_depth_profile)
 
     def get_plot_data(self, variable):
         if variable not in self.variables:
@@ -93,16 +263,17 @@ class PlotConfig:
             )
 
         data_object = PickleDataObject(self.source.path, variable)
+        plot_input = self._plot_builder(data_object)
         if self._filter is None:
-            return data_object
+            return plot_input
 
-        return self._filter.get_filtered_object(data_object)
+        return self._filter.get_filtered_object(plot_input)
 
     @property
-    def source(self):
+    def source(self) -> Source:
         return self._source
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self._active
 
     @property
@@ -118,19 +289,19 @@ class PlotConfig:
         return self._alpha_for_time_series
 
     @property
-    def legend(self):
-        return self.name if self._legend is None else self._legend
+    def legend(self) -> Union[str, None]:
+        return self._legend
 
     @property
-    def zorder(self):
+    def zorder(self) -> int:
         return self._zorder
 
     @property
-    def draw_time_series(self):
+    def draw_time_series(self) -> bool:
         return self._draw_time_series
 
     @property
-    def draw_depth_profile(self):
+    def draw_depth_profile(self) -> bool:
         return self._draw_depth_profile
 
     @staticmethod
@@ -171,6 +342,21 @@ class PlotConfig:
             )
         variables = variable_selections[variable_selection_name]
 
+        if 'coast_index' not in plot_config:
+            if plot_source.coast_index is not None:
+                coast_index = plot_source.coast_index
+            else:
+                coast_index = DEFAULT_COAST_INDEX
+        else:
+            coast_index = int(plot_config['coast_index'])
+
+        indicator = DEFAULT_INDICATOR
+        if 'indicator' in plot_config:
+            indicator = int(plot_config['indicator'])
+
+        def plot_builder(data_object):
+            return SingleLineInputData(data_object, coast_index, indicator)
+
         plot_config_kwargs = {}
 
         def read_boolean(field_name):
@@ -192,13 +378,24 @@ class PlotConfig:
                 )
 
         add_to_kwargs('color')
-        add_to_kwargs('legend')
         add_to_kwargs('zorder', int)
         add_to_kwargs('alpha', float)
         add_to_kwargs('alpha_for_time_series', float)
         add_to_kwargs('active', read_boolean('active'))
         add_to_kwargs('draw_depth_profile', read_boolean('draw_depth_profile'))
         add_to_kwargs('draw_time_series', read_boolean('draw_time_series'))
+
+        # If the legend is not specified, is the name of the plot. If it is
+        # "None" or "False", it is None
+        if 'legend' in plot_config:
+            if plot_config['legend'] is None:
+                plot_config_kwargs['legend'] = None
+            elif bool(plot_config['legend']) is False:
+                plot_config_kwargs['legend'] = None
+            else:
+                plot_config_kwargs['legend'] = str(plot_config['legend'])
+        else:
+            plot_config_kwargs['legend'] = plot_name
 
         plot_filter = None
         if 'filter' in plot_config:
@@ -210,6 +407,7 @@ class PlotConfig:
             plot_name,
             plot_source,
             variables,
+            plot_builder,
             data_filter=plot_filter,
             **plot_config_kwargs
         )
@@ -244,6 +442,7 @@ def read_config(config_datastream):
             'Field "sources" must be a dictionary that associates a '
             'name to a path'
         )
+    source_fields = {'path', 'meshmask', 'coast_index', 'mask_var_name'}
     for source_name, source_config in sources_raw.items():
         if not isinstance(source_config, dict):
             raise InvalidConfigFile(
@@ -252,7 +451,7 @@ def read_config(config_datastream):
                 '{}'.format(source_name, source_config)
             )
         for field in source_config:
-            if field not in ('path', 'meshmask'):
+            if field not in source_fields:
                 raise InvalidConfigFile(
                     'Invalid field "{}" for source "{}"'.format(
                         source_name,
@@ -265,11 +464,29 @@ def read_config(config_datastream):
             )
         if 'meshmask' not in source_config:
             raise InvalidConfigFile(
-                'No field "meshmask" specified for source {}'.format(source_name)
+                'No field "meshmask" specified for source {}'.format(
+                    source_name
+                )
             )
         source_path = Path(str(source_config['path']))
         source_meshmask = Path(str(source_config['meshmask']))
-        sources[str(source_name)] = Source(source_path, source_meshmask)
+
+        if 'coast_index' not in source_config:
+            coast_index = None
+        else:
+            coast_index = int(source_config['coast_index'])
+
+        if 'mask_var_name' in source_config:
+            mask_var_name = str(source_config['mask_var_name'])
+        else:
+            mask_var_name = DEFAULT_MASK_VAR_NAME
+
+        sources[str(source_name)] = Source(
+            source_path,
+            source_meshmask,
+            coast_index,
+            mask_var_name
+        )
 
     if 'variable_selections' not in yaml_content:
         raise InvalidConfigFile(
@@ -292,6 +509,20 @@ def read_config(config_datastream):
             )
         variable_selections[str(selection_name)] = \
             tuple(str(i) for i in selection_vars)
+
+    # Read the labels that we will use for variables
+    if 'variable_labels' not in yaml_content:
+        variable_labels = {}
+    else:
+        variable_labels_field = yaml_content['variable_labels']
+        if not isinstance(variable_labels_field, Mapping):
+            raise InvalidConfigFile(
+                'The field variable_labels must be a dictionary that '
+                'associates a variable name to its corresponding label'
+            )
+        variable_labels = {
+            v: str(variable_labels_field[v]) for v in variable_labels_field
+        }
 
     # Read levels, ensuring that they are a list of integers or floats
     if 'levels' not in yaml_content:
@@ -326,12 +557,69 @@ def read_config(config_datastream):
         levels.append(read_number(raw_level))
     levels = tuple(levels)
 
-    # Read the output dir
-    if 'output_dir' not in yaml_content:
-        raise InvalidConfigFile(
-            'Field "output_dir" not found inside the config file'
+    if 'time_series' in yaml_content:
+        time_series_options = read_time_series_options(
+            yaml_content['time_series']
         )
-    output_dir = Path(str(yaml_content['output_dir']))
+    else:
+        time_series_options = read_time_series_options()
+
+    if 'depth_profiles' in yaml_content:
+        depth_profiles_options = read_depth_profiles_options(
+            yaml_content['depth_profiles']
+        )
+    else:
+        depth_profiles_options = read_depth_profiles_options()
+
+    # Read the output options
+    if 'output' not in yaml_content:
+        raise InvalidConfigFile(
+            'Field "output" not found inside the config file'
+        )
+    output = yaml_content['output']
+    if not isinstance(output, Mapping):
+        raise InvalidConfigFile(
+            'Field "output" must be a dictionary with several fields: '
+            '{}...'.format(', '.join(sorted(list(OUTPUT_FIELDS))))
+        )
+    for key in output:
+        if key not in OUTPUT_FIELDS:
+            raise InvalidConfigFile(
+                'Field "{}" is not allowed inside field "output"'.format(
+                    key
+                )
+            )
+    dpi = DEFAULT_DPI
+    if 'dpi' in output:
+        dpi = int(output['dpi'])
+    if 'output_dir' not in output:
+        raise InvalidConfigFile(
+            'output_dir has not been specified in the output section'
+        )
+    output_dir = Path(str(output['output_dir']))
+
+    # If output dir does not exist, create it
+    if not output_dir.exists():
+        if not output_dir.parent.exists():
+            raise IOError('Directory {} does not exists'.format(output_dir))
+        output_dir.mkdir(exist_ok=True)
+
+    fig_size = DEFAULT_FIG_SIZE
+    if 'fig_size' in output:
+        try:
+            fig_size = read_fig_size(output['fig_size'])
+        except ValueError:
+            raise InvalidConfigFile('Invalid fig_size parameter')
+
+    output_name = DEFAULT_OUTPUT_NAME
+    if 'output_name' in output:
+        output_name = str(output_name)
+    output_options = OutputOptions(
+        output_name=output_name,
+        dpi=dpi,
+        fig_size=fig_size,
+        output_dir=output_dir
+    )
 
     # Finally, the most complicated part; reading the plots
     if 'plots' not in yaml_content:
@@ -342,8 +630,8 @@ def read_config(config_datastream):
     plots_raw = yaml_content['plots']
     if not isinstance(plots_raw, dict):
         raise InvalidConfigFile(
-            'Fields "plots" must be a dictionary tat associates to a plot name'
-            'its configuration'
+            'Fields "plots" must be a dictionary that associates to a plot'
+            'name its configuration'
         )
     for plot_name, plot_config in plots_raw.items():
         current_plot = PlotConfig.read_plot_config(
@@ -358,5 +646,8 @@ def read_config(config_datastream):
     return Config(
         plots=plots,
         levels=levels,
-        output_dir=output_dir
+        variable_labels=variable_labels,
+        time_series_options=time_series_options,
+        depth_profiles_options=depth_profiles_options,
+        output_options=output_options
     )

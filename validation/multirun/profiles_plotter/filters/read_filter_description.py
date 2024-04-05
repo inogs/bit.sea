@@ -1,5 +1,6 @@
 import re
-from filters.filter import InvalidFilterDescription
+from filters.filter import ComposedFilter, InvalidFilterDescription
+from filters.crop_time import TimeCroppingFilter
 from filters.moving_average_filter import MovingAverageFilter
 
 
@@ -11,11 +12,20 @@ FILTER_DESCRIPTION_MASK = re.compile(
 # Add here the name of the filter with its association every time you introduce
 # a new filter
 _FILTER_ASSOCIATION = {
-    'movingaverage': MovingAverageFilter
+    'movingaverage': MovingAverageFilter,
+    'croptime': TimeCroppingFilter
 }
 
 
 def read_filter_description(filter_description: str):
+    if ';' in filter_description:
+        # Multiple filters have been submitted: we analyze them one by one
+        filters = tuple(
+            read_filter_description(k) for k in filter_description.split(';')
+        )
+        return ComposedFilter(filters)
+
+    # Now we analyze the description of a single filter
     mask_match = FILTER_DESCRIPTION_MASK.match(filter_description)
     if mask_match is None:
         raise InvalidFilterDescription(

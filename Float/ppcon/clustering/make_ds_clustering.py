@@ -5,9 +5,7 @@ import pandas as pd
 import netCDF4 as nc
 from discretization import dict_max_pressure, dict_interval
 from make_ds.preprocessing import *
-import sys
-#sys.path.append("/g100_scratch/userexternal/camadio0/PPCON/bit.sea/")
-from commons.time_interval import TimeInterval
+
 
 max_pres_nitrate = dict_max_pressure["NITRATE"]
 interval_nitrate = dict_interval["NITRATE"]
@@ -125,42 +123,27 @@ def make_dict_single_float(path, date_time):
 
     return dict_float
 
-"""
-amadio new 
-"""
-def col_to_dt(df,name_col_object, name_col_datetime64):
-    """ from object to datetime --> name_col
-    """
-    df[name_col_datetime64] = pd.to_datetime(df[name_col_object]).dt.date
-    df[name_col_datetime64] = pd.to_datetime(df[name_col_datetime64])
-    return(df)
-"""
-amadio modified inpit dir
-"""
+
 def make_dataset(path_float_index, INDIR):
     """ path_float_index  =  DIFF_floats_20240202.txt or Float_index.txt
         INDIR             = ONLINE_REPO
     """ 
  
     if path_float_index.split("/")[-1].startswith('DIFF_floats'):
-       print(path_float_index)
-       print(path_float_index)
-       print(path_float_index)
-       print(path_float_index)
-       col           = ['filename','time','lat','lon','type','lenght','if','vars','vartype','updated']
-       df            = pd.read_csv(path_float_index,header=None)
-       df.columns=col
-       # adjust the file diff as a floatindex.txt from the name to the datetype
-       df.filename =  df.filename.str.replace("coriolis/", "") # remove coriolis
-       df.filename =  df.filename.str.replace("profiles/", "") # remove profile
-       df.time     =  df['time'].apply(str)
-       df.time     =  df.time.str[:8]   # ony date as in float index 
-       name_list     = df.filename.tolist()
-       datetime_list = df.time.tolist()
+        col           = ['filename','time','lat','lon','type','lenght','if','vars','vartype','updated']
+        df            = pd.read_csv(path_float_index,header=None)
+        df.columns=col
+        # adjust the file diff as a floatindex.txt from the name to the datetype
+        df.filename =  df.filename.str.replace("coriolis/", "") # remove coriolis
+        df.filename =  df.filename.str.replace("profiles/", "") # remove profile
+        df.time     =  df['time'].apply(str)
+        df.time     =  df.time.str[:8]   # ony date as in float index
+        name_list     = df.filename.tolist()
+        datetime_list = df.time.tolist()
        
     else: #update_file.split("/")[-1].startswith('Float_Index'):
-       name_list     = pd.read_csv(path_float_index, header=None).to_numpy()[:, 0].tolist()
-       datetime_list = pd.read_csv(path_float_index, header=None).to_numpy()[:, 3].tolist() 
+        name_list     = pd.read_csv(path_float_index, header=None).to_numpy()[:, 0].tolist()
+        datetime_list = pd.read_csv(path_float_index, header=None).to_numpy()[:, 3].tolist()
     dict_ds_accepted = dict()
 
     for i in range(np.size(name_list)):

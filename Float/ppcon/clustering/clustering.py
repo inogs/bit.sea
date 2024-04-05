@@ -1,17 +1,3 @@
-import os
-import numpy as np
-import pandas as pd
-import torch
-from torch.utils.data import DataLoader
-import sys
-import matplotlib.pyplot as plt
-from dataset_clustering import FloatDataset
-import sys
-from commons.utils import addsep
-from commons.time_interval import TimeInterval
-
-print('ok ')
-""" Amadio """
 import argparse
 
 def argument():
@@ -26,7 +12,7 @@ def argument():
                             type = str,
                             required = True,
                             default = './',
-                            help = 'Input dir')
+                            help = 'an ONLINE REPO dir')
 
 
     parser.add_argument(   '--outdir', '-o',
@@ -44,6 +30,16 @@ def argument():
     return parser.parse_args()
 
 args   = argument()
+
+import os
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader
+from dataset_clustering import FloatDataset
+from commons.utils import addsep
+from make_ds_clustering import make_pandas_df
+
+
 INDIR  = addsep(args.inputdir)
 input_file=args.update_file
 OUTDIR = addsep(args.outdir)
@@ -52,34 +48,18 @@ OUTDIR = addsep(args.outdir)
 # check if the file of input start with the string, I splitted the path to avoid 
 # error due to the filepath folders name
 if input_file.split("/")[-1].startswith('DIFF_floats'):
-    print(" .... Dataset is updated")
+    pass
 elif input_file.split("/")[-1].startswith('Float_Index'):
-   print  (" .... Dataset is entirely reworked")
+    print  (" .... Dataset is entirely reworked")
 else:
-   raise ValueError("please check the input file") 
+    raise ValueError("Input file name must start with 'DIFF_floats' or 'Float_Index' ")
 
-
-
-"""end Amadio"""
-
-def make_ds(training_folder,  INDIR):
-    """ prepare the directories and call the make_pandas_df function
-    """
-
-    if training_folder == "SUPERFLOAT":
-        from make_ds_clustering import make_pandas_df
-
-        if not os.path.exists( INDIR  ):
-            os.mkdir( INDIR  )
-
-        if not os.path.exists( OUTDIR):
-            os.mkdir( OUTDIR  )
-        
-        print("making ds...")
-        make_pandas_df(input_file ,  OUTDIR  + "ds_sf_clustering.csv", INDIR)
-        print("superfloat clustering complete dataset created")
-
-    return
 
 print("Preparing file csv for clustering")
-make_ds("SUPERFLOAT",  INDIR)  # amadio Inserted INPUDIR
+make_pandas_df(input_file ,  OUTDIR  + "ds_sf_clustering.csv", INDIR)
+print("superfloat clustering complete dataset created")
+
+
+
+
+

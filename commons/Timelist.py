@@ -376,7 +376,19 @@ class TimeList():
             return self.__generaltimeselector(requestor)
 
         if isinstance(requestor, requestors.Season_req):
-            return self.__generaltimeselector(requestor)
+            SELECTION=[]
+            weights = []
+            if self.inputFrequency[:5]=='days=':
+                for it,t in enumerate(self.Timelist):
+                    t1 = computeTimeWindow(self.inputFrequency,t);
+                    t2 = TimeInterval.fromdatetimes(requestor.time_interval.start_time, requestor.time_interval.end_time)
+                    weight = t1.overlapTime(t2);
+                    if (weight > 0. ) :
+                        SELECTION.append(it)
+                        weights.append(weight)
+                return SELECTION , np.array(weights)
+            else:
+                return self.__generaltimeselector(requestor)
 
         if isinstance(requestor, requestors.Yearly_req):
             return self.__generaltimeselector(requestor)
@@ -690,8 +702,14 @@ class TimeList():
 
 
 if __name__ == '__main__':
-    Days17 = DL.getTimeList("19970127-00:00:00","19970601-00:00:00", days=17)
-    TTL     = TimeList(Days17)
+    import sys
+    Days5 = DL.getTimeList("19970127-00:00:00","19980601-00:00:00", days=5)
+    TTL     = TimeList(Days5)
+    seas_req = requestors.Season_req(1997,2,seasonobj)   #
+    seas_req=requestors.Clim_season(1,seasonobj)
+    ii,w = TTL.select(seas_req)
+    sys.exit()
+
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii,weights = TTL.select(req)
@@ -699,8 +717,8 @@ if __name__ == '__main__':
     H2 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", hours=2)
     TL     = TimeList(H2)
     REQS = TL.getOwnList()
-    import sys
-    sys.exit()
+    
+    
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)
     Sec_req=requestors.seconds_req(2018,3,5,12,0,delta_seconds=900)

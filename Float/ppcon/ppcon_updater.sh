@@ -14,23 +14,36 @@ ONLINE_REPO_CLUSTERING=${ONLINE_REPO}/PPCON/clustering/
 
 mkdir -p $ONLINE_REPO_CLUSTERING
 
-FILE_INPUT=/g100_work/OGS_prodC/OPA/V10C-prod/log/daily/DIFF_floats.20240404-22:00:19.txt
+FILE_INPUT=/g100_work/OGS_prodC/OPA/V10C-prod/log/daily/DIFF_floats.20240401-21:51:40.txt
+LOCAL_INPUT=$ONLINE_REPO/PPCON/DIFF_floats.txt
+
+
+cd $PWD > $LOCAL_INPUT
+
+while read -r line ; do
+filename=$( echo $line | cut -d "," -f1);
+echo $filename;
+  V1=${filename/coriolis\//}
+  V2=${V1/profiles\//}
+  supefloat_file=${ONLINE_REPO}/SUPERFLOAT/${V2}
+  [ -f $superfloat_file ] && echo $line >> $LOCAL_INPUT
+
+done; < ${FILE_INPUT}
+
 
 echo "Start copying from SUPERFLOAT"
-for filename in $( cat ${FILE_INPUT} | cut -d "," -f1 ) ; do
- do
-   V1=${filename/coriolis\//}
-   V2=${V1/profiles\//}
+for filename in $( cat ${LOCAL_INPUT} | cut -d "," -f1 ) ; do
+  V1=${filename/coriolis\//}
+  V2=${V1/profiles\//}
    cp -v ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
  done
 
 echo "... done"
 
 
-my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $FILE_INPUT -o $ONLINE_REPO_CLUSTERING"
+my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $LOCAL_INPUT -o $ONLINE_REPO_CLUSTERING"
 
 my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $TRAIN_DIR -p $ONLINE_REPO/PPCON"
 
 
 my_prex_or_die "python dump_index.py -i $ONLINE_REPO${PPCON} -o $ONLINE_REPO${PPCON}/Float_Index.txt -t ppcon_float"
-

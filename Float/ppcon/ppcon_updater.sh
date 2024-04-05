@@ -21,7 +21,7 @@ for filename in $( cat ${FILE_INPUT} | cut -d "," -f1 ) ; do
  do
    V1=${filename/coriolis\//}
    V2=${V1/profiles\//}
-   cp ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
+   cp -v ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
  done
 
 echo "... done"

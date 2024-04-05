@@ -30,7 +30,7 @@ for YEAR in 2024; do
 
     echo "Start copying from SUPERFLOAT"
     for filename in $( cat ${FILE_INPUT} | cut -d "," -f1 ) ; do
-       cp ${ONLINE_REPO}/SUPERFLOAT/$filename ${ONLINE_REPO}/PPCON/${filename}
+       cp -v ${ONLINE_REPO}/SUPERFLOAT/$filename ${ONLINE_REPO}/PPCON/${filename}
     done
     echo "... done"
 

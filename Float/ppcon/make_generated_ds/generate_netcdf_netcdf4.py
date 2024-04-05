@@ -1,24 +1,8 @@
 import argparse
-import os
-import numpy as np
-import pandas as pd
-import netCDF4 as nc
-import torch
-from torch.utils.data import DataLoader
-import sys
-from discretization import *
-from make_ds.make_superfloat_ds import discretize
-from utils import upload_and_evaluate_model, get_output
-from dataset import FloatDataset as FloatDebug
-from dataset_with_float_names import FloatDataset
 
-print("start filling outdir")
-
-
-""" Amadio """
-from commons.utils import addsep
 def argument():
     parser = argparse.ArgumentParser(description = '''
+    Appends ppcon variables to NetCDF files
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -40,6 +24,19 @@ def argument():
     return parser.parse_args()
 
 args   = argument()
+
+import numpy as np
+import pandas as pd
+import netCDF4 as nc
+import torch
+from torch.utils.data import DataLoader
+from discretization import *
+from make_ds.make_superfloat_ds import discretize
+from utils import upload_and_evaluate_model, get_output
+from dataset import FloatDataset as FloatDebug
+from dataset_with_float_names import FloatDataset
+from commons.utils import addsep
+
 
 INDIR   = addsep(args.inputdir)   #online_repo
 MODELDIR  = addsep(args.modeldir)     #CODE_PPCON/results
@@ -63,13 +60,12 @@ def treating_nitrate_like_coriolis(pres_nitrate, nitrate_ppcon):
     if len(z_interp) != len(pres_nitrate[ii]):
         nitrate_ppcon = nitrate_ppcon[ii]
         nitrate_ppcon=np.interp( z_interp, pres_nitrate[ii], nitrate_ppcon)
-        return(nitrate_ppcon)
     else:
-       pres_nitrate = pres_nitrate[ii]
-       nitrate_ppcon = nitrate_ppcon[ii]
-       return(nitrate_ppcon)
+        pres_nitrate = pres_nitrate[ii]
+        nitrate_ppcon = nitrate_ppcon[ii]
+    return nitrate_ppcon
 
-""" end Amadio """
+
 
 max_pres_nitrate = dict_max_pressure["NITRATE"]
 interval_nitrate = dict_interval["NITRATE"]
@@ -142,12 +138,11 @@ for III in range(0,len(my_df)):
     year, day_rad, lat, lon, temp, psal, doxy, nitrate, chla, BBP700, name_float = sample
     tmp = my_df.iloc[III,:]
     if name_float != tmp.name_float:
-       sys.exit("Error in selecting rows of the tensor")
+        raise ValueError("Error in selecting rows of the tensor")
     sample_prediction = list(sample[:-1])
     name_file = name_float
     main_dir = name_float[2:-4]
-    print(f"generating profiles   "+  name_float )
-    print("Processed profile #: " + str(III+1) +'/'+ str(len(my_df )))
+    print(f"generating profile   "+  name_float + " " + str(III+1) +'/'+ str(len(my_df )))
     # open the netcfd file in the "ds/SUP?>,ERFLOAT" directory
     path_superfloat = FLOAT_DIR + f"/{main_dir}/{name_file}.nc"
     ds = nc.Dataset(path_superfloat, 'a')  # ds = nc.Dataset(path_superfloat)
@@ -176,9 +171,6 @@ for III in range(0,len(my_df)):
     nitrate_ppcon = torch.squeeze(nitrate_ppcon)
     nitrate_ppcon = nitrate_ppcon.numpy()
 
-    # check if the variable is contained in the ds - if not insert the variable generate also as "NITRATE"
-    if "NITRATE" not in ds.variables.keys():
-        pass
 
     # add the "NITRATE_PPCon" variable and "PRES" in any case
     nc_nitrate_ppcon = ds.createVariable('NITRATE_PPCON', "f", ('nNITRATE_PPCON',))
@@ -198,19 +190,19 @@ for III in range(0,len(my_df)):
     doxy_chla = discretize(pres_doxy_nc, doxy_nc, max_pres_chla, interval_chla)
 
     if len(temp_chla.shape) ==1:
-       # is vector
-       sample_prediction[4] = temp_chla
-       sample_prediction[5] = psal_chla
-       sample_prediction[6] = doxy_chla
+        # is vector
+        sample_prediction[4] = temp_chla
+        sample_prediction[5] = psal_chla
+        sample_prediction[6] = doxy_chla
 
     elif len(temp_chla.shape) ==0:
-       # is scalar # add one dimension 
-       sample_prediction[4] = temp_chla.unsqueeze(0)
-       sample_prediction[5] = psal_chla.unsqueeze(0)
-       sample_prediction[6] = doxy_chla.unsqueeze(0)
+        # is scalar # add one dimension
+        sample_prediction[4] = temp_chla.unsqueeze(0)
+        sample_prediction[5] = psal_chla.unsqueeze(0)
+        sample_prediction[6] = doxy_chla.unsqueeze(0)
 
     else:
-       sys.exit("Check the dimension of temp_chla, psal_chla ,doxy_chla") 
+        raise ValueError("Check the dimension of temp_chla, psal_chla ,doxy_chla")
 
     chla_ppcon = get_output(sample=sample_prediction, model_day=model_day_chla, model_year=model_year_chla,
                             model_lat=model_lat_chla, model_lon=model_lon_chla, model=model_chla)
@@ -219,8 +211,6 @@ for III in range(0,len(my_df)):
     chla_ppcon = torch.squeeze(chla_ppcon)
     chla_ppcon = chla_ppcon.numpy()
 
-    if "CHLA" not in ds.variables.keys():
-        pass
 
     # add the "CHLA_PPCon" variable and "PRES" in any case
     nc_chla_ppcon = ds.createVariable('CHLA_PPCON', "f", ('nCHLA_PPCON',))
@@ -239,19 +229,19 @@ for III in range(0,len(my_df)):
     doxy_BBP700 = discretize(pres_doxy_nc, doxy_nc, max_pres_BBP700, interval_BBP700)
 
     if len(temp_BBP700.shape) ==1:
-       # is vector  
-       sample_prediction[4] = temp_BBP700
-       sample_prediction[5] = psal_BBP700
-       sample_prediction[6] = doxy_BBP700
+        # is vecto
+        sample_prediction[4] = temp_BBP700
+        sample_prediction[5] = psal_BBP700
+        sample_prediction[6] = doxy_BBP700
 
     elif len(temp_BBP700.shape) ==0:
-       # is scalar # add one dimension
-       sample_prediction[4] = temp_BBP700.unsqueeze(0)
-       sample_prediction[5] = psal_BBP700.unsqueeze(0)
-       sample_prediction[6] = doxy_BBP700.unsqueeze(0) 
+        # is scalar # add one dimension
+        sample_prediction[4] = temp_BBP700.unsqueeze(0)
+        sample_prediction[5] = psal_BBP700.unsqueeze(0)
+        sample_prediction[6] = doxy_BBP700.unsqueeze(0)
 
     else:
-       sys.exit("Check the dimension of temp_BBP700, psal_BBP700, doxy_BBP700")
+        raise ValueError("Check the dimension of temp_BBP700, psal_BBP700, doxy_BBP700")
 
     BBP700_ppcon = get_output(sample=sample_prediction, model_day=model_day_BBP700, model_year=model_year_BBP700,
                               model_lat=model_lat_BBP700, model_lon=model_lon_BBP700, model=model_BBP700)
@@ -260,8 +250,6 @@ for III in range(0,len(my_df)):
     BBP700_ppcon = torch.squeeze(BBP700_ppcon)
     BBP700_ppcon = BBP700_ppcon.numpy()
 
-    if "BBP700" not in ds.variables.keys():
-        pass 
 
     # add the "BBP700_PPCon" variable and "PRES" in any case
     nc_BBP700_ppcon = ds.createVariable('BBP700_PPCON', "f", ('nBBP700_PPCON',))

@@ -1,14 +1,5 @@
 #! /bin/bash
 
-#SBATCH --job-name=generate_superfloat
-#SBATCH --ntasks=1
-#SBATCH --time=00:15:00
-#SBATCH --account=OGS23_PRACE_IT
-#SBATCH --partition=g100_usr_interactive
-#SBATCH --gres=gpu:1
-
-
-
 source ../../Sat/profile.inc
 source /g100_work/OGS23_PRACE_IT/COPERNICUS/sequence3.sh
 
@@ -21,9 +12,6 @@ export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE
 ONLINE_REPO_CLUSTERING=${ONLINE_REPO}/PPCON/clustering/
 
 mkdir -p $ONLINE_REPO_CLUSTERING
-
-
-
 
 FILE_INPUT=/g100_work/OGS_prodC/OPA/V10C-prod/log/daily/DIFF_floats.20240404-22:00:19.txt
 

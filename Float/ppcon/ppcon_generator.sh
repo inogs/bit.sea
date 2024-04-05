@@ -1,6 +1,6 @@
 #! /bin/bash
 
-#SBATCH --job-name=generate_superfloat
+#SBATCH --job-name=ppcon
 #SBATCH --ntasks=1
 #SBATCH --time=01:05:00
 #SBATCH --account=OGS23_PRACE_IT
@@ -16,6 +16,7 @@ TRAIN_DIR=/g100_scratch/userexternal/camadio0/PPCON/bit.sea/Float/ppcon/results 
 
 
 export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/
+export ONLINE_REPO=/g100_scratch/userexternal/gbolzon0/carolina/ONLINE_REPO/
 ONLINE_REPO_CLUSTERING=${ONLINE_REPO}/PPCON/clustering/
 
 mkdir -p $ONLINE_REPO_CLUSTERING
@@ -42,15 +43,5 @@ for YEAR in 2024; do
 done
 
 
-
-
-
-
-
-############################################################
-########## 3. creo il float indexl dataset : PPCON #########
-############################################################
 my_prex_or_die "python dump_index.py -i $ONLINE_REPO${PPCON} -o $ONLINE_REPO${PPCON}/Float_Index.txt -t ppcon_float"
-
-
 

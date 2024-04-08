@@ -321,24 +321,14 @@ class PlotDrawer:
 
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
 
-        seasonObj = season.season()
-
-        # seasreq = timerequestors.Clim_season(seasonind, seasonObj)
-        # sind, _ = TimeList(self.timelist).select(seasreq)
-        # maskseas = np.zeros_like(y, dtype=bool)
-        # maskseas[sind] = True
-        # ax.plot(self.values[maskseas, iSub, iCoast, :, 0].mean(axis=0), \
-        #         self.mask.zlevels, self.plotargs, \
-        #         label=self.name + ' ' + seasonstr)
+        season_obj = season.season()
         elements_in_legend = False
 
-        for seasonind in range(4):
+        for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
+            season_req = timerequestors.Clim_season(season_ind, season_obj)
 
-            pi = seasonind // 2
-            pj = seasonind % 2
-
-            seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
-            seasreq = timerequestors.Clim_season(seasonind, seasonObj)
+            pi = season_ind // 2
+            pj = season_ind % 2
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
 
@@ -347,7 +337,7 @@ class PlotDrawer:
             current_axis.set_yticks(ytick_labels)
             current_axis.grid()
             current_axis.invert_yaxis()
-            current_axis.set_title(seasonstr)
+            current_axis.set_title(season_str)
 
             for plot in self._plots:
 
@@ -365,16 +355,16 @@ class PlotDrawer:
 
                     time_list = TimeList(plot_data.get_time_steps())
 
-                    sind, sweights = time_list.select(seasreq)
+                    s_ind, s_weights = time_list.select(season_req)
 
                     plot_x_all_data = plot_data.get_values(
                         time_steps=slice(None), basin=basin_index,
                         level_index=slice(None))
 
                     plot_x_season_data = np.sum(
-                        plot_x_all_data[sind, :] * sweights.reshape((-1, 1)),
+                        plot_x_all_data[s_ind, :] * s_weights.reshape((-1, 1)),
                         axis=0
-                    ) / np.sum(sweights)
+                    ) / np.sum(s_weights)
 
                 plot_y_data = plot_meshmask.zlevels
 

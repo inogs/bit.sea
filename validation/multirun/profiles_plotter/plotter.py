@@ -16,7 +16,7 @@ from tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
 try:
-    from math import lcm
+    from math import gcd, lcm
 except ImportError:
     from math import gcd
 
@@ -416,18 +416,25 @@ class PlotDrawer:
                 dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                     self._config.depth_profiles_options.mode
                 )
+                ts_ratio, dp_ratio = self._config.output_options.fig_ratio
             else:
                 dp_grid_rows, dp_grid_columns = 1, 1
+                ts_ratio, dp_ratio = 1, 1
             grid_rows = lcm(len(self._levels), dp_grid_rows)
+            column_unit = dp_grid_columns // gcd(dp_ratio, dp_grid_columns)
+            ts_cols_per_plot = ts_ratio * column_unit
+            dp_cols_per_plot = dp_ratio * column_unit // dp_grid_columns
+
             plot_structure = []
             for row in range(grid_rows):
                 current_level = row // (grid_rows // len(self._levels))
                 current_dp_row = row // (grid_rows // dp_grid_rows)
-                current_row = ['L{}'.format(current_level)] * dp_grid_columns
+                current_row = ['L{}'.format(current_level)] * ts_cols_per_plot
                 if self._draw_depth_profile:
                     current_row.extend(
                         ['P_{}_{}'.format(current_dp_row, c)
-                         for c in range(dp_grid_columns)]
+                         for c in range(dp_grid_columns)
+                         for _ in range(dp_cols_per_plot)]
                     )
                 plot_structure.append(current_row)
 

@@ -1,6 +1,7 @@
 from collections import namedtuple
 from collections.abc import Iterable
 import yaml
+from math import gcd
 from pathlib import Path
 import re
 from sys import version_info
@@ -22,6 +23,7 @@ else:
 DEFAULT_OUTPUT_NAME = 'Multirun_Profiles.${VAR}.${BASIN}.png'
 DEFAULT_DPI = 300
 DEFAULT_FIG_SIZE = (10, 10)
+DEFAULT_FIG_RATIO = (1, 1)
 
 DEFAULT_COAST_INDEX = 1
 DEFAULT_INDICATOR = 0
@@ -44,7 +46,8 @@ OUTPUT_FIELDS = (
     'output_name',
     'output_dir',
     'dpi',
-    'fig_size'
+    'fig_size',
+    'fig_ratio'
 )
 
 
@@ -89,21 +92,21 @@ def read_number(number_str: str) -> Union[int, float]:
         return float(number_str)
 
 
-FIG_SIZE_MASK = re.compile(
-    r'^\s*\(\s*(?P<width>\d+)\s*,\s*(?P<height>\d+)\s*\)\s*$'
+INTEGER_PAIR = re.compile(
+    r'^\s*\(\s*(?P<first>\d+)\s*,\s*(?P<second>\d+)\s*\)\s*$'
 )
 
 
-def read_fig_size(fig_size_str: str) -> Tuple[int, int]:
-    str_match = FIG_SIZE_MASK.match(fig_size_str)
+def read_pair_of_integers(fig_size_str: str) -> Tuple[int, int]:
+    str_match = INTEGER_PAIR.match(fig_size_str)
     if str_match is None:
         raise ValueError(
-            'Invalid string for fig_size: {}'.format(fig_size_str)
+            'Invalid string for a pair of integers: {}'.format(fig_size_str)
         )
-    width_size = int(str_match.group('width'))
-    height_size = int(str_match.group('height'))
+    first = int(str_match.group('first'))
+    second = int(str_match.group('second'))
 
-    return width_size, height_size
+    return first, second
 
 
 def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
@@ -607,17 +610,31 @@ def read_config(config_datastream):
     fig_size = DEFAULT_FIG_SIZE
     if 'fig_size' in output:
         try:
-            fig_size = read_fig_size(output['fig_size'])
+            fig_size = read_pair_of_integers(output['fig_size'])
         except ValueError:
             raise InvalidConfigFile('Invalid fig_size parameter')
+
+    fig_ratio = DEFAULT_FIG_RATIO
+    if 'fig_ratio' in output:
+        try:
+            fig_ratio_raw = read_pair_of_integers(output['fig_ratio'])
+            fig_ratio_gcd = gcd(fig_ratio_raw[0], fig_ratio_raw[1])
+            fig_ratio = (
+                fig_ratio_raw[0] // fig_ratio_gcd,
+                fig_ratio_raw[1] // fig_ratio_gcd
+            )
+        except ValueError:
+            raise InvalidConfigFile('Invalid fig_ratio parameter')
 
     output_name = DEFAULT_OUTPUT_NAME
     if 'output_name' in output:
         output_name = str(output_name)
+
     output_options = OutputOptions(
         output_name=output_name,
         dpi=dpi,
         fig_size=fig_size,
+        fig_ratio=fig_ratio,
         output_dir=output_dir
     )
 

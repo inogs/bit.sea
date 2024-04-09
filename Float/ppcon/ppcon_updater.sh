@@ -22,13 +22,12 @@ cd $PWD > $LOCAL_INPUT
 
 while read -r line ; do
 filename=$( echo $line | cut -d "," -f1);
-echo $filename;
   V1=${filename/coriolis\//}
   V2=${V1/profiles\//}
-  supefloat_file=${ONLINE_REPO}/SUPERFLOAT/${V2}
+  superfloat_file=${ONLINE_REPO}/SUPERFLOAT/${V2}
   [ -f $superfloat_file ] && echo $line >> $LOCAL_INPUT
 
-done; < ${FILE_INPUT}
+done < ${FILE_INPUT}
 
 
 echo "Start copying from SUPERFLOAT"

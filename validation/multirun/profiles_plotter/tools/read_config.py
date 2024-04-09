@@ -30,6 +30,11 @@ DEFAULT_INDICATOR = 0
 
 DEFAULT_MASK_VAR_NAME = 'tmask'
 
+TICK_STR_MASK = re.compile(
+    r'^\s*([Rr]ange|RANGE)\s*\((?P<arguments>.*)\)\s*$'
+)
+
+
 
 EXPECTED_FIELDS = {
     'sources',
@@ -81,7 +86,7 @@ TimeSeriesOptions = namedtuple(
 
 DepthProfilesOptions = namedtuple(
     'DepthProfilesOptions',
-    ('mode', 'show_legend')
+    ('mode', 'show_legend', 'depth_ticks', 'min_depth', 'max_depth')
 )
 
 
@@ -196,13 +201,90 @@ def read_time_series_options(option_dict: Dict[str, Any]) -> TimeSeriesOptions:
     )
 
 
-def read_depth_profiles_options(option_dict: Union[Dict[str, Any], None] = None) \
-        -> DepthProfilesOptions:
+def read_ticks(ticks_raw: Union[None, str, list]) \
+        -> Tuple[Union[int, float], ...]:
+    if ticks_raw is None:
+        return ()
+    if isinstance(ticks_raw, list):
+        ticks_list = []
+        for tick in ticks_raw:
+            try:
+                current_tick = read_number(tick)
+            except ValueError:
+                raise ValueError('Invalid tick value: {}'.format(tick))
+            ticks_list.append(current_tick)
+        return tuple(ticks_list)
+
+    tick_str_match = TICK_STR_MASK.match(ticks_raw)
+    if tick_str_match is None:
+        raise ValueError('Unknown depth_ticks string: {}'.format(ticks_raw))
+
+    ticks_args_raw = [
+        t.strip() for t in tick_str_match.group('arguments').split(',')
+    ]
+    ticks_args = []
+    for raw_tick in ticks_args_raw:
+        try:
+            ticks_args.append(read_number(raw_tick))
+        except ValueError:
+            raise ValueError(
+                'Invalid arg inside range for depth_ticks: "{}"'.format(
+                    raw_tick
+                )
+            )
+    if len(ticks_args) == 1:
+        start = 0
+        end = ticks_args[0]
+        step = 1
+    elif len(ticks_args) == 2:
+        start, end = ticks_args
+        step = 1
+    elif len(ticks_args) == 3:
+        start, end, step = ticks_args
+    else:
+        raise ValueError(
+            'A range can not accept {} arguments (inside depth_ticks '
+            'field)'.format(len(ticks_args))
+        )
+
+    if step <= 0:
+        raise ValueError('step must be a positive number')
+    if end < start:
+        raise ValueError(
+            'The end value of the range must be bigger than the start'
+        )
+
+    ticks = []
+    current_tick = start
+    while current_tick < end:
+        ticks.append(current_tick)
+        current_tick += step
+        if len(ticks) > 100:
+            raise ValueError(
+                'Value "{}" inside depth_ticks field generates too many'
+                'ticks'.format(ticks_raw)
+            )
+    return tuple(ticks)
+
+
+def read_depth_profiles_options(
+            option_dict: Union[Dict[str, Any], None] = None
+        ) -> DepthProfilesOptions:
     mode = DEFAULT_DEPTH_PROFILE_MODE
     show_legend_default = "all"
+    depth_ticks_raw = 'range(0, 1001, 200)'
 
     if option_dict is None:
-        return DepthProfilesOptions(mode=mode, show_legend=show_legend_default)
+        depth_ticks = read_ticks(depth_ticks_raw)
+        max_depth = depth_ticks[-1] if len(depth_ticks) > 0 else 1000
+        min_depth = depth_ticks[0] if len(depth_ticks) > 0 else 0
+        return DepthProfilesOptions(
+            mode=mode,
+            show_legend=show_legend_default,
+            depth_ticks=read_ticks(depth_ticks_raw),
+            min_depth=min_depth,
+            max_depth=max_depth,
+        )
 
     show_legend = show_legend_default
     if 'show_legend' in option_dict:
@@ -224,15 +306,48 @@ def read_depth_profiles_options(option_dict: Union[Dict[str, Any], None] = None)
                 show_legend = "all"
 
     for key in option_dict:
-        if key not in ('mode', 'show_legend'):
+        if key not in (
+                'mode', 'show_legend', 'depth_ticks', 'min_depth', 'max_depth'
+        ):
             raise ValueError(
                 'Invalid key inside the depth profiles option dictionary: '
                 '{}'.format(key)
             )
         if key == 'mode':
             mode = read_depth_profile_mode(option_dict[key])
+        if key == 'depth_ticks':
+            depth_ticks_raw = option_dict['depth_ticks']
 
-    return DepthProfilesOptions(mode=mode, show_legend=show_legend)
+    depth_ticks = read_ticks(depth_ticks_raw)
+    max_depth = depth_ticks[-1] if len(depth_ticks) > 0 else 1000
+    min_depth = depth_ticks[0] if len(depth_ticks) > 0 else 0
+
+    if 'min_depth' in option_dict:
+        try:
+            min_depth = read_number(option_dict['min_depth'])
+        except ValueError:
+            raise ValueError(
+                'Invalid value for "min_depth": {}'.format(
+                    option_dict['min_depth']
+                )
+            )
+    if 'max_depth' in option_dict:
+        try:
+            max_depth = read_number(option_dict['max_depth'])
+        except ValueError:
+            raise ValueError(
+                'Invalid value for "max_depth": {}'.format(
+                    option_dict['max_depth']
+                )
+            )
+
+    return DepthProfilesOptions(
+        mode=mode,
+        show_legend=show_legend,
+        depth_ticks=depth_ticks,
+        min_depth=min_depth,
+        max_depth=max_depth
+    )
 
 
 class PlotConfig:

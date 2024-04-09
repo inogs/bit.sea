@@ -280,9 +280,11 @@ class PlotDrawer:
 
         elements_in_legend = False
 
-        ytick_labels = (0, 200, 400, 600, 800, 1000)
-        current_axis.set_ylim([0, 1000])
+        ytick_labels = self._config.depth_profiles_options.depth_ticks
+        min_y = self._config.depth_profiles_options.min_depth
+        max_y = self._config.depth_profiles_options.max_depth
         current_axis.set_yticks(ytick_labels)
+        current_axis.set_ylim([min_y, max_y])
         current_axis.grid()
         current_axis.invert_yaxis()
 
@@ -340,8 +342,10 @@ class PlotDrawer:
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
 
-            ytick_labels = (0, 200, 400, 600, 800, 1000)
-            current_axis.set_ylim([0, 1000])
+            ytick_labels = self._config.depth_profiles_options.depth_ticks
+            min_y = self._config.depth_profiles_options.min_depth
+            max_y = self._config.depth_profiles_options.max_depth
+            current_axis.set_ylim([min_y, max_y])
             current_axis.set_yticks(ytick_labels)
             current_axis.grid()
             current_axis.invert_yaxis()

@@ -11,13 +11,12 @@ variable_selections:
   v2: [N1p, N3n, N4n, O2o, P_l, P_c, DIC, ppn, ALK, DIC, pH, pCO2, O3c, O3h]
   var_enea: [THETA, SALT]
 
-levels: ["0", "0 - 20", "100", "150"] # in meters
-
 variable_labels:
   T: "temperature [°C]"
   pH: "pH [-]"
 
 time_series:
+  levels: ["0", "0 - 20", "100", "150"] # in meters
   show_legend: bottom
   show_depth: false
   x_label: years

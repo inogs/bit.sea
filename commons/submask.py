@@ -79,6 +79,10 @@ class SubMask(Mask):
             prism[jk,:,:] = sbmask
         self._mask = self._mask * prism
 
+    @property
+    def basin(self):
+        return self._basin
+
     def standard_method(self, maskobject, basin):
         _,jpj,jpi = self.shape
         sbmask = np.zeros((jpj,jpi),bool)

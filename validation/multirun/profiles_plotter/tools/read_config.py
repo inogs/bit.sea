@@ -62,7 +62,7 @@ class InvalidPlotConfig(InvalidConfigFile):
 Config = namedtuple(
     'Config',
     (
-        'plots', 'levels', 'variable_labels', 'time_series_options',
+        'plots', 'variable_labels', 'time_series_options',
         'depth_profiles_options', 'output_options'
     )
 )
@@ -76,7 +76,7 @@ OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
 
 TimeSeriesOptions = namedtuple(
     'TimeSeriesOptions',
-    ('show_legend', 'show_depth', 'x_label')
+    ('levels', 'show_legend', 'show_depth', 'x_label')
 )
 
 DepthProfilesOptions = namedtuple(
@@ -109,21 +109,47 @@ def read_pair_of_integers(fig_size_str: str) -> Tuple[int, int]:
     return first, second
 
 
-def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
-        -> TimeSeriesOptions:
+def read_time_series_options(option_dict: Dict[str, Any]) -> TimeSeriesOptions:
     show_legend_default = "no"
     show_depth_default = False
     x_label_default = None
 
-    if option_dict is None:
-        return TimeSeriesOptions(
-            show_legend=show_legend_default,
-            show_depth=show_depth_default,
-            x_label=x_label_default
+    # Read levels, ensuring that they are a list of integers or floats
+    if 'levels' not in option_dict:
+        raise InvalidConfigFile(
+            'No "levels" field found inside the "time_series" options'
         )
 
+    levels_raw = option_dict['levels']
+    levels = []
+    if not isinstance(levels_raw, Iterable):
+        raise InvalidConfigFile(
+            'Field "levels" must be a list of levels (in meters)'
+        )
+    for raw_level in levels_raw:
+        if isinstance(raw_level, str) and '-' in raw_level:
+            level_split = raw_level.split('-')
+            if len(level_split) > 2:
+                raise InvalidConfigFile(
+                    'Invalid level found: {}'.format(raw_level)
+                )
+            level_start_raw = level_split[0].strip()
+            level_end_raw = level_split[1].strip()
+            if level_start_raw == '':
+                level_start = None
+            else:
+                level_start = read_number(level_start_raw)
+            if level_end_raw == '':
+                level_end = None
+            else:
+                level_end = read_number(level_end_raw)
+            levels.append((level_start, level_end))
+            continue
+        levels.append(read_number(raw_level))
+    levels = tuple(levels)
+
     for key in option_dict:
-        if key not in ('show_legend', 'show_depth', 'x_label'):
+        if key not in ('levels', 'show_legend', 'show_depth', 'x_label'):
             raise ValueError(
                 'Invalid key inside the time series option dictionary: '
                 '{}'.format(key)
@@ -163,6 +189,7 @@ def read_time_series_options(option_dict: Union[Dict[str, Any], None] = None) \
             show_depth = bool(option_dict['show_depth'])
 
     return TimeSeriesOptions(
+        levels=levels,
         show_legend=show_legend,
         show_depth=show_depth,
         x_label=x_label
@@ -527,45 +554,14 @@ def read_config(config_datastream):
             v: str(variable_labels_field[v]) for v in variable_labels_field
         }
 
-    # Read levels, ensuring that they are a list of integers or floats
-    if 'levels' not in yaml_content:
-        raise InvalidConfigFile(
-            'Field "levels" not found inside the config file'
-        )
-    levels_raw = yaml_content['levels']
-    levels = []
-    if not isinstance(levels_raw, Iterable):
-        raise InvalidConfigFile(
-            'Field "levels" must be a list of levels (in meters)'
-        )
-    for raw_level in levels_raw:
-        if isinstance(raw_level, str) and '-' in raw_level:
-            level_split = raw_level.split('-')
-            if len(level_split) > 2:
-                raise InvalidConfigFile(
-                    'Invalid level found: {}'.format(raw_level)
-                )
-            level_start_raw = level_split[0].strip()
-            level_end_raw = level_split[1].strip()
-            if level_start_raw == '':
-                level_start = None
-            else:
-                level_start = read_number(level_start_raw)
-            if level_end_raw == '':
-                level_end = None
-            else:
-                level_end = read_number(level_end_raw)
-            levels.append((level_start, level_end))
-            continue
-        levels.append(read_number(raw_level))
-    levels = tuple(levels)
-
     if 'time_series' in yaml_content:
         time_series_options = read_time_series_options(
             yaml_content['time_series']
         )
     else:
-        time_series_options = read_time_series_options()
+        raise InvalidConfigFile(
+            'Field "time_series" not found inside the config file'
+        )
 
     if 'depth_profiles' in yaml_content:
         depth_profiles_options = read_depth_profiles_options(
@@ -662,7 +658,6 @@ def read_config(config_datastream):
 
     return Config(
         plots=plots,
-        levels=levels,
         variable_labels=variable_labels,
         time_series_options=time_series_options,
         depth_profiles_options=depth_profiles_options,

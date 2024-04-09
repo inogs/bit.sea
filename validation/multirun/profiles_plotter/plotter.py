@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from os import path
 from collections import namedtuple
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,7 +54,7 @@ class PlotDrawer:
                  average_volume_weights=None):
         self._config = config
         self._plots = tuple(config.plots)
-        self._levels = tuple(config.levels)
+        self._levels = tuple(config.time_series_options.levels)
         self._variable = variable
 
         if meshmask_objects is None:
@@ -147,12 +148,19 @@ class PlotDrawer:
                         average_weights = \
                             self._average_volume_weights[requested_slice]
                     else:
+                        warn(
+                            'Average weights for level slice {} have not been'
+                            ' precomputed'.format(requested_slice)
+                        )
                         submask = SubMask(basin, maskobject=plot_meshmask)
                         average_weights = compute_slice_volume(
                             level_slice,
                             plot_meshmask,
                             submask
                         )
+
+                    if np.sum(np.abs(average_weights)) < 1e-12:
+                        continue
 
                     with plot_data:
                         y_data_domain = plot_data.get_values(
@@ -541,11 +549,18 @@ def compute_slice_volume(level_slice: slice, meshmask: Mask,
     e2t = meshmask.e2t
     e3t = meshmask.e3t[level_slice, :]
 
+    n_cells = int(np.sum(basin_submask.mask[level_slice, :]))
+    # If there are no cells inside this basin for the current slice, then there
+    # is no need to compute its size
+    if n_cells == 0:
+        return np.zeros((e3t.shape[0],), dtype=np.float32)
+
     slice_volume = np.sum(
         e1t * e2t * e3t,
         axis=(1, 2),
         where=basin_submask.mask[level_slice, :]
     )
+
     return slice_volume
 
 
@@ -557,7 +572,7 @@ def main():
     # Check if at least one of the specified levels requires to compute an
     # average
     averages_in_levels = False
-    for level in config.levels:
+    for level in config.time_series_options.levels:
         if isinstance(level, tuple):
             averages_in_levels = True
             break
@@ -587,7 +602,7 @@ def main():
         for meshmask_path, meshmask_object in meshmask_objects.items():
             for basin_index, basin in enumerate(V2.P):
                 submask = SubMask(basin, maskobject=meshmask_object)
-                for level in config.levels:
+                for level in config.time_series_options.levels:
                     if not isinstance(level, tuple):
                         continue
                     level_slice = from_interval_to_slice(

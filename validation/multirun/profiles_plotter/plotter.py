@@ -466,6 +466,21 @@ class PlotDrawer:
                     labeltop=False
                 )
 
+        # If we have some depth profiles, we share all their axes
+        if self._draw_depth_profile:
+            dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
+                self._config.depth_profiles_options.mode
+            )
+            if dp_grid_rows != 1 or dp_grid_columns != 1:
+                first_axis = axis_dict['P_0_0']
+                for pi in range(dp_grid_rows):
+                    for pj in range(dp_grid_columns):
+                        if pi == 0 and pj == 0:
+                            continue
+                        current_axis = axis_dict['P_{}_{}'.format(pi, pj)]
+                        current_axis.sharex(first_axis)
+                        current_axis.sharey(first_axis)
+
         if self._draw_time_series:
             self._plot_time_series(axis_dict, basin_index, basin)
         if self._draw_depth_profile:

@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import netCDF4 as nc
 
-from utils import shuffle_dict
-from discretization import dict_max_pressure, dict_interval
-from make_ds.preprocessing import *
+from Float.ppcon.utils import shuffle_dict
+from Float.ppcon.discretization import dict_max_pressure, dict_interval
+from Float.ppcon.make_ds.preprocessing import *
 
 
 def find_nearest(array, value):

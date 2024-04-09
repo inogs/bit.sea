@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-from architecture.conv1med_dp import Conv1dMed
-from architecture.mlp import MLPDay, MLPYear, MLPLon, MLPLat
+from Float.ppcon.architecture.conv1med_dp import Conv1dMed
+from Float.ppcon.architecture.mlp import MLPDay, MLPYear, MLPLon, MLPLat
 
 
 def shuffle_dict(my_dict):

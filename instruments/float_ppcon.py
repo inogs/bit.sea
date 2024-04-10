@@ -16,9 +16,9 @@ mydtype= np.dtype([
           ('parameters','U200'),
           ('prof_flags' ,'U200')]
           )
-GSS_DEFAULT_LOC ='/g100_scratch/userexternal/camadio0/ONLINE_REPO_202403/PPCON'
+GSS_DEFAULT_LOC ='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C'
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + "PPCON/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 nFiles=INDEX_FILE.size
@@ -361,7 +361,7 @@ def FloatSelector(var, T, region):
         available_params = INDEX_FILE['parameters'][iFile]
         profile_flags    = INDEX_FILE['prof_flags'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + filename
+        filename = ONLINE_REPO + 'PPCON/' + filename
 
         if var is None :
             VarCondition = True
@@ -429,7 +429,7 @@ def remove_bad_sensors(Profilelist,var):
 
 
 if __name__ == '__main__':
-    filename="/g100_scratch/userexternal/camadio0/ONLINE_REPO_202403/PPCON/5907088/SR5907088_016.nc"
+    filename="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/PPCON/5907088/SR5907088_016.nc"
     F=BioFloat.from_file(filename)
     print("profile_flags=",F.profile_flags)
     print("status_profile=", F.status_profile('NITRATE'))
@@ -452,6 +452,7 @@ if __name__ == '__main__':
     PROFILE_LIST=FloatSelector(var, TI, R)
     for p in PROFILE_LIST:
         print(p._my_float.has_insitu('NITRATE'))
+        Pres, Values, Qc = p.read('NITRATE')
 
     import sys
     sys.exit()

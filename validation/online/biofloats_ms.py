@@ -47,7 +47,7 @@ from commons.layer import Layer
 import numpy as np
 from matchup.statistics import matchup
 import datetime
-import scipy.io.netcdf as NC
+import scipy.io as NC
 from commons.utils import addsep
 from basins.region import Rectangle
 

@@ -29,7 +29,7 @@ DepthProfileMode = namedtuple(
 
 DEFAULT_DEPTH_PROFILE_MODE = DepthProfileMode(
     algorithm=DepthProfileAlgorithm.STANDARD,
-    config=()
+    config={}
 )
 
 
@@ -78,10 +78,30 @@ def read_depth_profile_mode(read_profile_raw):
         )
 
     if algorithm is DepthProfileAlgorithm.SEASONAL and len(options) != 0:
-        raise InvalidAlgorithmDescription(
-            'Seasonal algorithm does not accept arguments: received '
-            '"{}"'.format(options)
-        )
+        if len(options) > 2:
+            raise InvalidAlgorithmDescription(
+                'Seasonal algorithm accepts only one argument, the "mode"; '
+                'received {} arguments: {}'.format(len(options), options)
+            )
+        option = options[0]
+        if '=' in option:
+            key = option.split('=')[0].strip()
+            option = '='.join(option.split('=')[1:])
+            if key.lower() != 'mode':
+                raise InvalidAlgorithmDescription(
+                    'The only argument accepted by a seasonal algorithm is '
+                    'the mode; received "{}"'.format(key)
+                )
+        option = option.strip()
+        if option.lower() not in ('square', 'inline'):
+            raise InvalidAlgorithmDescription(
+                'The only accepted arguments for a seasonal algorithm are '
+                '"square", "inline"; received {}'.format(option)
+            )
+        options = {'mode': option}
+
+    if algorithm is DepthProfileAlgorithm.SEASONAL and len(options) == 0:
+        options = {'mode': 'square'}
 
     if algorithm is DepthProfileAlgorithm.EVOLUTION:
         if len(options) == 0:
@@ -125,5 +145,14 @@ def get_depth_profile_plot_grid(depth_profile_mode: DepthProfileMode) \
     elif algorithm == DepthProfileAlgorithm.EVOLUTION:
         return 1, 1
     elif algorithm == DepthProfileAlgorithm.SEASONAL:
-        return 2, 2
+        if depth_profile_mode.config['mode'] == 'square':
+            return 2, 2
+        elif depth_profile_mode.config['mode'] == 'inline':
+            return 1, 4
+        else:
+            raise ValueError(
+                'Invalid mode "{}" for a seasonal algorithm'.format(
+                    depth_profile_mode.config['mode']
+                )
+            )
     raise ValueError('Unknown algorithm: {}'.format(algorithm))

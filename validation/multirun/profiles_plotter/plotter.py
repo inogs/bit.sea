@@ -337,8 +337,18 @@ class PlotDrawer:
         for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
             season_req = timerequestors.Clim_season(season_ind, season_obj)
 
-            pi = season_ind // 2
-            pj = season_ind % 2
+            d_mode = self._config.depth_profiles_options.mode.config['mode']
+            if d_mode == 'square':
+                pi = season_ind // 2
+                pj = season_ind % 2
+            elif d_mode == 'inline':
+                pi = 0
+                pj = season_ind
+            else:
+                raise ValueError(
+                    'Invalid display mode: "{}"'.format(d_mode)
+                )
+
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
 

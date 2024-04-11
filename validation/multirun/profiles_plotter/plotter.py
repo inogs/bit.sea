@@ -333,6 +333,13 @@ class PlotDrawer:
 
         season_obj = season.season()
         elements_in_legend = False
+        # x and y labels
+        if self._variable in self._config.variable_labels:
+            var_label = self._config.variable_labels[self._variable]
+            use_latex = False
+            if var_label.startswith('LaTeX:'):
+                use_latex = True
+                var_label = var_label[len('LaTeX:'):]
 
         for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
             season_req = timerequestors.Clim_season(season_ind, season_obj)
@@ -360,6 +367,21 @@ class PlotDrawer:
             current_axis.grid()
             current_axis.invert_yaxis()
             current_axis.set_title(season_str)
+
+            if d_mode == 'square':
+                if pi == 0:
+                    current_axis.xaxis.set_tick_params(
+                        which='both',
+                        labelbottom=False,
+                        labeltop=False
+                    )
+                if pi == 1:
+                    current_axis.set_xlabel(var_label, usetex=use_latex)
+
+            if d_mode == 'inline':
+                if pj > 0:
+                    current_axis.set_yticklabels([])
+                current_axis.set_xlabel(var_label, usetex=use_latex)
 
             for plot in self._plots:
 

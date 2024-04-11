@@ -1,0 +1,69 @@
+sources:
+  V8C:
+    path: /g100_work/OGS_devC/V10C/RUNS_SETUP/POSTPROC/V8C/STAT_PROFILES/
+    meshmask: /g100_work/OGS_devC/V11C/RUNS_SETUP/run2.0/wrkdir/MODEL/meshmask.nc
+  V11C_HC_0:
+    path: /g100_scratch/userexternal/plazzari/COPERNICUS_V11C/run2.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
+    meshmask: /g100_work/OGS_devC/V11C/RUNS_SETUP/run2.0/wrkdir/MODEL/meshmask.nc
+  V11C_HC_5:
+    path: /g100_scratch/userexternal/plazzari/COPERNICUS_V11C/run2.5/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
+    meshmask: /g100_work/OGS_devC/V11C/RUNS_SETUP/run2.0/wrkdir/MODEL/meshmask.nc
+
+variable_selections:
+  v1: [P_l, P_c, ppn]
+# v2: [N1p, N3n, N4n, O2o, DIC, ALK, DIC, pH, pCO2, O3c, O3h]
+
+
+variable_labels:
+  T: "temperature [°C]"
+  pH: "pH [-]"
+  N1p: "LaTeX:$PO_4~[mmol~P~m^{-3}]]$"
+  P_l: "LaTeX:Chl-a [$\\mathrm{mg} \\cdot \\mathrm{m}^{-3}$]"
+  P_c: "LaTeX:Biomass [$\\mathrm{mg} \\cdot \\mathrm{m}^{-3}$]"
+  ppn: "LaTeX:NPP [$\\mathrm{mg} \\cdot \\mathrm{m}^{-3} \\mathrm{d}^{-1}$]"
+
+
+time_series:
+  show_legend: bottom
+  show_depth: true
+  x_label: time
+  levels: ["0", "50", "100", "150"] # in meters
+
+depth_profiles:
+  mode: "seasonal(square)"
+# mode: "seasonal(inline)"
+  depth_ticks: range(0,251,50)
+
+plots:
+  V8C:
+    source: V8C
+    variables: v1
+    color: red
+    alpha_for_time_series: 1
+    zorder: 1
+    legend: V8C
+
+  V11C_HC_0:
+    source: V11C_HC_0
+    variables: v1
+    active: true
+    color: blue
+    alpha: 1
+    zorder: 1
+#   filter: MovingAverage(10y)
+#   draw_depth_profile: false
+#
+  V11C_HC_5:
+    source: V11C_HC_5
+    variables: v1
+    active: true
+    color: green
+    alpha: 1
+    zorder: 1
+
+
+output:
+  output_name: 'Multirun_Profiles.${VAR}.${BASIN}.png'
+  output_dir: /g100_scratch/userexternal/plazzari/COPERNICUS_V11C/run2.0/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/PLOTS
+  dpi: 300
+  fig_size: (15, 10)

@@ -35,7 +35,6 @@ TICK_STR_MASK = re.compile(
 )
 
 
-
 EXPECTED_FIELDS = {
     'sources',
     'variable_selections',
@@ -95,6 +94,17 @@ def read_number(number_str: str) -> Union[int, float]:
         return int(number_str)
     except ValueError:
         return float(number_str)
+
+
+def read_output_dir(output_dir: str) -> Path:
+    output_dir = Path(output_dir)
+
+    # If output dir does not exist, create it
+    if not output_dir.exists():
+        if not output_dir.parent.exists():
+            raise IOError('Directory {} does not exists'.format(output_dir))
+        output_dir.mkdir(exist_ok=True)
+    return output_dir
 
 
 INTEGER_PAIR = re.compile(
@@ -706,17 +716,9 @@ def read_config(config_datastream):
     dpi = DEFAULT_DPI
     if 'dpi' in output:
         dpi = int(output['dpi'])
-    if 'output_dir' not in output:
-        raise InvalidConfigFile(
-            'output_dir has not been specified in the output section'
-        )
-    output_dir = Path(str(output['output_dir']))
-
-    # If output dir does not exist, create it
-    if not output_dir.exists():
-        if not output_dir.parent.exists():
-            raise IOError('Directory {} does not exists'.format(output_dir))
-        output_dir.mkdir(exist_ok=True)
+    output_dir = None
+    if 'output_dir' in output:
+        output_dir = read_output_dir(str(output['output_dir']))
 
     fig_size = DEFAULT_FIG_SIZE
     if 'fig_size' in output:

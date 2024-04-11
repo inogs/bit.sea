@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
-from os import path
 from collections import namedtuple
+from os import path
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -12,7 +12,8 @@ from commons.submask import SubMask
 from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
-from tools.read_config import Config, read_config_from_file
+from tools.read_config import Config, InvalidConfigFile, \
+    read_config_from_file, read_output_dir
 from tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
@@ -454,7 +455,7 @@ class PlotDrawer:
                     plot_structure,
                     **fig_kw
                 )
-        # Now the most general case
+        # Now the more general case
         else:
             if self._draw_depth_profile:
                 dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
@@ -541,6 +542,14 @@ def configure_argparse():
         help='The path of the config file used by this script. By default, it '
              'uses {}'.format(CONFIG_FILE)
     )
+
+    parser.add_argument(
+        '--output_dir',
+        '-o',
+        type=read_output_dir,
+        default=None,
+        help='The path where this script will save the output plots'
+    )
     return parser.parse_args()
 
 
@@ -620,6 +629,19 @@ def main():
 
     config = read_config_from_file(args.config_file)
 
+    # If we have read an output dir from the command line, we use it instead of
+    # value of the config file.
+    output_dir = config.output_options.output_dir
+    output_dir_arg = args.output_dir
+    if output_dir_arg is not None:
+        output_dir = output_dir_arg
+    if output_dir is None:
+        raise InvalidConfigFile(
+            'output_dir has not been specified in the output section of the '
+            'config file. Specify an output directory in the config file or '
+            'use the --output-dir flag from the command line.'
+        )
+
     # Check if at least one of the specified levels requires to compute an
     # average
     averages_in_levels = False
@@ -693,7 +715,7 @@ def main():
                 '${BASIN}',
                 basin.name
             )
-            outfile_path = config.output_options.output_dir / outfile_name
+            outfile_path = output_dir / outfile_name
 
             fig = plot_drawer.plot(
                 basin_index=basin_index,

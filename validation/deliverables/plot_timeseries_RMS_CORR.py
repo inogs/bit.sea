@@ -58,8 +58,16 @@ model_label=' MODEL'
 
 if (args.var =="kd490"):
     units="[m$^{-1}$]"
+    vmin=-0.1
+    vmax=0.1
+elif (args.var.startswith('RRS')):
+    units="[st$^{-1}$]"
+    vmin=-0.01 
+    vmax=0.01 
 else:
     units="[mg/m$^3$]"
+    vmin=-0.3
+    vmax=0.3
     
 var_label = SAT_VARS[args.var] + " " + units
 
@@ -95,7 +103,7 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ltext,fontsize=12)
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
-    pl.ylim(-0.3, 0.3)
+    pl.ylim(vmin,vmax)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)

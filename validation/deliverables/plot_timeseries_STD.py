@@ -55,6 +55,10 @@ model_label=' MODEL'
 
 if (args.var =="kd490"):
     units="[m$^{-1}$]"
+
+elif (args.var.startswith('RRS')):
+    units="[st$^{-1}$]"
+
 else:
     units="[mg/m$^3$]"
 
@@ -74,9 +78,10 @@ if (args.var == "kd490"):
     vmax=0.09
     color="tab:blue"
     lightcolor="lightsteelblue"
+
 if (args.var.startswith('RRS')):
     vmin=0.0
-    vmax=0.024
+    vmax=0.025
 
 
 for isub,sub in enumerate(OGS.P):

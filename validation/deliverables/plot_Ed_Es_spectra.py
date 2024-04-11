@@ -72,7 +72,7 @@ MATRIX_LIST_es=[filereader(INPUTDIR + var  +'.pkl') for var in VARLIST_es]
 for isub,sub in enumerate(OGS.P):
 
     plt.close('all')
-    fig,axs = plt.subplots(4,3, gridspec_kw = {'wspace':1.00, 'hspace':1.0})
+    fig,axs = plt.subplots(4,3, gridspec_kw = {'wspace':0.2, 'hspace':0.4}, sharex=True, sharey=True, dpi=100,figsize=(8,9))
 
     for month in range(12):
 
@@ -82,9 +82,17 @@ for isub,sub in enumerate(OGS.P):
         ax=axs[index_row, index_col]
         ax.title.set_text(MONTH_list[month])
 
-        ax.set_xlim([400,700])
-        ax.set_xlabel(r'$\lambda$')
-        ax.set_ylabel(r'$W~m^{-2}$')
+        ax.set_xlim([250,700])
+        ax.set_ylim([0,30])
+        ax.set_xticks([250,400,500,600,700])
+
+        ymin, ymax = ax.get_ylim()
+        ax.vlines(400, ymin=ymin, ymax=ymax, colors='k', linestyle='dashed')
+
+        if index_row == 3:
+            ax.set_xlabel(r'$\lambda~[nm]$')
+        if index_col == 0:
+            ax.set_ylabel(r'$W~m^{-2}$')
 
         for ivar,var in enumerate(VARLIST_ed):
            Ed_mean[ivar]=MATRIX_LIST_ed[ivar].MODEL_MEAN[month,isub]

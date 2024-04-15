@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.io.netcdf as NC
+import netCDF4 as NC4
 import datetime
 from bitsea.instruments.instrument import ContainerProfile
 import seawater
@@ -12,13 +12,12 @@ from bitsea.commons import timerequestors
 class DatasetExtractor():
     
     def __init__(self,filename, datasetname):
-        ncIN=NC.netcdf_file(filename,'r')
-        self.DATA     = ncIN.variables['DATA'].data.copy()
-        self.UNITS    = ncIN.variables['UNITS'].data.copy()
-        self.VARIABLES= ncIN.variables['VARIABLES'].data.copy()
-        self.CRUISES  = ncIN.variables['Cruises'].data.copy()
+        with NC4.Dataset(filename,'r') as ncIN:
+            self.DATA     = ncIN.variables['DATA'][:]
+            self.UNITS    = ncIN.variables['UNITS'][:]
+            self.VARIABLES= ncIN.variables['VARIABLES'][:]
+            self.CRUISES  = ncIN.variables['Cruises'][:]
         self.datasetname = datasetname
-        ncIN.close()
 
     def unique_rows(self,data, prec=5):
         
@@ -150,9 +149,9 @@ class DatasetExtractor():
         good = (values < 1e+19) & (values > 0) 
         ii = self.DATA[-1,:] == (iCruise+1)
         Selected = good & ii
-        year    = self.DATA[ 0,Selected]
-        month   = self.DATA[ 1,Selected]
-        day     = self.DATA[ 2,Selected]
+        year    = self.DATA[ 0,Selected].astype(int)
+        month   = self.DATA[ 1,Selected].astype(int)
+        day     = self.DATA[ 2,Selected].astype(int)
         lat     = self.DATA[ 3,Selected]
         lon     = self.DATA[ 4,Selected]
         depth   = self.DATA[ 5,Selected]
@@ -164,5 +163,5 @@ class DatasetExtractor():
         for i in range(nValues):
             time = datetime.datetime(year[i],month[i],day[i])
             TIME[i] = time.toordinal()
-        
+        #print(iCruise,ivar,dataset,year)
         return self.profileGenerator(TIME, lon, lat, values, depth, dataset)

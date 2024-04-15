@@ -5,22 +5,22 @@ from typing import Union
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.static.DatasetExtractor import DatasetExtractor
-from bitsea.commons.utils import find_index
+from bitsea.commons.utils import find_index, find_index_s
 
 
 DEFAULT_FILENAME = Path(
-    "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
-    "Carbon/Dataset_Med_CarbSys_RIC.nc"
+    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/Dataset_Med_Carbon_2023_NetCDF4.nc"
 )
 
 
 class CarbonReader(DatasetExtractor):
-
+    
     DATA_VARS = (
         'nitrate', 'phosphate', 'oxygen', 'silicate', 'DIC', 'ALK', 'temp',
-        'salinity', 'pH25_T', 'xCO2', 'pCO2'
+        'salinity', 'pH25_T', 'xCO2', 'pCO2', 'PHt_{T-Press-ins}_obs',
+        'PHt_{T-Press-ins}_ric'
     )
-    
+
     def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
         '''
         Reads the NetCDF Dataset
@@ -29,14 +29,22 @@ class CarbonReader(DatasetExtractor):
         self.DataExtractor = DatasetExtractor(self.filename,'Carbon')
 
         # DATA ELIMINATION in order to not duplicate values with nutrients dataset
-        for cruisename in ['METEOR','METEOR51', 'METEOR95','PROSOPE']:
-            iCruise = find_index(cruisename, self.DataExtractor.CRUISES)
-            for var in ['nitrate','phosphate','silicate','oxygen']:
-                ivar    = find_index(var, self.DataExtractor.VARIABLES)
-                ii = self.DataExtractor.DATA[-1,:] == (iCruise+1)
-                self.DataExtractor.DATA[ivar,ii] = -999.0
+        dataset = self.DataExtractor.DATA[-1,:]
+        for cruisename in ['METEOR','METEOR51', 'METEOR95','PROSOPE','TALPRO','MEDWAVES','MSM72','GIANI']: 
+            iCruise,namesC= find_index_s(cruisename,self.DataExtractor.CRUISES)
+            for i in iCruise:
+                ii = dataset==(i+1)
+                for var in ['nitrate','phosphate','silicate','oxygen']:
+                   ivar    = find_index(var, self.DataExtractor.VARIABLES)
+                   self.DataExtractor.DATA[ivar,ii] = -999.0
 
- 
+        # deleting EMODNET values, identified by the variable flag
+        iflag = find_index('flag', self.DataExtractor.VARIABLES)
+        for var in ['phosphate','silicate','nitrate','oxygen']:
+                ivar    = find_index(var, self.DataExtractor.VARIABLES)
+                jj = self.DataExtractor.DATA[iflag,:] == 1
+                self.DataExtractor.DATA[ivar,jj] = -999.0
+
     def CruiseSelector(self, var,Cruisename):
         '''
         Returns a profile list  by selecting for
@@ -47,44 +55,27 @@ class CarbonReader(DatasetExtractor):
          - DIC
          - ALK
          - temp
-         - theta
          - salinity
          - silicate
          - nitrate
          - phosphate
          - oxygen
-         - sigma_theta
+         - pressure
          - density
-         - sigma_t
-         - pH25_sws
          - pH25_T
          - pCO2
-         - PHt_{T-Press-ins}
-         - PHsws_{Tins-0dB}
          - DICric
          - xCO2
-
-         Cruisename can be one of these
-            METEOR   METEOR51   METEOR95
-            BOUM 2008
-            PROSOPE
-            EGEO APRIL          EGEO SEPT
-            REGINA MARIS
-            Garcia del Cid
-            SESAME - ADRIATICO 2008
-            CARBOGIB 1     CARBOGIB 2    CARBOGIB 3
-            CARBOGIB 4     CARBOGIB 5    CARBOGIB 6
-            GIFT 1      GIFT 2
-            DYFAMED
-
+         - PHt_{T-Press-ins}_obs
+         - PHt_{T-Press-ins}_ric
 
          Returns a profile list
          
          '''
         return self.DataExtractor.cruiseSelector(var, Cruisename)
     
-    def Selector(self,var,T_int, region):
-        '''
+    def Selector(self, var, T_int, region):
+        """
         Returns a profile list by selecting for
           variable (string),
           T_int   (TimeInterval object)
@@ -94,29 +85,28 @@ class CarbonReader(DatasetExtractor):
          - DIC
          - ALK
          - temp
-         - theta
          - salinity
          - silicate
          - nitrate
          - phosphate
          - oxygen
-         - sigma_theta
+         - pressure
          - density
-         - sigma_t
-         - pH25_sws
          - pH25_T
          - pCO2
-         - PHt_{T-Press-ins}
-         - PHsws_{Tins-0dB}
          - DICric
          - xCO2
-         '''
+         - PHt_{T-Press-ins}_obs
+         - PHt_{T-Press-ins}_ric
+         """
 
         if var is None:
-            Profilelist = list()
+            profile_list = list()
             for myvar in self.DATA_VARS:
-                Profilelist.extend(self.DataExtractor.selector(myvar, T_int, region))
-            return Profilelist
+                profile_list.extend(
+                    self.DataExtractor.selector(myvar, T_int, region)
+                )
+            return profile_list
         return self.DataExtractor.selector(var, T_int, region)
         
 
@@ -125,7 +115,7 @@ class CarbonReader(DatasetExtractor):
 if __name__ == '__main__':
     
     var= 'nitrate'
-    TI = TimeInterval('19900101','2005101','%Y%m%d')
+    TI = TimeInterval('19990101','2005101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     C = CarbonReader()
     ProfileLIST = C.Selector('xCO2', TI, Reg)

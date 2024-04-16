@@ -49,11 +49,14 @@ def read_basic_info(stat_profile_file):
     ncIN.close()
     return SUBLIST, COASTLIST, STAT_LIST
 
-
 def read_pickle_file(filename):
     LOGGER.info('Reading file %s', filename)
     with open(filename, 'rb') as fid:
-        [TIMESERIES, TL] = pickle.load(fid)
+        try:
+            [TIMESERIES,TL] = pickle.load(fid)
+        except UnicodeDecodeError:
+            # the old pickle are saved as text and requires a proper encoding 
+            [TIMESERIES,TL] = pickle.load(fid, encoding='latin1')
     return TIMESERIES, TL
 
 

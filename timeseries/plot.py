@@ -47,7 +47,11 @@ def read_basic_info(stat_profile_file):
 def read_pickle_file(filename):
     print(filename)
     fid =open(filename,'rb')
-    [TIMESERIES,TL] = pickle.load(fid)
+    try:
+        [TIMESERIES,TL] = pickle.load(fid)
+    except UnicodeDecodeError:
+        # the old pickle are saved as text and requires a proper encoding 
+        [TIMESERIES,TL] = pickle.load(fid, encoding='latin1')
     fid.close()
     return TIMESERIES, TL
 

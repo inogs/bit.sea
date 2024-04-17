@@ -6,7 +6,7 @@ from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.static.DatasetExtractor import DatasetExtractor
 from bitsea.commons.utils import find_index
-
+import numpy as np
 
 DEFAULT_FILENAME = Path(
     "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/Dataset_Med_Nutrients_2023_NetCDF4.nc"
@@ -103,7 +103,6 @@ class NutrientsReader:
 
 if __name__ == '__main__':
     from bitsea.basins import V2 as OGS
-    import numpy as np
     var= 'nitrate'
     TI = TimeInterval('1998','2018','%Y')
     Reg= Rectangle(0,20,30,46)

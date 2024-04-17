@@ -43,7 +43,7 @@ filename = DATADIR / 'Molise.txt'
 mol = Polygon.from_WKT_file(filename)
 mol = SimplePolygonalBasin('mol', mol, 'Molise 12nm')
 
-# add other polygons
+# ... add other polygons
 
 
 # Composed basins
@@ -53,7 +53,4 @@ ven = ComposedBasin('ven', [vne, lve, poa], 'Veneto 12 nm')
 
 NAd = ComposedBasin('NAd', [got, lgm, vne, lve, poa, emr, mar], 'NAdri 12 nm')
 
-
-#SUBlist = NAd.basin_list
-#for iSub, sub in enumerate(SUBlist):
-#        print(iSub,sub.name)
+NAd_coastal_basins = (got, lgm, vne, lve, poa, emr, mar, fvg, ven, NAd)

@@ -55,6 +55,7 @@ def read_pickle_file(filename):
         try:
             [TIMESERIES,TL] = pickle.load(fid)
         except UnicodeDecodeError:
+            fid.seek(0)
             # the old pickle are saved as text and requires a proper encoding 
             [TIMESERIES,TL] = pickle.load(fid, encoding='latin1')
     return TIMESERIES, TL

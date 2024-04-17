@@ -133,8 +133,8 @@ def ncreader(filename):
     FLOAT = np.zeros((101,),dtype=dtype)
 
     f = NC.netcdf_file(filename, 'r')
-    Lon= f.variables['longitude'].data.copy()
-    Lat= f.variables['latitude'].data.copy()
+    Lon= f.variables['longitude'].data.copy()[0]
+    Lat= f.variables['latitude'].data.copy()[0]
     time = datetime.datetime.strptime(f.time.decode(),"%Y%m%d-%H:%M:%S")
     for var in VARLIST:
         A= f.variables[var + "_model"].data.copy()
@@ -155,9 +155,7 @@ def getprofile(time,lon,lat):
     R=Rectangle(lon-eps,lon+eps,lat-eps,lat+eps)
     d=timedelta(minutes=30)
     Profilelist=ppcon_float.FloatSelector(None,TimeInterval.fromdatetimes(time-d, time+d),R)
-    print(Profilelist )
-    profile=Profilelist[0]
-    return profile
+    return Profilelist[0]
 
 def dump_xml(filexml):
     S=[]
@@ -257,7 +255,7 @@ for filename in analysis_forecast_basenames:
                    elif p._my_float.status_profile(var_fl) =='B':
                       pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
                       if var_fl =='BBP700' and (var=='POC'): 
-                         pp_var= bellacicco_conversion(pp_var, zlevels_out) 
+                         pp_var= bellacicco_conversion(pp_var, pp_pres)
                       ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
                       if var_fl in ['CHLA', 'BBP700', 'POC','P_c']: #ppcon plotted as 0-200m profile   
                          ax.plot(ppcon_varinterp[zlevels_out<=200] ,zlevels_out[zlevels_out<=200], COLOR_LIST[-1]  )

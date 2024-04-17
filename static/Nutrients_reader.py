@@ -6,7 +6,7 @@ from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 from static.DatasetExtractor import DatasetExtractor
 from commons.utils import find_index_s
-
+import numpy as np
 
 DEFAULT_FILENAME = Path(
     "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/Dataset_Med_Nutrients_2023_NetCDF4.nc"
@@ -103,7 +103,6 @@ class NutrientsReader:
 
 if __name__ == '__main__':
     from basins import V2 as OGS
-    import numpy as np
     var= 'nitrate'
     TI = TimeInterval('1998','2018','%Y')
     Reg= Rectangle(0,20,30,46)

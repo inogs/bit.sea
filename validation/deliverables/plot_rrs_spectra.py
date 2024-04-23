@@ -82,6 +82,8 @@ for isub,sub in enumerate(OGS.P):
         ax=axs[index_row, index_col]
         ax.title.set_text(MONTH_list[month])
 
+        ax.grid(True)
+
         ax.set_xlim([400,700])
         if index_row == 3:
             ax.set_xlabel(r'$\lambda~[nm]$')
@@ -94,16 +96,17 @@ for isub,sub in enumerate(OGS.P):
            rrs_SAT___mean[ivar]=MATRIX_LIST_rrs[ivar].SAT___MEAN[month,isub]
            rrs_SAT____std[ivar]=MATRIX_LIST_rrs[ivar].SAT____STD[month,isub]
 
-        ax.plot(lamSAT,rrs_MODEL_mean,'o', color='r')
+        ax.plot(lamSAT,rrs_MODEL_mean,'o', color='r', label='MODEL')
         ax.plot(lamSAT,rrs_MODEL_mean-rrs_MODEL__std,':', color='r',alpha=0.5)
         ax.plot(lamSAT,rrs_MODEL_mean+rrs_MODEL__std,':', color='r',alpha=0.5)
         ax.fill_between(lamSAT,rrs_MODEL_mean-rrs_MODEL__std,rrs_MODEL_mean+rrs_MODEL__std,color='r',alpha=0.3)
 
-        ax.plot(lamSAT,rrs_SAT___mean,'o', color='g')
+        ax.plot(lamSAT,rrs_SAT___mean,'o', color='g', label='SAT')
         ax.plot(lamSAT,rrs_SAT___mean-rrs_SAT____std,':', color='g',alpha=0.5)
         ax.plot(lamSAT,rrs_SAT___mean+rrs_SAT____std,':', color='g',alpha=0.5)
         ax.fill_between(lamSAT,rrs_SAT___mean-rrs_SAT____std,rrs_SAT___mean+rrs_SAT____std,color='g',alpha=0.3)
 
+        ax.legend()
 
     outfile="%srrs_spectra_%s.png" %(OUTDIR,sub.name)
     fig.savefig(outfile)

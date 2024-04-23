@@ -33,7 +33,7 @@ class ContainerProfile(Profile):
         else:
             return False
 
-    def read(self,var,read_adjusted=True):
+    def read(self,var,read_adjusted=True, var_mod=None):
         '''
         Here all arguments are unused. They are defined just to be compliant with other Profile objects
         (such biofloats ) where arguments are meaningful.

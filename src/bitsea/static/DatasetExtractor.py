@@ -8,15 +8,14 @@ from bitsea.commons.utils import find_index
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons import timerequestors
 
-
 class DatasetExtractor():
     
     def __init__(self,filename, datasetname):
         with NC4.Dataset(filename,'r') as ncIN:
             self.DATA     = ncIN.variables['DATA'][:]
-            self.UNITS    = ncIN.variables['UNITS'][:]
-            self.VARIABLES= ncIN.variables['VARIABLES'][:]
-            self.CRUISES  = ncIN.variables['Cruises'][:]
+            self.UNITS    = [unit for unit in ncIN.variables['UNITS'][:]]
+            self.VARIABLES= [variable for variable in ncIN.variables['VARIABLES'][:]]
+            self.CRUISES  = [cruise for cruise in ncIN.variables['Cruises'][:]]
         self.datasetname = datasetname
 
     def unique_rows(self,data, prec=5):
@@ -51,7 +50,7 @@ class DatasetExtractor():
             Depth = depth[inthisprofile]
             
             iddataset = int(dataset[inthisprofile][0])
-            Cruise    = self.CRUISES[iddataset-1,:].tostring().strip()
+            Cruise    = self.CRUISES[iddataset-1]
             LP = ContainerProfile(lon,lat,time,Depth,Values,Cruise, self.datasetname)
             Profilelist.append(LP)
         return Profilelist
@@ -68,7 +67,7 @@ class DatasetExtractor():
         assert isinstance(T_int, (TimeInterval, timerequestors.Clim_season, timerequestors.Clim_month))
         ivar  = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:].copy()
-        units = self.UNITS[ivar,:].tostring()
+        units = self.UNITS[ivar]
 
         if False: #units =="\\mumol/kg":
             itemp  = find_index('temp'    , self.VARIABLES)

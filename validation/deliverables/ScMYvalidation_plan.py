@@ -146,7 +146,7 @@ BGC_CLASS4_CHL_POINTS_SURF_BASIN   = np.zeros((nFrames,nSUB),np.float32)
 surf_layer = Layer(0,args.layer)
 
 for itime, modeltime in enumerate(model_TL.Timelist):
-    print (modeltime)
+    print (modeltime,flush=True)
     CoupledList = sat_TL.couple_with([modeltime])
     sattime = CoupledList[0][0]
     satfile = REF_DIR + sattime.strftime(dateformat) + suffix

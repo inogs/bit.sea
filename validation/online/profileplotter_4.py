@@ -93,10 +93,10 @@ def figure_generator(p):
     g_patch = mpatches.Patch(color=COLOR_LIST[2]  , label=floatlabel)
 
     if  ('B' in p.profile_flags) or ('P' in p.profile_flags):
-         y_patch = mpatches.Patch(color=COLOR_LIST[-1], label='recFloat')
-         ax.legend(handles=[f_patch, b_patch,g_patch, y_patch ], bbox_to_anchor=(0, -0.5), loc=2)
+        y_patch = mpatches.Patch(color=COLOR_LIST[-1], label='recFloat')
+        ax.legend(handles=[f_patch, b_patch,g_patch, y_patch ], bbox_to_anchor=(0, -0.5), loc=2)
     else:
-         ax.legend(handles=[f_patch, b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)
+        ax.legend(handles=[f_patch, b_patch,g_patch], bbox_to_anchor=(0, -0.5), loc=2)
     for ax in axs[1:]:
         ax.set_ylim(0,400)
         ax.locator_params(axis='x',nbins=4)
@@ -112,11 +112,11 @@ def bellacicco_conversion(Profile, Pres):
     ii=(Pres >= 400) & (Pres <= 500)
     POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
     if ii.sum() > 0 :
-       shift=POC[ii].mean()
-       print( "POC: adding a shift of " + str(shift))
-       Profile = POC - shift
-       ii=Profile<=0
-       Profile[ii] = 0.0
+        shift=POC[ii].mean()
+        print( "POC: adding a shift of " + str(shift))
+        Profile = POC - shift
+        ii=Profile<=0
+        Profile[ii] = 0.0
     return Profile
 
 def ncreader(filename):
@@ -133,8 +133,8 @@ def ncreader(filename):
     FLOAT = np.zeros((101,),dtype=dtype)
 
     f = NC.netcdf_file(filename, 'r')
-    Lon= f.variables['longitude'].data.copy()
-    Lat= f.variables['latitude'].data.copy()
+    Lon= f.variables['longitude'].data.copy()[0]
+    Lat= f.variables['latitude'].data.copy()[0]
     time = datetime.datetime.strptime(f.time.decode(),"%Y%m%d-%H:%M:%S")
     for var in VARLIST:
         A= f.variables[var + "_model"].data.copy()
@@ -155,9 +155,7 @@ def getprofile(time,lon,lat):
     R=Rectangle(lon-eps,lon+eps,lat-eps,lat+eps)
     d=timedelta(minutes=30)
     Profilelist=ppcon_float.FloatSelector(None,TimeInterval.fromdatetimes(time-d, time+d),R)
-    print(Profilelist )
-    profile=Profilelist[0]
-    return profile
+    return Profilelist[0]
 
 def dump_xml(filexml):
     S=[]
@@ -212,8 +210,8 @@ plotvarname = [r'Chl  $[ mg/m^3]$',
                 ]
 
 VARLIST           = ['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
-PPCON_VARLIST_mod = ['P_l','N3n','POC']
-VARLIST_obs       = ['CHLA','NITRATE','BBP700']
+PPCON_VARLIST_mod = ['P_l','N3n','POC','P_c']
+VARLIST_obs       = ['CHLA','NITRATE','BBP700','BBP700']
 
 
 for filename in analysis_forecast_basenames:
@@ -227,53 +225,60 @@ for filename in analysis_forecast_basenames:
         fig, axs = figure_generator(p)
         for i,var in enumerate(VARLIST):
             ax=axs[mapgraph[i]]
-            if var in PPCON_VARLIST_mod: #['P_l','N3n','POC']
+            if var in PPCON_VARLIST_mod:#['P_l','N3n','POC']
+                var_idx = PPCON_VARLIST_mod.index(var) #idx of var
+                var_fl  = VARLIST_obs[var_idx]         # name of var in float nomenclature
+                var_flpp= var_fl+'_PPCON'              # name of var in ppcon nomenclature
+                LIST_AVA_PARA =  list(p.available_params.split(" "))
 
-               var_idx = PPCON_VARLIST_mod.index(var)
-               var_fl  = VARLIST_obs[var_idx]
-               var_flpp= var_fl+'_PPCON'
-               LIST_AVA_PARA =  list(p.available_params.split(" "))
+                #181 COLOR_LIST = ['g','b','r','orange']
+                if (var_fl in LIST_AVA_PARA ) : # if NITRATE (as ex. of var in float nomenclature) in avail.params
 
-               #181 COLOR_LIST = ['g','b','r','orange']               
-               if (var_fl in LIST_AVA_PARA ) : # if es NITRATE in avail.params
-                   if var_fl =='BBP700':
-                      float_var = bellacicco_conversion(float_f[var],zlevels_out ) 
-                   else:
-                      float_var = float_f[var] 
+                    if var_fl =='BBP700' and (var=='POC'):
+                        float_var = bellacicco_conversion(float_f[var],zlevels_out )
+                    else:
+                        float_var = float_f[var]
 
-                   if p._my_float.status_profile(var_fl) == 'P':
-                       if var_fl in ['CHLA', 'BBP700', 'POC']: #ppcon plotted as 0-200m profile
-                           ax.plot(float_var[zlevels_out<=200],zlevels_out[zlevels_out<=200], COLOR_LIST[-1])
-                       else: 
-                           ax.plot(float_var,zlevels_out, COLOR_LIST[-1])    
+                    ####  if status == PPCON --> plot orange line ONLY 3lines  #####
+                    if p._my_float.status_profile(var_fl) == 'P':
+                        if var_fl in ['CHLA', 'BBP700', 'POC','P_c']: # 0-200m
+                            ax.plot(float_var[zlevels_out<=200],zlevels_out[zlevels_out<=200], COLOR_LIST[-1])
+                        else:
+                            ax.plot(float_var,zlevels_out, COLOR_LIST[-1])# all depths
 
-                   elif p._my_float.status_profile(var_fl) =='B': # insitu  and  ppcon
-                      pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
-                      if var_fl =='BBP700': pp_var= bellacicco_conversion(pp_var, zlevels_out) 
-                      ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
-                      if var_fl in ['CHLA', 'BBP700', 'POC']: #ppcon plotted as 0-200m profile   
-                         ax.plot(ppcon_varinterp[zlevels_out<=200] ,zlevels_out[zlevels_out<=200], COLOR_LIST[-1]  )
-                      else:
-                         ax.plot(ppcon_varinterp,zlevels_out, COLOR_LIST[-1]  )
 
-                      ax.plot(float_var,zlevels_out, COLOR_LIST[2])
+                        ####  if status == Both --> plot 4 lines --> interp ppcon var and plot in orange   #####
+                        ####                                     -->                      plot in red      #####
 
-                   if p._my_float.status_profile(var_fl) =='I': 
-                      ax.plot(float_var,zlevels_out, COLOR_LIST[2] )    # insitu only
+                    elif p._my_float.status_profile(var_fl) =='B':
+                        pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
+                        if var_fl =='BBP700' and (var=='POC'):
+                            pp_var= bellacicco_conversion(pp_var, pp_pres)
+                        ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
+                        if var_fl in ['CHLA', 'BBP700', 'POC','P_c']: #ppcon plotted as 0-200m profile
+                            ax.plot(ppcon_varinterp[zlevels_out<=200] ,zlevels_out[zlevels_out<=200], COLOR_LIST[-1]  )
+                        else:
+                            ax.plot(ppcon_varinterp,zlevels_out, COLOR_LIST[-1]  )
 
-                   ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])
-                   ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])  
+                        ax.plot(float_var,zlevels_out, COLOR_LIST[2])
+
+
+                    ####  if status == Both --> plot 3 lines in red obs
+                    if p._my_float.status_profile(var_fl) =='I':
+                        ax.plot(float_var,zlevels_out, COLOR_LIST[2] )    # insitu only
+                        #COLOR_LIST = ['g','b','r','orange']
+                        ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])     # model forecast green
+                        ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])     # model analysis blue
                 
-               else: #probabilm si puo togliere
-                   print( LIST_AVA_PARA )
-                   ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
-                   ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0] )
-                   ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1]) 
+                else: #probabilm si puo togliere
+                    ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
+                    ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0])
+                    ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1])
 
             else: # doxy temp sal
-               ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
-               ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0] )
-               ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1]) 
+                ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
+                ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0])
+                ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1])
 
             ax.set_title(plotvarname[i])
             ax.invert_yaxis()
@@ -289,4 +294,4 @@ for filename in analysis_forecast_basenames:
         pngfile = PREVIOUS_DIR + filename[:-3] +  ".png"
         command = "cp " + pngfile + " " + OUTDIR
         os.system(command)
-    
+

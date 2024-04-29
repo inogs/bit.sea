@@ -3,9 +3,7 @@ from pathlib import Path
 from basins.basin import SimplePolygonalBasin, ComposedBasin
 from basins.region import Polygon
 
-DATADIR = Path(
-    '/g100_scratch/userexternal/vdibiagi/articleBC_2023/SUPERCOASTAL/TXT/WKTcoords_12nm/'
-)
+DATADIR = Path(__file__).resolve().parent / 'WKTcoords_12nm'
 
 filename = DATADIR / 'GolfoTrieste.txt'
 got = Polygon.from_WKT_file(filename)

@@ -96,7 +96,6 @@ class Basin(object):
         return current_plot
 
 
-
 class SimpleBasin(Basin):
     def __init__(self, name, region, extended_name=None):
         super(SimpleBasin, self).__init__(name, extended_name)

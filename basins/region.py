@@ -2,6 +2,13 @@
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
 import numpy as np
 from matplotlib.path import Path
+from os import PathLike
+import pathlib
+from typing import Union
+
+import csv
+import re
+import sys
 
 
 class Region(object):
@@ -118,6 +125,48 @@ class Polygon(Region):
             return False
 
         return NotImplemented
+
+    @staticmethod
+    def from_WKT_file(filepath: Union[PathLike, str]):
+        # Ensure filepath is a Path and not a simple string
+        filepath = pathlib.Path(filepath)
+
+        poly_list = []
+        csv.field_size_limit(sys.maxsize)
+
+        with filepath.open('r') as f:
+            reader = csv.reader(f, delimiter="\t")
+            for line in reader:
+                poly_list.append(line[0])
+
+        string_poly = ' '.join(poly_list)
+        string_poly_sel = string_poly[15:]
+
+        single_polygons = re.findall(r"\((.*?)\)", string_poly_sel)
+        n_poly = len(single_polygons)
+        if n_poly > 1:
+            # case to be implemented
+            raise ValueError(
+                "filename containing more than one polygon"
+            )
+
+        pat = re.compile(r'(-*\d+\.\d+ -*\d+\.\d+),*')
+        matches = pat.findall(single_polygons[0])
+
+        if matches is None:
+            raise ValueError(
+                'Invalid string inside the polygon file'
+            )
+
+        lst = [tuple(map(float, m.split())) for m in matches]
+        n_coords = len(lst)
+        lon = []
+        lat = []
+
+        for ii in range(n_coords):
+            lon.append(lst[ii][0])
+            lat.append(lst[ii][1])
+        return Polygon(lon, lat)
 
 
 class Rectangle(Polygon):

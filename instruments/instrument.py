@@ -16,7 +16,7 @@ class Instrument(object):
 
 
 class ContainerProfile(Profile):
-    def __init__(self,lon,lat,time, depth, values,name, datasetname):
+    def __init__(self, lon, lat, time, depth, values, name, datasetname):
         self.lon     = lon
         self.lat     = lat
         self.time    = time
@@ -33,7 +33,7 @@ class ContainerProfile(Profile):
         else:
             return False
 
-    def read(self,var,read_adjusted=True, var_mod=None):
+    def read(self, var, read_adjusted=True, var_mod=None):
         '''
         Here all arguments are unused. They are defined just to be compliant with other Profile objects
         (such biofloats ) where arguments are meaningful.
@@ -46,7 +46,7 @@ class ContainerProfile(Profile):
     def name(self):
         return self._name
     def ID(self):
-        return  self._name + "_" + self.time.strftime("%Y%m%d_") + str(self.lon) + "_"+ str(self.lat)
+        return '{}_{}_{}_{}'.format(self._name, self.time.strftime("%Y%m%d"), self.lon, self.lat)   
     def reference_var(self, var):
         '''
         Returns the reference varname, for a given profile object and

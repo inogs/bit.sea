@@ -76,14 +76,26 @@ def find_index(thestring, STRINGLIST):
     The string list is supposed be like in NetCDF files, where a list of variable names is
     written in an only 2D character array. 
     '''
-    nStrings = STRINGLIST.shape[0]
-    for istring in range(nStrings):
-        strippedstring=STRINGLIST[istring,:].tobytes().strip()
-        if strippedstring.decode() == thestring: break
-    else:
+    try:
+        return STRINGLIST.index(thestring)
+    except IndexError:
         print(thestring + " Not Found")
-        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tobytes().strip().decode() for istring in range(nStrings)]))
-    return istring
+        raise NameError('Variable should be one of the following: {}'.format(STRINGLIST))
+
+def find_index_s(substring, STRINGLIST):
+    '''
+    Searches a substring in a list of strings.
+    It returns the array of indexes.
+    '''
+    subst=substring.lower()
+    idx=[]
+    namesC=[]
+    for istring, current_str in enumerate(STRINGLIST):
+        if subst in current_str.lower(): 
+            # print(current_str.lower())
+            idx.append(istring)
+            namesC.append(current_str)
+    return np.array(idx),namesC
 
 def die(why, exit_code=1, print_usage=True):
     print("FATAL ERROR: " +  str(why), file=sys.stderr)
@@ -111,7 +123,6 @@ def isvalidpath(path, is_dir_check=False):
             return True
     else:
         return False
-
 
 def ticklabels_degree(ax,fsize=7,intdeg=True):
     '''

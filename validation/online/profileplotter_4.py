@@ -108,16 +108,28 @@ def figure_generator(p):
     return fig,axs
 
 
-def bellacicco_conversion(Profile, Pres):
-    ii=(Pres >= 400) & (Pres <= 500)
-    POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
-    if ii.sum() > 0 :
-        shift=POC[ii].mean()
-        print( "POC: adding a shift of " + str(shift))
-        Profile = POC - shift
-        ii=Profile<=0
-        Profile[ii] = 0.0
-    return Profile
+def bellacicco_conversion_ppcon(Profile, Pres, var_mod ):
+        ii=(Pres >= 180) & (Pres <= 200)
+        if (var_mod=='P_c'):
+            bbp470 = Profile * ( 470.0/ 700)**(-0.78)# [m-1]
+            Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
+            if ii.sum() > 0 :
+                shift=Profile[ii].mean()
+                Profile = Profile - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
+                print( var_mod + " : adding a shift of " + str(shift))
+            return(Profile)
+        if (var_mod == "POC"):
+            POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
+            if ii.sum() > 0 :
+                shift=POC[ii].mean()
+                print( "POC: adding a shift of " + str(shift))
+                Profile = POC - shift
+                ii=Profile<=0
+                Profile[ii] = 0.0
+            return(Profile) 
+
 
 def ncreader(filename):
     ''' 
@@ -225,19 +237,20 @@ for filename in analysis_forecast_basenames:
         fig, axs = figure_generator(p)
         for i,var in enumerate(VARLIST):
             ax=axs[mapgraph[i]]
-            if var in PPCON_VARLIST_mod:#['P_l','N3n','POC']
+
+            if var in PPCON_VARLIST_mod:#['P_l','N3n','POC', 'P_c']
                 var_idx = PPCON_VARLIST_mod.index(var) #idx of var
                 var_fl  = VARLIST_obs[var_idx]         # name of var in float nomenclature
                 var_flpp= var_fl+'_PPCON'              # name of var in ppcon nomenclature
                 LIST_AVA_PARA =  list(p.available_params.split(" "))
-
                 #181 COLOR_LIST = ['g','b','r','orange']
-                if (var_fl in LIST_AVA_PARA ) : # if NITRATE (as ex. of var in float nomenclature) in avail.params
 
-                    if var_fl =='BBP700' and (var=='POC'):
-                        float_var = bellacicco_conversion(float_f[var],zlevels_out )
-                    else:
-                        float_var = float_f[var]
+                if (var_fl in LIST_AVA_PARA ) : 
+                    # Conversions 
+                    #if var_fl =='BBP700' and (var=='POC'):
+                    #    float_var = bellacicco_conversion(float_f[var],zlevels_out )
+                    #else:
+                    float_var = float_f[var]
 
                     ####  if status == PPCON --> plot orange line ONLY 3lines  #####
                     if p._my_float.status_profile(var_fl) == 'P':
@@ -247,40 +260,42 @@ for filename in analysis_forecast_basenames:
                             ax.plot(float_var,zlevels_out, COLOR_LIST[-1])# all depths
 
 
-                        ####  if status == Both --> plot 4 lines --> interp ppcon var and plot in orange   #####
-                        ####                                     -->                      plot in red      #####
-
+                    ####  if status == Both --> plot 4 lines 
                     elif p._my_float.status_profile(var_fl) =='B':
+                        # lego var ppcon oltre a insitu
                         pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
+                        # converto var ppcon 
                         if var_fl =='BBP700' and (var=='POC'):
-                            pp_var= bellacicco_conversion(pp_var, pp_pres)
+                            pp_var= bellacicco_conversion_ppcon(pp_var, pp_pres,var)
+                        if var_fl =='BBP700' and (var=='P_c' ) :
+                            pp_var= bellacicco_conversion_ppcon(pp_var, pp_pres,var)
+
+                        # interpolo var ppcon     
                         ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
+
                         if var_fl in ['CHLA', 'BBP700', 'POC','P_c']: #ppcon plotted as 0-200m profile
                             ax.plot(ppcon_varinterp[zlevels_out<=200] ,zlevels_out[zlevels_out<=200], COLOR_LIST[-1]  )
                         else:
                             ax.plot(ppcon_varinterp,zlevels_out, COLOR_LIST[-1]  )
-
                         ax.plot(float_var,zlevels_out, COLOR_LIST[2])
 
 
-                    ####  if status == Both --> plot 3 lines in red obs
+                    ####  if status == Insitu --> plot 3 lines in red obs
                     if p._my_float.status_profile(var_fl) =='I':
                         ax.plot(float_var,zlevels_out, COLOR_LIST[2] )    # insitu only
                         #COLOR_LIST = ['g','b','r','orange']
-                        ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])     # model forecast green
-                        ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])     # model analysis blue
+                    ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])     # model forecast green
+                    ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])     # model analysis blue
                 
-                else: #probabilm si puo togliere
-                    ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
-                    ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0])
-                    ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1])
+                else: # se non ho ne var ne var_ppcon available 
+                    raise Exception("check the specificity of the case") 
 
-            else: # doxy temp sal
+            else: # doxy temp sal ph
                 ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
                 ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0])
                 ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1])
 
-            ax.set_title(plotvarname[i])
+            ax.set_title(plotvarname[i] + ' status: ' + p._my_float.status_profile(var_fl))
             ax.invert_yaxis()
 
         pngfile = OUTDIR + filename[:-3] + ".png"

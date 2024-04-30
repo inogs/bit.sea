@@ -186,12 +186,13 @@ class BioFloat(Instrument):
 
         #assert var_mod in ['P_c', 'POC']
 
-        ii=(Pres >= 400) & (Pres <= 500)
+        ii=(Pres >= 180) & (Pres <= 200)
         if (var_mod=='P_c'):
             bbp470 = Profile * ( 470.0/ 700)**(-0.78)# [m-1]
             Profile = 12128 * bbp470 + 0.59 # Conversion by Bellacicco 201?
             if ii.sum() > 0 :
                 shift=Profile[ii].mean()
+                print( var_mod  +" : adding a shift of " + str(shift))
                 Profile = Profile - shift
                 ii=Profile<=0
                 Profile[ii] = 0.0

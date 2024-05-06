@@ -16,19 +16,21 @@ import os
 
 #OPA_HOME='/gpfs/scratch/userexternal/gbolzon0/REA_24/TEST_11/'
 #INPUTDIR    = OPA_HOME + 'wrkdir/MODEL/AVE_FREQ_1/'
-INPUTDIR ='/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/TEST14/AVE_FREQ_1/STAT_PROFILES/'
-aggregatedir='/gpfs/scratch/userexternal/gcoidess/POSTPROC_REA_24/OUTPUT_FREQ1_test11/TMP/'
+#INPUTDIR ='/g100_scratch/userexternal/lfeudale/NUTRIENT_CARBON_newDATA/AVE_FREQ1/'
+INPUTDIR='/g100_scratch/userexternal/gbolzon0/EFAS/run04/wrkdir/MODEL/AVE_FREQ_1/'
+aggregatedir='/g100_scratch/userexternal/gbolzon0/EFAS/run04/wrkdir/MODEL/AVE_FREQ_1/'
+#aggregatedir='/g100_scratch/userexternal/lfeudale/NUTRIENT_CARBON_newDATA/AVE_FREQ1/'
 # output directory, where aveScan.py will be run.
 
 #BASEDIR    = OPA_HOME +   'wrkdir/POSTPROC/NUTRIENTS/PROFILATORE/'
-BASEDIR    = '/gpfs/scratch/userexternal/lfeudale/REANALYSIS/REAN24/validation/TEST_11/PROFILATORE_N/'
+BASEDIR    = '/g100_scratch/userexternal/lfeudale/NUTRIENT_CARBON_newDATA/PROFILATORE_N_run04/'
 
 
-DATESTART = '19990101'
-DATE__END = '20190101'
+DATESTART = '20190101'
+DATE__END = '20200101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
-TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N3n")
+TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
 #TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="stat_profiles")
 N = NutrientsReader()
 ALL_PROFILES = N.Selector(None,T_INT, Rectangle(-6,36,30,46))

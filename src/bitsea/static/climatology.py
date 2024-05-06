@@ -25,7 +25,7 @@ def DatasetInfo(modelvarname):
     * var     * variable name to access dataset
     * dataset * NutrientsReader or Carbonreader object
     '''
-    if modelvarname in ['N1p','N3n','O2o','N4n','N5s']:
+    if modelvarname in ['N1p','N3n','O2o','N4n','N5s','P_l']:
         var =  NUTRVARS[modelvarname]
         dataset     = N
     if modelvarname in ['O3h', 'Ac', 'ALK'] :
@@ -40,7 +40,7 @@ def DatasetInfo(modelvarname):
     if modelvarname == 'pCO2' :
         var='pCO2'
         dataset = C
-    if modelvarname not in ['N1p','N3n','O2o','N4n','N5s','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
+    if modelvarname not in ['N1p','N3n','O2o','N4n','N5s','P_l','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
         raise ValueError("variable not in static dataset ")
     return var, dataset
 

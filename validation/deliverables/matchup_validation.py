@@ -16,7 +16,7 @@ def argument():
                                 type = str,
                                 default = 'OpenSea',
                                 required = False,
-                                help = "Choices of the area: OpenSea or Coast")
+                                help = "Choices of the area: OpenSea,  Coast, SuperCoastal")
     return parser.parse_args()
 
 args = argument()
@@ -26,6 +26,7 @@ import numpy as np
 from profiler_RA import Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
 from commons.mask import Mask
 import basins.V2 as OGS
+import basins.COASTAL12nm as C12
 from static.climatology import DatasetInfo
 from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
@@ -56,12 +57,15 @@ LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150
 LayerList_Coast = [Layer(0,60), Layer(60,200), Layer(0,200)]
 
 #SUBLIST=[OGS.nwm, OGS.tyr, OGS.lev, OGS.ion]
-SUBLIST = OGS.P.basin_list
-SUBLIST.remove(SUBLIST[-1])
+if (area=="Coast" or area=="OpenSea"):
+    SUBLIST = OGS.P.basin_list
+    SUBLIST.remove(SUBLIST[-1])
+if (area=="SuperCoastal"):
+    SUBLIST = C12.NAd_coastal_basins.basin_list
 
-if ( area=='Coast' ): LayerList=LayerList_Coast
+if ( area=='Coast' or area=='SuperCoastal'): LayerList=LayerList_Coast
 
-print LayerList
+print (LayerList)
 
 nSub, nLayer = len(SUBLIST), len(LayerList)
 rows_names=[sub.name for sub in SUBLIST]
@@ -85,7 +89,7 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
 
         Profilelist_all=Dataset.Selector(var,T_INT,sub)
         nProfiles=len(Profilelist_all)
-        print sub.name, nProfiles
+        print (sub.name, nProfiles)
 
 # select OPEN SEA and COASTAL AREA:
         Lon = np.zeros((nProfiles,), np.float64)*np.nan
@@ -97,8 +101,8 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
 
             ix,iy=TheMask.convert_lon_lat_to_indices(Lon[ip],Lat[ip])
             if (coastmask[iy,ix] == True):
-               print "Last depth in m is: "    
-               print p.pres[-1]
+               print ("Last depth in m is: "    )
+               print (p.pres[-1])
                Profilelist_Coast.append(p) # point in COASTAL AREA
             else:
                Profilelist_OpenSea.append(p) # point in OPEN SEA
@@ -110,9 +114,9 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
              Profilelist=Profilelist_Coast
              LayerList=LayerList_Coast
 
-        print "AREA: " + area
+        print ("AREA: " + area)
         nProfiles=len(Profilelist)
-        print sub.name, nProfiles
+        print (sub.name, nProfiles)
 
 ###############
 
@@ -120,12 +124,12 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
         Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
         for ilayer, layer in enumerate(LayerList):
             m_layer = Matchup_basin.subset(layer)
-            print "m_layer.Model"
-            print m_layer.Model
+            print ("m_layer.Model")
+            print (m_layer.Model)
             npoints = m_layer.number()
             NUMB[isub,ilayer] = npoints
             if npoints>3:
-                print "npoints=", npoints
+                print ("npoints=", npoints)
                 STAT[isub,ilayer,0]=m_layer.bias()
                 STAT[isub,ilayer,1]=m_layer.RMSE()
                 STAT[isub,ilayer,2]=m_layer.correlation()

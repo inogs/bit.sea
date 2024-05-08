@@ -38,13 +38,11 @@ import scipy.io as NC
 from layer_integral import coastline
 import glob,os
 import datetime
-#from instruments import superfloat as bio_float
 from basins.region import Rectangle
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
 from datetime import timedelta
 from instruments import float_ppcon as ppcon_float
-import sys
 
 VARLIST           = ['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
 
@@ -191,8 +189,8 @@ def dump_xml(filexml):
     fid.writelines(LINES)
     fid.close()
 
-PREVIOUS_DIR= addsep(args.previous_dir) #"/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/wrkdir/2/POSTPROC/AVE_FREQ_1/online_validation/PREVIOUS/matchup_outputs/"
-ACTUAL_DIR  = addsep(args.actual_dir)  #"/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/wrkdir/2/POSTPROC/AVE_FREQ_1/online_validation/ACTUAL/matchup_outputs/"
+PREVIOUS_DIR= addsep(args.previous_dir)
+ACTUAL_DIR  = addsep(args.actual_dir)
 OUTDIR      = addsep(args.outdir)
 xmlfile     = args.xmlfile
 
@@ -233,23 +231,18 @@ for filename in analysis_forecast_basenames:
         forecastfile = PREVIOUS_DIR + filename
         float_f, mod_f, time, lon, lat = ncreader(forecastfile)
         float_a, mod_a, time, lon, lat = ncreader(analyis_file) # float_f and float_f are identical
-        p = getprofile(time, lon, lat) # p belong to ppcon_floar
+        p = getprofile(time, lon, lat)
         fig, axs = figure_generator(p)
         for i,var in enumerate(VARLIST):
             ax=axs[mapgraph[i]]
 
-            if var in PPCON_VARLIST_mod:#['P_l','N3n','POC', 'P_c']
+            if var in PPCON_VARLIST_mod:
                 var_idx = PPCON_VARLIST_mod.index(var) #idx of var
                 var_fl  = VARLIST_obs[var_idx]         # name of var in float nomenclature
                 var_flpp= var_fl+'_PPCON'              # name of var in ppcon nomenclature
-                LIST_AVA_PARA =  list(p.available_params.split(" "))
-                #181 COLOR_LIST = ['g','b','r','orange']
+                LIST_AVA_PARA =  p.available_params.rsplit(" ")
 
                 if (var_fl in LIST_AVA_PARA ) : 
-                    # Conversions 
-                    #if var_fl =='BBP700' and (var=='POC'):
-                    #    float_var = bellacicco_conversion(float_f[var],zlevels_out )
-                    #else:
                     float_var = float_f[var]
 
                     ####  if status == PPCON --> plot orange line ONLY 3lines  #####
@@ -260,17 +253,13 @@ for filename in analysis_forecast_basenames:
                             ax.plot(float_var,zlevels_out, COLOR_LIST[-1])# all depths
 
 
-                    ####  if status == Both --> plot 4 lines 
-                    elif p._my_float.status_profile(var_fl) =='B':
-                        # lego var ppcon oltre a insitu
-                        pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  ) # force to read ppcon
-                        # converto var ppcon 
+                    elif p._my_float.status_profile(var_fl) =='B': #plot 4 lines
+                        pp_pres,pp_var, pp_qc = p.read(var_fl  ,sourcedata='ppcon'  )
                         if var_fl =='BBP700' and (var=='POC'):
                             pp_var= bellacicco_conversion_ppcon(pp_var, pp_pres,var)
                         if var_fl =='BBP700' and (var=='P_c' ) :
                             pp_var= bellacicco_conversion_ppcon(pp_var, pp_pres,var)
 
-                        # interpolo var ppcon     
                         ppcon_varinterp = np.interp(zlevels_out, pp_pres, pp_var)
 
                         if var_fl in ['CHLA', 'BBP700', 'POC','P_c']: #ppcon plotted as 0-200m profile
@@ -279,23 +268,18 @@ for filename in analysis_forecast_basenames:
                             ax.plot(ppcon_varinterp,zlevels_out, COLOR_LIST[-1]  )
                         ax.plot(float_var,zlevels_out, COLOR_LIST[2])
 
+                    if p._my_float.status_profile(var_fl) =='I': # plot 3 lines in red obs
+                        ax.plot(float_var,zlevels_out, COLOR_LIST[2] )
+                    ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])
+                    ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])
 
-                    ####  if status == Insitu --> plot 3 lines in red obs
-                    if p._my_float.status_profile(var_fl) =='I':
-                        ax.plot(float_var,zlevels_out, COLOR_LIST[2] )    # insitu only
-                        #COLOR_LIST = ['g','b','r','orange']
-                    ax.plot(  mod_f[var],zlevels_out, COLOR_LIST[0])     # model forecast green
-                    ax.plot(  mod_a[var],zlevels_out, COLOR_LIST[1])     # model analysis blue
-                
-                else: # se non ho ne var ne var_ppcon available 
-                    raise Exception("check the specificity of the case") 
 
             else: # doxy temp sal ph
                 ax.plot(float_f[var],zlevels_out,COLOR_LIST[2])
                 ax.plot(  mod_f[var],zlevels_out,COLOR_LIST[0])
                 ax.plot(  mod_a[var],zlevels_out,COLOR_LIST[1])
 
-            ax.set_title(plotvarname[i] + ' status: ' + p._my_float.status_profile(var_fl))
+            ax.set_title(plotvarname[i])
             ax.invert_yaxis()
 
         pngfile = OUTDIR + filename[:-3] + ".png"

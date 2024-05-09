@@ -361,6 +361,7 @@ def mapplot_medeaf_V5C(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=No
     
     vmin, vmax = map_dict['clim']
     map2d=map_dict['data']
+    map2d[map2d>1.e+19] = np.nan
     Zm = np.ma.masked_invalid(map2d)
     cs=map_obj.pcolormesh(maskobj.xlevels, maskobj.ylevels, Zm,cmap=cmap,latlon='true',vmin=vmin,vmax=vmax, shading="nearest", ax=ax)
 

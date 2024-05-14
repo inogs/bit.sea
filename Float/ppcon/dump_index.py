@@ -25,7 +25,7 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat', 'ppcon_float'])
+                                choices = ['ppcon_float'])
 
     return parser.parse_args()
 
@@ -39,10 +39,8 @@ import os,glob
 import numpy as np
 from commons.utils import addsep
 
-try:
-    from StringIO import StringIO ## for Python 2
-except ImportError:
-    from io import StringIO ## for Python 3
+
+from io import StringIO ## for Python 3
 
 
 NOW=datetime.datetime.now()
@@ -63,25 +61,11 @@ if args.input_float_indexer is not None:
         FILELIST=INDEX_FILE['file_name'].tolist()
         is_provided_indexer = len(FILELIST) >0
 
-if args.type=="coriolis":
-    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
-if args.type=="lov":
-    VARLIST=['DOXY','SR_NO3_ADJUSTED', 'CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR'            ,'CDOM','DOWNWELLING_IRRADIANCE_380','DOWNWELLING_IRRADIANCE_412','DOWNWELLING_IRRADIANCE_490']
-if args.type=='Float_opt':
-    VARLIST=['PRES','PSAL','TEMP','PAR','CHLA', 'Ed_380','Ed_412','Ed_490']
-if args.type=='Float_opt_19':
-    VARLIST=['PRES', 'PAR','CHL','IRR_380','IRR_412','IRR_490']
-if args.type=='Float_opt_20':
-    VARLIST=['PRES', 'SALI','TEMP','BBP700']
-if args.type=="superfloat":
-    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490']
 if args.type=="ppcon_float":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490']
     ppcon_varlist=['CHLA', 'NITRATE','BBP700']
     ppcon_varlist1=['CHLA_PPCON', 'NITRATE_PPCON','BBP700_PPCON']
     NNmethod = '_PPCON'
-if args.type=="static_superfloat":
-    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR','CDOM','IRR_380' ,'IRR_412','IRR_490' ]
 
 
 def file_header_content(filename,VARLIST, avail_params=None):

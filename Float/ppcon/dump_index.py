@@ -178,7 +178,6 @@ for DIR in DIRLIST:
 
 
 
-#F = file(FloatIndexer,'w')
 F = open(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()

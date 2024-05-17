@@ -365,7 +365,11 @@ class TimeList():
             SELECTION=[]
             weights  =[]
 
-            if self.inputFrequency in ["daily","days=2"]:
+            condition=(self.inputFrequency in ["daily","days=2"]) | \
+                      (self.inputFrequency.startswith("hours"))   | \
+                      self.inputFrequency.startswith("seconds")
+
+            if condition:
                 for it,t in enumerate(self.Timelist):
                     if requestor.time_interval.contains(t):
                         SELECTION.append(it)
@@ -716,8 +720,10 @@ if __name__ == '__main__':
 
     H2 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", hours=2)
     TL     = TimeList(H2)
+    REQS=TL.getWeeklyList(4)
+    print(len(REQS))
     REQS = TL.getOwnList()
-    
+
     
     Min15 = DL.getTimeList("20180301-00:00:00","20200310-00:00:00", minutes=15)
     TL     = TimeList(Min15)

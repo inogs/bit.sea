@@ -7,7 +7,7 @@ def argument():
     parser.add_argument(   '--dafreq',"-f",
                                 type = str,
                                 required = True,
-                                help = 'frequency for float DA')
+                                help = 'frequency for float DA in days')
     parser.add_argument(   '--varda',"-v",
                                 type = str,
                                 required = True,
@@ -33,17 +33,15 @@ def argument():
 
 args = argument()
 
-from commons.time_interval import TimeInterval
 from commons import timerequestors
 from instruments import superfloat as biofloat
 from instruments.var_conversions import FLOATVARS
-import argparse
 import basins.OGS as OGS
 import commons.genUserDateList as DL
 import datetime
 import numpy as np
 
-DAfreq = int(args.dafreq) # days
+DAfreq = int(args.dafreq)
 varMODEL = args.varda
 hourDA = int(args.hourda)
 
@@ -53,15 +51,7 @@ DATESTART = args.datestart
 DATEEND = args.dateend
 
 
-var = FLOATVARS[varMODEL] #'N3n' 'O2o'
-
-#read_adjusted = {
-#    FLOATVARS['P_l']: True,
-#    FLOATVARS['N3n']: True,
-#    FLOATVARS['O2o']: True,
-#}
-
-#TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00'+ 'days='+ np.str(DAfreq))
+var = FLOATVARS[varMODEL]
 TL = DL.getTimeList(DATESTART + '-00:00:00',DATEEND + '-00:00:00', days=DAfreq)
 
 DAfloatdates = []
@@ -80,11 +70,10 @@ for dateref in TL:
     for wmo in WMOlist:
         SubProfilelist_1 = biofloat.filter_by_wmo(PROFILESdateref,wmo)
         for i in SubProfilelist_1:
-            _, Profile, _ = i.read(var)#,read_adjusted[var])   #Profile.shape,Profile.size, np.mean(Profile)
+            _, Profile, _ = i.read(var)
             if(Profile.size!=0) : Goodlist.append(i)
 
         if (Goodlist!=[]):
-            # print(wmo)
             break
 
     if (Goodlist!=[]):

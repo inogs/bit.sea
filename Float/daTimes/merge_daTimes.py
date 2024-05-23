@@ -21,7 +21,6 @@ def argument():
 args = argument()
 
 
-from instruments.superfloat import FloatSelector
 from commons.time_interval import TimeInterval
 from basins.region import Rectangle
 import datetime

@@ -34,12 +34,24 @@ def argument():
 args = argument()
 
 from commons import timerequestors
-from instruments import superfloat as biofloat
 from instruments.var_conversions import FLOATVARS
 import basins.OGS as OGS
 import commons.genUserDateList as DL
 import datetime
 import numpy as np
+import os,sys
+
+profilesource=os.getenv("PROFILES_SOURCE")
+if profilesource is None:
+    print("Error: Environment variables PROFILES_SOURCE - superfloat or ppcon - must be defined.")
+    sys.exit(1)
+assert profilesource in ["superfloat", "ppcon"]
+if profilesource=="superfloat":
+    from instruments import superfloat as bio_float
+if profilesource=="ppcon":
+    from instruments import float_ppcon as bio_float
+
+
 
 DAfreq = int(args.dafreq)
 varMODEL = args.varda

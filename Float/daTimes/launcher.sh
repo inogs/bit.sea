@@ -3,6 +3,8 @@
 . ../../Sat/profile.inc
 
 export ONLINE_REPO=/g100_work/OGS_prod100/OPA/V9C/RUNS_SETUP/PREPROC/DA
+export PROFILES_SOURCE=ppcon
+
 DA_TIMES_SAT=/g100_work/OGS_prod100/OPA/V9C/RUNS_SETUP/run4.0/wrkdir/MODEL/daTimes_sat
 DAFREQ=1
 DA_HH=13

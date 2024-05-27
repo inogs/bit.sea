@@ -22,7 +22,7 @@ MPI communicators but doesn't perform actual communication.
 Thus, the following code snippet works seamlessly for both parallel and serial
 executions:
 
->>> import mpi_serial_interface
+>>> import utilities.mpi_serial_interface
 ...
 ... communicator = get_mpi_communicator()
 ... rank = communicator.Get_rank()

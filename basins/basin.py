@@ -59,7 +59,8 @@ class Basin(object):
         return lon_grid, lat_grid, inside_domain
 
     def plot(self, lon_window=(-8, 38), lat_window=(30, 47), lon_points=100,
-             lat_points=100, color="tab:blue", alpha=1, axes=None, filled=True):
+             lat_points=100, color="tab:blue", alpha=1, axes=None, filled=True,
+             transform=None):
         lon_grid, lat_grid, inside_domain = self.grid(
             lon_window,
             lat_window,
@@ -83,6 +84,9 @@ class Basin(object):
         else:
             plot_f = axes.contour
             kwargs['colors'] = [color]
+
+        if transform is not None:
+            kwargs['transform'] = transform
 
         current_plot = plot_f(
             lon_grid,

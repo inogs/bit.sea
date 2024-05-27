@@ -331,13 +331,13 @@ class PlotDrawer:
             current_axis.legend()
 
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
-
         season_obj = season.season()
         elements_in_legend = False
         # x and y labels
+        var_label = None
+        use_latex = False
         if self._variable in self._config.variable_labels:
             var_label = self._config.variable_labels[self._variable]
-            use_latex = False
             if var_label.startswith('LaTeX:'):
                 use_latex = True
                 var_label = var_label[len('LaTeX:'):]
@@ -356,7 +356,6 @@ class PlotDrawer:
                 raise ValueError(
                     'Invalid display mode: "{}"'.format(d_mode)
                 )
-
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
 
@@ -377,12 +376,14 @@ class PlotDrawer:
                         labeltop=False
                     )
                 if pi == 1:
-                    current_axis.set_xlabel(var_label, usetex=use_latex)
+                    if var_label is not None:
+                        current_axis.set_xlabel(var_label, usetex=use_latex)
 
             if d_mode == 'inline':
                 if pj > 0:
                     current_axis.set_yticklabels([])
-                current_axis.set_xlabel(var_label, usetex=use_latex)
+                if var_label is not None:
+                    current_axis.set_xlabel(var_label, usetex=use_latex)
 
             for plot in self._plots:
 

@@ -38,10 +38,8 @@ class TimeList():
         TimeList object is created by providing a list of datetime objects
         (At least 2).
         '''
-        nTimes = len(datelist)
-        self.Timelist = datelist
-        self.Timelist.sort()
-        self.nTimes   = nTimes
+        self.Timelist = sorted(datelist)
+        self.nTimes = len(datelist)
 
         self.inputdir     = None
         self.searchstring = None
@@ -51,8 +49,8 @@ class TimeList():
         if forceFrequency is not None:
             self.inputFrequency = forceFrequency
         else:
-            if (nTimes > 1 ) :
-                self.inputFrequency= self.__searchFrequency()
+            if self.nTimes > 1:
+                self.inputFrequency = self.__searchFrequency()
                 self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
@@ -538,9 +536,9 @@ class TimeList():
 
 
     def getYearlist(self):
-        '''
-        Returns an list of requestors, Yearly_req objects.
-        '''
+        """
+        Returns a list of requestors, Yearly_req objects.
+        """
         YEARLIST=[self.timeinterval.start_time.year]
         for t in self.Timelist:
             if t.year not in YEARLIST: YEARLIST.append(t.year)

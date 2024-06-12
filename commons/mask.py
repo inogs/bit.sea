@@ -76,8 +76,29 @@ class Mask(object):
             else:
                 self.e1t = np.array(dset.variables['e1t'][0,:,:]).astype(np.float32)
                 self.e2t = np.array(dset.variables['e2t'][0,:,:]).astype(np.float32)
-            self._area = self.e1t*self.e2t
-            self._dz = self.e3t[:,0,0]
+
+            if loadtmask:
+                k = 1
+                # Here we look for the first layer from the bottom (i.e. the
+                # deepest one) that contains a water cell. In this way, we
+                # are sure that in the following part of the code we will read
+                # e3t on the deepest column that we have
+                while np.all(np.logical_not(self._mask[-k, :])):
+                    k += 1
+                water_points = np.where(self._mask[-k, :])
+                water_point_x, water_point_y = (k[0] for k in water_points)
+            else:
+                k = 1
+                water_point_x, water_point_y = 0, 0
+
+            self._area = self.e1t * self.e2t
+            self._dz = self.e3t[:, water_point_x, water_point_y]
+
+            # If we have some layers that contain only land, we use the height
+            # of the last land for them
+            if k != 1:
+                self._dz[-k + 1:] = self._dz[-k]
+
         self._regular = None
 
     @property

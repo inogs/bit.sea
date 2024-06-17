@@ -7,8 +7,12 @@
 export MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
 export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/
 
-         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/MODEL/AVE_FREQ_2/
-   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+#         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/MODEL/AVE_FREQ_2/
+         INPUTDIR=/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v3/wrkdir/MODEL/AVE_FREQ_2/
+#   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
+   INPUT_AGGR_DIR=/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v3/wrkdir/MODEL/AVE_FREQ_2/
+MASKFILE="/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v2/wrkdir/MODEL/meshmask.nc"
+
 STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 
 #SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_24
@@ -66,8 +70,16 @@ opa_prex_or_die "python plot_pfts.py -i $PWD -o $PWD/pfts/ "
 ######################
 
 # CREATE MAP PPN INTEGRAL 0-200m (python2 che python3 ha un errore sul name "long")
+#opa_prex_or_die "mkdir -p Fig4.7refScale"
+#opa_prex_or_die "python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101"
+
+run="MedBFM4.2_Q24_v3"
+OUTDIR="/g100_work/OGS_devC/Benchmark/pub/lfeudale/MedBFM4.2_Q24_v3/PPN"
+# CREATE MAP PPN INTEGRAL 0-200m (python2 che python3 ha un errore sul name "long")
 opa_prex_or_die "mkdir -p Fig4.7refScale"
-opa_prex_or_die "python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101"
+#opa_prex_or_die "python averager_and_plot_map_ppn_refScale.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o Fig4.7refScale -l Plotlist_bio.xml -s 20190101 -e 20200101"
+opa_prex_or_die "python averager_and_plot_map_ppn_refScale_16basin_RMSD.py -i $INPUT_AGGR_DIR  -v ppn  -t integral -m $MASKFILE -o $OUTDIR -l Plotlist_bio.xml -s 20190101 -e 20200101"
+
 
 
 # FLOAT SECTION:

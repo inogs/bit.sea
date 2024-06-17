@@ -1,13 +1,12 @@
-from __future__ import print_function
+from pathlib import Path
 from commons import timerequestors as requestors
 from commons import genUserDateList as DL
-import os,glob
+import os
 import datetime
 import numpy as np
 from commons import season
 from commons import IOnames
 from commons.time_interval import TimeInterval
-from commons.utils import addsep
 
 seasonobj = season.season()
 
@@ -31,7 +30,7 @@ def computeTimeWindow(freqString,currentDate):
         req = requestors.seconds_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour,currentDate.minute, delta_seconds=nseconds) 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
-class TimeList():
+class TimeList:
 
     def __init__(self,datelist,forceFrequency=None):
         '''
@@ -101,19 +100,21 @@ class TimeList():
         if not os.path.exists(inputdir):
             raise NameError("Not existing directory " + inputdir)
 
-        inputdir = addsep(inputdir)
-        filelist_ALL = glob.glob(inputdir + searchstring)
-        if not filtervar is None:
-            filename, file_extension = os.path.splitext(filelist_ALL[0])
+        inputdir = Path(inputdir)
+        filelist_ALL = tuple(inputdir.glob(searchstring))
+        if filtervar is not None:
+            file_extension = filelist_ALL[0].suffix
             #filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
-            filelist_ALL=[f for f in filelist_ALL if filtervar+file_extension in os.path.basename(f) ]
+            filelist_ALL = tuple(
+                f for f in filelist_ALL if filtervar + file_extension in f.name
+            )
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]
         External_filelist=[]
         External_timelist=[]
         for pathfile in filelist_ALL:
-            filename   = os.path.basename(pathfile)
+            filename   = pathfile.name
             datestr     = filename[IOname.date_startpos:IOname.date_endpos]
             try:
                 actualtime = datetime.datetime.strptime(datestr,IOname.dateformat)

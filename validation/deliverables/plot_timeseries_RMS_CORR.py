@@ -32,6 +32,12 @@ def argument():
                                 choices = ['P_l','kd490','P1l','P2l','P3l','P4l','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670' ],
                                 help = ''' model var name'''
                                 )
+    parser.add_argument(   '--zone', '-z',
+                                type = str,
+                                required =False,
+                                default = "Med",
+                                help = ''' Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers'''
+                                )
 
 
 
@@ -54,6 +60,12 @@ fid = open(args.inputfile,'rb')
 LIST = pickle.load(fid)
 fid.close()
 
+if (args.zone == "Med"):
+   from basins import V2 as OGS
+if (args.zone == "rivers"):
+   print ("rivers")
+   from basins import RiverBoxes as OGS
+
 model_label=' MODEL'
 
 if (args.var =="kd490"):
@@ -68,6 +80,9 @@ else:
     units="[mg/m$^3$]"
     vmin=-0.3
     vmax=0.3
+    if (args.zone == "rivers"):
+       vmin=-1.0
+       vmax=1.0
     
 var_label = SAT_VARS[args.var] + " " + units
 
@@ -85,13 +100,15 @@ SAT___STD = LIST[8]
 BGC_CLASS4_CHL_CORR_SURF_BASIN= LIST[9]
 NUMB = LIST[10]
 
-from basins import V2 as OGS
-
 nSUB = len(OGS.P.basin_list)
 
 for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue
     print (sub.name)
+    if ((args.var =="P_l") & (sub.name=="Po")):
+           vmin=-4.0
+           vmax=4.0
+
     fig, ax = pl.subplots()
     fig.set_size_inches(12,4)
     ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
@@ -114,6 +131,7 @@ for isub,sub in enumerate(OGS.P):
 #    #ax.tick_params(direction='left', pad=2)
     #fig.show()
     outfilename="%s%s-RMS-BIAS_%s.png"  %(OUTDIR, args.var, sub.name) #  args.outdir+"/"+'chl-RMS-BIAS_' + sub.name + ".png"
+    pl.tight_layout()
     pl.tight_layout()
     pl.savefig(outfilename)
     pl.close(fig)

@@ -24,6 +24,13 @@ def argument():
                                 choices = ['P_l','kd490','P1l','P2l','P3l','P4l','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670'],
                                 help = ''' model var name'''
                                 )
+    parser.add_argument(   '--zone', '-z',
+                                type = str,
+                                required =False,
+                                default = "Med",
+                                help = ''' Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers'''
+                                )
+
     
 
 
@@ -49,6 +56,11 @@ fid = open(args.inputfile,'rb')
 LIST = pickle.load(fid)
 fid.close()
 
+if (args.zone == "Med"):
+    from basins import V2 as OGS
+if (args.zone == "rivers"):
+    from basins import RiverBoxes as OGS
+
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR,NUMB = LIST
 
 model_label=' MODEL'
@@ -71,7 +83,10 @@ lightcolor="palegreen"
 
 if (args.var == "P_l"): 
     vmin=0.0
-    vmax=0.6
+    if (args.zone == "Med"):
+        vmax=0.6
+    if (args.zone == "rivers"):
+        vmax=1.0 
 
 if (args.var == "kd490"):
     vmin=0.02
@@ -105,14 +120,18 @@ for isub,sub in enumerate(OGS.P):
     pl.rc('ytick', labelsize=12)
     ax.tick_params(axis='both', labelsize=12)
 #    pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
+    if (sub.name=="Po"):
+       vmax=4.0
+    else:
+       vmax=1.0
     pl.ylim(vmin,vmax)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30,fontsize=10)
+    pl.setp(xlabels, rotation=30,fontsize=12)
     outfilename="%s%s_%s_STD.png"  %(OUTDIR, args.var, sub.name)
     ylabels = ax.get_yticklabels()
-    pl.setp(ylabels, fontsize=10)
+    pl.setp(ylabels, fontsize=12)
     pl.tight_layout()
     pl.savefig(outfilename)

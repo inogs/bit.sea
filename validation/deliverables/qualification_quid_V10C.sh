@@ -4,38 +4,40 @@
 # SECTION 4:
 . ../online/profile.inc
 
-export MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
+#export MASKFILE=/g100_work/OGS_devC/V9C/RUNS_SETUP/PREPROC/MASK/meshmask.nc
+export MASKFILE=/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v3/wrkdir/MODEL/meshmask.nc
 export ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/
 
-#         INPUTDIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/MODEL/AVE_FREQ_2/
          INPUTDIR=/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v3/wrkdir/MODEL/AVE_FREQ_2/
-#   INPUT_AGGR_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP
    INPUT_AGGR_DIR=/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v3/wrkdir/MODEL/AVE_FREQ_2/
-MASKFILE="/g100_scratch/userexternal/camadio0/MedBFM4.2_Q24_v2/wrkdir/MODEL/meshmask.nc"
 
 STAT_PROFILES_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_2/STAT_PROFILES/
 
 #SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/KD490/DT/SIGMA_2.0/WEEKLY_4_24
 SAT_KD_WEEKLY_DIR=/g100_scratch/userexternal/lfeudale/KD490/SAT/KD490/DT/SIGMA_2.0_KDmin0.022/WEEKLY_4_24/
-SAT_CHLWEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/WEEKLY_4_24
+SAT_CHLWEEKLY_DIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/CHL/DT/WEEKLY_4_24/
+
 SAT_CHLPFTsWEEKLY_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/WEEKLY_4_24
 KD_MODEL_DIR=/g100_scratch/userexternal/gbolzon0/V10C/run4.19/wrkdir/POSTPROC/output/AVE_FREQ_3/KD_WEEKLY/
 BASEDIR=/g100_scratch/userexternal/lfeudale/validation/V10C/run4.19/PROFILATORE/
 
 
 # CREATE Directories for SAT:
-opa_prex_or_die "mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2"
+opa_prex_or_die "mkdir -p Fig4.2 Fig4.3/offshore Fig4.3/coast table4.1 table4.2 Fig_SAT_rivers"
 
 
 for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
    OPENSEA_PKL=${VAR}_open_sea.pkl
      COAST_PKL=${VAR}_coast.pkl
+  #  RIVERS_PKL=${VAR}_rivers.pkl
 
    MODELDIR=$INPUTDIR
    SAT_DIR=$SAT_CHLWEEKLY_DIR
    if [ $VAR == 'P_l' ] ; then 
         MODELDIR=$INPUT_AGGR_DIR #; fi
         SAT_DIR=$SAT_CHLWEEKLY_DIR
+
+        RIVERS_PKL=${VAR}_rivers.pkl
     fi
    if [ $VAR == 'kd490' ] ; then 
         MODELDIR=$KD_MODEL_DIR
@@ -49,17 +51,24 @@ for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
     fi
 
    LAYER=10
-   # if [ $VAR == 'kd490' ] ; then LAYER=0 ; fi
+   if [ $VAR == 'kd490' ] ; then LAYER=0 ; fi
    
    
-   opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c open_sea -l $LAYER  -o $OPENSEA_PKL"
-   opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c coast    -l $LAYER  -o $COAST_PKL"
+   opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c open_sea -l $LAYER  -o $OPENSEA_PKL -t 20190101 -e 20200101"
+   opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c coast    -l $LAYER  -o $COAST_PKL -t 20190101 -e 20200101"
    opa_prex_or_die "python plot_timeseries_STD.py -v $VAR -i $OPENSEA_PKL -o ./Fig4.2/ "
    opa_prex_or_die "python plot_timeseries_RMS_CORR.py -v $VAR -i $OPENSEA_PKL -o Fig4.3/offshore " # table4.1
    opa_prex_or_die "python plot_timeseries_RMS_CORR.py -v $VAR -i $COAST_PKL -o Fig4.3/coast  "   # table4.2
    
    opa_prex_or_die "cp Fig4.3/offshore/table4.1_${VAR}.dat table4.1 "
    opa_prex_or_die "cp Fig4.3/coast/table4.1_${VAR}.dat    table4.2/table4.2_${VAR}.dat "
+
+   # RIVERS VALIDATION:
+   if [$VAR == P1l]:
+       opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c everywhere -l $LAYER  -o $RIVERS_PKL -z rivers -t 20190101 -e 20200101"
+       opa_prex_or_die "python plot_timeseries_STD.py -v $VAR -i $RIVERS_PKL -o ./Fig_SAT_rivers -z rivers"
+       opa_prex_or_die "python plot_timeseries_RMS_CORR.py -v $VAR -i $RIVERS_PKL -o ./Fig_SAT_rivers -z rivers"
+    fi
 
 done
 

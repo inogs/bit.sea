@@ -57,6 +57,12 @@ def argument():
                                 required =True,
                                 help = ''' Date end for time interval to consider for validation,format %Y%m%d'''
                                 )
+    parser.add_argument(   '--zone', '-z',
+                                type = str,
+                                required =False,
+                                default = "Med",
+                                help = ''' Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers'''
+                                )
     return parser.parse_args()
 
 
@@ -74,7 +80,7 @@ from commons.dataextractor import DataExtractor
 from layer_integral.mapbuilder import MapBuilder
 from commons.mask import Mask
 from commons.submask import SubMask
-from basins import V2 as OGS
+#from basins import V2 as OGS
 from commons.layer import Layer
 from commons.utils import addsep
 import pickle
@@ -93,6 +99,7 @@ Sup_mask = TheMask.cut_at_level(0)
 MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)
 outfile  = args.outfile
+area     = args.zone
 
 
 modvarname=args.var
@@ -106,6 +113,12 @@ model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc", filtervar=modvarname)
 
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
+if (area=="Med"):
+    from basins import V2 as OGS
+    BASINS=OGS.Pred
+if (area=="rivers"):
+   from basins import RiverBoxes as OGS
+   BASINS=OGS.P
 
 nFrames = model_TL.nTimes
 nSUB = len(OGS.P.basin_list)
@@ -113,17 +126,22 @@ nSUB = len(OGS.P.basin_list)
 jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
-for sub in OGS.Pred:
+
+#for sub in OGS.Pred:
+for sub in BASINS:
     print (sub.name)
     sbmask         = SubMask(sub,maskobject=Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
+
 mask200_2D = TheMask.mask_at_level(200.0)
 mask0_2D = TheMask.mask_at_level(0.0)
-SUB['med'] = mask0_2D.copy()
-ii=SUB['atl']
-SUB['med'][ii] = False
-print('med')
+# Do not consider Atlantic in the Mediterranean domain:
+if (area=="Med"):
+    SUB['med'] = mask0_2D.copy()
+    ii=SUB['atl']
+    SUB['med'][ii] = False
+    print('med')
 
 
 if args.coastness == 'coast':

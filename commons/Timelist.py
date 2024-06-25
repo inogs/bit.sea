@@ -1,13 +1,12 @@
-from __future__ import print_function
+from pathlib import Path
 from commons import timerequestors as requestors
 from commons import genUserDateList as DL
-import os,glob
+import os
 import datetime
 import numpy as np
 from commons import season
 from commons import IOnames
 from commons.time_interval import TimeInterval
-from commons.utils import addsep
 
 seasonobj = season.season()
 
@@ -31,17 +30,15 @@ def computeTimeWindow(freqString,currentDate):
         req = requestors.seconds_req(currentDate.year,currentDate.month,currentDate.day,currentDate.hour,currentDate.minute, delta_seconds=nseconds) 
     return TimeInterval.fromdatetimes(req.time_interval.start_time, req.time_interval.end_time)
 
-class TimeList():
+class TimeList:
 
     def __init__(self,datelist,forceFrequency=None):
         '''
         TimeList object is created by providing a list of datetime objects
         (At least 2).
         '''
-        nTimes = len(datelist)
-        self.Timelist = datelist
-        self.Timelist.sort()
-        self.nTimes   = nTimes
+        self.Timelist = sorted(datelist)
+        self.nTimes = len(datelist)
 
         self.inputdir     = None
         self.searchstring = None
@@ -51,8 +48,8 @@ class TimeList():
         if forceFrequency is not None:
             self.inputFrequency = forceFrequency
         else:
-            if (nTimes > 1 ) :
-                self.inputFrequency= self.__searchFrequency()
+            if self.nTimes > 1:
+                self.inputFrequency = self.__searchFrequency()
                 self.timeinterval = TimeInterval.fromdatetimes(self.Timelist[0], self.Timelist[-1])
 
     @staticmethod
@@ -103,19 +100,21 @@ class TimeList():
         if not os.path.exists(inputdir):
             raise NameError("Not existing directory " + inputdir)
 
-        inputdir = addsep(inputdir)
-        filelist_ALL = glob.glob(inputdir + searchstring)
-        if not filtervar is None:
-            filename, file_extension = os.path.splitext(filelist_ALL[0])
+        inputdir = Path(inputdir)
+        filelist_ALL = tuple(inputdir.glob(searchstring))
+        if filtervar is not None:
+            file_extension = filelist_ALL[0].suffix
             #filelist_ALL=[f for f in filelist_ALL if f.endswith("." + filtervar + file_extension) ]
-            filelist_ALL=[f for f in filelist_ALL if filtervar+file_extension in os.path.basename(f) ]
+            filelist_ALL = tuple(
+                f for f in filelist_ALL if filtervar + file_extension in f.name
+            )
         assert len(filelist_ALL) > 0
         filenamelist=[]
         datetimelist=[]
         External_filelist=[]
         External_timelist=[]
         for pathfile in filelist_ALL:
-            filename   = os.path.basename(pathfile)
+            filename   = pathfile.name
             datestr     = filename[IOname.date_startpos:IOname.date_endpos]
             try:
                 actualtime = datetime.datetime.strptime(datestr,IOname.dateformat)
@@ -128,7 +127,7 @@ class TimeList():
             except:
                 print("Warning: " + datestr + " does not exist!")
 
-        TimeListObj = TimeList(datetimelist,forceFrequency=forceFrequency)
+        TimeListObj = TimeList(datetimelist, forceFrequency=forceFrequency)
         filenamelist.sort()
         TimeListObj.timeinterval = timeinterval
         TimeListObj.inputdir     = inputdir
@@ -538,9 +537,9 @@ class TimeList():
 
 
     def getYearlist(self):
-        '''
-        Returns an list of requestors, Yearly_req objects.
-        '''
+        """
+        Returns a list of requestors, Yearly_req objects.
+        """
         YEARLIST=[self.timeinterval.start_time.year]
         for t in self.Timelist:
             if t.year not in YEARLIST: YEARLIST.append(t.year)
@@ -703,6 +702,35 @@ class TimeList():
         else:
             return D.argmin()
 
+    def get_datetime_array(self, resolution='s'):
+        """
+        Return the datetime values of this `Timelist` as a one-dimensional
+        Numpy array of `datetime64` objects.
+
+        This function is useful for saving the content of a Timelist object
+        into a binary NetCDF file.
+
+        :param resolution: The resolution of the `datetime64` objects.
+        By default, it is "s", meaning the date will be saved internally as a
+        64-bit integer representing seconds since the epoch
+        (1970-01-01T00:00:00). If the resolution is "m", the dates will be
+        saved as minutes since the epoch, and so on.
+
+        :return: An array of datetime64 objects.
+        """
+        output = np.empty(
+            (len(self.Timelist), ),
+            dtype=f'datetime64[{resolution}]'
+        )
+
+        for i, t in enumerate(self.Timelist):
+            numpy_t = np.datetime64(
+                t.strftime('%Y-%m-%dT%H:%M:%S'),
+                resolution
+            )
+            output[i] = numpy_t
+
+        return output
 
 
 if __name__ == '__main__':

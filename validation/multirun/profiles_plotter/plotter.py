@@ -12,6 +12,7 @@ from commons.submask import SubMask
 from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
+from utilities.mpi_serial_interface import get_mpi_communicator
 from .tools.read_config import Config, InvalidConfigFile, \
     read_config_from_file, read_output_dir
 from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
@@ -22,21 +23,16 @@ try:
 except ImportError:
     from math import gcd
 
-
     def lcm(a, b):
         return abs(a * b) // gcd(a, b)
 
 try:
-    from mpi4py import MPI
-
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    nranks = comm.size
+    import mpi4py
     isParallel = True
 except ModuleNotFoundError:
-    rank = 0
-    nranks = 1
     isParallel = False
+
+COMMUNICATOR = get_mpi_communicator()
 
 MAIN_DIR = path.dirname(path.realpath(__file__))
 CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
@@ -45,8 +41,8 @@ BASINS = tuple(V2.P.basin_list)
 
 # A BasinSliceVolume describes a slices among vertical levels of a specific
 # basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
-# Sea (accordingly to a specific meshmask). The levels field should be a tuple
-# with two elements: the start and the end of the interval in meters.
+# Sea (accordingly to a specific meshmask). The `levels` field should be a
+# tuple with two elements: the start and the end of the interval in meters.
 BasinSlice = namedtuple('BasinSlice', ['basin_index', 'meshmask', 'levels'])
 
 
@@ -625,17 +621,12 @@ def compute_slice_volume(level_slice: slice, meshmask: Mask,
     return slice_volume
 
 
-def main():
-    args = configure_argparse()
-
-    config = read_config_from_file(args.config_file)
-
+def draw_profile_plots(config, output_dir=None):
     # If we have read an output dir from the command line, we use it instead of
     # value of the config file.
-    output_dir = config.output_options.output_dir
-    output_dir_arg = args.output_dir
-    if output_dir_arg is not None:
-        output_dir = output_dir_arg
+    if output_dir is None:
+        output_dir = config.output_options.output_dir
+
     if output_dir is None:
         raise InvalidConfigFile(
             'output_dir has not been specified in the output section of the '
@@ -696,7 +687,10 @@ def main():
     variables = tuple(sorted(list(variables)))
 
     # Here we produce the plots
-    for var_name in variables[rank::nranks]:
+    communicator = get_mpi_communicator()
+    rank = communicator.Get_rank()
+    comm_size = communicator.size
+    for var_name in variables[rank::comm_size]:
         plot_drawer = PlotDrawer(
             config,
             var_name,
@@ -728,6 +722,13 @@ def main():
 
             fig.savefig(outfile_path)
             plt.close(fig)
+
+
+def main():
+    args = configure_argparse()
+    config = read_config_from_file(args.config_file)
+
+    draw_profile_plots(config, args.output_dir)
 
 
 if __name__ == '__main__':

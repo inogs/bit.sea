@@ -12,9 +12,9 @@ from commons.submask import SubMask
 from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
-from tools.read_config import Config, InvalidConfigFile, \
+from .tools.read_config import Config, InvalidConfigFile, \
     read_config_from_file, read_output_dir
-from tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
+from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
 try:

@@ -7,12 +7,12 @@ import re
 from sys import version_info
 from typing import Any, Dict, Mapping, Tuple, Union
 
-from tools.data_object import DataObject, PickleDataObject
-from plot_inputs import PlotInputData
-from plot_inputs.single_line_plot import SingleLineInputData
-from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
+from ..tools.data_object import DataObject, PickleDataObject
+from ..plot_inputs import PlotInputData
+from ..plot_inputs.single_line_plot import SingleLineInputData
+from ..tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
     read_depth_profile_mode
-from filters.read_filter_description import read_filter_description
+from ..filters.read_filter_description import read_filter_description
 
 if version_info[1] < 9:
     from typing import Callable

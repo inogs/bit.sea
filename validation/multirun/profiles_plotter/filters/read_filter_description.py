@@ -1,7 +1,7 @@
 import re
-from filters.filter import ComposedFilter, InvalidFilterDescription
-from filters.crop_time import TimeCroppingFilter
-from filters.moving_average_filter import MovingAverageFilter
+from .filter import ComposedFilter, InvalidFilterDescription
+from .crop_time import TimeCroppingFilter
+from .moving_average_filter import MovingAverageFilter
 
 
 FILTER_DESCRIPTION_MASK = re.compile(

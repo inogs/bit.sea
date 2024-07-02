@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
-from tools.data_object import DataObject
+from ..tools.data_object import DataObject
+
 
 SLICE_TYPE = Union[slice, int]
 

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 from typing import Union
 
-from plot_inputs import PlotInputData
+from ..plot_inputs import PlotInputData
 
 
 class InvalidFilterDescription(Exception):

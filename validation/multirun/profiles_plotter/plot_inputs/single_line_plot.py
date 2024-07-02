@@ -1,6 +1,5 @@
-from tools.data_object import DataObject
-
-from plot_inputs import PlotInputData, SLICE_TYPE
+from ..tools.data_object import DataObject
+from . import PlotInputData, SLICE_TYPE
 
 
 class SingleLineInputData(PlotInputData):

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from os import path
+from pathlib import Path
 from typing import Union
 
 from timeseries.plot import read_pickle_file
@@ -97,32 +97,37 @@ class PickleDataObject(DataObject):
     }
 
     def __init__(self, dir_path, var_name):
-        self.dir_path = dir_path
+        self._dir_path = Path(dir_path)
         self.var_name = var_name
 
         self._loaded = False
         self._data = None
         self._time_steps = None
 
+    @property
+    def dir_path(self):
+        return self._dir_path
+
+    @dir_path.setter
+    def dir_path(self, dir_path):
+        self._dir_path = Path(dir_path)
+
     def load(self):
         if self._loaded:
             return
 
         filename_candidates = []
-        main_filename = path.join(self.dir_path, self.var_name + ".pkl")
+        main_filename = self.dir_path / (self.var_name + ".pkl")
         filename_candidates.append(main_filename)
 
         data_class = self.__class__
         for alternative_names in (data_class.BFMv2_dict, data_class.BFMv5_dict):
             if self.var_name in alternative_names:
                 new_var_name = alternative_names[self.var_name]
-                alternative_filename = path.join(
-                    self.dir_path,
-                    new_var_name + ".pkl"
-                )
+                alternative_filename = self.dir_path / (new_var_name + ".pkl")
                 filename_candidates.append(alternative_filename)
         for candidate in filename_candidates:
-            if path.exists(candidate):
+            if candidate.exists():
                 final_filename = candidate
                 break
         else:

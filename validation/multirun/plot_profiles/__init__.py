@@ -1,4 +1,3 @@
-from argparse import ArgumentParser
 from collections import namedtuple
 from os import path
 from warnings import warn
@@ -6,15 +5,14 @@ from warnings import warn
 import matplotlib.pyplot as plt
 import numpy as np
 
-from basins import V2
+
 from commons.mask import Mask
 from commons.submask import SubMask
 from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
 from utilities.mpi_serial_interface import get_mpi_communicator
-from .tools.read_config import Config, InvalidConfigFile, \
-    read_config_from_file, read_output_dir
+from .tools.read_config import Config, InvalidConfigFile
 from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
@@ -26,18 +24,6 @@ except ImportError:
     def lcm(a, b):
         return abs(a * b) // gcd(a, b)
 
-try:
-    import mpi4py
-    isParallel = True
-except ModuleNotFoundError:
-    isParallel = False
-
-COMMUNICATOR = get_mpi_communicator()
-
-MAIN_DIR = path.dirname(path.realpath(__file__))
-CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
-
-BASINS = tuple(V2.P.basin_list)
 
 # A BasinSliceVolume describes a slices among vertical levels of a specific
 # basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
@@ -522,34 +508,6 @@ class PlotDrawer:
         return fig
 
 
-def configure_argparse():
-    parser = ArgumentParser()
-    parser.description = (
-        "The MultirunProfilePlotter is a script to plot temporal series and "
-        "depth profiles of several different runs of one or more models. "
-        "You may configure the behaviour of the script by setting the values "
-        "of the config.yaml file in the main directory of this script or "
-        "writing another configuration file yourself."
-    )
-    parser.add_argument(
-        'config_file',
-        type=str,
-        nargs='?',
-        default=CONFIG_FILE,
-        help='The path of the config file used by this script. By default, it '
-             'uses {}'.format(CONFIG_FILE)
-    )
-
-    parser.add_argument(
-        '--output_dir',
-        '-o',
-        type=read_output_dir,
-        default=None,
-        help='The path where this script will save the output plots'
-    )
-    return parser.parse_args()
-
-
 def from_interval_to_slice(level_interval: tuple, meshmask: Mask):
     """
     Given an interval in meters, return the slice that identifies that interval
@@ -621,9 +579,9 @@ def compute_slice_volume(level_slice: slice, meshmask: Mask,
     return slice_volume
 
 
-def draw_profile_plots(config, output_dir=None):
-    # If we have read an output dir from the command line, we use it instead of
-    # value of the config file.
+def draw_profile_plots(config: Config, basins, output_dir=None):
+    # If no output_dir has been received, we use the output_dir that is saved
+    # inside the config object
     if output_dir is None:
         output_dir = config.output_options.output_dir
 
@@ -631,7 +589,7 @@ def draw_profile_plots(config, output_dir=None):
         raise InvalidConfigFile(
             'output_dir has not been specified in the output section of the '
             'config file. Specify an output directory in the config file or '
-            'use the --output-dir flag from the command line.'
+            'submit the output_dir argument to this function.'
         )
 
     # Check if at least one of the specified levels requires to compute an
@@ -665,7 +623,7 @@ def draw_profile_plots(config, output_dir=None):
     average_volume_weights = {}
     if averages_in_levels:
         for meshmask_path, meshmask_object in meshmask_objects.items():
-            for basin_index, basin in enumerate(V2.P):
+            for basin_index, basin in enumerate(basins):
                 submask = SubMask(basin, maskobject=meshmask_object)
                 for level in config.time_series_options.levels:
                     if not isinstance(level, tuple):
@@ -701,7 +659,7 @@ def draw_profile_plots(config, output_dir=None):
             continue
         plot_drawer.load_data()
 
-        for basin_index, basin in enumerate(BASINS):
+        for basin_index, basin in enumerate(basins):
             outfile_name = config.output_options.output_name.replace(
                 '${VAR}',
                 var_name
@@ -722,14 +680,3 @@ def draw_profile_plots(config, output_dir=None):
 
             fig.savefig(outfile_path)
             plt.close(fig)
-
-
-def main():
-    args = configure_argparse()
-    config = read_config_from_file(args.config_file)
-
-    draw_profile_plots(config, args.output_dir)
-
-
-if __name__ == '__main__':
-    main()

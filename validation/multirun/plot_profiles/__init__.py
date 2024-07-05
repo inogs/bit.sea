@@ -12,7 +12,8 @@ from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
 from utilities.mpi_serial_interface import get_mpi_communicator
-from .tools.read_config import Config, InvalidConfigFile
+from .tools.read_config import Config, InvalidConfigFile, PlotConfig, \
+    DataDirSource, DepthProfilesOptions, TimeSeriesOptions, OutputOptions
 from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
@@ -680,3 +681,9 @@ def draw_profile_plots(config: Config, basins, output_dir=None):
 
             fig.savefig(outfile_path)
             plt.close(fig)
+
+
+__all__ = [
+    PlotConfig, DataDirSource, DepthProfilesOptions, TimeSeriesOptions,
+    OutputOptions, Config, draw_profile_plots
+]

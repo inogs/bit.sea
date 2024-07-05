@@ -29,3 +29,7 @@ class SingleLineInputData(PlotInputData):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._data_object.__exit__(exc_type, exc_val, exc_tb)
         return
+
+    @classmethod
+    def builder(cls, coast_index: int, indicator_index: int):
+        return lambda data_obj: cls(data_obj, coast_index, indicator_index)

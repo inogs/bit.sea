@@ -519,8 +519,7 @@ class PlotConfig:
         if 'indicator' in plot_config:
             indicator = int(plot_config['indicator'])
 
-        def plot_builder(data_object):
-            return SingleLineInputData(data_object, coast_index, indicator)
+        plot_builder = SingleLineInputData.builder(coast_index, indicator)
 
         plot_config_kwargs = {}
 

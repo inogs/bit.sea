@@ -37,6 +37,10 @@ def argument():
                                 required = True,
                                 help = 'Path of the mask file')
 
+    parser.add_argument(   '--coastness', '-c',
+                                type = str,
+                                required = True,
+                                help = 'COASTNESS list: everywhere, open_sea, coast, supercoastal')
     return parser.parse_args()
 
 
@@ -52,11 +56,12 @@ import numpy as np
 from static.climatology import DatasetInfo
 from commons.mask import Mask
 import basins.V2 as OGS
+import basins.COASTAL12nm as C12
 from commons.utils import addsep
 from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
 
-
+# C12.NAd_coastal_basins
 #from instruments.var_conversions import NUTRVARS, CARBONVARS , SOCAT_VARS
 #from static.Socat_reader import SocatReader
 
@@ -74,6 +79,7 @@ coastmask=mask0_2D & (~mask200_2D)
 
 OUTPUTDIR=addsep(args.outdir)
 modelvarname = args.varname
+coastness = args.coastness 
 #input_profiler = args.profiler
 #print input_profiler
 os.system('mkdir -p ' + OUTPUTDIR)
@@ -96,14 +102,22 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 
 var, Dataset = DatasetInfo(modelvarname)
 
+if (coastness == "supercoastal"):
+   SUBBASINS = C12.NAd_coastal_basins
+else:
+   SUBBASINS = OGS.NRT3
+
 #for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
-for sub in OGS.NRT3:
+#for sub in OGS.NRT3:
+#for sub in C12.NAd_coastal_basins:
+for sub in SUBBASINS:
 #  if (sub.name =="nwm"):
-    print sub.name
+    print (sub.name)
     Profilelist_OpenSea = [] # LIST of points in OPEN SEA area
+    Profilelist_Coast = [] # LIST of points along the coast
     Profilelist_all=Dataset.Selector(var,T_INT,sub)
     nProfiles=len(Profilelist_all)
-    print nProfiles
+    print (nProfiles)
     if nProfiles==0: continue
 
 ############
@@ -111,7 +125,9 @@ for sub in OGS.NRT3:
     Lon = np.zeros((nProfiles,), np.float64)*np.nan
     Lat = np.zeros((nProfiles,), np.float64)*np.nan
 
-    for ip, p in enumerate(Profilelist_all):
+    # CREATE THE LIST OF TRADITIONAL COAST or OPEN_SEA datasets:
+    if (coastness=="coast" or coastness=="open_sea"):
+        for ip, p in enumerate(Profilelist_all):
 #            rec_sum=rec_sum + len(p.profile)
             Lon[ip] = p.lon
             Lat[ip] = p.lat
@@ -119,12 +135,22 @@ for sub in OGS.NRT3:
             ix,iy=TheMask.convert_lon_lat_to_indices(Lon[ip],Lat[ip])
             if (coastmask[iy,ix] == False):
                Profilelist_OpenSea.append(p) # point in OPEN SEA
+            if (coastmask[iy,ix] == True):
+               Profilelist_Coast.append(p) # point along the coast
 
-    Profilelist=Profilelist_OpenSea
+#    Profilelist=Profilelist_OpenSea
+    if (coastness == "coast"):    Profilelist=Profilelist_Coast
+    if (coastness == "open_sea"): Profilelist=Profilelist_OpenSea
+#    Profilelist=Profilelist_Coast
+    if (coastness == "supercoastal"): Profilelist=Profilelist_all
+    if (coastness == "everywhere"):   Profilelist=Profilelist_all
 ############
-    
+    print ("MODELVARNAME: " + modelvarname) 
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
-    fig,ax =  Matchup_basin.densityplot2(modelname='RAN',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
+    print ("Number of matchups: " + str(Matchup_basin.number()))
+    if (Matchup_basin.number() == 0): continue
+
+    fig,ax =  Matchup_basin.densityplot2(modelname='MOD',refname='REF',units=UNITS_DICT[modelvarname],sub=sub.name.upper())
     maxval=max(Matchup_basin.Ref.max(),Matchup_basin.Model.max())
 
     if args.minvalue is None:
@@ -134,7 +160,7 @@ for sub in OGS.NRT3:
     
     ax.set_xlim([minval,maxval])
     ax.set_ylim([minval,maxval])
-    ax.set_ylabel('RAN data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
+    ax.set_ylabel('MOD data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
     ax.set_xlabel('REF data [' + UNITS_DICT[modelvarname] + ']').set_fontsize(14)
     ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
     ax.grid(True)

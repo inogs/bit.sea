@@ -16,7 +16,12 @@ def argument():
                                 type = str,
                                 default = 'OpenSea',
                                 required = False,
-                                help = "Choices of the area: OpenSea or Coast")
+                                help = "Choices of the area: OpenSea,  Coast, SuperCoastal")
+    parser.add_argument(   '--season', '-s',
+                                type = str,
+                                default = 'annual',
+                                required = False,
+                                help = "Choices of the seasons are: annual - ann, winter - win, summer - sum")
     return parser.parse_args()
 
 args = argument()
@@ -26,6 +31,7 @@ import numpy as np
 from profiler_RA import Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
 from commons.mask import Mask
 import basins.V2 as OGS
+import basins.COASTAL12nm as C12
 from static.climatology import DatasetInfo
 from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
@@ -44,6 +50,7 @@ TheMask = Mask(args.maskfile)
 nav_lev = TheMask.zlevels
 OUTDIR = addsep(args.outdir)
 area = args.area
+Seas = args.season
 
 # Define coastal area:
 mask200_2D = TheMask.mask_at_level(200.0)
@@ -56,21 +63,77 @@ LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150
 LayerList_Coast = [Layer(0,60), Layer(60,200), Layer(0,200)]
 
 #SUBLIST=[OGS.nwm, OGS.tyr, OGS.lev, OGS.ion]
-SUBLIST = OGS.P.basin_list
-SUBLIST.remove(SUBLIST[-1])
+if (area=="Coast" or area=="OpenSea"):
+    SUBLIST = OGS.P.basin_list
+    SUBLIST.remove(SUBLIST[-1])
+if (area=="SuperCoastal"):
+    SUBLIST = C12.NAd_coastal_basins.basin_list
 
-if ( area=='Coast' ): LayerList=LayerList_Coast
+if ( area=='Coast' or area=='SuperCoastal'): LayerList=LayerList_Coast
 
-print LayerList
+print (LayerList)
 
 nSub, nLayer = len(SUBLIST), len(LayerList)
 rows_names=[sub.name for sub in SUBLIST]
 column_names = [layer.string() for layer in LayerList]
 
+# SEASON CHOICE:
+if (Seas == "win" or Seas == "sum"):
+    from commons.season import season
+    S=season()
+    S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
+    from commons import timerequestors
+    from commons.Timelist import TimeInterval, TimeList
+    if (Seas == "win" ):
+        DATESTART = '20190101'
+        DATE__END = '20190501'
+
+        T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
+    if (Seas == "sum"):
+        DATESTART = '20190601'
+        DATE__END = '20191101'
+
+    T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
+#    TL=TimeList(TIMES)
+    from commons.utils import writetable
+
+    iSeas=0 # JAN-APR
+    CLIM_REQ=timerequestors.Clim_season(iSeas,S)
+
+#    ii,w=TL.select(CLIM_REQ)
+#RMS__win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+#BIAS_win = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+#RMSL_win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+#BIASLwin = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
+#
+#MEAN_MOD_win = np.nanmean(MODEL_MEAN[ii,:],axis=0)
+#MEAN_REF_win = np.nanmean(SAT___MEAN[ii,:],axis=0)
+#
+#STD_MOD_win = np.nanmean(MODEL_STD[ii,:],axis=0)
+#STD_REF_win = np.nanmean(SAT___STD[ii,:],axis=0)
+#CORR_win    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
+#
+    iSeas=2 # JUN-SEP
+    CLIM_REQ=timerequestors.Clim_season(iSeas,S)
+#    ii,w=TL.select(CLIM_REQ)
+#RMS__sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+#BIAS_sum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+#RMSL_sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+#BIASLsum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
+#
+#MEAN_MOD_sum = np.nanmean(MODEL_MEAN[ii,:],axis=0)
+#MEAN_REF_sum = np.nanmean(SAT___MEAN[ii,:],axis=0)
+#
+#STD_MOD_sum = np.nanmean(MODEL_STD[ii,:],axis=0)
+#STD_REF_sum = np.nanmean(SAT___STD[ii,:],axis=0)
+#CORR_sum    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
+###########
+
 
 #for modelvarname in ["N1p","N3n","N4n","N5s","O2o","DIC","ALK","pH","pCO2"]:
 # Choose here Nutrients or Carbonate System:
-for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
+for modelvarname in ["P_l"]: # ""N1p","N3n","N4n","N5s","O2o"]:
+#for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
 #for modelvarname in ["DIC","ALK","pH","pCO2"]:
     var, Dataset = DatasetInfo(modelvarname)
     fname = OUTDIR + modelvarname
@@ -84,8 +147,12 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
         Profilelist_OpenSea = [] # LIST of points in OPEN SEA area
 
         Profilelist_all=Dataset.Selector(var,T_INT,sub)
+#        if (Seas == "win" or Seas == "sum"):
+#            Profilelist_all=Dataset.Selector(var,CLIM_REQ,sub)
+#        else:
+#            Profilelist_all=Dataset.Selector(var,T_INT,sub)
         nProfiles=len(Profilelist_all)
-        print sub.name, nProfiles
+        print (sub.name, nProfiles)
 
 # select OPEN SEA and COASTAL AREA:
         Lon = np.zeros((nProfiles,), np.float64)*np.nan
@@ -97,8 +164,8 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
 
             ix,iy=TheMask.convert_lon_lat_to_indices(Lon[ip],Lat[ip])
             if (coastmask[iy,ix] == True):
-               print "Last depth in m is: "    
-               print p.pres[-1]
+               print ("Last depth in m is: "    )
+               print (p.pres[-1])
                Profilelist_Coast.append(p) # point in COASTAL AREA
             else:
                Profilelist_OpenSea.append(p) # point in OPEN SEA
@@ -110,9 +177,9 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
              Profilelist=Profilelist_Coast
              LayerList=LayerList_Coast
 
-        print "AREA: " + area
+        print ("AREA: " + area)
         nProfiles=len(Profilelist)
-        print sub.name, nProfiles
+        print (sub.name, nProfiles)
 
 ###############
 
@@ -120,12 +187,12 @@ for modelvarname in ["N1p","N3n","N4n","N5s","O2o"]:
         Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
         for ilayer, layer in enumerate(LayerList):
             m_layer = Matchup_basin.subset(layer)
-            print "m_layer.Model"
-            print m_layer.Model
+            print ("m_layer.Model")
+            print (m_layer.Model)
             npoints = m_layer.number()
             NUMB[isub,ilayer] = npoints
             if npoints>3:
-                print "npoints=", npoints
+                print ("npoints=", npoints)
                 STAT[isub,ilayer,0]=m_layer.bias()
                 STAT[isub,ilayer,1]=m_layer.RMSE()
                 STAT[isub,ilayer,2]=m_layer.correlation()

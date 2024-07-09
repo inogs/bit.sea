@@ -23,7 +23,10 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'Path of the mask file')
-
+    parser.add_argument(   '--coastness', '-c',
+                                type = str,
+                                required = True,
+                                help = 'COASTNESS list: everywhere, open_sea, coast, supercoastal')
     return parser.parse_args()
 
 
@@ -35,6 +38,7 @@ import os
 import numpy as np
 from profiler_RA import *
 import basins.OGS as OGS
+import basins.COASTAL12nm as C12
 from static.Nutrients_reader import NutrientsReader
 from static.Carbon_reader import CarbonReader
 from static.climatology import DatasetInfo
@@ -53,10 +57,11 @@ os.system('mkdir -p ' + OUTPUTDIR)
 mask200_2D = TheMask.mask_at_level(200.0)
 mask0_2D = TheMask.mask_at_level(0.0)
 coastmask=mask0_2D & (~mask200_2D)
-
+coastness = args.coastness
 
 UNITS_DICT={'N1p' : 'mmol P/m$^3$', 
          'N3n' : 'mmol N/m$^3$',
+         'P_l' :'mmol CHL/m$^3$',
          'O2o' :'mmol O$_2$/m$^3$' ,
          'N4n' : 'mmol NH4/m$^3$',
          'N5s' : 'mmol SiO2/m$^3$',
@@ -68,17 +73,25 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 
 var, Dataset = DatasetInfo(modelvarname)
 
-for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
+if (coastness == "supercoastal"):
+   SUBBASINS = C12.NAd_coastal_basins
+else:
+   SUBBASINS = OGS.P
+
+#for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
+for sub in SUBBASINS:
+ # if (sub.name == NAd):
 #    Profilelist_all=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
     Profilelist_all=Dataset.Selector(var,T_INT,sub)
     nProfiles=len(Profilelist_all)
     if nProfiles == 0 :
         # no figure generation
-        print sub.name,'correlation= ',"nan with 0 profiles and 0 matchups"
+        print (sub.name,'correlation= ',"nan with 0 profiles and 0 matchups")
         continue
 
 ########################
     Profilelist_OpenSea = [] # LIST of points in OPEN SEA area
+    Profilelist_Coast   = [] # LIST of points on the COAST
 
 # select OPEN SEA area:
     Lon = np.zeros((nProfiles,), np.float64)*np.nan
@@ -91,9 +104,20 @@ for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
             ix,iy=TheMask.convert_lon_lat_to_indices(Lon[ip],Lat[ip])
             if (coastmask[iy,ix] == False):
                Profilelist_OpenSea.append(p) # point in OPEN SEA
+            if (coastmask[iy,ix] == True):
+               Profilelist_Coast.append(p) # point along the coast
 
-    Profilelist=Profilelist_OpenSea
-    nProfiles=len(Profilelist)
+
+#    Profilelist=Profilelist_OpenSea
+    if (coastness == "coast"):    Profilelist=Profilelist_Coast
+    if (coastness == "open_sea"): Profilelist=Profilelist_OpenSea
+#    Profilelist=Profilelist_Coast
+    if (coastness == "supercoastal"): Profilelist=Profilelist_all
+    if (coastness == "everywhere"):   Profilelist=Profilelist_all
+
+
+#    Profilelist=Profilelist_OpenSea
+#    nProfiles=len(Profilelist)
 
 ########################
 
@@ -104,7 +128,7 @@ for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
     fig=pl.figure(num=None,dpi=100,facecolor='w',edgecolor='k')
     ax=fig.add_subplot(1,1,1)
     pl.plot(Matchup_basin.Ref,Matchup_basin.Depth,'.r',label='REF')
-    pl.plot(Matchup_basin.Model,Matchup_basin.Depth,'.k',label='RAN')
+    pl.plot(Matchup_basin.Model,Matchup_basin.Depth,'.k',label='MOD')
     pl.gca().invert_yaxis()
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()
@@ -115,7 +139,7 @@ for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
     ax.set_title(sub.name.upper() + ' ' + modelvarname)
     fig.savefig(OUTPUTDIR+'/vertprof_'+modelvarname+'_'+sub.name+'.png')    
 
-    print sub.name,'correlation= %f with %d profiles and %d matchups' %(Matchup_basin.correlation(), nProfiles, Matchup_basin.number() )
+    print (sub.name,'correlation= %f with %d profiles and %d matchups' %(Matchup_basin.correlation(), nProfiles, Matchup_basin.number() ))
 
 
 

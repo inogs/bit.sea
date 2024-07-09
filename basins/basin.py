@@ -1,5 +1,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
+import importlib
+from inspect import currentframe
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -7,12 +9,43 @@ from matplotlib.colors import LinearSegmentedColormap
 from basins.region import Region, EmptyRegion
 
 
+# This is the default module for the basins, i.e. the basins of this
+# module do not have a prefix inside their uuids
+DEFAULT_BASIN_MODULE = 'basins.V2'
+
+
 class Basin(object):
+    _INSTANTIATED_BASINS = {}
 
     def __init__(self, name, extended_name=None):
+        if '.' in name:
+            raise ValueError(
+                'Basin name cannot contain dots; received "{}"'.format(name)
+            )
+        if ',' in name:
+            raise ValueError(
+                'Basin name cannot contain commas; received "{}"'.format(name)
+            )
+
         self.name = name
         self.extended_name = extended_name
         self.region = EmptyRegion()
+
+        # Here we save the name of the module where the basin has been
+        # instantiated
+        instantiation_module = currentframe().f_back.f_back
+        if instantiation_module is None:
+            self.__module_name = '__main__'
+        else:
+            self.__module_name = instantiation_module.f_globals['__name__']
+
+        # Now we save the current basin inside the INSTANTIATED_BASINS dict;
+        # we save the basins of each module in a different sub-dictionary
+        if self.__module_name not in self.__class__._INSTANTIATED_BASINS:
+            self.__class__._INSTANTIATED_BASINS[self.__module_name] = {}
+
+        module_dict = self.__class__._INSTANTIATED_BASINS[self.__module_name]
+        module_dict[self.name] = self
 
     def __repr__(self):
         if self.extended_name is None:
@@ -25,6 +58,36 @@ class Basin(object):
 
     def is_inside(self, lon, lat):
         raise NotImplementedError
+
+    def get_uuid(self) -> str:
+        """
+        Return a string that uniquely identifies this basin
+        """
+        module_name = self.__module_name
+        if module_name == DEFAULT_BASIN_MODULE:
+            return self.name
+
+        if module_name.startswith('basins.'):
+            module_name = '.' + module_name[len('basins'):]
+        return '{}.{}'.format(module_name, self.name)
+
+    @staticmethod
+    def load_from_uuid(uuid: str):
+        if uuid.startswith('..'):
+            uuid = 'basins' + uuid[1:]
+
+        if '.' not in uuid:
+            basin_module = DEFAULT_BASIN_MODULE
+            basin_name = uuid
+        else:
+            basin_name = uuid.split('.')[-1]
+            basin_module = uuid[: - len(basin_name) - 1]
+
+        # We ensure that the module that contains the basin has been loaded
+        if basin_module != '__main__':
+            importlib.import_module(basin_module)
+
+        return Basin._INSTANTIATED_BASINS[basin_module][basin_name]
 
     def cross(self, region_or_basin):
         if isinstance(region_or_basin, Basin):
@@ -98,6 +161,7 @@ class Basin(object):
         )
 
         return current_plot
+
 
 
 class SimpleBasin(Basin):

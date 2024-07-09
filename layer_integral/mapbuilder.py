@@ -1,6 +1,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import os
+from pathlib import Path
 import warnings
 import numpy as np
 from xml.dom import minidom
@@ -118,9 +119,15 @@ class MapBuilder(object):
         ''' 
 
         TL = self.__TL
-        INPUTDIR = TL.inputdir
+        INPUTDIR = Path(TL.inputdir)
         nTimes   = TL.nTimes
-        is_file_phys = TL.filelist[0].endswith("phys.nc")
+
+        try:
+            file_name = TL.filelist[0].name
+        except AttributeError:
+            file_name = TL.filelist[0]
+
+        is_file_phys = file_name.endswith("phys.nc")
 
         nplots = len(self.__plotlist)
         PROCESSES = np.arange(nTimes * nplots)
@@ -129,15 +136,16 @@ class MapBuilder(object):
             p = self.__plotlist[ivar]
             var     =  self.__plotlist[ivar].varname   #VARLIST[ivar]
             if is_file_phys:
-                filename = INPUTDIR + "ave." + TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S.") + "phys.nc"
+                file_name = "ave.{}.phys.nc".format(TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S"))
             else:
-                filename= INPUTDIR + "ave." + TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S.") + var + ".nc"
-            longdate , shortdate = get_date_string(filename)
-#        for f in self.__netcdffileslist: 
+                file_name = "ave.{}.{}.nc".format(TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S"), var)
+            file_path = str(INPUTDIR / file_name)
+            longdate, shortdate = get_date_string(file_path)
+#        for f in self.__netcdffileslist:
 #            for p in self.__plotlist:
-            msg = "rank %d works on %s %s" %(rank,filename,var)
+            msg = "rank %d works on %s %s" %(rank, file_path, var)
             print(msg)
-            de = DataExtractor(self._mask, filename=filename, varname=p.varname)
+            de = DataExtractor(self._mask, filename=file_path, varname=p.varname)
 
             for i,l in enumerate(p.layerlist):
                 outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)

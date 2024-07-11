@@ -90,11 +90,12 @@ for isub,sub in enumerate(OGS.P):
         ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]-Pl.MODEL__STD[:,isub],':',color=color)
         ax.plot(Pl.TIMES,Pl.MODEL_MEAN[:,isub]+Pl.MODEL__STD[:,isub],':',color=color)
         ax.grid(True)
-        ax.set_ylabel("%s" %(PFT_NAME[ivar]))
+        ax.set_ylabel("%s" %(PFT_NAME[ivar])).set_fontsize(14)
+        ax.tick_params(axis='both', which='major', labelsize=13)
         ax.set_ylim(0,0.25)
         if ax != ax4: ax.set_xticklabels([])
 
-    ax1.set_title("PFTs  %s - %s" %(sub.name.upper(), units ) ).set_fontsize(13)
+    ax1.set_title("PFTs  %s - %s" %(sub.name.upper(), units ) ).set_fontsize(15)
     xlabels = ax4.get_xticklabels()
     #pl.setp(xlabels, rotation=30)
 
@@ -112,10 +113,11 @@ for isub,sub in enumerate(OGS.P):
 
 
     ax.plot(Pl.TIMES,Pl.SAT___MEAN[:,isub],'--',color=COLOR[ivar])
-    ax.set_ylabel("PFTs %s" %(units))
+    ax.set_ylabel("PFTs %s" %(units)).set_fontsize(15)
     ax.set_ylim(0,0.25)
+    ax.tick_params(axis='both', which='major', labelsize=13)
     ax.legend()
     ax.grid(True )
-    ax.set_title("PFTs %s" %(sub.name.upper()  ) ).set_fontsize(13)
+    ax.set_title("PFTs %s" %(sub.name.upper()  ) ).set_fontsize(15)
     fig.savefig(outfile)
 

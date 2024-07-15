@@ -275,6 +275,8 @@ class PlotDrawer:
         for plot in self._plots:
             if not plot.draw_depth_profile:
                 continue
+            if self._variable not in plot.variables:
+                continue
 
             plot_meshmask = self._get_plot_mask(plot)
 
@@ -371,6 +373,8 @@ class PlotDrawer:
             for plot in self._plots:
 
                 if not plot.draw_depth_profile:
+                    continue
+                if self._variable not in plot.variables:
                     continue
 
                 plot_meshmask = self._get_plot_mask(plot)

@@ -2,6 +2,7 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
 import os.path as path
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mpldates
@@ -10,7 +11,11 @@ import pickle
 
 from datetime import datetime
 
-from commons.utils import is_number, get_date_string
+from commons.utils import get_date_string
+
+
+LOGGER = logging.getLogger(__name__)
+
 
 class CoastEnum:
     coast, open_sea, everywhere = range(3)
@@ -44,11 +49,11 @@ def read_basic_info(stat_profile_file):
     ncIN.close()
     return SUBLIST, COASTLIST, STAT_LIST
 
+
 def read_pickle_file(filename):
-    print(filename)
-    fid =open(filename,'rb')
-    [TIMESERIES,TL] = pickle.load(fid)
-    fid.close()
+    LOGGER.info('Reading file %s', filename)
+    with open(filename, 'rb') as fid:
+        [TIMESERIES, TL] = pickle.load(fid)
     return TIMESERIES, TL
 
 

@@ -93,8 +93,14 @@ class PlotDrawer:
             loadtmask=True
         )
 
-    def _plot_time_series(self, axis_dict, basin_index: int, basin):
+    def _plot_time_series(self, axis_dict, basin_index: int, basin,
+                          is_2d: bool):
         elements_in_legend = False
+
+        levels = self._levels
+        if is_2d:
+            levels = (0,)
+
         for plot in self._plots:
             if not plot.draw_time_series:
                 continue
@@ -109,7 +115,7 @@ class PlotDrawer:
             else:
                 plot_data = plot.get_plot_data(self._variable)
 
-            for i, level in enumerate(self._levels):
+            for i, level in enumerate(levels):
                 plot_x_data = plot_data.get_time_steps()
 
                 # If level is a tuple, we have to compute the average between
@@ -133,8 +139,8 @@ class PlotDrawer:
                             self._average_volume_weights[requested_slice]
                     else:
                         warn(
-                            'Average weights for level slice {} have not been'
-                            ' precomputed'.format(requested_slice)
+                            'Average weights for level slice {} have not been '
+                            'precomputed'.format(requested_slice)
                         )
                         submask = SubMask(basin, maskobject=plot_meshmask)
                         average_weights = compute_slice_volume(
@@ -178,7 +184,7 @@ class PlotDrawer:
                     plt.ylabel(var_label, usetex=use_latex)
 
                 # If we are drawing the last plot, add also the x_label
-                if i == len(self._levels) - 1:
+                if i == len(levels) - 1:
                     if self._config.time_series_options.x_label is not None:
                         plt.xlabel(self._config.time_series_options.x_label)
 
@@ -209,7 +215,7 @@ class PlotDrawer:
             only_one_legend = show_legend_flag in ("top", "bottom")
 
             axis_iterable = [
-                axis_dict['L{}'.format(i)] for i in range(len(self._levels))
+                axis_dict['L{}'.format(i)] for i in range(len(levels))
             ]
 
             if show_legend_flag == "bottom":
@@ -224,7 +230,7 @@ class PlotDrawer:
 
         # Add the title to each plot; we need to do this here so the limits
         # of the plots are already defined
-        for i, level in enumerate(self._levels):
+        for i, level in enumerate(levels):
             current_axis = axis_dict['L{}'.format(i)]
             plot_left, plot_right = current_axis.get_xlim()
             plot_bottom, plot_top = current_axis.get_ylim()
@@ -424,8 +430,30 @@ class PlotDrawer:
         if self.is_empty():
             raise ValueError('Required a plot from an empty PlotDrawer')
 
+        draw_time_series = self._draw_time_series
+        draw_depth_profile = self._draw_depth_profile
+        levels = self._levels
+
+        # We check if this is a 2d or a 3d plot
+        is_2d = False
+        if len(self._loaded_data) != 0:
+            first_plot = list(self._loaded_data.values())[0]
+            is_2d = first_plot.is_2d()
+        else:
+            for plot in self._plots:
+                if self._variable not in plot.variables:
+                    continue
+                is_2d = plot.get_plot_data(self._variable).is_2d()
+                break
+
+        if is_2d:
+            draw_time_series = True
+            draw_depth_profile = False
+            levels = (0, )
+
+        # Building the grid of the plots
         # In this case, the plot grid is made only from the depth profile plots
-        if not self._draw_time_series:
+        if not draw_time_series:
             plot_grid_rows, plot_grid_columns = get_depth_profile_plot_grid(
                 self._config.depth_profiles_options.mode
             )
@@ -445,7 +473,7 @@ class PlotDrawer:
                 )
         # Now the more general case
         else:
-            if self._draw_depth_profile:
+            if draw_depth_profile:
                 dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                     self._config.depth_profiles_options.mode
                 )
@@ -453,17 +481,17 @@ class PlotDrawer:
             else:
                 dp_grid_rows, dp_grid_columns = 1, 1
                 ts_ratio, dp_ratio = 1, 1
-            grid_rows = lcm(len(self._levels), dp_grid_rows)
+            grid_rows = lcm(len(levels), dp_grid_rows)
             column_unit = dp_grid_columns // gcd(dp_ratio, dp_grid_columns)
             ts_cols_per_plot = ts_ratio * column_unit
             dp_cols_per_plot = dp_ratio * column_unit // dp_grid_columns
 
             plot_structure = []
             for row in range(grid_rows):
-                current_level = row // (grid_rows // len(self._levels))
+                current_level = row // (grid_rows // len(levels))
                 current_dp_row = row // (grid_rows // dp_grid_rows)
                 current_row = ['L{}'.format(current_level)] * ts_cols_per_plot
-                if self._draw_depth_profile:
+                if draw_depth_profile:
                     current_row.extend(
                         ['P_{}_{}'.format(current_dp_row, c)
                          for c in range(dp_grid_columns)
@@ -477,8 +505,8 @@ class PlotDrawer:
             )
 
             # Share the x-axis between each L plot and the last one
-            last_l_axis = axis_dict['L{}'.format(len(self._levels) - 1)]
-            for i in range(len(self._levels[:-1])):
+            last_l_axis = axis_dict['L{}'.format(len(levels) - 1)]
+            for i in range(len(levels[:-1])):
                 current_axis = axis_dict['L{}'.format(i)]
                 current_axis.sharex(last_l_axis)
                 current_axis.xaxis.set_tick_params(
@@ -488,7 +516,7 @@ class PlotDrawer:
                 )
 
         # If we have some depth profiles, we share all their axes
-        if self._draw_depth_profile:
+        if draw_depth_profile:
             dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                 self._config.depth_profiles_options.mode
             )
@@ -502,9 +530,9 @@ class PlotDrawer:
                         current_axis.sharex(first_axis)
                         current_axis.sharey(first_axis)
 
-        if self._draw_time_series:
-            self._plot_time_series(axis_dict, basin_index, basin)
-        if self._draw_depth_profile:
+        if draw_time_series:
+            self._plot_time_series(axis_dict, basin_index, basin, is_2d)
+        if draw_depth_profile:
             if self._config.depth_profiles_options.mode.algorithm is \
                     DepthProfileAlgorithm.SEASONAL:
                 self._plot_seasonal_depth_profile(axis_dict, basin_index)

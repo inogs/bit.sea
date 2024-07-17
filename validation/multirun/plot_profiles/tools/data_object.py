@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+import numpy as np
 from pathlib import Path
 from typing import Union
 
@@ -24,6 +25,16 @@ class DataObject(ABC):
     @abstractmethod
     def get_time_steps(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def is_2d(self) -> bool:
+        raise NotImplementedError
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return
 
     @staticmethod
     def get_axis(axis_name: str, while_fixing: Union[Iterable, None] = None):
@@ -69,13 +80,7 @@ class DataObject(ABC):
             if name not in while_fixing:
                 axis_index += 1
 
-        raise Exception('Internal error; there is a bug in the code!')
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return
+        assert False, 'Internal error; there is a bug in the code!'
 
 
 class PickleDataObject(DataObject):
@@ -103,6 +108,7 @@ class PickleDataObject(DataObject):
         self._loaded = False
         self._data = None
         self._time_steps = None
+        self._is_2d = None
 
     @property
     def dir_path(self):
@@ -134,6 +140,8 @@ class PickleDataObject(DataObject):
             raise IOError('File "{}" not found'.format(main_filename))
 
         self._data, time_steps = read_pickle_file(final_filename)
+        if not hasattr(self._data, 'mask'):
+            self._data = np.ma.masked_invalid(self._data)
         self._time_steps = time_steps.Timelist
         self._loaded = True
 
@@ -146,3 +154,10 @@ class PickleDataObject(DataObject):
         if not self._loaded:
             self.load()
         return self._time_steps
+
+    def is_2d(self):
+        if self._is_2d is None:
+            if not self._loaded:
+                self.load()
+            self._is_2d = np.all(np.ma.getmaskarray(self._data)[0, :, :, 1:])
+        return self._is_2d

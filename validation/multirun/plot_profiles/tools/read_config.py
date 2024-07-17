@@ -88,6 +88,7 @@ class TimeSeriesOptions:
     show_legend: Literal["no", "all", "bottom", "top"] = "no"
     show_depth: bool = True
     x_label: Union[str, None] = None
+    x_ticks_rotation: Union[Real, None] = None
 
 
 @dataclass
@@ -97,6 +98,7 @@ class DepthProfilesOptions:
     depth_ticks: Tuple[Real, ...] = tuple(range(0, 1001, 200))
     min_depth: Real = 0
     max_depth: Real = 1000
+    x_ticks_rotation: Union[Real, None] = None
 
 
 def read_number(number_str: str) -> Union[int, float]:

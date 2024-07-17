@@ -265,6 +265,15 @@ class PlotDrawer:
                     va='top'
                 )
 
+        # Fix the x_ticks of the last axis
+        last_l_axis = axis_dict['L{}'.format(len(levels) - 1)]
+        if self._config.time_series_options.x_ticks_rotation is not None:
+            for label in last_l_axis.get_xticklabels(which='major'):
+                label.set_ha('right')
+                label.set_rotation(
+                    self._config.time_series_options.x_ticks_rotation
+                )
+
     def _plot_depth_profile(self, axis_dict, basin_index: int):
         current_axis = axis_dict['P_0_0']
 
@@ -321,6 +330,14 @@ class PlotDrawer:
         if show_legend_flag != "no" and elements_in_legend:
             current_axis.legend()
 
+        # Fix the x_ticks
+        if self._config.depth_profiles_options.x_ticks_rotation is not None:
+            for label in current_axis.get_xticklabels(which='major'):
+                label.set_ha('right')
+                label.set_rotation(
+                    self._config.depth_profiles_options.x_ticks_rotation
+                )
+
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
         season_obj = season.season()
         elements_in_legend = False
@@ -332,6 +349,9 @@ class PlotDrawer:
             if var_label.startswith('LaTeX:'):
                 use_latex = True
                 var_label = var_label[len('LaTeX:'):]
+
+        # Here we save which axes are on the last row
+        bottom_axes = []
 
         for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
             season_req = timerequestors.Clim_season(season_ind, season_obj)
@@ -349,6 +369,9 @@ class PlotDrawer:
                 )
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
+
+            if d_mode == 'inline' or d_mode == 'square' and pi == 1:
+                bottom_axes.append(current_axis)
 
             ytick_labels = self._config.depth_profiles_options.depth_ticks
             min_y = self._config.depth_profiles_options.min_depth
@@ -425,6 +448,15 @@ class PlotDrawer:
             show_legend_flag = self._config.depth_profiles_options.show_legend
             if show_legend_flag != "no" and elements_in_legend:
                 current_axis.legend()
+
+        # Fix the x_ticks
+        if self._config.depth_profiles_options.x_ticks_rotation is not None:
+            for axis in bottom_axes:
+                for label in axis.get_xticklabels(which='major'):
+                    label.set_ha('right')
+                    label.set_rotation(
+                        self._config.depth_profiles_options.x_ticks_rotation
+                    )
 
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
@@ -515,7 +547,7 @@ class PlotDrawer:
                     labeltop=False
                 )
 
-        # If we have some depth profiles, we share all their axes
+        # If we have more than one depth profiles, we share all their axes
         if draw_depth_profile:
             dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                 self._config.depth_profiles_options.mode

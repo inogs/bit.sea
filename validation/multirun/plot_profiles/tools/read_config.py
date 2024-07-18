@@ -99,6 +99,8 @@ class DepthProfilesOptions:
     min_depth: Real = 0
     max_depth: Real = 1000
     x_ticks_rotation: Union[Real, None] = None
+    show_y_ticks: Literal["all", "no", "left", "right"] = "all"
+    y_ticks_position: Literal["left", "right"] = "left"
 
 
 def read_number(number_str: str) -> Union[int, float]:

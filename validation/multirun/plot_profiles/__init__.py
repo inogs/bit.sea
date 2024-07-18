@@ -1,4 +1,5 @@
 from collections import namedtuple
+from itertools import product as cart_product
 from os import path
 from warnings import warn
 
@@ -337,6 +338,15 @@ class PlotDrawer:
                 label.set_rotation(
                     self._config.depth_profiles_options.x_ticks_rotation
                 )
+        # Fix the y_ticks
+        show_y_ticks = self._config.depth_profiles_options.show_y_ticks
+        y_ticks_position = self._config.depth_profiles_options.y_ticks_position
+        if show_y_ticks not in ('all', 'left', 'right'):
+            for label in current_axis.get_yticklabels(which='major'):
+                label.set_visible(False)
+        else:
+            if y_ticks_position == 'right':
+                current_axis.yaxis.tick_right()
 
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
         season_obj = season.season()
@@ -350,28 +360,25 @@ class PlotDrawer:
                 use_latex = True
                 var_label = var_label[len('LaTeX:'):]
 
-        # Here we save which axes are on the last row
-        bottom_axes = []
+        d_mode = self._config.depth_profiles_options.mode.config['mode']
+        if d_mode == 'square':
+            n_rows = 2
+            n_columns = 2
+        elif d_mode == 'inline':
+            n_rows = 1
+            n_columns = 4
+        else:
+            raise ValueError(
+                'Invalid display mode: "{}"'.format(d_mode)
+            )
 
         for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
             season_req = timerequestors.Clim_season(season_ind, season_obj)
 
-            d_mode = self._config.depth_profiles_options.mode.config['mode']
-            if d_mode == 'square':
-                pi = season_ind // 2
-                pj = season_ind % 2
-            elif d_mode == 'inline':
-                pi = 0
-                pj = season_ind
-            else:
-                raise ValueError(
-                    'Invalid display mode: "{}"'.format(d_mode)
-                )
+            pi = season_ind // n_columns
+            pj = season_ind % n_columns
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
-
-            if d_mode == 'inline' or d_mode == 'square' and pi == 1:
-                bottom_axes.append(current_axis)
 
             ytick_labels = self._config.depth_profiles_options.depth_ticks
             min_y = self._config.depth_profiles_options.min_depth
@@ -382,25 +389,10 @@ class PlotDrawer:
             current_axis.invert_yaxis()
             current_axis.set_title(season_str)
 
-            if d_mode == 'square':
-                if pi == 0:
-                    current_axis.xaxis.set_tick_params(
-                        which='both',
-                        labelbottom=False,
-                        labeltop=False
-                    )
-                if pi == 1:
-                    if var_label is not None:
-                        current_axis.set_xlabel(var_label, usetex=use_latex)
-
-            if d_mode == 'inline':
-                if pj > 0:
-                    current_axis.set_yticklabels([])
-                if var_label is not None:
-                    current_axis.set_xlabel(var_label, usetex=use_latex)
+            if var_label is not None:
+                current_axis.set_xlabel(var_label, usetex=use_latex)
 
             for plot in self._plots:
-
                 if not plot.draw_depth_profile:
                     continue
                 if self._variable not in plot.variables:
@@ -449,14 +441,50 @@ class PlotDrawer:
             if show_legend_flag != "no" and elements_in_legend:
                 current_axis.legend()
 
-        # Fix the x_ticks
-        if self._config.depth_profiles_options.x_ticks_rotation is not None:
-            for axis in bottom_axes:
+        # No we fix the esthetic of the plots (the position of the ticks or
+        # other parameters like that)
+        x_tick_rotation = self._config.depth_profiles_options.x_ticks_rotation
+        show_y_ticks = self._config.depth_profiles_options.show_y_ticks
+        y_ticks_position = self._config.depth_profiles_options.y_ticks_position
+        for pi, pj in cart_product(range(n_rows), range(n_columns)):
+            axis = axis_dict[f'P_{pi}_{pj}']
+            # If we are on the last row we rotate the x_ticks (if needed)
+            if pi == n_rows - 1 and x_tick_rotation is not None:
                 for label in axis.get_xticklabels(which='major'):
                     label.set_ha('right')
                     label.set_rotation(
                         self._config.depth_profiles_options.x_ticks_rotation
                     )
+            # Hide x-ticks if we are not on the last line
+            if pi < n_rows - 1:
+                axis.xaxis.set_tick_params(
+                    which='both',
+                    labelbottom=False,
+                    labeltop=False
+                )
+            # Check if we have to draw the y-ticks
+            if pj == 0:
+                if show_y_ticks not in ('all', 'left'):
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+            elif pj == n_columns - 1:
+                if show_y_ticks not in ('all', 'right'):
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+            else:
+                if show_y_ticks != 'all':
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+
 
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():

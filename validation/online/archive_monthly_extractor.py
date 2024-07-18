@@ -14,6 +14,12 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "Base output directory; inside it output/ will be created.")
+    parser.add_argument(   '--rundate', '-d',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "Rundate in yyyymmdd format")
+
     return parser.parse_args()
 
 args = argument()
@@ -25,7 +31,7 @@ from commons.timeseries import TimeSeries
 from commons.time_interval import TimeInterval
 from commons.utils import addsep
 
-now=datetime.datetime.now()
+now=datetime.datetime.strptime(args.rundate,"%Y%m%d")
 dt=relativedelta(months=1)
 datetime_month=now -dt
 req=timerequestors.Monthly_req(datetime_month.year, datetime_month.month)

@@ -47,9 +47,9 @@ if profilesource is None:
     sys.exit(1)
 assert profilesource in ["superfloat", "ppcon"]
 if profilesource=="superfloat":
-    from instruments import superfloat as bio_float
+    from instruments import superfloat as biofloat
 if profilesource=="ppcon":
-    from instruments import float_ppcon as bio_float
+    from instruments import float_ppcon as biofloat
 
 
 

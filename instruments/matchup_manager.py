@@ -78,7 +78,7 @@ class Matchup_Manager():
             self._dump_punti_for_aveScan(INTERESTED_PROFILES, outpuntifile)
             line = 'python aveScan.py '   + \
                 ' -l '  + self.TL.prefix + Model_time.strftime("%Y%m%d-%H:%M:%S*")  + \
-                ' -i '  + self.AVE_INPUT_DIR  +  \
+                ' -i '  + str(self.AVE_INPUT_DIR)  +  \
                 ' -a '  + aggregatedir       +  \
                 filtervarline                +  \
                 ' -t '  + TMPSDIR  + \

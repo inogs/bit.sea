@@ -45,4 +45,4 @@ my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $LOCAL_INP
 my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $TRAIN_DIR -p $ONLINE_REPO/PPCON"
 
 
-my_prex_or_die "python dump_index.py -i $ONLINE_REPO${PPCON} -o $ONLINE_REPO${PPCON}/Float_Index.txt -t ppcon_float"
+my_prex_or_die "python dump_index.py -i $ONLINE_REPO/PPCON -o $ONLINE_REPO/PPCON/Float_Index.txt -t ppcon_float"

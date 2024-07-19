@@ -266,6 +266,9 @@ class PlotDrawer:
                     va='top'
                 )
 
+            if self._config.time_series_options.show_grid:
+                current_axis.grid(which='major')
+
         # Fix the x_ticks of the last axis
         last_l_axis = axis_dict['L{}'.format(len(levels) - 1)]
         if self._config.time_series_options.x_ticks_rotation is not None:

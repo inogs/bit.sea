@@ -89,6 +89,7 @@ class TimeSeriesOptions:
     show_depth: bool = True
     x_label: Union[str, None] = None
     x_ticks_rotation: Union[Real, None] = None
+    show_grid: bool = False
 
 
 @dataclass

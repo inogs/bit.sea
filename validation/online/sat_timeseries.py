@@ -98,7 +98,8 @@ class timelistcontainer():
         BIASLOG =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
         RMSELOG =np.zeros((self.nFrames,self.nSUB,self.nCOAST))
         
-        for iFrame, filename in enumerate(self.filelist):
+        for iFrame, filename_path in enumerate(self.filelist):
+            filename=str(filename_path)
             time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
             self.timelist.append(time)
             number, bias, rmse, model, sat, logbias, logrmse= self.read_validation_file(filename)

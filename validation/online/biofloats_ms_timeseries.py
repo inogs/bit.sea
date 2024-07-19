@@ -63,7 +63,8 @@ class timelistcontainer():
         NUMBER  =np.zeros((self.nFrames,self.nVAR, self.nSUB,self.nDEPTH))
 
         
-        for iFrame, filename in enumerate(self.filelist):
+        for iFrame, filename_path in enumerate(self.filelist):
+            filename=str(filename_path)
             time = datetime.datetime.strptime(filename[-11:],'%Y%m%d.nc')
             self.timelist.append(time)
             number, bias, rmse = self.read_validation_file(filename)

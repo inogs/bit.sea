@@ -453,7 +453,39 @@ class PlotDrawer:
 
             show_legend_flag = self._config.depth_profiles_options.show_legend
             if show_legend_flag != "no" and elements_in_legend:
-                current_axis.legend()
+                if show_legend_flag == "all":
+                    current_axis.legend()
+                elif show_legend_flag == "bottom":
+                    if pi == n_rows - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "top":
+                    if pi == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "right":
+                    if pj == n_rows - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "left":
+                    if pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "top-left":
+                    if pi == 0 and pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "top-right":
+                    if pi == 0 and pj == n_columns - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "bottom-left":
+                    if pi == n_rows - 1 and pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "bottom-right":
+                    if pi == n_rows - 1 and pj == n_columns - 1:
+                        current_axis.legend()
+                else:
+                    raise ValueError(
+                        'Invalid option for the depth profile legend: '
+                        '"{}"'.format(
+                            show_legend_flag
+                        )
+                    )
 
         # No we fix the esthetic of the plots (the position of the ticks or
         # other parameters like that)

@@ -97,7 +97,10 @@ class TimeSeriesOptions:
 @dataclass
 class DepthProfilesOptions:
     mode: DepthProfileMode = DEFAULT_DEPTH_PROFILE_MODE
-    show_legend: Literal["no", "all", "bottom", "top"] = "all"
+    show_legend: Literal[
+            "no", "all", "bottom", "top", "left", "right", "top-left",
+            "top-right", "bottom-left", "bottom-right"
+        ] = "all"
     depth_ticks: Tuple[Real, ...] = tuple(range(0, 1001, 200))
     min_depth: Real = 0
     max_depth: Real = 1000
@@ -313,6 +316,10 @@ def read_depth_profiles_options(
         )
 
     show_legend = show_legend_default
+    valid_legends = (
+        'all', 'yes', 'no', 'bottom', 'top', 'left', 'right',
+        'top-left', 'top-right', 'bottom-left', 'bottom-right'
+    )
     if 'show_legend' in option_dict:
         show_legend_raw = option_dict['show_legend']
         if show_legend_raw is None:
@@ -321,10 +328,11 @@ def read_depth_profiles_options(
             show_legend = 'all' if show_legend_raw else 'no'
         else:
             show_legend = str(show_legend_raw).strip().lower()
-            if show_legend not in ('all', 'yes', 'no'):
+            if show_legend not in valid_legends:
                 raise ValueError(
-                    'depth_profiles:show_legend field must contain either'
-                    '"yes" or "no"; received {}'.format(
+                    'depth_profiles:show_legend field must contain one of the '
+                    'following values: {}; received {}'.format(
+                        ', '.join(valid_legends),
                         show_legend
                     )
                 )

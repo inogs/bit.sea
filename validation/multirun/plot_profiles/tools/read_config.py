@@ -53,7 +53,8 @@ OUTPUT_FIELDS = (
     'output_dir',
     'dpi',
     'fig_size',
-    'fig_ratio'
+    'fig_ratio',
+    'show_legend'
 )
 
 
@@ -80,6 +81,7 @@ class OutputOptions:
     dpi: int = DEFAULT_DPI
     fig_size: Tuple[Real, Real] = DEFAULT_FIG_SIZE
     fig_ratio: Tuple[Real, Real] = DEFAULT_FIG_RATIO
+    show_legend: bool = False
 
 
 @dataclass
@@ -764,6 +766,15 @@ def read_config(config_datastream):
         except ValueError:
             raise InvalidConfigFile('Invalid fig_ratio parameter')
 
+    show_legend = False
+    if 'show_legend' in output:
+        show_legend = output['show_legend']
+        if not isinstance(show_legend, bool):
+            raise InvalidConfigFile(
+                'Invalid show_legend parameter inside the output_dir section: '
+                'show_legend must be a boolean'
+            )
+
     output_name = DEFAULT_OUTPUT_NAME
     if 'output_name' in output:
         output_name = str(output_name)
@@ -773,7 +784,8 @@ def read_config(config_datastream):
         dpi=dpi,
         fig_size=fig_size,
         fig_ratio=fig_ratio,
-        output_dir=output_dir
+        output_dir=output_dir,
+        show_legend=show_legend
     )
 
     # Finally, the most complicated part; reading the plots
@@ -796,7 +808,7 @@ def read_config(config_datastream):
             variable_selections
         )
         plots.append(current_plot)
-    plots = tuple(p for p in plots if p.is_active())
+    plots = tuple(p for p in plots)
 
     return Config(
         plots=plots,

@@ -1,11 +1,11 @@
 from collections import namedtuple
-from itertools import product as cart_product
+from itertools import compress, product as cart_product
 from os import path
 from warnings import warn
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
-
 
 from commons.mask import Mask
 from commons.submask import SubMask
@@ -38,7 +38,7 @@ class PlotDrawer:
     def __init__(self, config: Config, variable, meshmask_objects=None,
                  average_volume_weights=None):
         self._config = config
-        self._plots = tuple(config.plots)
+        self._plots = tuple(p for p in config.plots if p.is_active())
         self._levels = tuple(config.time_series_options.levels)
         self._variable = variable
 
@@ -97,12 +97,13 @@ class PlotDrawer:
     def _plot_time_series(self, axis_dict, basin_index: int, basin,
                           is_2d: bool):
         elements_in_legend = False
+        plots_with_legend = [False for _ in self._plots]
 
         levels = self._levels
         if is_2d:
             levels = (0,)
 
-        for plot in self._plots:
+        for p_index, plot in enumerate(self._plots):
             if not plot.draw_time_series:
                 continue
 
@@ -203,6 +204,7 @@ class PlotDrawer:
                 if plot.legend is not None:
                     plot_kwargs['label'] = plot.legend
                     elements_in_legend = True
+                    plots_with_legend[p_index] = True
 
                 current_axis.plot(
                     plot_x_data,
@@ -278,10 +280,13 @@ class PlotDrawer:
                     self._config.time_series_options.x_ticks_rotation
                 )
 
+        return plots_with_legend
+
     def _plot_depth_profile(self, axis_dict, basin_index: int):
         current_axis = axis_dict['P_0_0']
 
         elements_in_legend = False
+        plots_with_legend = [False for _ in self._plots]
 
         ytick_labels = self._config.depth_profiles_options.depth_ticks
         min_y = self._config.depth_profiles_options.min_depth
@@ -291,7 +296,7 @@ class PlotDrawer:
         current_axis.grid()
         current_axis.invert_yaxis()
 
-        for plot in self._plots:
+        for p_index, plot in enumerate(self._plots):
             if not plot.draw_depth_profile:
                 continue
             if self._variable not in plot.variables:
@@ -323,6 +328,7 @@ class PlotDrawer:
             if plot.legend is not None:
                 plot_kwargs['label'] = plot.legend
                 elements_in_legend = True
+                plots_with_legend[p_index] = True
 
             current_axis.plot(
                 plot_x_data,
@@ -351,9 +357,13 @@ class PlotDrawer:
             if y_ticks_position == 'right':
                 current_axis.yaxis.tick_right()
 
+        return plots_with_legend
+
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
         season_obj = season.season()
         elements_in_legend = False
+        plots_with_legend = [False for _ in self._plots]
+
         # x and y labels
         var_label = None
         use_latex = False
@@ -395,7 +405,7 @@ class PlotDrawer:
             if var_label is not None:
                 current_axis.set_xlabel(var_label, usetex=use_latex)
 
-            for plot in self._plots:
+            for p_index, plot in enumerate(self._plots):
                 if not plot.draw_depth_profile:
                     continue
                 if self._variable not in plot.variables:
@@ -433,6 +443,7 @@ class PlotDrawer:
                 if plot.legend is not None:
                     plot_kwargs['label'] = plot.legend
                     elements_in_legend = True
+                    plots_with_legend[p_index] = True
 
                 current_axis.plot(
                     plot_x_season_data,
@@ -488,6 +499,30 @@ class PlotDrawer:
                     if y_ticks_position == 'right':
                         axis.yaxis.tick_right()
 
+        return plots_with_legend
+
+    def _draw_legend(self, plots_with_legend):
+        handles = []
+        legend_items = tuple(compress(self._plots, plots_with_legend))
+        for plot in legend_items:
+            if plot.legend is None:
+                continue
+            kwargs = {}
+            if plot.alpha is not None:
+                kwargs['alpha'] = plot.alpha
+            current_handle = Line2D(
+                [0],
+                [0],
+                label=plot.legend,
+                color=plot.color,
+                **kwargs
+            )
+            handles.append(current_handle)
+        plt.figlegend(
+            handles=handles,
+            loc='lower center',
+            ncol=len(legend_items)
+        )
 
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
@@ -593,14 +628,39 @@ class PlotDrawer:
                         current_axis.sharex(first_axis)
                         current_axis.sharey(first_axis)
 
+        plots_with_legend = [False for _ in self._plots]
         if draw_time_series:
-            self._plot_time_series(axis_dict, basin_index, basin, is_2d)
+            add_to_legend = self._plot_time_series(
+                axis_dict,
+                basin_index,
+                basin,
+                is_2d
+            )
+            for i, p in enumerate(add_to_legend):
+                if not p:
+                    continue
+                plots_with_legend[i] = True
         if draw_depth_profile:
             if self._config.depth_profiles_options.mode.algorithm is \
                     DepthProfileAlgorithm.SEASONAL:
-                self._plot_seasonal_depth_profile(axis_dict, basin_index)
+                add_to_legend = self._plot_seasonal_depth_profile(
+                    axis_dict,
+                    basin_index
+                )
             else:
-                self._plot_depth_profile(axis_dict, basin_index)
+                add_to_legend = self._plot_depth_profile(
+                    axis_dict,
+                    basin_index
+                )
+
+            for i, p in enumerate(add_to_legend):
+                if p:
+                    plots_with_legend[i] = True
+
+        if self._config.output_options.show_legend:
+            if any(plots_with_legend):
+                self._draw_legend(plots_with_legend)
+
         return fig
 
 
@@ -701,6 +761,8 @@ def draw_profile_plots(config: Config, basins, output_dir=None):
     variables = set()
     meshmask_objects = {}
     for plot in config.plots:
+        if not plot.is_active():
+            continue
         variables.update(plot.variables)
         meshmask_path = path.realpath(plot.source.meshmask)
         # Here we read in advance the meshmask objects, so that we can share

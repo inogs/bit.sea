@@ -1,18 +1,20 @@
-from collections import namedtuple
+from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 import yaml
 from math import gcd
+from numbers import Real
 from pathlib import Path
 import re
 from sys import version_info
-from typing import Any, Dict, Mapping, Tuple, Union
+from typing import Any, Dict, Literal, Mapping, Tuple, Union
 
-from tools.data_object import DataObject, PickleDataObject
-from plot_inputs import PlotInputData
-from plot_inputs.single_line_plot import SingleLineInputData
-from tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
-    read_depth_profile_mode
-from filters.read_filter_description import read_filter_description
+from ..tools.data_object import DataObject, PickleDataObject
+from ..plot_inputs import PlotInputData
+from ..plot_inputs.single_line_plot import SingleLineInputData
+from ..tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE, \
+    read_depth_profile_mode, DepthProfileMode
+from ..filters.read_filter_description import read_filter_description
 
 if version_info[1] < 9:
     from typing import Callable
@@ -51,7 +53,8 @@ OUTPUT_FIELDS = (
     'output_dir',
     'dpi',
     'fig_size',
-    'fig_ratio'
+    'fig_ratio',
+    'show_legend'
 )
 
 
@@ -63,30 +66,47 @@ class InvalidPlotConfig(InvalidConfigFile):
     pass
 
 
-Config = namedtuple(
-    'Config',
-    (
-        'plots', 'variable_labels', 'time_series_options',
-        'depth_profiles_options', 'output_options'
-    )
-)
+@dataclass
+class DataDirSource:
+    path: Path
+    meshmask: Path
+    cost_index: Union[int, None] = None
+    mask_var_name: str = DEFAULT_MASK_VAR_NAME
 
-Source = namedtuple(
-    'Source',
-    ('path', 'meshmask', 'coast_index', 'mask_var_name')
-)
 
-OutputOptions = namedtuple('OutputOptions', OUTPUT_FIELDS)
+@dataclass
+class OutputOptions:
+    output_name: str = DEFAULT_OUTPUT_NAME
+    output_dir: Union[Path, None] = None
+    dpi: int = DEFAULT_DPI
+    fig_size: Tuple[Real, Real] = DEFAULT_FIG_SIZE
+    fig_ratio: Tuple[Real, Real] = DEFAULT_FIG_RATIO
+    show_legend: bool = False
 
-TimeSeriesOptions = namedtuple(
-    'TimeSeriesOptions',
-    ('levels', 'show_legend', 'show_depth', 'x_label')
-)
 
-DepthProfilesOptions = namedtuple(
-    'DepthProfilesOptions',
-    ('mode', 'show_legend', 'depth_ticks', 'min_depth', 'max_depth')
-)
+@dataclass
+class TimeSeriesOptions:
+    levels: Tuple
+    show_legend: Literal["no", "all", "bottom", "top"] = "no"
+    show_depth: bool = True
+    x_label: Union[str, None] = None
+    x_ticks_rotation: Union[Real, None] = None
+    show_grid: bool = False
+
+
+@dataclass
+class DepthProfilesOptions:
+    mode: DepthProfileMode = DEFAULT_DEPTH_PROFILE_MODE
+    show_legend: Literal[
+            "no", "all", "bottom", "top", "left", "right", "top-left",
+            "top-right", "bottom-left", "bottom-right"
+        ] = "all"
+    depth_ticks: Tuple[Real, ...] = tuple(range(0, 1001, 200))
+    min_depth: Real = 0
+    max_depth: Real = 1000
+    x_ticks_rotation: Union[Real, None] = None
+    show_y_ticks: Literal["all", "no", "left", "right"] = "all"
+    y_ticks_position: Literal["left", "right"] = "left"
 
 
 def read_number(number_str: str) -> Union[int, float]:
@@ -211,8 +231,7 @@ def read_time_series_options(option_dict: Dict[str, Any]) -> TimeSeriesOptions:
     )
 
 
-def read_ticks(ticks_raw: Union[None, str, list]) \
-        -> Tuple[Union[int, float], ...]:
+def read_ticks(ticks_raw: Union[None, str, list]) -> Tuple[Real, ...]:
     if ticks_raw is None:
         return ()
     if isinstance(ticks_raw, list):
@@ -297,6 +316,10 @@ def read_depth_profiles_options(
         )
 
     show_legend = show_legend_default
+    valid_legends = (
+        'all', 'yes', 'no', 'bottom', 'top', 'left', 'right',
+        'top-left', 'top-right', 'bottom-left', 'bottom-right'
+    )
     if 'show_legend' in option_dict:
         show_legend_raw = option_dict['show_legend']
         if show_legend_raw is None:
@@ -305,10 +328,11 @@ def read_depth_profiles_options(
             show_legend = 'all' if show_legend_raw else 'no'
         else:
             show_legend = str(show_legend_raw).strip().lower()
-            if show_legend not in ('all', 'yes', 'no'):
+            if show_legend not in valid_legends:
                 raise ValueError(
-                    'depth_profiles:show_legend field must contain either'
-                    '"yes" or "no"; received {}'.format(
+                    'depth_profiles:show_legend field must contain one of the '
+                    'following values: {}; received {}'.format(
+                        ', '.join(valid_legends),
                         show_legend
                     )
                 )
@@ -379,7 +403,8 @@ class PlotConfig:
 
     PLOT_NAMES = set()
 
-    def __init__(self, name: str, source: Source, variables: Tuple[str, ...],
+    def __init__(self, name: str, source: DataDirSource,
+                 variables: Tuple[str, ...],
                  plot_builder: Callable[[DataObject], PlotInputData],
                  data_filter=None, active=True, color=None, alpha=None,
                  alpha_for_time_series=None, legend=None, zorder=None,
@@ -391,7 +416,7 @@ class PlotConfig:
         self.PLOT_NAMES.add(name)
 
         self.name: str = name
-        self._source: Source = source
+        self._source: DataDirSource = source
         self.variables: Tuple[str, ...] = variables
         self._plot_builder: Callable[[DataObject], PlotInputData] = \
             plot_builder
@@ -425,7 +450,7 @@ class PlotConfig:
         return self._filter.get_filtered_object(plot_input)
 
     @property
-    def source(self) -> Source:
+    def source(self) -> DataDirSource:
         return self._source
 
     def is_active(self) -> bool:
@@ -467,11 +492,11 @@ class PlotConfig:
                 'Received: {}'.format(str(plot_config))
             )
 
-        for field in plot_config:
-            if field not in PlotConfig.CONFIG_FIELDS:
+        for yaml_field in plot_config:
+            if yaml_field not in PlotConfig.CONFIG_FIELDS:
                 raise InvalidPlotConfig(
                     'Field "{}" is not an admissible field for a '
-                    'plot_config'.format(field)
+                    'plot_config'.format(yaml_field)
                 )
 
         if 'source' not in plot_config:
@@ -509,8 +534,7 @@ class PlotConfig:
         if 'indicator' in plot_config:
             indicator = int(plot_config['indicator'])
 
-        def plot_builder(data_object):
-            return SingleLineInputData(data_object, coast_index, indicator)
+        plot_builder = SingleLineInputData.builder(coast_index, indicator)
 
         plot_config_kwargs = {}
 
@@ -568,6 +592,17 @@ class PlotConfig:
         )
 
 
+@dataclass
+class Config:
+    plots: Tuple[PlotConfig, ...]
+    time_series_options: TimeSeriesOptions
+    depth_profiles_options: DepthProfilesOptions = DepthProfilesOptions()
+    output_options: OutputOptions = OutputOptions()
+    variable_labels: Mapping[str, str] = field(
+        default_factory=lambda: defaultdict(dict)
+    )
+
+
 def read_config_from_file(config_path):
     with open(config_path, 'r') as f:
         current_config = read_config(f)
@@ -577,11 +612,11 @@ def read_config_from_file(config_path):
 def read_config(config_datastream):
     yaml_content = yaml.safe_load(config_datastream)
 
-    for field in yaml_content:
-        if field not in EXPECTED_FIELDS:
+    for yaml_field in yaml_content:
+        if yaml_field not in EXPECTED_FIELDS:
             raise InvalidConfigFile(
                 'Invalid field "{}" found inside config file. Admissible '
-                'fields are: {}'.format(field, ', '.join(EXPECTED_FIELDS))
+                'fields are: {}'.format(yaml_field, ', '.join(EXPECTED_FIELDS))
             )
 
     if 'sources' not in yaml_content:
@@ -605,12 +640,12 @@ def read_config(config_datastream):
                 'its path and its meshmask. Invalid field for source {}: '
                 '{}'.format(source_name, source_config)
             )
-        for field in source_config:
-            if field not in source_fields:
+        for yaml_field in source_config:
+            if yaml_field not in source_fields:
                 raise InvalidConfigFile(
                     'Invalid field "{}" for source "{}"'.format(
                         source_name,
-                        field
+                        yaml_field
                     )
                 )
         if 'path' not in source_config:
@@ -636,7 +671,7 @@ def read_config(config_datastream):
         else:
             mask_var_name = DEFAULT_MASK_VAR_NAME
 
-        sources[str(source_name)] = Source(
+        sources[str(source_name)] = DataDirSource(
             source_path,
             source_meshmask,
             coast_index,
@@ -739,6 +774,15 @@ def read_config(config_datastream):
         except ValueError:
             raise InvalidConfigFile('Invalid fig_ratio parameter')
 
+    show_legend = False
+    if 'show_legend' in output:
+        show_legend = output['show_legend']
+        if not isinstance(show_legend, bool):
+            raise InvalidConfigFile(
+                'Invalid show_legend parameter inside the output_dir section: '
+                'show_legend must be a boolean'
+            )
+
     output_name = DEFAULT_OUTPUT_NAME
     if 'output_name' in output:
         output_name = str(output_name)
@@ -748,7 +792,8 @@ def read_config(config_datastream):
         dpi=dpi,
         fig_size=fig_size,
         fig_ratio=fig_ratio,
-        output_dir=output_dir
+        output_dir=output_dir,
+        show_legend=show_legend
     )
 
     # Finally, the most complicated part; reading the plots
@@ -771,12 +816,12 @@ def read_config(config_datastream):
             variable_selections
         )
         plots.append(current_plot)
-    plots = tuple(p for p in plots if p.is_active())
+    plots = tuple(p for p in plots)
 
     return Config(
         plots=plots,
-        variable_labels=variable_labels,
         time_series_options=time_series_options,
         depth_profiles_options=depth_profiles_options,
-        output_options=output_options
+        output_options=output_options,
+        variable_labels=variable_labels
     )

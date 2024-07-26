@@ -1,6 +1,7 @@
-from collections import namedtuple
+from collections import defaultdict
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Tuple
+from typing import Any, Mapping, Tuple
 import re
 
 
@@ -21,10 +22,12 @@ _ALGORITHM_ASSOCIATION = {
 }
 
 
-DepthProfileMode = namedtuple(
-    'DepthProfileMode',
-    ('algorithm', 'config')
-)
+@dataclass
+class DepthProfileMode:
+    algorithm: DepthProfileAlgorithm = DepthProfileAlgorithm.STANDARD
+    config: Mapping[str, Any] = field(
+        default_factory=lambda: defaultdict(dict)
+    )
 
 
 DEFAULT_DEPTH_PROFILE_MODE = DepthProfileMode(

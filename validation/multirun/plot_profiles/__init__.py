@@ -1,20 +1,21 @@
-from argparse import ArgumentParser
 from collections import namedtuple
+from itertools import compress, product as cart_product
 from os import path
 from warnings import warn
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 
-from basins import V2
 from commons.mask import Mask
 from commons.submask import SubMask
 from commons.Timelist import TimeList
 from commons import timerequestors
 from commons import season
-from tools.read_config import Config, InvalidConfigFile, \
-    read_config_from_file, read_output_dir
-from tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
+from utilities.mpi_serial_interface import get_mpi_communicator
+from .tools.read_config import Config, InvalidConfigFile, PlotConfig, \
+    DataDirSource, DepthProfilesOptions, TimeSeriesOptions, OutputOptions
+from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \
     DepthProfileAlgorithm
 
 try:
@@ -22,31 +23,14 @@ try:
 except ImportError:
     from math import gcd
 
-
     def lcm(a, b):
         return abs(a * b) // gcd(a, b)
 
-try:
-    from mpi4py import MPI
-
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    nranks = comm.size
-    isParallel = True
-except ModuleNotFoundError:
-    rank = 0
-    nranks = 1
-    isParallel = False
-
-MAIN_DIR = path.dirname(path.realpath(__file__))
-CONFIG_FILE = path.join(MAIN_DIR, 'config.yaml')
-
-BASINS = tuple(V2.P.basin_list)
 
 # A BasinSliceVolume describes a slices among vertical levels of a specific
 # basin, i.e., for example, all the cells between 10m and 30m in the Adriatic
-# Sea (accordingly to a specific meshmask). The levels field should be a tuple
-# with two elements: the start and the end of the interval in meters.
+# Sea (accordingly to a specific meshmask). The `levels` field should be a
+# tuple with two elements: the start and the end of the interval in meters.
 BasinSlice = namedtuple('BasinSlice', ['basin_index', 'meshmask', 'levels'])
 
 
@@ -54,7 +38,7 @@ class PlotDrawer:
     def __init__(self, config: Config, variable, meshmask_objects=None,
                  average_volume_weights=None):
         self._config = config
-        self._plots = tuple(config.plots)
+        self._plots = tuple(p for p in config.plots if p.is_active())
         self._levels = tuple(config.time_series_options.levels)
         self._variable = variable
 
@@ -110,9 +94,16 @@ class PlotDrawer:
             loadtmask=True
         )
 
-    def _plot_time_series(self, axis_dict, basin_index: int, basin):
+    def _plot_time_series(self, axis_dict, basin_index: int, basin,
+                          is_2d: bool):
         elements_in_legend = False
-        for plot in self._plots:
+        plots_with_legend = [False for _ in self._plots]
+
+        levels = self._levels
+        if is_2d:
+            levels = (0,)
+
+        for p_index, plot in enumerate(self._plots):
             if not plot.draw_time_series:
                 continue
 
@@ -126,7 +117,7 @@ class PlotDrawer:
             else:
                 plot_data = plot.get_plot_data(self._variable)
 
-            for i, level in enumerate(self._levels):
+            for i, level in enumerate(levels):
                 plot_x_data = plot_data.get_time_steps()
 
                 # If level is a tuple, we have to compute the average between
@@ -150,8 +141,8 @@ class PlotDrawer:
                             self._average_volume_weights[requested_slice]
                     else:
                         warn(
-                            'Average weights for level slice {} have not been'
-                            ' precomputed'.format(requested_slice)
+                            'Average weights for level slice {} have not been '
+                            'precomputed'.format(requested_slice)
                         )
                         submask = SubMask(basin, maskobject=plot_meshmask)
                         average_weights = compute_slice_volume(
@@ -195,7 +186,7 @@ class PlotDrawer:
                     plt.ylabel(var_label, usetex=use_latex)
 
                 # If we are drawing the last plot, add also the x_label
-                if i == len(self._levels) - 1:
+                if i == len(levels) - 1:
                     if self._config.time_series_options.x_label is not None:
                         plt.xlabel(self._config.time_series_options.x_label)
 
@@ -213,6 +204,7 @@ class PlotDrawer:
                 if plot.legend is not None:
                     plot_kwargs['label'] = plot.legend
                     elements_in_legend = True
+                    plots_with_legend[p_index] = True
 
                 current_axis.plot(
                     plot_x_data,
@@ -226,7 +218,7 @@ class PlotDrawer:
             only_one_legend = show_legend_flag in ("top", "bottom")
 
             axis_iterable = [
-                axis_dict['L{}'.format(i)] for i in range(len(self._levels))
+                axis_dict['L{}'.format(i)] for i in range(len(levels))
             ]
 
             if show_legend_flag == "bottom":
@@ -241,7 +233,7 @@ class PlotDrawer:
 
         # Add the title to each plot; we need to do this here so the limits
         # of the plots are already defined
-        for i, level in enumerate(self._levels):
+        for i, level in enumerate(levels):
             current_axis = axis_dict['L{}'.format(i)]
             plot_left, plot_right = current_axis.get_xlim()
             plot_bottom, plot_top = current_axis.get_ylim()
@@ -276,10 +268,25 @@ class PlotDrawer:
                     va='top'
                 )
 
+            if self._config.time_series_options.show_grid:
+                current_axis.grid(which='major')
+
+        # Fix the x_ticks of the last axis
+        last_l_axis = axis_dict['L{}'.format(len(levels) - 1)]
+        if self._config.time_series_options.x_ticks_rotation is not None:
+            for label in last_l_axis.get_xticklabels(which='major'):
+                label.set_ha('right')
+                label.set_rotation(
+                    self._config.time_series_options.x_ticks_rotation
+                )
+
+        return plots_with_legend
+
     def _plot_depth_profile(self, axis_dict, basin_index: int):
         current_axis = axis_dict['P_0_0']
 
         elements_in_legend = False
+        plots_with_legend = [False for _ in self._plots]
 
         ytick_labels = self._config.depth_profiles_options.depth_ticks
         min_y = self._config.depth_profiles_options.min_depth
@@ -289,8 +296,10 @@ class PlotDrawer:
         current_axis.grid()
         current_axis.invert_yaxis()
 
-        for plot in self._plots:
+        for p_index, plot in enumerate(self._plots):
             if not plot.draw_depth_profile:
+                continue
+            if self._variable not in plot.variables:
                 continue
 
             plot_meshmask = self._get_plot_mask(plot)
@@ -319,6 +328,7 @@ class PlotDrawer:
             if plot.legend is not None:
                 plot_kwargs['label'] = plot.legend
                 elements_in_legend = True
+                plots_with_legend[p_index] = True
 
             current_axis.plot(
                 plot_x_data,
@@ -330,9 +340,30 @@ class PlotDrawer:
         if show_legend_flag != "no" and elements_in_legend:
             current_axis.legend()
 
+        # Fix the x_ticks
+        if self._config.depth_profiles_options.x_ticks_rotation is not None:
+            for label in current_axis.get_xticklabels(which='major'):
+                label.set_ha('right')
+                label.set_rotation(
+                    self._config.depth_profiles_options.x_ticks_rotation
+                )
+        # Fix the y_ticks
+        show_y_ticks = self._config.depth_profiles_options.show_y_ticks
+        y_ticks_position = self._config.depth_profiles_options.y_ticks_position
+        if show_y_ticks not in ('all', 'left', 'right'):
+            for label in current_axis.get_yticklabels(which='major'):
+                label.set_visible(False)
+        else:
+            if y_ticks_position == 'right':
+                current_axis.yaxis.tick_right()
+
+        return plots_with_legend
+
     def _plot_seasonal_depth_profile(self, axis_dict, basin_index: int):
         season_obj = season.season()
         elements_in_legend = False
+        plots_with_legend = [False for _ in self._plots]
+
         # x and y labels
         var_label = None
         use_latex = False
@@ -342,20 +373,23 @@ class PlotDrawer:
                 use_latex = True
                 var_label = var_label[len('LaTeX:'):]
 
+        d_mode = self._config.depth_profiles_options.mode.config['mode']
+        if d_mode == 'square':
+            n_rows = 2
+            n_columns = 2
+        elif d_mode == 'inline':
+            n_rows = 1
+            n_columns = 4
+        else:
+            raise ValueError(
+                'Invalid display mode: "{}"'.format(d_mode)
+            )
+
         for season_ind, season_str in enumerate(season_obj.SEASON_LIST_NAME):
             season_req = timerequestors.Clim_season(season_ind, season_obj)
 
-            d_mode = self._config.depth_profiles_options.mode.config['mode']
-            if d_mode == 'square':
-                pi = season_ind // 2
-                pj = season_ind % 2
-            elif d_mode == 'inline':
-                pi = 0
-                pj = season_ind
-            else:
-                raise ValueError(
-                    'Invalid display mode: "{}"'.format(d_mode)
-                )
+            pi = season_ind // n_columns
+            pj = season_ind % n_columns
 
             current_axis = axis_dict[f'P_{pi}_{pj}']
 
@@ -368,26 +402,13 @@ class PlotDrawer:
             current_axis.invert_yaxis()
             current_axis.set_title(season_str)
 
-            if d_mode == 'square':
-                if pi == 0:
-                    current_axis.xaxis.set_tick_params(
-                        which='both',
-                        labelbottom=False,
-                        labeltop=False
-                    )
-                if pi == 1:
-                    if var_label is not None:
-                        current_axis.set_xlabel(var_label, usetex=use_latex)
+            if var_label is not None:
+                current_axis.set_xlabel(var_label, usetex=use_latex)
 
-            if d_mode == 'inline':
-                if pj > 0:
-                    current_axis.set_yticklabels([])
-                if var_label is not None:
-                    current_axis.set_xlabel(var_label, usetex=use_latex)
-
-            for plot in self._plots:
-
+            for p_index, plot in enumerate(self._plots):
                 if not plot.draw_depth_profile:
+                    continue
+                if self._variable not in plot.variables:
                     continue
 
                 plot_meshmask = self._get_plot_mask(plot)
@@ -422,6 +443,7 @@ class PlotDrawer:
                 if plot.legend is not None:
                     plot_kwargs['label'] = plot.legend
                     elements_in_legend = True
+                    plots_with_legend[p_index] = True
 
                 current_axis.plot(
                     plot_x_season_data,
@@ -431,14 +453,137 @@ class PlotDrawer:
 
             show_legend_flag = self._config.depth_profiles_options.show_legend
             if show_legend_flag != "no" and elements_in_legend:
-                current_axis.legend()
+                if show_legend_flag == "all":
+                    current_axis.legend()
+                elif show_legend_flag == "bottom":
+                    if pi == n_rows - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "top":
+                    if pi == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "right":
+                    if pj == n_rows - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "left":
+                    if pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "top-left":
+                    if pi == 0 and pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "top-right":
+                    if pi == 0 and pj == n_columns - 1:
+                        current_axis.legend()
+                elif show_legend_flag == "bottom-left":
+                    if pi == n_rows - 1 and pj == 0:
+                        current_axis.legend()
+                elif show_legend_flag == "bottom-right":
+                    if pi == n_rows - 1 and pj == n_columns - 1:
+                        current_axis.legend()
+                else:
+                    raise ValueError(
+                        'Invalid option for the depth profile legend: '
+                        '"{}"'.format(
+                            show_legend_flag
+                        )
+                    )
+
+        # No we fix the esthetic of the plots (the position of the ticks or
+        # other parameters like that)
+        x_tick_rotation = self._config.depth_profiles_options.x_ticks_rotation
+        show_y_ticks = self._config.depth_profiles_options.show_y_ticks
+        y_ticks_position = self._config.depth_profiles_options.y_ticks_position
+        for pi, pj in cart_product(range(n_rows), range(n_columns)):
+            axis = axis_dict[f'P_{pi}_{pj}']
+            # If we are on the last row we rotate the x_ticks (if needed)
+            if pi == n_rows - 1 and x_tick_rotation is not None:
+                for label in axis.get_xticklabels(which='major'):
+                    label.set_ha('right')
+                    label.set_rotation(
+                        self._config.depth_profiles_options.x_ticks_rotation
+                    )
+            # Hide x-ticks if we are not on the last line
+            if pi < n_rows - 1:
+                axis.xaxis.set_tick_params(
+                    which='both',
+                    labelbottom=False,
+                    labeltop=False
+                )
+            # Check if we have to draw the y-ticks
+            if pj == 0:
+                if show_y_ticks not in ('all', 'left'):
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+            elif pj == n_columns - 1:
+                if show_y_ticks not in ('all', 'right'):
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+            else:
+                if show_y_ticks != 'all':
+                    for label in axis.get_yticklabels(which='major'):
+                        label.set_visible(False)
+                else:
+                    if y_ticks_position == 'right':
+                        axis.yaxis.tick_right()
+
+        return plots_with_legend
+
+    def _draw_legend(self, plots_with_legend):
+        handles = []
+        legend_items = tuple(compress(self._plots, plots_with_legend))
+        for plot in legend_items:
+            if plot.legend is None:
+                continue
+            kwargs = {}
+            if plot.alpha is not None:
+                kwargs['alpha'] = plot.alpha
+            current_handle = Line2D(
+                [0],
+                [0],
+                label=plot.legend,
+                color=plot.color,
+                **kwargs
+            )
+            handles.append(current_handle)
+        plt.figlegend(
+            handles=handles,
+            loc='lower center',
+            ncol=len(legend_items)
+        )
 
     def plot(self, basin_index, basin, **fig_kw):
         if self.is_empty():
             raise ValueError('Required a plot from an empty PlotDrawer')
 
+        draw_time_series = self._draw_time_series
+        draw_depth_profile = self._draw_depth_profile
+        levels = self._levels
+
+        # We check if this is a 2d or a 3d plot
+        is_2d = False
+        if len(self._loaded_data) != 0:
+            first_plot = list(self._loaded_data.values())[0]
+            is_2d = first_plot.is_2d()
+        else:
+            for plot in self._plots:
+                if self._variable not in plot.variables:
+                    continue
+                is_2d = plot.get_plot_data(self._variable).is_2d()
+                break
+
+        if is_2d:
+            draw_time_series = True
+            draw_depth_profile = False
+            levels = (0, )
+
+        # Building the grid of the plots
         # In this case, the plot grid is made only from the depth profile plots
-        if not self._draw_time_series:
+        if not draw_time_series:
             plot_grid_rows, plot_grid_columns = get_depth_profile_plot_grid(
                 self._config.depth_profiles_options.mode
             )
@@ -458,7 +603,7 @@ class PlotDrawer:
                 )
         # Now the more general case
         else:
-            if self._draw_depth_profile:
+            if draw_depth_profile:
                 dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                     self._config.depth_profiles_options.mode
                 )
@@ -466,17 +611,17 @@ class PlotDrawer:
             else:
                 dp_grid_rows, dp_grid_columns = 1, 1
                 ts_ratio, dp_ratio = 1, 1
-            grid_rows = lcm(len(self._levels), dp_grid_rows)
+            grid_rows = lcm(len(levels), dp_grid_rows)
             column_unit = dp_grid_columns // gcd(dp_ratio, dp_grid_columns)
             ts_cols_per_plot = ts_ratio * column_unit
             dp_cols_per_plot = dp_ratio * column_unit // dp_grid_columns
 
             plot_structure = []
             for row in range(grid_rows):
-                current_level = row // (grid_rows // len(self._levels))
+                current_level = row // (grid_rows // len(levels))
                 current_dp_row = row // (grid_rows // dp_grid_rows)
                 current_row = ['L{}'.format(current_level)] * ts_cols_per_plot
-                if self._draw_depth_profile:
+                if draw_depth_profile:
                     current_row.extend(
                         ['P_{}_{}'.format(current_dp_row, c)
                          for c in range(dp_grid_columns)
@@ -490,8 +635,8 @@ class PlotDrawer:
             )
 
             # Share the x-axis between each L plot and the last one
-            last_l_axis = axis_dict['L{}'.format(len(self._levels) - 1)]
-            for i in range(len(self._levels[:-1])):
+            last_l_axis = axis_dict['L{}'.format(len(levels) - 1)]
+            for i in range(len(levels[:-1])):
                 current_axis = axis_dict['L{}'.format(i)]
                 current_axis.sharex(last_l_axis)
                 current_axis.xaxis.set_tick_params(
@@ -500,8 +645,8 @@ class PlotDrawer:
                     labeltop=False
                 )
 
-        # If we have some depth profiles, we share all their axes
-        if self._draw_depth_profile:
+        # If we have more than one depth profiles, we share all their axes
+        if draw_depth_profile:
             dp_grid_rows, dp_grid_columns = get_depth_profile_plot_grid(
                 self._config.depth_profiles_options.mode
             )
@@ -515,43 +660,40 @@ class PlotDrawer:
                         current_axis.sharex(first_axis)
                         current_axis.sharey(first_axis)
 
-        if self._draw_time_series:
-            self._plot_time_series(axis_dict, basin_index, basin)
-        if self._draw_depth_profile:
+        plots_with_legend = [False for _ in self._plots]
+        if draw_time_series:
+            add_to_legend = self._plot_time_series(
+                axis_dict,
+                basin_index,
+                basin,
+                is_2d
+            )
+            for i, p in enumerate(add_to_legend):
+                if not p:
+                    continue
+                plots_with_legend[i] = True
+        if draw_depth_profile:
             if self._config.depth_profiles_options.mode.algorithm is \
                     DepthProfileAlgorithm.SEASONAL:
-                self._plot_seasonal_depth_profile(axis_dict, basin_index)
+                add_to_legend = self._plot_seasonal_depth_profile(
+                    axis_dict,
+                    basin_index
+                )
             else:
-                self._plot_depth_profile(axis_dict, basin_index)
+                add_to_legend = self._plot_depth_profile(
+                    axis_dict,
+                    basin_index
+                )
+
+            for i, p in enumerate(add_to_legend):
+                if p:
+                    plots_with_legend[i] = True
+
+        if self._config.output_options.show_legend:
+            if any(plots_with_legend):
+                self._draw_legend(plots_with_legend)
+
         return fig
-
-
-def configure_argparse():
-    parser = ArgumentParser()
-    parser.description = (
-        "The MultirunProfilePlotter is a script to plot temporal series and "
-        "depth profiles of several different runs of one or more models. "
-        "You may configure the behaviour of the script by setting the values "
-        "of the config.yaml file in the main directory of this script or "
-        "writing another configuration file yourself."
-    )
-    parser.add_argument(
-        'config_file',
-        type=str,
-        nargs='?',
-        default=CONFIG_FILE,
-        help='The path of the config file used by this script. By default, it '
-             'uses {}'.format(CONFIG_FILE)
-    )
-
-    parser.add_argument(
-        '--output_dir',
-        '-o',
-        type=read_output_dir,
-        default=None,
-        help='The path where this script will save the output plots'
-    )
-    return parser.parse_args()
 
 
 def from_interval_to_slice(level_interval: tuple, meshmask: Mask):
@@ -625,22 +767,17 @@ def compute_slice_volume(level_slice: slice, meshmask: Mask,
     return slice_volume
 
 
-def main():
-    args = configure_argparse()
+def draw_profile_plots(config: Config, basins, output_dir=None):
+    # If no output_dir has been received, we use the output_dir that is saved
+    # inside the config object
+    if output_dir is None:
+        output_dir = config.output_options.output_dir
 
-    config = read_config_from_file(args.config_file)
-
-    # If we have read an output dir from the command line, we use it instead of
-    # value of the config file.
-    output_dir = config.output_options.output_dir
-    output_dir_arg = args.output_dir
-    if output_dir_arg is not None:
-        output_dir = output_dir_arg
     if output_dir is None:
         raise InvalidConfigFile(
             'output_dir has not been specified in the output section of the '
             'config file. Specify an output directory in the config file or '
-            'use the --output-dir flag from the command line.'
+            'submit the output_dir argument to this function.'
         )
 
     # Check if at least one of the specified levels requires to compute an
@@ -656,6 +793,8 @@ def main():
     variables = set()
     meshmask_objects = {}
     for plot in config.plots:
+        if not plot.is_active():
+            continue
         variables.update(plot.variables)
         meshmask_path = path.realpath(plot.source.meshmask)
         # Here we read in advance the meshmask objects, so that we can share
@@ -674,7 +813,7 @@ def main():
     average_volume_weights = {}
     if averages_in_levels:
         for meshmask_path, meshmask_object in meshmask_objects.items():
-            for basin_index, basin in enumerate(V2.P):
+            for basin_index, basin in enumerate(basins):
                 submask = SubMask(basin, maskobject=meshmask_object)
                 for level in config.time_series_options.levels:
                     if not isinstance(level, tuple):
@@ -696,7 +835,10 @@ def main():
     variables = tuple(sorted(list(variables)))
 
     # Here we produce the plots
-    for var_name in variables[rank::nranks]:
+    communicator = get_mpi_communicator()
+    rank = communicator.Get_rank()
+    comm_size = communicator.size
+    for var_name in variables[rank::comm_size]:
         plot_drawer = PlotDrawer(
             config,
             var_name,
@@ -707,7 +849,7 @@ def main():
             continue
         plot_drawer.load_data()
 
-        for basin_index, basin in enumerate(BASINS):
+        for basin_index, basin in enumerate(basins):
             outfile_name = config.output_options.output_name.replace(
                 '${VAR}',
                 var_name
@@ -730,5 +872,7 @@ def main():
             plt.close(fig)
 
 
-if __name__ == '__main__':
-    main()
+__all__ = [
+    PlotConfig, DataDirSource, DepthProfilesOptions, TimeSeriesOptions,
+    OutputOptions, Config, draw_profile_plots
+]

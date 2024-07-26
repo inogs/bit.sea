@@ -1,11 +1,8 @@
 from datetime import datetime
-import re
 from typing import Union
 
-import numpy as np
-
-from filters.filter import SimpleFilter, FilteredObject
-from plot_inputs import PlotInputData
+from .filter import SimpleFilter, FilteredObject
+from ..plot_inputs import PlotInputData
 
 
 class AllPointsCropped(ValueError):

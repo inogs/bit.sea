@@ -1,6 +1,5 @@
-from tools.data_object import DataObject
-
-from plot_inputs import PlotInputData, SLICE_TYPE
+from ..tools.data_object import DataObject
+from . import PlotInputData, SLICE_TYPE
 
 
 class SingleLineInputData(PlotInputData):
@@ -30,3 +29,7 @@ class SingleLineInputData(PlotInputData):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._data_object.__exit__(exc_type, exc_val, exc_tb)
         return
+
+    @classmethod
+    def builder(cls, coast_index: int, indicator_index: int):
+        return lambda data_obj: cls(data_obj, coast_index, indicator_index)

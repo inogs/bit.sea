@@ -3,8 +3,8 @@ import re
 
 import numpy as np
 
-from filters.filter import SimpleFilter, FilteredObject
-from plot_inputs import PlotInputData
+from .filter import SimpleFilter, FilteredObject
+from ..plot_inputs import PlotInputData
 
 
 class MovingAverageFilteredObject(FilteredObject):

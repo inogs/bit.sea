@@ -70,7 +70,7 @@ class InvalidPlotConfig(InvalidConfigFile):
 class DataDirSource:
     path: Path
     meshmask: Path
-    cost_index: Union[int, None] = None
+    coast_index: Union[int, None] = None
     mask_var_name: str = DEFAULT_MASK_VAR_NAME
 
 
@@ -96,7 +96,9 @@ class TimeSeriesOptions:
 
 @dataclass
 class DepthProfilesOptions:
-    mode: DepthProfileMode = DEFAULT_DEPTH_PROFILE_MODE
+    mode: DepthProfileMode = field(
+        default_factory=lambda: DEFAULT_DEPTH_PROFILE_MODE
+    )
     show_legend: Literal[
             "no", "all", "bottom", "top", "left", "right", "top-left",
             "top-right", "bottom-left", "bottom-right"
@@ -596,8 +598,12 @@ class PlotConfig:
 class Config:
     plots: Tuple[PlotConfig, ...]
     time_series_options: TimeSeriesOptions
-    depth_profiles_options: DepthProfilesOptions = DepthProfilesOptions()
-    output_options: OutputOptions = OutputOptions()
+    depth_profiles_options: DepthProfilesOptions = field(
+        default_factory=lambda: DepthProfilesOptions()
+    )
+    output_options: OutputOptions = field(
+        default_factory=lambda: OutputOptions()
+    )
     variable_labels: Mapping[str, str] = field(
         default_factory=lambda: defaultdict(dict)
     )

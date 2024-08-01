@@ -3,9 +3,9 @@ from pathlib import Path
 
 from basins import V2
 
-from .tools.read_config import InvalidConfigFile, read_config_from_file, \
-                               read_output_dir
-from . import draw_profile_plots
+from validation.multirun.plot_profiles.tools.read_config import \
+    InvalidConfigFile, read_config_from_file, read_output_dir
+from validation.multirun.plot_profiles import draw_profile_plots
 
 
 try:

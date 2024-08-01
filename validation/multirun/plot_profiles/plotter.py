@@ -61,7 +61,7 @@ def main():
             'use the --output-dir flag from the command line.'
         )
 
-    draw_profile_plots(config, args.output_dir, BASINS)
+    draw_profile_plots(config, BASINS, args.output_dir)
 
 
 if __name__ == '__main__':

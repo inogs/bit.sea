@@ -8,6 +8,7 @@ import os
 
 def mean(array):
     return array.mean()
+
 def logmean(array):
     LOGmean= np.log(array).mean()
     return np.exp(LOGmean)

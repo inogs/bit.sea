@@ -1,7 +1,7 @@
-from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 from enum import Enum
-from typing import Any, Mapping, Tuple
+from types import MappingProxyType
+from typing import Any, Dict, Mapping, Tuple, Union
 import re
 
 
@@ -22,17 +22,25 @@ _ALGORITHM_ASSOCIATION = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class DepthProfileMode:
     algorithm: DepthProfileAlgorithm = DepthProfileAlgorithm.STANDARD
-    config: Mapping[str, Any] = field(
-        default_factory=lambda: defaultdict(dict)
-    )
+    config_: InitVar = None
+    config: Mapping[str, Any] = field(init=False)
+
+    def __post_init__(self, config_: Union[Mapping[str, Any], None] = None):
+        if config_ is None:
+            _config = {}
+        super().__setattr__(
+            '_config',
+            {a: b for a, b in config_.items()}
+        )
+        super().__setattr__('config', MappingProxyType(config_))
 
 
 DEFAULT_DEPTH_PROFILE_MODE = DepthProfileMode(
     algorithm=DepthProfileAlgorithm.STANDARD,
-    config={}
+    config_={}
 )
 
 
@@ -41,7 +49,7 @@ MODE_DESCRIPTION_MASK = re.compile(
 )
 
 
-def read_depth_profile_mode(read_profile_raw):
+def read_depth_profile_mode(read_profile_raw: str) -> DepthProfileMode:
     mask_match = MODE_DESCRIPTION_MASK.match(read_profile_raw)
     if mask_match is None:
         raise InvalidAlgorithmDescription(
@@ -52,7 +60,7 @@ def read_depth_profile_mode(read_profile_raw):
             )
         )
     algorithm_raw = mask_match.group('algorithm_name')
-    options = mask_match.group('args')
+    raw_options = mask_match.group('args')
 
     if algorithm_raw.lower() not in _ALGORITHM_ASSOCIATION:
         raise InvalidAlgorithmDescription(
@@ -63,30 +71,35 @@ def read_depth_profile_mode(read_profile_raw):
         )
     algorithm = _ALGORITHM_ASSOCIATION[algorithm_raw.lower()]
 
-    if options is not None:
+    if raw_options is not None:
         # Remove the parenthesis
-        options = options[1:-1].strip()
+        raw_options = raw_options[1:-1].strip()
 
-        if options == '':
-            options = tuple()
+        if raw_options == '':
+            raw_options = tuple()
         else:
-            options = tuple(k.strip() for k in options.split(','))
+            raw_options = tuple(k.strip() for k in raw_options.split(','))
     else:
-        options = tuple()
+        raw_options = tuple()
 
-    if algorithm is DepthProfileAlgorithm.STANDARD and len(options) != 0:
+    options: Dict[str, Any] = {}
+
+    if algorithm is DepthProfileAlgorithm.STANDARD and len(raw_options) != 0:
         raise InvalidAlgorithmDescription(
             'Standard algorithm does not accept arguments: received '
-            '"{}"'.format(options)
+            '"{}"'.format(raw_options)
         )
 
-    if algorithm is DepthProfileAlgorithm.SEASONAL and len(options) != 0:
-        if len(options) > 2:
+    if algorithm is DepthProfileAlgorithm.SEASONAL and len(raw_options) != 0:
+        if len(raw_options) > 2:
             raise InvalidAlgorithmDescription(
                 'Seasonal algorithm accepts only one argument, the "mode"; '
-                'received {} arguments: {}'.format(len(options), options)
+                'received {} arguments: {}'.format(
+                    len(raw_options),
+                    raw_options
+                )
             )
-        option = options[0]
+        option = raw_options[0]
         if '=' in option:
             key = option.split('=')[0].strip()
             option = '='.join(option.split('=')[1:])
@@ -103,30 +116,30 @@ def read_depth_profile_mode(read_profile_raw):
             )
         options = {'mode': option}
 
-    if algorithm is DepthProfileAlgorithm.SEASONAL and len(options) == 0:
+    if algorithm is DepthProfileAlgorithm.SEASONAL and len(raw_options) == 0:
         options = {'mode': 'square'}
 
     if algorithm is DepthProfileAlgorithm.EVOLUTION:
-        if len(options) == 0:
+        if len(raw_options) == 0:
             raise InvalidAlgorithmDescription(
                 '"Evolution" algorithm requires an integer as an argument; '
                 'none received'
             )
-        if len(options) > 1:
+        if len(raw_options) > 1:
             raise InvalidAlgorithmDescription(
                 '"Evolution" algorithm requires a single integer as an '
                 'argument; received {} arguments: {}'.format(
-                    len(options),
-                    options
+                    len(raw_options),
+                    raw_options
                 )
             )
 
         try:
-            i_value = int(options[0])
+            i_value = int(raw_options[0])
         except ValueError:
             raise InvalidAlgorithmDescription(
                 '"Evolution" algorithm requires an integer as an argument: '
-                'received "{}"'.format(options[0])
+                'received "{}"'.format(raw_options[0])
             )
 
         if i_value < 2:
@@ -135,7 +148,7 @@ def read_depth_profile_mode(read_profile_raw):
                 '1: received {}'.format(i_value)
             )
 
-        options = (i_value,)
+        options = {'plots': i_value}
 
     return DepthProfileMode(algorithm, options)
 

@@ -66,7 +66,10 @@ def non_existing_path_inside_an_existing_dir(arg_path: str) -> Path:
 
 
 def date_from_str(arg_path: str) -> datetime:
-    formats = ('%Y-%m-%d', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S')
+    formats = (
+        '%Y%m%d', '%Y%m%d-%H:%M', '%Y%m%d-%H:%M:%S',
+        '%Y-%m-%d', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S'
+    )
 
     output_date = None
     for date_format in formats:

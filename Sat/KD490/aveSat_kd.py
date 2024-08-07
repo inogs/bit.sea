@@ -1,4 +1,6 @@
 import argparse
+from utilities.argparse_types import date_from_str
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
@@ -34,6 +36,14 @@ def argument():
                                 choices = ['monthly','weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
+
+    parser.add_argument(   '--ignore-after', '-a',
+                                type = date_from_str,
+                                required = False,
+                                default = None,
+                                help = "Ignore all input files with dates later than the one submitted here"
+                                )
+
     return parser.parse_args()
 
 args = argument()
@@ -41,6 +51,7 @@ args = argument()
 
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
+from datetime import datetime
 from postproc import masks
 import numpy as np
 import os
@@ -63,9 +74,13 @@ maskSat = getattr(masks,args.mesh)
 
 reset = False
 
-Timestart="19500101"
-Time__end="20500101"
-TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
+Timestart = datetime.strptime("19500101", "%Y%m%d")
+Time__end = datetime.strptime("20500101", "%Y%m%d")
+
+if args.ignore_after is not None:
+    Time__end = args.ignore_after
+
+TI = TimeInterval.fromdatetimes(Timestart, Time__end)
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
 suffix = os.path.basename(TLCheck.filelist[0])[8:]
 
@@ -98,8 +113,8 @@ for req in TIME_reqs[rank::nranks]:
     M = np.zeros((nFiles,jpj,jpi),np.float32)
     for iFrame, j in enumerate(ii):
         inputfile = TLCheck.filelist[j]
-        CHL = Sat.readfromfile(inputfile,'KD490')
-        M[iFrame,:,:] = CHL
+        CHL = Sat.readfromfile(inputfile, 'KD490')
+        M[iFrame, :, :] = CHL
         idate = TLCheck.Timelist[j]
         date8 = idate.strftime('%Y%m%d')
     CHL_OUT = Sat.averager(M)

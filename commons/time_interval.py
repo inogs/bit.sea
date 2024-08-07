@@ -1,9 +1,10 @@
-import datetime
+from datetime import datetime
 
-class TimeInterval():
-    def __init__(self, starttime="19500101", endtime="21000101", dateformat='%Y%m%d'):
-        self.start_time = datetime.datetime.strptime(starttime, dateformat)
-        self.end_time = datetime.datetime.strptime(endtime   ,dateformat)
+
+class TimeInterval:
+    def __init__(self, starttime: str = "19500101", endtime: str = "21000101", dateformat: str ='%Y%m%d'):
+        self.start_time = datetime.strptime(starttime, dateformat)
+        self.end_time = datetime.strptime(endtime   ,dateformat)
         assert self.start_time <= self.end_time
     
     def __repr__(self):
@@ -64,7 +65,7 @@ class TimeInterval():
         return res
     
     @staticmethod
-    def fromdatetimes(timestart,time_end):
+    def fromdatetimes(timestart: datetime, time_end: datetime):
         '''
         Arguments:
         * timestart * a datetime object

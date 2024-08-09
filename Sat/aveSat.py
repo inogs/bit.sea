@@ -3,7 +3,6 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
     It works with one mesh, without performing interpolations.
-    Files with dates used for the average provided (dirdates).
     Empty dirdates is provided when the number of input daily files is lesser than 3.
     ''',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -20,12 +19,6 @@ def argument():
                                 required = True,
                                 help = ''' OUT average dates sat directory'''
 
-                                )
-
-    parser.add_argument(   '--dirdates', '-d',
-                                type = str,
-                                required = True,
-                                help = ''' OUT dates sat directory'''
                                 )
 
     parser.add_argument(   '--mesh', '-m',
@@ -75,7 +68,6 @@ except:
 
 CHECKDIR = addsep(args.checkdir)
 OUTDIR   = addsep(args.outdir)
-DIRDATES = addsep(args.dirdates)
 maskSat = getattr(masks,args.mesh)
 
 
@@ -108,9 +100,12 @@ for req in TIME_reqs[rank::nranks]:
     nFiles = len(ii)
 
     if os.path.exists(outfile):
-        outdates = DIRDATES + req.string + 'weekdates.txt'
-        weekdates = np.loadtxt(outdates,dtype=str)
-        nDates = len(weekdates)
+        try:
+            dateweek_string = Sat.read_variable_attribute(outfile,args.varname,'average_of')
+        except (AttributeError,IndexError):
+            dateweek_string = ""
+        nDates=len(dateweek_string.split(","))
+
     
         if nFiles>nDates:
             print('Not skipping ' + req.string)
@@ -124,9 +119,7 @@ for req in TIME_reqs[rank::nranks]:
     dateweek = []
     if nFiles < 3 : 
         print(req, "less than 3 files - Skipping average generation")
-        filedates = DIRDATES + req.string + 'weekdates.txt'
-        print('See ' + filedates)
-        np.savetxt(filedates,dateweek,fmt='%s')
+        print(" ".join([TLCheck.Timelist[k].strftime("%Y%m%d") for k in ii]))
         continue
 
     M = np.zeros((nFiles,jpj,jpi),np.float32)
@@ -141,10 +134,7 @@ for req in TIME_reqs[rank::nranks]:
         OUT = Sat.averager(M)
     else:
         OUT = Sat.logAverager(M)
-    Sat.dumpGenericfile(outfile, OUT, args.varname, mesh=maskSat, mode=writing_mode)
-
-
-    filedates = DIRDATES + req.string + 'weekdates.txt'
-    print(filedates)
-    np.savetxt(filedates,dateweek,fmt='%s')
+    dateweek_string=','.join(dateweek)
+    var_attributes={'average_of':dateweek_string}
+    Sat.dumpGenericfile(outfile, OUT, args.varname, mesh=maskSat, mode=writing_mode, var_attributes=var_attributes)
 

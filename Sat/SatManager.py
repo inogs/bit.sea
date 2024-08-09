@@ -4,6 +4,7 @@ import numpy as np
 import netCDF4
 from datetime import datetime
 import os
+import warnings
 
 
 def mean(array):
@@ -252,7 +253,9 @@ def logAverager(M):
     maskM = M==fillValue
     Mnan = M.copy()
     Mnan[maskM] = np.nan
-    LOGm = np.nanmean(np.log(Mnan),0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        LOGm = np.nanmean(np.log(Mnan),0)
     CHL_OUT = np.exp(LOGm)
     CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
@@ -278,7 +281,9 @@ def averager(M):
     maskM = M==fillValue
     Mnan = M.copy()
     Mnan[maskM] = np.nan
-    CHL_OUT = np.nanmean(Mnan,0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")    
+        CHL_OUT = np.nanmean(Mnan,0)
     CHL_OUT[np.isnan(CHL_OUT)] = fillValue
     return CHL_OUT
 
@@ -384,7 +389,7 @@ def writing_mode(filename):
     return writingmode
 
 
-def dumpGenericfile(filename, M, varname, mesh=OneKmMesh,mode="w"):
+def dumpGenericfile(filename, M, varname, mesh=OneKmMesh,mode="w", file_attributes=None, var_attributes=None):
     '''
     Dump sat NetCDF file
     In append mode, it can add a NetCDF variable or overwrite an existing one
@@ -395,32 +400,47 @@ def dumpGenericfile(filename, M, varname, mesh=OneKmMesh,mode="w"):
     * mesh     * mesh object
     * mode     * string, 'w' or 'a'
     '''
-    ncOUT  = NC.Dataset(filename,mode)
-    if mode=='w':
-        ncOUT.createDimension('time', 1)
-        ncOUT.createDimension('depth',1)
-        ncOUT.createDimension('lon',mesh.jpi)
-        ncOUT.createDimension('lat',mesh.jpj)
-        ncvar = ncOUT.createVariable('depth','f',('depth',))
-        ncvar[:] = 1.47210180759
-        ncvar = ncOUT.createVariable('time','f',('time',))
-        ncvar[:] = 1.0
-        ncvar = ncOUT.createVariable('lat','f',('lat',))
-        ncvar[:] = mesh.lat
-        ncvar = ncOUT.createVariable('lon','f',('lon',))
-        ncvar[:] = mesh.lon
-    
-    if exist_valid_variable(varname, filename):
-        ncvar = ncOUT.variables[varname]
-    else:
-        ncvar = ncOUT.createVariable(varname, 'f', ('time','lat','lon'), zlib=True,fill_value=fillValue)
-    chl = np.zeros((1,mesh.jpj,mesh.jpi),np.float32)
-    chl[0,:,:] = M
-    ncvar[:] = chl
-    setattr(ncvar, 'missing_value', fillValue)
-    setattr(ncvar, 'fillValue', fillValue)
-    d=datetime.now()
-    setattr(ncvar,'creation_time',  d.strftime("%Y%m%d-%H:%M:%S"))
+    with NC.Dataset(filename,mode) as ncOUT:
+        if mode=='w':
+            ncOUT.createDimension('time', 1)
+            ncOUT.createDimension('depth',1)
+            ncOUT.createDimension('lon',mesh.jpi)
+            ncOUT.createDimension('lat',mesh.jpj)
+            ncvar = ncOUT.createVariable('depth','f',('depth',))
+            ncvar[:] = 1.47210180759
+            ncvar = ncOUT.createVariable('time','f',('time',))
+            ncvar[:] = 1.0
+            ncvar = ncOUT.createVariable('lat','f',('lat',))
+            ncvar[:] = mesh.lat
+            ncvar = ncOUT.createVariable('lon','f',('lon',))
+            ncvar[:] = mesh.lon
 
-    ncOUT.close()
-    
+        if exist_valid_variable(varname, filename):
+            ncvar = ncOUT.variables[varname]
+        else:
+            ncvar = ncOUT.createVariable(varname, 'f', ('time','lat','lon'), zlib=True,fill_value=fillValue)
+        chl = np.zeros((1,mesh.jpj,mesh.jpi),np.float32)
+        chl[0,:,:] = M
+        ncvar[:] = chl
+        setattr(ncvar, 'missing_value', fillValue)
+        setattr(ncvar, 'fillValue', fillValue)
+        d=datetime.now()
+        setattr(ncvar,'creation_time',  d.strftime("%Y%m%d-%H:%M:%S"))
+        if file_attributes is None:
+            file_attributes = {}
+        for attr_name, attr_value in file_attributes.items():
+            setattr(ncOUT, attr_name,attr_value)
+        if var_attributes is None:
+            var_attributes = {}
+        for attr_name, attr_value in var_attributes.items():
+            setattr(ncvar, attr_name,attr_value)            
+
+
+
+def read_global_attribute(filename, attrname):
+    with NC.Dataset(filename,'r') as ncIN:
+        return ncIN.getncattr(attrname)
+
+def read_variable_attribute(filename, varname, attrname):
+    with NC.Dataset(filename,'r') as ncIN:
+        return ncIN[varname].getncattr(attrname)

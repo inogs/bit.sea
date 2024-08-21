@@ -3,7 +3,8 @@ This module introduces some function that can be used as "types" arguments
 while configuring argparse.
 """
 import argparse
-from datetime import datetime
+from collections import OrderedDict
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -63,6 +64,55 @@ def non_existing_path_inside_an_existing_dir(arg_path: str) -> Path:
         )
 
     return arg_path
+
+
+def amount_of_time(default_unit='s'):
+    # I used an OrderedDict only to be sure that when I print the allowed
+    # chars in the error message (or in the help) I see them in the right
+    # order
+    allowed_units = OrderedDict((
+        ('s', 1),
+        ('m', 60),
+        ('h', 60 * 60),
+        ('d', 60 * 60 * 24),
+    ))
+
+    def read_amount_of_time(t: str):
+        with_suffix = False
+        try:
+            t = int(t)
+        except ValueError:
+            with_suffix = True
+
+        if with_suffix:
+            t_value_str = t[:-1]
+            t_suffix = t[-1]
+        else:
+            t_value_str = t
+            t_suffix = default_unit
+
+        invalid_entry = False
+        if t_suffix not in allowed_units:
+            invalid_entry = True
+
+        t_value = 0
+        try:
+            t_value = int(t_value_str)
+        except ValueError:
+            invalid_entry = True
+
+        if invalid_entry:
+            raise argparse.ArgumentTypeError(
+                'Invalid amount of time specified. It must be an integer '
+                'number followed by one of the following letters: {}. '
+                'Received: "{}"'.format(
+                    ', '.join(["{}".format(k) for k in allowed_units.keys()]),
+                    t
+                )
+            )
+
+        return timedelta(seconds=t_value * allowed_units[t_suffix])
+    return read_amount_of_time
 
 
 def date_from_str(arg_path: str) -> datetime:

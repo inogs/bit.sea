@@ -7,11 +7,10 @@ import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
 
-from commons.layer import Layer,LayerMap
+from commons.layer import Layer, LayerMap
 from commons.utils import is_number, get_date_string
 from commons.xml_module import *
 from commons.dataextractor import DataExtractor
-from commons.dataextractor import NotFoundError
 from layer_integral.mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
 import datetime
 import matplotlib.pyplot as pl
@@ -71,17 +70,20 @@ class MapBuilder(object):
 
     def __init__(self, plotlistfile, TL, MaskObject, outputdir):
         '''
-        Arguments : 
+        Arguments :
         * TL * is a Timelist object
         '''
 
         self.__TL =TL
-        if os.path.isdir(outputdir):
-            self.__outputdir = outputdir
-        else:
-            raise ValueError("outputdir must be a path to a directory")
+        self.__outputdir = Path(outputdir)
+        if not self.__outputdir.is_dir():
+            raise ValueError(
+                "outputdir must be a path to an existing directory: received "
+                "{}".format(outputdir)
+            )
         self._mask = MaskObject
-        xmldoc = minidom.parse(plotlistfile)
+        with open(plotlistfile, 'r') as f:
+            xmldoc = minidom.parse(f)
         self.__plotlist = list()
         #For each LayersMaps element
         for lm in xmldoc.getElementsByTagName("LayersMaps"):
@@ -98,11 +100,11 @@ class MapBuilder(object):
                         clim = literal_eval(clim)
                     plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
                 self.__plotlist.append(plot)
-    
+
     def read_background(self,filename):
         sfondo = pl.imread(filename)
         return sfondo
-        
+
     def plot_maps_data(self, basemap_obj, maptype=0, background_img=None,nranks=1, rank=0):
         '''
         Parallel generator of a large set of images.
@@ -148,7 +150,8 @@ class MapBuilder(object):
             de = DataExtractor(self._mask, filename=file_path, varname=p.varname)
 
             for i,l in enumerate(p.layerlist):
-                outfile = "%s/ave.%s.%s.%s" % (self.__outputdir,shortdate, p.varname, l)
+                outfile_name = "ave.{}.{}.{}.png".format(self.__outputdir,shortdate, p.varname, l)
+                outfile = self.__outputdir / outfile_name
                 mapdata = MapBuilder.get_layer_average(de, l)
                 try:
                     clim = p.climlist[i]
@@ -159,20 +162,22 @@ class MapBuilder(object):
                         raise ValueError("No clim defined for %s %s" % (p.varname, repr(l)))
                     else:
                         clim = p.clim
-                if maptype == 0:
-                    fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
-                    fig.savefig(outfile + ".png")
+
                 if maptype == 1:
                     dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
                     mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
                     fig, ax = mapplot_medeaf_V5C(mapdict, basemap_obj, self._mask, fig=None, ax=None , ncolors=24, logo=background_img)
-                    fig.savefig(outfile + ".png",dpi=200)
+                    fig.savefig(outfile, dpi=200)
                     pl.close(fig)
-
-                if maptype == 2:
-                    fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
-                    fig.canvas.print_figure(outfile + ".svg")
-                    return
+                # Code commented because it is not longer maintained
+                # (coastline_lon and coastline_lat do not exist anymore)
+                # if maptype == 0:
+                #     fig, ax = mapplot({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                #     fig.savefig(outfile + ".png")
+                # if maptype == 2:
+                #     fig, ax = mapplot_nocolor({'varname':p.varname, 'clim':clim, 'layer':l, 'data':mapdata, 'date':longdate}, fig=fig, ax=ax, mask=self._mask, ncolors=24, coastline_lon=coastline_lon, coastline_lat=coastline_lat)
+                #     fig.canvas.print_figure(outfile + ".svg")
+                #     return
 
 
     @staticmethod

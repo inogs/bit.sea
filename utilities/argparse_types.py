@@ -86,3 +86,18 @@ def date_from_str(arg_path: str) -> datetime:
         )
 
     return output_date
+
+def some_among(choices):
+    """
+    Arguments:
+    choices : list of strings
+    Returns: function
+
+    """
+    def check_if_valids(inputstr):
+        strlist=inputstr.split(",")
+        for entry_name in strlist:
+            if entry_name not in choices:
+                raise argparse.ArgumentTypeError(entry_name + " is not a valid choice. Valid choice are " + ", ".join(choices))
+        return strlist
+    return check_if_valids

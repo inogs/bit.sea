@@ -791,7 +791,7 @@ def read_config(config_datastream):
 
     output_name = DEFAULT_OUTPUT_NAME
     if 'output_name' in output:
-        output_name = str(output_name)
+        output_name = str(output['output_name'])
 
     output_options = OutputOptions(
         output_name=output_name,

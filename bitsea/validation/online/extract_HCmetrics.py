@@ -15,6 +15,12 @@ def argument():
                                 help = 'The directory where you want to dump compressed files'
                                 )
 
+    parser.add_argument(   '--version', '-v',
+                                type = str,
+                                required = True,
+                                help = 'Name of the version of the actual chain (V9C, V10C)'
+                                )
+
 
     return parser.parse_args()
 
@@ -30,7 +36,7 @@ args = argument()
 
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outputdir)
-
+version = args.version
 
 SATtypes = ['DT','NRT']
 
@@ -86,7 +92,7 @@ for tt in SATtypes:
 
     startdate = TL.Timelist[0].strftime('%Y%m%d')
     enddate = TL.Timelist[-1].strftime('%Y%m%d')
-    filetxt = OUTDIR + '/table_statistics_V9C_' + tt + '.txt'
+    filetxt = OUTDIR + '/table_statistics_' + version + '_' + tt + '.txt'
 
 
     row_names=Dates
@@ -96,4 +102,4 @@ for tt in SATtypes:
     METRICS[:,2] = EAN_bias[:,index_med]
     METRICS[:,3] = EAN_rmse[:,index_med]
 
-    writetable(filetxt,METRICS,row_names,col_names,fmt="%5.3f\t ") 
+    writetable(filetxt,METRICS,row_names,col_names,fmt="%5.4f\t ") 

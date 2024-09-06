@@ -32,9 +32,9 @@ mkdir -p $WEEKLY_DIR1km $WEEKLY_DIR_24 $WEEKLY_DIR424
 my_prex_or_die "mpirun python aveSat.py -i $CHECKED_DIR -o $WEEKLY_DIR1km -m SAT1km_mesh -t weekly_monday -v CHL"
 my_prex_or_die "mpirun python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v CHL"
 
-for pftvar in CHL DIATO NANO PICO DINO ; do
-   my_prex_or_die "mpirun python aveSat.py -i $CHECKED_DIR24 -o $WEEKLY_DIR424 -m Mesh24 -t weekly_thursday -v $pftvar"
-done
+
+my_prex_or_die "mpirun python aveSat.py -i $CHECKED_DIR24 -o $WEEKLY_DIR424 -m Mesh24 -t weekly_thursday -v CHL,DIATO,NANO,PICO,DINO"
+
 
 
 CHECKED_DIR=${ONLINE_REPO}/SAT/KD490/DT/DAILY/CHECKED
@@ -61,9 +61,9 @@ exit 0
 
 WEEKLY_DIR_24=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/WEEKLY_4_24
 mkdir -p $WEEKLY_DIR_24
-for pftvar in CHL DIATO NANO PICO DINO ; do
-   my_prex_or_die "mpirun -np 24 python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v $pftvar "
-done
+
+my_prex_or_die "mpirun -np 24 python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v CHL,DIATO,NANO,PICO,DINO "
+
 
 exit 0
 
@@ -82,13 +82,13 @@ ORIGDIR=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/OCEANC
 
 mkdir -p $CHECKED_DIR $WEEKLY_DIR1km $WEEKLY_DIR_24
 MPI="mpirun -np 24"
-for nm in 412 443 490 510 555 670; do
-   var=RRS${nm}
-   my_prex_or_die "$MPI python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v $var --QI 3.0"
-   my_prex_or_die "$MPI python aveSat.py -i $CHECKED_DIR -o $WEEKLY_DIR1km -m SAT1km_mesh -t weekly_thursday -v $var"
-   my_prex_or_die "$MPI python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v $var "
+VARS="RRS412,RRS443,RRS490,RRS510,RRS555,RRS670"
 
-done
+my_prex_or_die "$MPI python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh --QI 3.0 -v $VARS"
+my_prex_or_die "$MPI python aveSat.py -i $CHECKED_DIR -o $WEEKLY_DIR1km -m SAT1km_mesh -t weekly_thursday -v $VARS"
+my_prex_or_die "$MPI python interpolator.py -i $WEEKLY_DIR1km -o $WEEKLY_DIR_24 -m $MASKFILE --inmesh SAT1km_mesh -v $VARS "
+
+
 
 exit 0
 
@@ -121,10 +121,9 @@ CHECKED_DIR=/g100_scratch/userexternal/gbolzon0/V10C/SAT/CHL/DT/DAILY/CHECKED
 #my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v CHL --QI 2"
 #my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v DIATO -f --QI 2 "
 
-for pftvar in CHL DIATO NANO PICO DINO ; do
-    break
-    my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v $pftvar --QI 2 "
-done
+VARS="CHL,DIATO,NANO,PICO,DINO" 
+my_prex_or_die "python sat_check_QI.py -i $ORIGDIR -o $CHECKED_DIR -m SAT1km_mesh -v $VARS --QI 2  "
+
 
 
 

@@ -1,7 +1,7 @@
 import argparse
 
 def argument():
-     parser = argparse.ArgumentParser(description = 'run sat validation on HC - inputs ofr hystorical figure')
+     parser = argparse.ArgumentParser(description = 'run sat validation on HC - inputs for hystorical figure')
      parser.add_argument(   '--inputdir', '-i',
                                  type = str,
                                  required = True,
@@ -69,7 +69,9 @@ COASTNESS['open_sea']  =  mask200_2D
 
 SUFFIX = {
     'NRT': '_cmems_obs-oc_med_bgc-plankton_nrt_l3-multi-1km_P1D.nc',
+    # 'NRT': '_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc',
     'DT' : '_cmems_obs-oc_med_bgc-plankton_my_l3-multi-1km_P1D.nc',
+    # 'DT' : '_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-DT-v02.nc',
 
 }
 

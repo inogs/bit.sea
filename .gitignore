@@ -1,6 +1,11 @@
-*.pyc
+__pycache__
+.env
 .coverage
-tutorial/
-.*project
-commitpico*
-.idea
+dist/
+venv/
+.egg-info
+requirements.txt
+makefile
+*.nc
+*.hdf5
+*.grib

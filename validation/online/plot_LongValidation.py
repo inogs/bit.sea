@@ -51,7 +51,7 @@ def extractLIST(infile):
     return LISTdates,LISTrmsd
 
 
-infile = INDIR + 'table_statistics_V9C_DT.txt'
+infile = INDIR + 'table_statistics_V10C_DT.txt'
 LISTdates, LISTrmsd = extractLIST(infile)
 
 
@@ -59,7 +59,7 @@ LISTfilermsd_old = [
     'table_statistics_MERSEA.txt',
     'table_statistics_MyOcean1.txt',
     'table_statistics_MyOcean2.txt',
-    'table_statistics_Copernicus_till_V8C_DT.txt'
+    'table_statistics_Copernicus_till_V9C_DT.txt'
 ]
 
 LISTdates_old = {}
@@ -186,7 +186,7 @@ for pp in LISTarrows:
         color='orange',
         horizontalalignment='left',
         verticalalignment='bottom',
-        arrowprops=dict(arrowstyle="-|>",color='orange',linewidth='3',relpos=(-0.1,0))
+        arrowprops=dict(arrowstyle="-|>",color='orange',linewidth=3,relpos=(-0.1,0))
         )
 
 for pp in LISTresol:
@@ -205,7 +205,7 @@ for pp in LISTresol:
         color='teal',
         horizontalalignment='left',
         verticalalignment='bottom',
-        arrowprops=dict(arrowstyle="-|>",color='teal',linewidth='3',relpos=(-0.1,0))
+        arrowprops=dict(arrowstyle="-|>",color='teal',linewidth=3,relpos=(-0.1,0))
         )
 
 

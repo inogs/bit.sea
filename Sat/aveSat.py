@@ -1,5 +1,5 @@
 import argparse
-from utilities.argparse_types import some_among
+from utilities.argparse_types import some_among, date_from_str
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
@@ -39,6 +39,12 @@ def argument():
                                 choices = ['monthly','weekly_tuesday','weekly_friday','weekly_monday','weekly_thursday','tendays'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
+    parser.add_argument(   '--ignore-after', '-a',
+                                type = date_from_str,
+                                required = False,
+                                default = None,
+                                help = "Ignore all input files with dates later than the one submitted here"
+                                )
     parser.add_argument(   '--force', '-f',
                                 action='store_true',
                                 help = """Overwrite existing variables in files
@@ -53,6 +59,7 @@ args = argument()
 
 from commons.Timelist import TimeList
 from commons.time_interval import TimeInterval
+from datetime import datetime
 from postproc import masks
 import numpy as np
 import os
@@ -74,9 +81,14 @@ maskSat = getattr(masks,args.mesh)
 
 
 
-Timestart="19500101"
-Time__end="20500101"
-TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
+
+Timestart = datetime.strptime("19500101", "%Y%m%d")
+Time__end = datetime.strptime("20500101", "%Y%m%d")
+
+if args.ignore_after is not None:
+    Time__end = args.ignore_after
+
+TI = TimeInterval.fromdatetimes(Timestart, Time__end)
 TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
 suffix = os.path.basename(TLCheck.filelist[0])[8:]
 

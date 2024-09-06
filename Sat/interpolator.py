@@ -83,7 +83,7 @@ OUTPUTDIR=addsep(args.outputdir)
 dateformat="%Y%m%d"
 
 Timestart="19500101"
-Time__end="20190201"
+Time__end="20500101"
 
 TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL = TimeList.fromfilenames(TI, INPUTDIR,"*.nc",prefix='',dateformat=dateformat)

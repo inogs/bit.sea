@@ -1,4 +1,5 @@
 import argparse
+from utilities.argparse_types import some_among
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Apply check based on QI provided by OCTAC
@@ -26,10 +27,9 @@ def argument():
                                 choices = ['SatOrigMesh','V4mesh','V1mesh','KD490mesh','SAT1km_mesh', 'Mesh24'],
                                 help = ''' Name of the mesh of sat ORIG and used to dump checked data.'''
                                 )
-    parser.add_argument(   '--varname', '-v',
-                                type = str,
+    parser.add_argument(   '--varnames', '-v',
+                                type = some_among(['CHL','KD490','DIATO','NANO','PICO', 'DINO','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670']),
                                 required = True,
-                                choices = ['CHL','KD490','DIATO','NANO','PICO', 'DINO','RRS412','RRS443','RRS490','RRS510','RRS555','RRS670'],
                                 help = '''Var name, corresponding to P_l, kd490, P1l, P2l P3l, P4l'''
                                 )
     parser.add_argument(   '--force', '-f',
@@ -46,6 +46,9 @@ def argument():
                                 type=str,
                                 default="0.021",
                                 help = '''Kd minimum value threshold''')
+    parser.add_argument(   '--serial',
+                                action='store_true',
+                                help = '''Do not use mpi''')
 
 
     return parser.parse_args()
@@ -60,18 +63,15 @@ from postproc import masks
 import numpy as np
 import os
 from Sat import SatManager as Sat
+from utilities.mpi_serial_interface import get_mpi_communicator
+
+if not args.serial:
+    import mpi4py
 
 
-try:
-    from mpi4py import MPI
-    comm  = MPI.COMM_WORLD
-    rank  = comm.Get_rank()
-    nranks =comm.size
-    isParallel = True
-except:
-    rank   = 0
-    nranks = 1
-    isParallel = False
+comm = get_mpi_communicator()
+rank  = comm.Get_rank()
+nranks =comm.size
 
 
 ORIGDIR = addsep(args.origdir)
@@ -87,28 +87,31 @@ TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
 TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
 
 for filename in TL_orig.filelist[rank::nranks]:
+
     outfile = CHECKDIR + os.path.basename(filename)
-    writing_mode = Sat.writing_mode(outfile)
+    for varname in args.varnames:
 
-    condition_to_write = not Sat.exist_valid_variable(args.varname,outfile)
-    if args.force: condition_to_write=True
-    if not condition_to_write: continue    
+        writing_mode = Sat.writing_mode(outfile)
+
+        condition_to_write = not Sat.exist_valid_variable(varname,outfile)
+        if args.force: condition_to_write=True
+        if not condition_to_write: continue
 
 
-    if args.varname in ["DIATO","NANO","PICO","DINO"]:
-        QI = Sat.readfromfile(filename, "QI_CHL")
-    else:
-        QI = Sat.readfromfile(filename, "QI_" + args.varname)
-    VALUES = Sat.readfromfile(filename,args.varname)
+        if varname in ["DIATO","NANO","PICO","DINO"]:
+            QI = Sat.readfromfile(filename, "QI_CHL")
+        else:
+            QI = Sat.readfromfile(filename, "QI_" + varname)
+        VALUES = Sat.readfromfile(filename,varname)
 
-    if args.varname == 'KD490':
-        # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
-        VALUES[(VALUES<Kd_min) & (VALUES>0)] = Sat.fillValue   # Filter out values below Kd490_min threshold
-    
-    bad = np.abs(QI) > THRESHOLD # 2.0
-    VALUES[bad] = Sat.fillValue
-    print(outfile, flush=True)
-    Sat.dumpGenericfile(outfile, VALUES, args.varname, mesh=maskSat,mode=writing_mode)
-    
+        if varname == 'KD490':
+            # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
+            VALUES[(VALUES<Kd_min) & (VALUES>0)] = Sat.fillValue   # Filter out values below Kd490_min threshold
+
+        bad = np.abs(QI) > THRESHOLD # 2.0
+        VALUES[bad] = Sat.fillValue
+        print(outfile, varname, flush=True)
+        Sat.dumpGenericfile(outfile, VALUES, varname, mesh=maskSat,mode=writing_mode)
+
 
 

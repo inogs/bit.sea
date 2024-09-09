@@ -52,12 +52,12 @@ def argument():
 
 args = argument()
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons import netcdf3
-from commons.mask import Mask
-from commons.utils import addsep
-from commons.dataextractor import DataExtractor
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons import netcdf3
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
+from bitsea.commons.dataextractor import DataExtractor
 try :
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD

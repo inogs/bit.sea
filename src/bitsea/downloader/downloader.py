@@ -13,8 +13,8 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 import traceback
 
 import harvesters
-from utilities.log_class import Log
-from utilities.mail import write_mail
+from bitsea.utilities.log_class import Log
+from bitsea.utilities.mail import write_mail
 
 # This is the default location where the database will be stored if
 # that information is not specified when running the script

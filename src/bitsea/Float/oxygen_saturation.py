@@ -83,9 +83,9 @@ def oxy_check(Pres,Prof,p):
 
 if __name__ == "__main__":
 
-    from commons.time_interval import TimeInterval
-    from instruments import bio_float
-    from basins import V2 as OGS
+    from bitsea.commons.time_interval import TimeInterval
+    from bitsea.instruments import bio_float
+    from bitsea.basins import V2 as OGS
 
 
     DATESTART = "20190101"

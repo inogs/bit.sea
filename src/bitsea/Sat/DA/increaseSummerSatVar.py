@@ -1,6 +1,6 @@
-from commons.mask import Mask
-from Sat import SatManager
-from postproc import masks
+from bitsea.commons.mask import Mask
+from bitsea.Sat import SatManager
+from bitsea.postproc import masks
 maskSat = getattr(masks,"Mesh24")
 
 TheMask=Mask('/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/eas/eas_v12/ogstm/meshmask.nc')

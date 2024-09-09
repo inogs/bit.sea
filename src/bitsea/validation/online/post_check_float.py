@@ -29,10 +29,10 @@ def argument():
 args = argument()
 
 import numpy as np
-import commons.timerequestors as requestors
+import bitsea.commons.timerequestors as requestors
 import os
-from commons.utils import addsep
-from commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
 
 from layerinfo import DICTlayerQ, DICTlayersQ, dep5mQ
 

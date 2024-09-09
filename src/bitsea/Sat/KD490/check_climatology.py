@@ -1,4 +1,4 @@
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 import numpy as np
 import netCDF4
 

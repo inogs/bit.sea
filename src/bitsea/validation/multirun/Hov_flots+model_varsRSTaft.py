@@ -3,23 +3,23 @@ import numpy.ma as ma
 import pylab as plt
 import matplotlib.dates as mdates
 
-from basins import OGS
-from instruments.matchup_manager import Matchup_Manager
-from timeseries.plot import *
+from bitsea.basins import OGS
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.timeseries.plot import *
 from profilerRSTaft_2017 import *
-from instruments import check
-from instruments.var_conversions import FLOATVARS
-# from instruments.var_conversions import LOVFLOATVARS as FLOATVARS
-from instruments import superfloat as bio_float
-# from instruments import lovbio_float as bio_float
-from layer_integral import coastline
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.mask import Mask
+from bitsea.instruments import check
+from bitsea.instruments.var_conversions import FLOATVARS
+# from bitsea.instruments.var_conversions import LOVFLOATVARS as FLOATVARS
+from bitsea.instruments import superfloat as bio_float
+# from bitsea.instruments import lovbio_float as bio_float
+from bitsea.layer_integral import coastline
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.mask import Mask
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import scipy.io.netcdf as NC
 import argparse
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 
 def argument():

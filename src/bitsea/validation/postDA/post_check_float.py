@@ -29,12 +29,12 @@ def argument():
 args = argument()
 
 import numpy as np
-import commons.timerequestors as requestors
+import bitsea.commons.timerequestors as requestors
 import os
 
-from commons.utils import addsep
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
 
 from layerinfo import *
 

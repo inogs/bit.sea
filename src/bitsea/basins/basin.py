@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-from basins.region import Region, EmptyRegion
+from bitsea.basins.region import Region, EmptyRegion
 
 
 # This is the default module for the basins, i.e. the basins of this

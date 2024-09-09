@@ -1,10 +1,10 @@
-from instruments import mooring
-from instruments.var_conversions import MOORINGVARS
-from commons.time_interval import TimeInterval
+from bitsea.instruments import mooring
+from bitsea.instruments.var_conversions import MOORINGVARS
+from bitsea.commons.time_interval import TimeInterval
 import numpy as np
 from profiler import *
-from basins.region import Rectangle
-from commons.layer import Layer
+from bitsea.basins.region import Rectangle
+from bitsea.commons.layer import Layer
 import matplotlib.pyplot as pl
 
 import os

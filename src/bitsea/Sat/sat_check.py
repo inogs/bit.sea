@@ -52,12 +52,12 @@ def argument():
 
 
 args = argument()
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins import V2
-from postproc import masks
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins import V2
+from bitsea.postproc import masks
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 

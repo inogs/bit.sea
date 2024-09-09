@@ -35,13 +35,13 @@ import matplotlib.pyplot as pl
 import numpy as np
 import matplotlib.patches as mpatches
 import scipy.io as NC
-from layer_integral import coastline
+from bitsea.layer_integral import coastline
 import glob,os
 import datetime
-from instruments import superfloat as bio_float
-from basins.region import Rectangle
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.instruments import superfloat as bio_float
+from bitsea.basins.region import Rectangle
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 from datetime import timedelta
 
 VARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]

@@ -45,11 +45,11 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-from commons.utils import addsep
-from commons.dataextractor import DataExtractor
-from commons.mask import Mask
-from commons.Timelist import TimeInterval, TimeList
-from commons import netcdf4
+from bitsea.commons.utils import addsep
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask
+from bitsea.commons.Timelist import TimeInterval, TimeList
+from bitsea.commons import netcdf4
 
 
 INPUTDIR  = addsep(args.inputdir)

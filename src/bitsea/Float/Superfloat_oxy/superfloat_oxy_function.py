@@ -1,8 +1,8 @@
-from instruments import bio_float
-from Float import oxygen_saturation
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
-from commons.utils import addsep
+from bitsea.instruments import bio_float
+from bitsea.Float import oxygen_saturation
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
+from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np

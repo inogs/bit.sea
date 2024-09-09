@@ -1,5 +1,5 @@
 import argparse
-from utilities.argparse_types import some_among
+from bitsea.utilities.argparse_types import some_among
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Interpolates from a fine mesh to a coarser output mesh.
@@ -46,15 +46,15 @@ def argument():
 args = argument()
 
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from Sat import SatManager as Sat
-from Sat import interp2d
-from commons.mask import Mask
-from postproc import masks
-from commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.Sat import SatManager as Sat
+from bitsea.Sat import interp2d
+from bitsea.commons.mask import Mask
+from bitsea.postproc import masks
+from bitsea.commons.utils import addsep
 import os
-from utilities.mpi_serial_interface import get_mpi_communicator
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 from datetime import datetime
 maskIn  = getattr(masks,args.inmesh)

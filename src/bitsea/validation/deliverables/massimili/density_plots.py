@@ -37,10 +37,10 @@ args = argument()
 
 import os
 from profiler import Matchup_Manager, MassimiliReader, ALL_PROFILES,TL, BASEDIR,T_INT
-from commons.mask import Mask
-import basins.V2 as OGS
-from instruments.var_conversions import MASSIMILIVARS as NUTRVARS
-from commons.utils import addsep
+from bitsea.commons.mask import Mask
+import bitsea.basins.V2 as OGS
+from bitsea.instruments.var_conversions import MASSIMILIVARS as NUTRVARS
+from bitsea.commons.utils import addsep
 
 
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)

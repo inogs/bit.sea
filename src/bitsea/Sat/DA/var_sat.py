@@ -1,9 +1,9 @@
-from commons import timerequestors
-from commons.Timelist import TimeInterval, TimeList
-from Sat import SatManager
-from postproc import masks
+from bitsea.commons import timerequestors
+from bitsea.commons.Timelist import TimeInterval, TimeList
+from bitsea.Sat import SatManager
+from bitsea.postproc import masks
 import numpy as np
-from layer_integral.mapplot import mapplot
+from bitsea.layer_integral.mapplot import mapplot
 import sys
 
 maskSat = getattr(masks,"Mesh24")

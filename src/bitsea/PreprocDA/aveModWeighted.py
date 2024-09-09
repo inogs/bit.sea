@@ -46,13 +46,13 @@ args = argument()
 
 
 import numpy as np
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.mask import Mask
-from commons.utils import addsep
-from commons.dataextractor import DataExtractor
-import Sat.SatManager as Sat
-from postproc import masks
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
+from bitsea.commons.dataextractor import DataExtractor
+import bitsea.Sat.SatManager as Sat
+from bitsea.postproc import masks
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD

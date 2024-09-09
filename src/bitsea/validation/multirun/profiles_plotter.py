@@ -9,9 +9,9 @@
 
 import numpy as np
 import matplotlib.pyplot as pl
-from basins import V2
-from commons.mask import Mask
-from timeseries.plot import read_pickle_file
+from bitsea.basins import V2
+from bitsea.commons.mask import Mask
+from bitsea.timeseries.plot import read_pickle_file
 import os
 
 BFMv5_dict={     'Ac':'ALK',

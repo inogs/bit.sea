@@ -1,6 +1,6 @@
 
-from basins.region import Rectangle
-from basins.basin import SimplePolygonalBasin, ComposedBasin
+from bitsea.basins.region import Rectangle
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin
 
 
 def sequence(start_lon, start_lat, degrees):

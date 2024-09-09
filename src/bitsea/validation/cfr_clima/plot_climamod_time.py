@@ -4,15 +4,15 @@ import pickle
 import matplotlib.pyplot as plt
 import scipy.io.netcdf as NC
 from datetime import datetime, timedelta
-#from Sat import SatManager as Sat
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.dataextractor import DataExtractor
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import V2
-#from postproc import masks
-from commons.utils import addsep
+#from bitsea.Sat import SatManager as Sat
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V2
+#from bitsea.postproc import masks
+from bitsea.commons.utils import addsep
 #import os
 
 

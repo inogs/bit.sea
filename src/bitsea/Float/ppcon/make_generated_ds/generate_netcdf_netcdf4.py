@@ -30,12 +30,12 @@ import pandas as pd
 import netCDF4 as nc
 import torch
 from torch.utils.data import DataLoader
-from Float.ppcon.discretization import *
-from Float.ppcon.make_ds.make_superfloat_ds import discretize
-from Float.ppcon.utils import upload_and_evaluate_model, get_output
-from Float.ppcon.dataset import FloatDataset as FloatDebug
-from Float.ppcon.make_generated_ds.dataset_with_float_names import FloatDataset
-from commons.utils import addsep
+from bitsea.Float.ppcon.discretization import *
+from bitsea.Float.ppcon.make_ds.make_superfloat_ds import discretize
+from bitsea.Float.ppcon.utils import upload_and_evaluate_model, get_output
+from bitsea.Float.ppcon.dataset import FloatDataset as FloatDebug
+from bitsea.Float.ppcon.make_generated_ds.dataset_with_float_names import FloatDataset
+from bitsea.commons.utils import addsep
 
 
 INDIR   = addsep(args.inputdir)   #online_repo

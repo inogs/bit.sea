@@ -9,13 +9,13 @@
 import scipy.io.netcdf as NC
 import numpy as np
 import os
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 
 from profiler import *
-import basins.OGS as OGS
-from instruments import bio_float
-from instruments.var_conversions import FLOATVARS
-from commons.layer import Layer
+import bitsea.basins.OGS as OGS
+from bitsea.instruments import bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
+from bitsea.commons.layer import Layer
 M = Matchup_Manager(T_INT,INPUTDIR,BASEDIR)
 
 

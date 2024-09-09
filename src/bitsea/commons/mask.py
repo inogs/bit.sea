@@ -7,8 +7,8 @@ import numpy as np
 from scipy import spatial
 import netCDF4
 
-from commons.bathymetry import Bathymetry
-from commons.utils import search_closest_sorted
+from bitsea.commons.bathymetry import Bathymetry
+from bitsea.commons.utils import search_closest_sorted
 
 
 class OutsideMaskDomain(ValueError):

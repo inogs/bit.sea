@@ -1,6 +1,6 @@
 import numpy as np
-from commons.interpolators import surf_interp_2d
-from commons.mask import Mask
+from bitsea.commons.interpolators import surf_interp_2d
+from bitsea.commons.mask import Mask
 
 infile = 'mapser.19771215.16.npy'
 outfile = 'mapser.19771215.4.npy'

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import copy
 import sys 
-from instruments.var_conversions import FLOATVARS
+from bitsea.instruments.var_conversions import FLOATVARS
 
 def check_data(LIST, day):
     if not LIST:

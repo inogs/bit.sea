@@ -1,5 +1,5 @@
 import numpy as np
-from validation.deliverables.float_OXY_saturation import oxy_sat
+from bitsea.validation.deliverables.float_OXY_saturation import oxy_sat
 
 def oxy_check(Pres,Prof,p):
     '''
@@ -36,15 +36,15 @@ def oxy_check(Pres,Prof,p):
 
 if __name__ == "__main__":
 
-    from commons.time_interval import TimeInterval
-    from commons.Timelist import TimeList
+    from bitsea.commons.time_interval import TimeInterval
+    from bitsea.commons.Timelist import TimeList
     import matplotlib.pyplot as pl
     import matplotlib.dates as mdates
     import numpy.ma as ma
-    from instruments import superfloat as bio_float
-    from basins import V2 as OGS
+    from bitsea.instruments import superfloat as bio_float
+    from bitsea.basins import V2 as OGS
 
-    from instruments.check_float_oxygen import oxy_check
+    from bitsea.instruments.check_float_oxygen import oxy_check
 
     DATESTART = "20190101"
     DATE__END = "20191231"

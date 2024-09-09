@@ -10,10 +10,10 @@ import matplotlib.pyplot as pl
 from layer import Layer
 
 #Mask object
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 
 #Data extractor
-from commons.dataextractor import DataExtractor
+from bitsea.commons.dataextractor import DataExtractor
 
 class NamedLayer(Layer):
     """

@@ -1,7 +1,7 @@
-from instruments import lovbio_float
-from instruments import bio_float
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.instruments import lovbio_float
+from bitsea.instruments import bio_float
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 import numpy as np
 import matplotlib.pyplot as pl
 

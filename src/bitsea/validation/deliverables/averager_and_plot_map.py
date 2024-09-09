@@ -67,21 +67,21 @@ args = argument()
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
-from layer_integral.mapbuilder import MapBuilder, Plot
-from layer_integral.mapplot import mapplot,pl
-from layer_integral.mapplot import mapplotlog
-from commons.dataextractor import DataExtractor
-from commons.time_averagers import TimeAverager3D
-from layer_integral import coastline
-import commons.timerequestors as requestors
-from commons.utils import addsep
-from commons.xml_module import *
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.layer_integral.mapbuilder import MapBuilder, Plot
+from bitsea.layer_integral.mapplot import mapplot,pl
+from bitsea.layer_integral.mapplot import mapplotlog
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.time_averagers import TimeAverager3D
+from bitsea.layer_integral import coastline
+import bitsea.commons.timerequestors as requestors
+from bitsea.commons.utils import addsep
+from bitsea.commons.xml_module import *
 from xml.dom import minidom
-from commons import netcdf3
+from bitsea.commons import netcdf3
 
 xmldoc = minidom.parse(args.plotlistfile)
 

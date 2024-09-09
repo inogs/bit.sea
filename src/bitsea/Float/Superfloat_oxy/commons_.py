@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from basins.region import Region, Rectangle
-import basins.V2 as basV2
+from bitsea.basins.region import Region, Rectangle
+import bitsea.basins.V2 as basV2
 import numpy as np
 import os
 import datetime as datetime

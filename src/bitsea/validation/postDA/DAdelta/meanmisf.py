@@ -3,13 +3,13 @@ import numpy as np
 import netCDF4 as NC
 import os
 
-from commons.dataextractor import DataExtractor
-# from commons.layer import Layer
-from commons.mask import Mask
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-# from layer_integral.mapbuilder import MapBuilder
+from bitsea.commons.dataextractor import DataExtractor
+# from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+# from bitsea.layer_integral.mapbuilder import MapBuilder
 
 
 def argument():

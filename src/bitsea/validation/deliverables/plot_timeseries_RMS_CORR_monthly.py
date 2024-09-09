@@ -54,7 +54,7 @@ MODEL_STD = LIST[7]
 SAT___STD = LIST[8]
 BGC_CLASS4_CHL_CORR_SURF_BASIN= LIST[9]
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 nSUB = len(OGS.P.basin_list)
 
@@ -87,13 +87,13 @@ if (1 == 0):
     pl.close(fig)
 
 
-#from commons.season import season
+#from bitsea.commons.season import season
 #S=season()
 #S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
-from commons import timerequestors
-from commons.Timelist import TimeInterval, TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons.Timelist import TimeInterval, TimeList
 TL=TimeList(TIMES)
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 #iSeas=0 # JAN-APR
 #CLIM_REQ=timerequestors.Clim_season(iSeas,S)

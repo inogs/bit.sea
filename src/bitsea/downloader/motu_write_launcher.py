@@ -1,5 +1,5 @@
-from commons import genUserDateList as DL
-from commons.Timelist import TimeList
+from bitsea.commons import genUserDateList as DL
+from bitsea.commons.Timelist import TimeList
 
 OUTDIR="/marconi_scratch/userexternal/gbolzon0/GLOBAL_REANALYSIS_BIO_001_018/ORIG/"
 ACCESS="--user MED_OGS_TRIESTE_IT --pwd NEdifupa --motu http://my.cmems-du.eu/motu-web/Motu"

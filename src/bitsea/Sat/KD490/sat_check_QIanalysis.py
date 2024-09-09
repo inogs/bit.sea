@@ -1,10 +1,10 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from postproc import masks
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.postproc import masks
 import numpy as np
 import os
 
-from Sat import SatManager as Sat
+from bitsea.Sat import SatManager as Sat
 
 #ORIGDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/SAT/KD490/DT/DAILY/ORIG/"
 #CLIM_FILE = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/KD490_Climatology_1km.nc"

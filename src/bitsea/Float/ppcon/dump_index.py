@@ -37,7 +37,7 @@ from scipy.io import netcdf_file
 import datetime
 import os,glob
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 
 from io import StringIO ## for Python 3

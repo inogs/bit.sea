@@ -27,9 +27,9 @@ def argument():
 
 args = argument()
 
-from commons.utils import file2stringlist
+from bitsea.commons.utils import file2stringlist
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 def dump_template(ORIG, outfile,SAT_OBS,ARGO,ASS_P_l,ASS_N3n,ASS_O2o):
     LINES=[]

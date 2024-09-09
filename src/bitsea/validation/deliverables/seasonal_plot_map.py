@@ -46,17 +46,17 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
 
-from layer_integral.mapbuilder import MapBuilder
-from layer_integral.mapplot import mapplot, pl
-from commons.dataextractor import DataExtractor
-from commons.time_averagers import TimeAverager3D
-from layer_integral import coastline
-import commons.timerequestors as requestors
+from bitsea.layer_integral.mapbuilder import MapBuilder
+from bitsea.layer_integral.mapplot import mapplot, pl
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.time_averagers import TimeAverager3D
+from bitsea.layer_integral import coastline
+import bitsea.commons.timerequestors as requestors
 
 clon,clat = coastline.get()
 TheMask=Mask(args.maskfile)

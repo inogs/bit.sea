@@ -7,7 +7,7 @@
 from __future__ import print_function
 
 import numpy as np, matplotlib.pyplot as plt
-import MapPlotter as mp
+import bitsea.MapPlotter as mp
 
 ## DATA PATHS ##
 fname    = '/media/internal/disk2TiB/data/MEDICANE/AVE_PHYS/ave.20180925-12:00:00.votemper.nc'

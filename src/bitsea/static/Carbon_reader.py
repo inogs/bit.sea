@@ -2,10 +2,10 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
-from static.DatasetExtractor import DatasetExtractor
-from commons.utils import find_index
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
+from bitsea.static.DatasetExtractor import DatasetExtractor
+from bitsea.commons.utils import find_index
 
 
 DEFAULT_FILENAME = Path(

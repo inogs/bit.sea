@@ -5,7 +5,7 @@ import argparse
 import pickle
 import matplotlib.dates as mdates
 import datetime
-from basins import V2
+from bitsea.basins import V2
 from profileruns_Summer import runList,colorList
 #
 def argument():
@@ -67,7 +67,7 @@ plotstartdate = datetime.datetime.strptime(args.startdate,'%Y%m%d')
 plotenddate = datetime.datetime.strptime(args.enddate,'%Y%m%d')
 
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()

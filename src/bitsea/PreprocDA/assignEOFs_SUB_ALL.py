@@ -45,12 +45,12 @@ args = argument()
 
 
 import numpy as np
-from basins import V2
-from commons.mask import Mask
-from commons.submask import SubMask
+from bitsea.basins import V2
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
 import scipy.io.netcdf as NC
 
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 INDIR = addsep(args.ineof)
 OUTDIR = addsep(args.outdir)

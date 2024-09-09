@@ -27,10 +27,10 @@ def argument():
 
 import numpy as np
 import netCDF4 as NC
-from commons.Timelist import TimeList
-from basins import V2 as OGS
-from commons.utils import writetable
-from commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import writetable
+from bitsea.commons.utils import addsep
 
 args = argument()
 

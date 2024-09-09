@@ -4,7 +4,7 @@ import matplotlib.pyplot as pl
 import argparse
 import pickle
 import matplotlib.dates as mdates
-from basins import V2
+from bitsea.basins import V2
 from profileruns_2015 import runList,colorList,DICTlegend
 #
 def argument():
@@ -67,7 +67,7 @@ for run in runList:
 
 
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots(figsize=[12,5.5])

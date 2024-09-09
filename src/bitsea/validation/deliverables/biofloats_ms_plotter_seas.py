@@ -32,20 +32,20 @@ def argument():
 args = argument()
 
 
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 import matplotlib
 matplotlib.use('Agg')
 import pylab as pl
 import numpy as np
-from commons.layer import Layer
-from basins import V2 as OGS
-from commons.utils import addsep
+from bitsea.commons.layer import Layer
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
 import scipy.io.netcdf as NC
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 from datetime import datetime
 from profilerDAf import *
-from commons import season
-from commons import timerequestors
+from bitsea.commons import season
+from bitsea.commons import timerequestors
 
 OUT_FIGDIR        = addsep(args.figdir)
 OUT_TABLEDIR       = addsep(args.tabledir)

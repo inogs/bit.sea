@@ -1,6 +1,6 @@
-from basins.region import Polygon
-from basins.basin import SimplePolygonalBasin, ComposedBasin, SimpleBasin
-from basins.region import Rectangle
+from bitsea.basins.region import Polygon
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin, SimpleBasin
+from bitsea.basins.region import Rectangle
 
 reg1 = Rectangle(4,8,41,43)
 reg2 = Rectangle(-3,-0.5,35,37.5)

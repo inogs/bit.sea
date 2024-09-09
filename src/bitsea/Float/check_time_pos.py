@@ -30,16 +30,16 @@ args = argument()
 import datetime
 import numpy as np
 import os
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 isLOV = False
 float_dataset=os.path.basename(os.path.dirname(args.inputfile))
 if float_dataset=="SUPERFLOAT":
-    from instruments import superfloat as lovbio_float
+    from bitsea.instruments import superfloat as lovbio_float
 if float_dataset == "FLOAT_LOVBIO":
     isLOV = True
-    from instruments import lovbio_float
+    from bitsea.instruments import lovbio_float
 if float_dataset in ["CORIOLIS", "FLOAT_BIO"]:
-    from instruments import bio_float as lovbio_float
+    from bitsea.instruments import bio_float as lovbio_float
 
 
 

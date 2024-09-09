@@ -37,7 +37,7 @@ import datetime
 import os,glob
 import numpy as np
 from StringIO import StringIO
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 # in the cronjob just after the download
 #dump_index.py prints the index float file 
 #e.g. lines as 

@@ -38,11 +38,11 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
-from instruments import bio_float
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.instruments import bio_float
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 import superfloat_generator
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 import scipy.io as NC
 import numpy as np

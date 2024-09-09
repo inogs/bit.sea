@@ -20,7 +20,7 @@ def argument():
 
 args = argument()
 
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 INPUTDIR=addsep(args.inputdir)
 OUTDIR=addsep(args.outdir)
 
@@ -31,7 +31,7 @@ import matplotlib as plt
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as pl
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
 model=np.loadtxt(INPUTDIR + "monthly_pCO2.txt",skiprows=1,usecols=range(1,13))

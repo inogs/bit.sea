@@ -1,5 +1,5 @@
 import numpy as np
-from Sat import SatManager as Sat
+from bitsea.Sat import SatManager as Sat
 import matplotlib
 #matplotlib.use('Qt5Agg')
 matplotlib.use('Agg')

@@ -33,10 +33,10 @@ def argument():
 
 args = argument()
 
-from commons import timerequestors
-from instruments.var_conversions import FLOATVARS
-import basins.OGS as OGS
-import commons.genUserDateList as DL
+from bitsea.commons import timerequestors
+from bitsea.instruments.var_conversions import FLOATVARS
+import bitsea.basins.OGS as OGS
+import bitsea.commons.genUserDateList as DL
 import datetime
 import numpy as np
 import os,sys
@@ -47,9 +47,9 @@ if profilesource is None:
     sys.exit(1)
 assert profilesource in ["superfloat", "ppcon"]
 if profilesource=="superfloat":
-    from instruments import superfloat as biofloat
+    from bitsea.instruments import superfloat as biofloat
 if profilesource=="ppcon":
-    from instruments import float_ppcon as biofloat
+    from bitsea.instruments import float_ppcon as biofloat
 
 
 

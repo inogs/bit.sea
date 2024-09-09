@@ -46,12 +46,12 @@ if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update
 
 import pandas as pd
 import CORIOLIS_checks
-from instruments import bio_float
-from Float import oxygen_saturation
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.instruments import bio_float
+from bitsea.Float import oxygen_saturation
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 import superfloat_generator
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
@@ -60,8 +60,8 @@ from datetime import datetime, timedelta
 from TREND_ANALYSIS import trend_conditions
 from TREND_ANALYSIS import sign_analysis
 import TREND_ANALYSIS
-import basins.OGS as OGS
-from instruments.var_conversions import FLOATVARS
+import bitsea.basins.OGS as OGS
+from bitsea.instruments.var_conversions import FLOATVARS
 from commons_local import cross_Med_basins, save_report
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)

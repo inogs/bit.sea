@@ -46,12 +46,12 @@ def argument():
 
 args = argument()
 import numpy as np
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.timerequestors import Clim_month
-from commons.utils import addsep
-from postproc import masks
-import Sat.SatManager as Sat
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.timerequestors import Clim_month
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
+import bitsea.Sat.SatManager as Sat
 import netCDF4
 
 

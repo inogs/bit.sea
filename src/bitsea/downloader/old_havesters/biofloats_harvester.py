@@ -12,9 +12,9 @@ from xml.dom.minidom import parseString
 import xml.etree.ElementTree as xml_tree
 
 from harvester_interface import HarvesterInterface
-from utilities.ftp_utilities import list_files, download_file
-from utilities.files_and_dirs import ensure_dir
-from utilities.date_and_time import now_as_string
+from bitsea.utilities.ftp_utilities import list_files, download_file
+from bitsea.utilities.files_and_dirs import ensure_dir
+from bitsea.utilities.date_and_time import now_as_string
 import numpy as np
 ftp_url = 'ftp.ifremer.fr'
 

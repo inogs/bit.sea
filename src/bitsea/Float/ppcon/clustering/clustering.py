@@ -35,9 +35,9 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
-from Float.ppcon.clustering.dataset_clustering import FloatDataset
-from commons.utils import addsep
-from Float.ppcon.clustering.make_ds_clustering import make_pandas_df
+from bitsea.Float.ppcon.clustering.dataset_clustering import FloatDataset
+from bitsea.commons.utils import addsep
+from bitsea.Float.ppcon.clustering.make_ds_clustering import make_pandas_df
 
 
 INDIR  = addsep(args.inputdir)

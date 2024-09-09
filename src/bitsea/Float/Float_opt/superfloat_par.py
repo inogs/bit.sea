@@ -28,12 +28,12 @@ def argument():
 
 args = argument()
 
-from instruments import optbio_float_2019
-from instruments import optbio_float_2020
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
-from Float import superfloat_generator
-from commons.utils import addsep
+from bitsea.instruments import optbio_float_2019
+from bitsea.instruments import optbio_float_2020
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
+from bitsea.Float import superfloat_generator
+from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np

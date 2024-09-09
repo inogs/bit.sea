@@ -5,12 +5,12 @@ import argparse
 #import pickle
 import matplotlib.dates as mdates
 
-from basins import OGS
-from instruments import lovbio_float as bio_float
+from bitsea.basins import OGS
+from bitsea.instruments import lovbio_float as bio_float
 from profileruns_Summer import runList,colorList
 from profiler_floatsat_DAdates import ALL_PROFILES,TL_DA,TL_daily
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 def argument():
     parser = argparse.ArgumentParser(description = '''

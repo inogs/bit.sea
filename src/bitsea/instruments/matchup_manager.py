@@ -1,10 +1,10 @@
 import os,sys
-from instruments.instrument import Profile
+from bitsea.instruments.instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
-import matchup.matchup
+import bitsea.matchup.matchup
 import matplotlib.pyplot as pl
-import postproc
+import bitsea.postproc
 
 
 
@@ -424,7 +424,7 @@ class Matchup_Manager():
 
         Returns nothing
         '''
-        from validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
+        from bitsea.validation.online.profileplotter import figure_generator, ncwriter#, add_metadata
         zlevels_out=np.arange(0,501,5)
         MODELVARLIST=['P_l','O2o','N3n','votemper','vosaline','PAR','POC',"P_c", "pH"]
         plotvarname = [r'Chl $[mg/m^3]$',

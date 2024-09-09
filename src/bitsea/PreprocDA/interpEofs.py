@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.io.netcdf as NC
 # import netCDF4
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 import glob
 import os
 # from maskload import nav_lev as nav_lev16

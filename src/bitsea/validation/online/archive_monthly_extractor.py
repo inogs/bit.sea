@@ -25,11 +25,11 @@ def argument():
 args = argument()
 
 import datetime
-from commons import timerequestors
+from bitsea.commons import timerequestors
 from dateutil.relativedelta import relativedelta
-from commons.timeseries import TimeSeries
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 
 now=datetime.datetime.strptime(args.rundate,"%Y%m%d")
 dt=relativedelta(months=1)

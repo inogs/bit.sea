@@ -1,14 +1,14 @@
-from commons.timeseries import TimeSeries
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
-import Sat.SatManager as Sat
-from commons.layer import Layer
-from commons.mask import Mask
-from commons.dataextractor import DataExtractor
-from layer_integral.mapbuilder import MapBuilder
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
+import bitsea.Sat.SatManager as Sat
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.layer_integral.mapbuilder import MapBuilder
 import numpy as np
 import os
-from commons import netcdf3
+from bitsea.commons import netcdf3
 
 
 starttime='20160301'

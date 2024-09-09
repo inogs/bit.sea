@@ -31,17 +31,17 @@ args = argument()
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-#from commons.layer import Layer
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+#from bitsea.commons.layer import Layer
 
-from layer_integral.mapplot import mapplot
-from layer_integral.mapplot import mapplotlog
-import commons.timerequestors as requestors
-import Sat.SatManager as Sat
+from bitsea.layer_integral.mapplot import mapplot
+from bitsea.layer_integral.mapplot import mapplotlog
+import bitsea.commons.timerequestors as requestors
+import bitsea.Sat.SatManager as Sat
 import matplotlib.pyplot as pl
-from layer_integral import coastline
+from bitsea.layer_integral import coastline
 
 clon,clat = coastline.get()
 TheMask=Mask(args.maskfile)

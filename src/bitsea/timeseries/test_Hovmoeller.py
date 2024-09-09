@@ -1,9 +1,9 @@
 
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from timeseries.plot import *
-from basins import V2 as OGS
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.timeseries.plot import *
+from bitsea.basins import V2 as OGS
 import scipy.io.netcdf as NC
 
 

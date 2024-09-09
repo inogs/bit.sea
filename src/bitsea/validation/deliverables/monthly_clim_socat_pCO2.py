@@ -19,15 +19,15 @@ def argument():
 
 args = argument()
 
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 OUTDIR=addsep(args.outdir)
 
 
-from basins import V2 as OGS
-from static import socat_reader
+from bitsea.basins import V2 as OGS
+from bitsea.static import socat_reader
 import numpy as np
-from commons import timerequestors
-from commons.utils import writetable
+from bitsea.commons import timerequestors
+from bitsea.commons.utils import writetable
 S=socat_reader.CO2_socat_reader()
 
 

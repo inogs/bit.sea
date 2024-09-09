@@ -1,4 +1,4 @@
-from commons import calculated_depths
+from bitsea.commons import calculated_depths
 import numpy as np
 import netCDF4 as NC
 import os
@@ -207,10 +207,10 @@ def read_float_update(input_file):
 
 
 if __name__=="__main__":
-    from instruments import bio_float
-    from instruments import lovbio_float
-    from commons.time_interval import TimeInterval
-    from basins.region import Rectangle
+    from bitsea.instruments import bio_float
+    from bitsea.instruments import lovbio_float
+    from bitsea.commons.time_interval import TimeInterval
+    from bitsea.basins.region import Rectangle
     import matplotlib.pyplot as pl
     import sys
     TI = TimeInterval('2012','2020','%Y')

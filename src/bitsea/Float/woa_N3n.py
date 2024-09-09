@@ -1,9 +1,9 @@
 import numpy as np
 import os,sys
-from commons import netcdf4
-from commons.utils import addsep
-from commons.mask import Mask
-from mhelpers.linear_shift import linear_shift
+from bitsea.commons import netcdf4
+from bitsea.commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.mhelpers.linear_shift import linear_shift
 import seawater as sw
 
 woa_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/WOA2018/Med/"
@@ -78,15 +78,15 @@ def woa_nitrate_correction(p):
 
 
 if __name__ == "__main__":
-    from instruments import bio_float
-    from commons.time_interval import TimeInterval
-    from commons.Timelist import TimeList
+    from bitsea.instruments import bio_float
+    from bitsea.commons.time_interval import TimeInterval
+    from bitsea.commons.Timelist import TimeList
     import matplotlib.pyplot as pl
 
-    from basins import V2 as OGS
+    from bitsea.basins import V2 as OGS
 
-    from commons.layer import Layer
-    from static.climatology import get_climatology
+    from bitsea.commons.layer import Layer
+    from bitsea.static.climatology import get_climatology
 
     from woa_N3n import woa_nitrate_correction
 
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     Pres, Prof, Qc= p.read(var,True)
     print(len(Prof))
 
-    from commons.layer import Layer
-    from static.climatology import get_climatology
+    from bitsea.commons.layer import Layer
+    from bitsea.static.climatology import get_climatology
 
     from woa_N3n import woa_nitrate_correction
 

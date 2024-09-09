@@ -75,7 +75,7 @@ model_coast_v2 = model_coast_v2[0:n]
 
 
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()

@@ -34,13 +34,13 @@ def argument():
 
 args = argument()
 
-from timeseries.plot import Hovmoeller_matrix, Hovmoeller_diagram
-from timeseries.plot import read_pickle_file, read_basic_info
-from basins import V2 as OGS
-from commons.mask import Mask
+from bitsea.timeseries.plot import Hovmoeller_matrix, Hovmoeller_diagram
+from bitsea.timeseries.plot import read_pickle_file, read_basic_info
+from bitsea.basins import V2 as OGS
+from bitsea.commons.mask import Mask
 import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 
 INPUTDIR=addsep(args.inputdir)

@@ -1,5 +1,5 @@
-from basins.region import Polygon
-from basins.basin import SimplePolygonalBasin, ComposedBasin
+from bitsea.basins.region import Polygon
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin
 
 alb = Polygon([-5.5,-1.0,-1.0,-5.5],
               [32.0,32.0,40.0,40.0])

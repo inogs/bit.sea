@@ -2,11 +2,11 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
-from static.DatasetExtractor import DatasetExtractor
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
+from bitsea.static.DatasetExtractor import DatasetExtractor
 import numpy as np
-from commons.utils import find_index
+from bitsea.commons.utils import find_index
 
 
 DEFAULT_FILENAME = Path(
@@ -141,7 +141,7 @@ class NutrientsReader():
     
 
 if __name__ == '__main__':
-    from basins import V2 as OGS
+    from bitsea.basins import V2 as OGS
     import numpy as np
     var= 'nitrate';
     TI = TimeInterval('1998','2018','%Y')
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     print(len(ProfileLIST))
     
 
-    from layer_integral import coastline
+    from bitsea.layer_integral import coastline
     c_lon,c_lat=coastline.get()
     Cruisename='BIOPT06'
 

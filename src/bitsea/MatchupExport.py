@@ -4,8 +4,8 @@
 # There are some restrictions: use of only BioFloats, only chl
 
 
-from instruments.bio_float import *
-from  basins.region import Rectangle
+from bitsea.instruments.bio_float import *
+from  bitsea.basins.region import Rectangle
 from profiler import * 
 
 OUTDIR  = "/pico/scratch/userexternal/gbolzon0/E-AIMS-GP/Matchup/CNTRL/"

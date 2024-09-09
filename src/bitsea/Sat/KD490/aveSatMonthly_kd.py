@@ -26,13 +26,13 @@ def argument():
 
 args = argument()
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
-from postproc import masks
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
 import numpy as np
 import os
-import Sat.SatManager as Sat
+import bitsea.Sat.SatManager as Sat
 
 #CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/CHECKED/"
 CHECKDIR = addsep(args.checkdir)

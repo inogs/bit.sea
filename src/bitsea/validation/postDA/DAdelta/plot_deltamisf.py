@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 INDIR = ''
 OUTDIR = ''

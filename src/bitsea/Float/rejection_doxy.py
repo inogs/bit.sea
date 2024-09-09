@@ -1,9 +1,9 @@
-from basins.region import Rectangle
-from commons.time_interval import TimeInterval
-from instruments import bio_float
-from Float import superfloat_generator
-import commons.genUserDateList as DL
-from commons.Timelist import TimeList
+from bitsea.basins.region import Rectangle
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.instruments import bio_float
+from bitsea.Float import superfloat_generator
+import bitsea.commons.genUserDateList as DL
+from bitsea.commons.Timelist import TimeList
 import numpy as np
 import matplotlib.pyplot as pl
 import sys

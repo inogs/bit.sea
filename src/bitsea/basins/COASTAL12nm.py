@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from basins.basin import SimplePolygonalBasin, ComposedBasin
-from basins.region import Polygon
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin
+from bitsea.basins.region import Polygon
 
 DATADIR = Path(__file__).resolve().parent / 'WKTcoords_12nm'
 

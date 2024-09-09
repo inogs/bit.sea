@@ -31,9 +31,9 @@ import netCDF4 as NC
 import datetime
 import matplotlib.pyplot as plt
 
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from basins import V2 as OGS
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins import V2 as OGS
 
 
 

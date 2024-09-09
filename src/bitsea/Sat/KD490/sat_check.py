@@ -39,14 +39,14 @@ args = argument()
 
 
 
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from commons.time_interval import TimeInterval
-from postproc import masks
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.postproc import masks
 import numpy as np
 import os
 
-from Sat import SatManager as Sat
+from bitsea.Sat import SatManager as Sat
 
 #ORIGDIR  ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/ORIG/"
 ORIGDIR = addsep(args.origdir)

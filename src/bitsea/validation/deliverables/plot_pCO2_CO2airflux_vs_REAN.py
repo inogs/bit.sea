@@ -4,12 +4,12 @@ import matplotlib as plt
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as pl
-from basins import V2 as OGS
-from commons import timerequestors
-from timeseries.plot import read_pickle_file
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import writetable
+from bitsea.basins import V2 as OGS
+from bitsea.commons import timerequestors
+from bitsea.timeseries.plot import read_pickle_file
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import writetable
 from datetime import datetime
 
 

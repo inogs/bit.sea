@@ -1,11 +1,11 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from basins import V2
+from bitsea.basins import V2
 
-from validation.multirun.plot_profiles.tools.read_config import \
+from bitsea.validation.multirun.plot_profiles.tools.read_config import \
     InvalidConfigFile, read_config_from_file, read_output_dir
-from validation.multirun.plot_profiles import draw_profile_plots
+from bitsea.validation.multirun.plot_profiles import draw_profile_plots
 
 
 try:

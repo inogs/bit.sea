@@ -1,9 +1,9 @@
 # script for Zenodo publishing
 import numpy as np
-from commons.layer import Layer
-import basins.V2 as basV2
+from bitsea.commons.layer import Layer
+import bitsea.basins.V2 as basV2
 import netCDF4
-from static.climatology import get_climatology
+from bitsea.static.climatology import get_climatology
 
 SUBLIST = basV2.P.basin_list
 PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])

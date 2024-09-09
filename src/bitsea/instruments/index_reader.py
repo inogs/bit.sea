@@ -1,5 +1,5 @@
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 def index_reader():
     GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/"

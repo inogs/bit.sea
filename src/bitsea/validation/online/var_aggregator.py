@@ -3,7 +3,7 @@ import scipy.io.netcdf as NC
 import glob
 import os
 import argparse
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 def argument():
     parser = argparse.ArgumentParser(description = '''

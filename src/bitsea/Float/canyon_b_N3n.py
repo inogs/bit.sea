@@ -1,8 +1,8 @@
 import numpy as np
 from datetime import datetime
 import os,sys
-from commons.utils import addsep
-from mhelpers.linear_shift import linear_shift
+from bitsea.commons.utils import addsep
+from bitsea.mhelpers.linear_shift import linear_shift
 
 Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON-B/"
 basedir=addsep(os.getenv("CANYONB_TRAINING_DIR", Training_dir))
@@ -188,16 +188,16 @@ if __name__ == "__main__":
     lat=17.6;lon=-24.3;pres=180.;temp=16;psal=36.1;doxy=104 # test values
     print(get_nitrate(timeobj, lat, lon, pres, temp, psal, doxy))
     
-    from commons.time_interval import TimeInterval
-    from commons.Timelist import TimeList
+    from bitsea.commons.time_interval import TimeInterval
+    from bitsea.commons.Timelist import TimeList
     import matplotlib.pyplot as pl
     import matplotlib.dates as mdates
     import numpy.ma as ma
-    from basins import V2 as OGS
-    from instruments import bio_float as bio_float
+    from bitsea.basins import V2 as OGS
+    from bitsea.instruments import bio_float as bio_float
 
-    from commons.layer import Layer
-    from static.climatology import get_climatology
+    from bitsea.commons.layer import Layer
+    from bitsea.static.climatology import get_climatology
 
     DATESTART = "20190101"
     DATE__END = "20191231"

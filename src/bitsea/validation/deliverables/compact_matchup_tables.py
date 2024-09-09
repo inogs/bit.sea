@@ -29,8 +29,8 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.utils import addsep
-from commons.utils import writetable
+from bitsea.commons.utils import addsep
+from bitsea.commons.utils import writetable
 
 INDIR = addsep(args.indir)
 OUTDIR = addsep(args.outdir)

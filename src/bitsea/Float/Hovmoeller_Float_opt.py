@@ -1,9 +1,9 @@
-from static.Float_opt_reader import Float_opt_reader
-from commons.Timelist import TimeList, TimeInterval
-from basins import V2 as OGS
+from bitsea.static.Float_opt_reader import Float_opt_reader
+from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.basins import V2 as OGS
 import numpy as np
-from instruments.statistics import mean_profile
-from commons import genUserDateList as DL
+from bitsea.instruments.statistics import mean_profile
+from bitsea.commons import genUserDateList as DL
 
 def get_Hovmoeller(z, var, TL, region, Reader_Object):
     nLev = len(z)

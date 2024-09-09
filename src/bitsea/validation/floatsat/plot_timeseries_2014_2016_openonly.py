@@ -10,16 +10,16 @@ import sys
 import numpy as np
 import argparse
 #
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.mask import Mask
-from commons.submask import SubMask
-from commons.layer import Layer
-from timeseries.plot import Hovmoeller_matrix
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.commons.layer import Layer
+from bitsea.timeseries.plot import Hovmoeller_matrix
 import numpy as np
-from basins import V2
+from bitsea.basins import V2
 import matplotlib.pyplot as pl
-from commons.utils import getcolor, addsep
+from bitsea.commons.utils import getcolor, addsep
 #
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -69,7 +69,7 @@ jpk,jpj,jpi=TheMask.shape
 #TL =TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 var = 'P_l'
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()

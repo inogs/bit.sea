@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as pl
-from commons.layer import Layer
-from matchup.statistics import matchup
+from bitsea.commons.layer import Layer
+from bitsea.matchup.statistics import matchup
 
 
 

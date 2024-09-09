@@ -1,6 +1,6 @@
 import numpy as np
-from commons import netcdf3
-from commons.dataextractor import DataExtractor
+from bitsea.commons import netcdf3
+from bitsea.commons.dataextractor import DataExtractor
 
 
 

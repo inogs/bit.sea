@@ -46,10 +46,10 @@ args = argument()
 import numpy as np
 import pickle as pkl
 from eofs.standard import Eof
-from commons.utils import addsep
-from commons.timerequestors import Clim_month
-from commons.mask import Mask
-from basins import V0_adr as OGS
+from bitsea.commons.utils import addsep
+from bitsea.commons.timerequestors import Clim_month
+from bitsea.commons.mask import Mask
+from bitsea.basins import V0_adr as OGS
 
 
 

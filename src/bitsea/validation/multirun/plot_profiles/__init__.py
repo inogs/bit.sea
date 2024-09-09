@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
 
-from commons.mask import Mask
-from commons.submask import SubMask
-from commons.Timelist import TimeList
-from commons import timerequestors
-from commons import season
-from utilities.mpi_serial_interface import get_mpi_communicator
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons import season
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 from .tools.read_config import Config, InvalidConfigFile, PlotConfig, \
     DataDirSource, DepthProfilesOptions, TimeSeriesOptions, OutputOptions
 from .tools.depth_profile_algorithms import get_depth_profile_plot_grid, \

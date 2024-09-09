@@ -29,21 +29,21 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from instruments import lovbio_float as bio_float
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.commons.mask import Mask
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 #from profilerHC_2017 import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-import basins.V2 as OGS
+import bitsea.basins.V2 as OGS
 from datetime import datetime
 from datetime import timedelta
 from profiler_2015 import *
 
 def fig_setup(wmo,Lon,Lat):
-    from layer_integral import coastline
+    from bitsea.layer_integral import coastline
 
     fig = plt.figure()
     ax0 = plt.subplot2grid((5, 3), (0, 0), colspan=2)

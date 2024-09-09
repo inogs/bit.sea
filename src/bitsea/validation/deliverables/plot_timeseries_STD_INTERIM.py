@@ -38,8 +38,8 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
-from commons.utils import addsep
-from basins import V2 as OGS
+from bitsea.commons.utils import addsep
+from bitsea.basins import V2 as OGS
 
 OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')

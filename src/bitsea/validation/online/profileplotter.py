@@ -4,7 +4,7 @@ import matplotlib.patches as mpatches
 import scipy.io.netcdf as NC
 #import libxmp, libxmp.utils
 #from libxmp import XMPFiles, consts
-from layer_integral import coastline
+from bitsea.layer_integral import coastline
 
 def figure_generator(p):
     ''' Generates a figure to plot the matchups related to a bioFloat cycle

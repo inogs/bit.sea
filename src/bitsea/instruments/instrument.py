@@ -1,5 +1,5 @@
 import numpy as np
-from instruments import var_conversions
+from bitsea.instruments import var_conversions
 class Profile(object):
     def read(self,var):
         raise NotImplementedError

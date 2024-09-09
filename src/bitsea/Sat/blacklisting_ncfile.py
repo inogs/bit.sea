@@ -2,17 +2,17 @@ import numpy as np
 import argparse
 import pickle
 import os
-from Sat import SatManager as Sat
-from Sat import interp2d
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons import timerequestors
-from commons import netcdf3
-from commons.mask import Mask
-from basins import V2
-from postproc import masks
-from commons.utils import addsep
-from commons.timeseries import TimeSeries
+from bitsea.Sat import SatManager as Sat
+from bitsea.Sat import interp2d
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons import netcdf3
+from bitsea.commons.mask import Mask
+from bitsea.basins import V2
+from bitsea.postproc import masks
+from bitsea.commons.utils import addsep
+from bitsea.commons.timeseries import TimeSeries
 
 
 def argument():

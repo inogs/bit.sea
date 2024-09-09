@@ -1,13 +1,13 @@
 import scipy.io.netcdf as NC
 import numpy as np
-import basins.V2 as V2
+import bitsea.basins.V2 as V2
 
-from commons.layer import Layer
-from commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
 
 from profilerIspra import *
-from instruments import var_conversions
-from static.Ispra_reader import *
+from bitsea.instruments import var_conversions
+from bitsea.static.Ispra_reader import *
 from limval_Ispra import AreasList as AreasListLim
 from limval_Ispra import VARLIST as VARLISTlim
 from limval_Ispra import SEASLIST as SEASLISTlim

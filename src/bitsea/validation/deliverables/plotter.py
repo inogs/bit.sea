@@ -1,4 +1,4 @@
-from basins.region import Rectangle
+from bitsea.basins.region import Rectangle
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as pl
 import numpy as np

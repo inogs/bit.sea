@@ -70,13 +70,13 @@ except:
 
 
 import numpy as np
-from commons.dataextractor import DataExtractor
-from commons.mask import Mask 
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from commons.timerequestors import Clim_month
-from postproc import masks
-from Sat import SatManager
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask 
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.commons.timerequestors import Clim_month
+from bitsea.postproc import masks
+from bitsea.Sat import SatManager
 
 maskSat = getattr(masks,'Mesh24')
 fillValue = -999

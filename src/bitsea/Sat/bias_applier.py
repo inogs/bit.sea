@@ -1,8 +1,8 @@
 import numpy as np
-from commons.Timelist import TimeInterval,TimeList
+from bitsea.commons.Timelist import TimeInterval,TimeList
 import os
-import Sat.SatManager as Sat
-from postproc.masks import V4mesh
+import bitsea.Sat.SatManager as Sat
+from bitsea.postproc.masks import V4mesh
 
 Bias_monthly_file="/galileo/home/userexternal/ateruzzi/SATBIAS_CCI_MULTI/biasMonthPoint.npy"
 INPUTDIR="/gpfs/scratch/userexternal/ateruzzi/SAT_forRA_COAST2019/WEEKLY_16/"

@@ -32,9 +32,9 @@ def argument():
 
 args = argument()
 
-from commons.timeseries import TimeSeries
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 
 starttime=args.starttime
 end__time=args.endtime

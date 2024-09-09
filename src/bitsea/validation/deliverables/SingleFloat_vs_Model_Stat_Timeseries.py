@@ -32,21 +32,21 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from commons.Timelist import TimeList, TimeInterval
-from instruments import superfloat as bio_float
-from instruments.matchup_manager import Matchup_Manager
-from instruments.var_conversions import FLOATVARS
-from commons.utils import addsep
-from commons.layer import Layer
-from basins.region import Rectangle
-#from validation.online.metrics import *
+from bitsea.commons.mask import Mask
+from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments.var_conversions import FLOATVARS
+from bitsea.commons.utils import addsep
+from bitsea.commons.layer import Layer
+from bitsea.basins.region import Rectangle
+#from bitsea.validation.online.metrics import *
 from metrics2 import *
-from validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
-from Float.oxygen_saturation import *
-from basins import V2 as OGS
+from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
+from bitsea.Float.oxygen_saturation import *
+from bitsea.basins import V2 as OGS
 import datetime
-from instruments import check
+from bitsea.instruments import check
 
 
 

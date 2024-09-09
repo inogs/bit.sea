@@ -2,13 +2,13 @@ import netCDF4
 import numpy as np
 import datetime
 import os
-from commons.utils import addsep
-from instruments.var_conversions import FLOATVARS as conversion
+from bitsea.commons.utils import addsep
+from bitsea.instruments.var_conversions import FLOATVARS as conversion
 import matplotlib
 import matplotlib.pyplot as pl
 
-from instruments.instrument import Instrument, Profile
-from mhelpers.pgmean import PLGaussianMean
+from bitsea.instruments.instrument import Instrument, Profile
+from bitsea.mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
 CORIOLIS_DIR="FLOAT_BIO/"
@@ -461,8 +461,8 @@ def from_lov_profile(lov_profile, verbose=True):
 
 
 if __name__ == '__main__':
-    from basins.region import Rectangle
-    from commons.time_interval import TimeInterval
+    from bitsea.basins.region import Rectangle
+    from bitsea.commons.time_interval import TimeInterval
     import sys
 
     f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/CORIOLIS/6902902/SR6902902_456.nc'

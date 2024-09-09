@@ -53,11 +53,11 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 import sys
-from commons.utils import is_valid_path, nan_compare
+from bitsea.commons.utils import is_valid_path, nan_compare
 import numpy as np
 from glob import glob
-from commons.Timelist import TimeInterval, TimeList
-from commons.mask import Mask
+from bitsea.commons.Timelist import TimeInterval, TimeList
+from bitsea.commons.mask import Mask
 from mpl_toolkits.basemap import Basemap
 try:
     from mpi4py import MPI
@@ -73,7 +73,7 @@ except:
 
 
 try:
-    from layer_integral.mapbuilder import MapBuilder
+    from bitsea.layer_integral.mapbuilder import MapBuilder
 except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)

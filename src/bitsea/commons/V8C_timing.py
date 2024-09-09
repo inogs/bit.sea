@@ -153,7 +153,7 @@ if __name__=="__main__":
     import sys
 #    sys.exit()
 
-    from commons import genUserDateList as DL
+    from bitsea.commons import genUserDateList as DL
     DAYS=DL.getTimeList("20200505-12:00:00", "20200525-12:00:00", days=1)
 
     for d in DAYS:

@@ -20,8 +20,8 @@ args = argument()
 
 
 import numpy as np
-from basins.region import Rectangle
-from basins import V2
+from bitsea.basins.region import Rectangle
+from bitsea.basins import V2
 
 input_file = args.inputfile
 output_file  = args.outfile

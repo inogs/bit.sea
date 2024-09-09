@@ -2,12 +2,12 @@ import numpy as np
 import argparse
 import pickle
 import os
-from Sat import SatManager as Sat
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins import V2
-from postproc import masks
-from commons.utils import addsep
+from bitsea.Sat import SatManager as Sat
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins import V2
+from bitsea.postproc import masks
+from bitsea.commons.utils import addsep
 
 
 def argument():

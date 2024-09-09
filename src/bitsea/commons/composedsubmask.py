@@ -4,8 +4,8 @@
 import os
 import numpy as np
 import netCDF4
-from commons.mask import *
-from basins.basin import ComposedBasin
+from bitsea.commons.mask import *
+from bitsea.basins.basin import ComposedBasin
 
 class ComposedSubMask(Mask):
     """ Defines a submask starting from a ComposedBasin object and a NetCDF file or a Mask object

@@ -2,12 +2,12 @@ import scipy.io.netcdf as NC
 import numpy as np
 import os
 
-from commons.layer import Layer
+from bitsea.commons.layer import Layer
 
 from profiler import *
-import basins.OGS as OGS
-from instruments import lovbio_float
-from instruments import var_conversions
+import bitsea.basins.OGS as OGS
+from bitsea.instruments import lovbio_float
+from bitsea.instruments import var_conversions
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 maskfile    = os.getenv("MASKFILE"); 

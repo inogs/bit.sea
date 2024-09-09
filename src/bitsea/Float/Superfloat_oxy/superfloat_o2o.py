@@ -37,12 +37,12 @@ def argument():
 args = argument()
 import numpy as np
 import pandas as pd 
-from commons import timerequestors
-from instruments import superfloat
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
-import basins.OGS as OGS
-from commons.utils import addsep
+from bitsea.commons import timerequestors
+from bitsea.instruments import superfloat
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
+import bitsea.basins.OGS as OGS
+from bitsea.commons.utils import addsep
 import warnings
 warnings.filterwarnings('ignore')
 import CORIOLIS_checks 
@@ -162,7 +162,7 @@ df        =  col_to_dt(df,'time')
 dfday     =  df[df.date==TI_3.start_time]
 
 # emodnet climatology iNIT
-from basins.region import Region, Rectangle
+from bitsea.basins.region import Region, Rectangle
 from commons_ import cross_Med_basins
 from commons_ import drop_rows_df
 

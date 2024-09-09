@@ -1,7 +1,7 @@
 import os, glob
-from instruments.mooring import *
+from bitsea.instruments.mooring import *
 import datetime
-from commons.Timelist import TimeList
+from bitsea.commons.Timelist import TimeList
 
 INPUTDIR      = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/mooring/"
 OUTPUTDIR     = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE/COPERNICUS/mooring_ave/"

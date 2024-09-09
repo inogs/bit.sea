@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from typing import Union
 
-from timeseries.plot import read_pickle_file
+from bitsea.timeseries.plot import read_pickle_file
 
 
 SLICE_TYPE = Union[slice, int]

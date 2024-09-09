@@ -7,7 +7,7 @@ import seawater
 from seawater.library import T90conv
 
 
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 
 basetime = datetime.datetime(1950,1,1,0,0,0)
 INDEX_FILE=index_reader.index_reader()

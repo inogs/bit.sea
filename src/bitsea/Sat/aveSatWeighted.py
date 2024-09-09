@@ -60,13 +60,13 @@ def argument():
 args = argument()
 
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from postproc import masks
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.postproc import masks
 import numpy as np
 import os
-import Sat.SatManager as Sat
-from commons.utils import addsep
+import bitsea.Sat.SatManager as Sat
+from bitsea.commons.utils import addsep
 
 try:
     from mpi4py import MPI

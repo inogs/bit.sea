@@ -42,18 +42,18 @@ args = argument()
 
 
 
-from commons.layer import Layer
-import basins.V2 as basV2
-from static.climatology import get_climatology
-from validation.deliverables import figure_generator
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from timeseries.plot import Hovmoeller_matrix
+from bitsea.commons.layer import Layer
+import bitsea.basins.V2 as basV2
+from bitsea.static.climatology import get_climatology
+from bitsea.validation.deliverables import figure_generator
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.timeseries.plot import Hovmoeller_matrix
 import numpy as np
-from commons.mask import Mask
-from commons.submask import SubMask
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
 import matplotlib.pyplot as pl
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 IDrun='eas_11'
 OUTDIR=addsep(args.outdir)
 MODDIR1=addsep(args.inputdir1)

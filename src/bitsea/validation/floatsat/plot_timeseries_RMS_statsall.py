@@ -49,7 +49,7 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 nSUB = len(OGS.P.basin_list)
 
@@ -78,13 +78,13 @@ for isub,sub in enumerate(OGS.P):
     pl.savefig(outfilename)
 
 
-from commons.season import season
+from bitsea.commons.season import season
 S=season()
 S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
-from commons import timerequestors
-from commons.Timelist import TimeInterval, TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons.Timelist import TimeInterval, TimeList
 TL=TimeList(TIMES)
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 iSeas=0 # JAN-APR
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)

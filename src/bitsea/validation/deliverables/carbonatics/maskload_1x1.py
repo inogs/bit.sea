@@ -1,7 +1,7 @@
 import numpy as np
 import os, sys
-from commons.mask import Mask
-from commons.submask import SubMask
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
 
 
 annaCoast = False

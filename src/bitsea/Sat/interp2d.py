@@ -1,5 +1,5 @@
 import numpy as np
-from Sat import SatManager
+from bitsea.Sat import SatManager
 
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
@@ -88,8 +88,8 @@ def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fi
 
 if __name__== "__main__":
 
-    from commons.mask import Mask
-    from Sat import SatManager as Sat
+    from bitsea.commons.mask import Mask
+    from bitsea.Sat import SatManager as Sat
     TheMask=Mask('/g100_work/OGS_prodC/MIT/V1M-dev/V1/devel/wrkdir/POSTPROC/meshmask.nc')
 
     jpk,jpj,jpi = TheMask.shape

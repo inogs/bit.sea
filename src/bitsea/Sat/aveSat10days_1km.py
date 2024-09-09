@@ -1,9 +1,9 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons import IOnames
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons import IOnames
 import numpy as np
 import os
-import Sat.SatManager as Sat
+import bitsea.Sat.SatManager as Sat
 try:
     from mpi4py import MPI
     comm  = MPI.COMM_WORLD

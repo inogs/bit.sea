@@ -1,8 +1,8 @@
 import numpy as np
-import Sat.SatManager as Sat
-import matchup.matchup as matchup
-from commons.dataextractor import DataExtractor
-from basins import V2 as OGS
+import bitsea.Sat.SatManager as Sat
+import bitsea.matchup.matchup as matchup
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.basins import V2 as OGS
 import scipy.io.netcdf as NC
 import os
 

@@ -2,12 +2,12 @@ import numpy as np
 from datetime import datetime
 from scipy import interpolate
 import os,sys
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
-from instruments import bio_float as bio_float
-from instruments.var_conversions import FLOATVARS
+from bitsea.instruments import bio_float as bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
 from datetime import datetime
-#from Float.canyonb_N3n import get_nitrate
+#from bitsea.Float.canyonb_N3n import get_nitrate
 
 
 Training_dir="/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/CANYON_B/CODES/CANYON_Training/"
@@ -119,14 +119,14 @@ def canyon_nitrate_correction(p):
     "from the profile object, get the correction using canyon routine"
 
 #import numpy as np
-#from commons.mask import Mask
-#from commons.Timelist import TimeList, TimeInterval
-#from instruments import bio_float as bio_float
-#from instruments.var_conversions import FLOATVARS
-#from basins import V2 as OGS
-#from basins.region import Rectangle
+#from bitsea.commons.mask import Mask
+#from bitsea.commons.Timelist import TimeList, TimeInterval
+#from bitsea.instruments import bio_float as bio_float
+#from bitsea.instruments.var_conversions import FLOATVARS
+#from bitsea.basins import V2 as OGS
+#from bitsea.basins.region import Rectangle
 #from datetime import datetime
-#from Float.canyonb_N3n import get_nitrate
+#from bitsea.Float.canyonb_N3n import get_nitrate
 
 #TI=TimeInterval("20200101","20200201","%Y%m%d")
 

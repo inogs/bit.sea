@@ -5,7 +5,7 @@ import matplotlib.pyplot as pl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties
-from basins.region import Rectangle
+from bitsea.basins.region import Rectangle
 from matplotlib.colors import LogNorm
 
 
@@ -34,11 +34,11 @@ def mapplot(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, coa
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]})
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax )
                 
-        from layer_integral import coastline
+        from bitsea.layer_integral import coastline
         clon,clat = coastline.get()
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, coastline_lon=clon, coastline_lat=clat)
         
-        from commons.mask import Mask
+        from bitsea.commons.mask import Mask
         TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1], 'date':longdate, 'layer':l}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
@@ -135,11 +135,11 @@ def mapplotlog(map_dict, fig=None, ax=None, mask=None,ncolors=256,cbar_ticks=5, 
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]})
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax )
                 
-        from layer_integral import coastline
+        from bitsea.layer_integral import coastline
         clon,clat = coastline.get()
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, coastline_lon=clon, coastline_lat=clat)
         
-        from commons.mask import Mask
+        from bitsea.commons.mask import Mask
         TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1]}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
         fig, ax = mapplot({'data':Map2d, 'clim':[0,1], 'date':longdate, 'layer':l}, fig, ax, mask=TheMask, coastline_lon=clon, coastline_lat=clat)
@@ -659,8 +659,8 @@ def mapplot_nocolor(map_dict, fig, ax, mask=None,ncolors=256,cbar_ticks=5, coast
     return fig, ax
 
 if __name__ == '__main__':
-    from commons.mask import Mask
-    from commons.dataextractor import DataExtractor
+    from bitsea.commons.mask import Mask
+    from bitsea.commons.dataextractor import DataExtractor
     from datetime import datetime
     maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc'
     mask = Mask(maskfile)
@@ -670,11 +670,11 @@ if __name__ == '__main__':
     k=0
     map2d=DE.values[k,:,:]
     map2d[~mask.mask[k,:,:]] = np.NaN
-    from commons.layer import Layer
+    from bitsea.commons.layer import Layer
     map_dict ={'data':map2d, 'clim':[0,0.1],'date':datetime.strptime('20160116','%Y%m%d'),'varname':'N1p', 'layer':Layer(0,10),'longname':'Phosphate', 'units':'mmolP/m3'}
     #fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)
     #fig.savefig('prova.jpg',dpi=72,quality=75)
-    from layer_integral import coastline
+    from bitsea.layer_integral import coastline
     clon,clat = coastline.get()
     fig, ax = mapplot_medeaf(map_dict, fig=None, ax=None, mask=mask, ncolors=24)
     #(map_dict, fig=None, ax=None, mask=mask, coastline_lon=clon, coastline_lat=clat)

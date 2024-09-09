@@ -52,8 +52,8 @@ import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 import sys
 import numpy as np
-from commons.utils import addsep
-from instruments.var_conversions import SAT_VARS
+from bitsea.commons.utils import addsep
+from bitsea.instruments.var_conversions import SAT_VARS
 
 OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')
@@ -61,10 +61,10 @@ LIST = pickle.load(fid)
 fid.close()
 
 if (args.zone == "Med"):
-   from basins import V2 as OGS
+   from bitsea.basins import V2 as OGS
 if (args.zone == "rivers"):
    print ("rivers")
-   from basins import RiverBoxes as OGS
+   from bitsea.basins import RiverBoxes as OGS
 
 model_label=' MODEL'
 
@@ -137,13 +137,13 @@ for isub,sub in enumerate(OGS.P):
     pl.close(fig)
 
 
-from commons.season import season
+from bitsea.commons.season import season
 S=season()
 S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
-from commons import timerequestors
-from commons.Timelist import TimeInterval, TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons.Timelist import TimeInterval, TimeList
 TL=TimeList(TIMES)
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 iSeas=0 # JAN-APR
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)

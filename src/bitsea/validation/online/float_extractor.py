@@ -47,13 +47,13 @@ def argument():
 args = argument()
 import matplotlib
 matplotlib.use('Agg')
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from instruments.matchup_manager import Matchup_Manager
-import basins.OGS as OGS
-from instruments import superfloat as bio_float
-from commons.mask import Mask
-from commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.instruments.matchup_manager import Matchup_Manager
+import bitsea.basins.OGS as OGS
+from bitsea.instruments import superfloat as bio_float
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
 from datetime import timedelta
 
 starttime=args.starttime

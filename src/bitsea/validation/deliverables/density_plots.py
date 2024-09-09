@@ -53,17 +53,17 @@ import numpy as np
 #from profiler_RA_N import *
 #from profiler_N4n import *
 #from profiler_RA_C import *
-from static.climatology import DatasetInfo
-from commons.mask import Mask
-import basins.V2 as OGS
-import basins.COASTAL12nm as C12
-from commons.utils import addsep
-from static.Nutrients_reader import NutrientsReader
-from static.Carbon_reader import CarbonReader
+from bitsea.static.climatology import DatasetInfo
+from bitsea.commons.mask import Mask
+import bitsea.basins.V2 as OGS
+import bitsea.basins.COASTAL12nm as C12
+from bitsea.commons.utils import addsep
+from bitsea.static.Nutrients_reader import NutrientsReader
+from bitsea.static.Carbon_reader import CarbonReader
 
 # C12.NAd_coastal_basins
-#from instruments.var_conversions import NUTRVARS, CARBONVARS , SOCAT_VARS
-#from static.Socat_reader import SocatReader
+#from bitsea.instruments.var_conversions import NUTRVARS, CARBONVARS , SOCAT_VARS
+#from bitsea.static.Socat_reader import SocatReader
 
 N=NutrientsReader()
 C=CarbonReader()

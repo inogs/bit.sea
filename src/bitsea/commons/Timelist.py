@@ -1,12 +1,12 @@
 from pathlib import Path
-from commons import timerequestors as requestors
-from commons import genUserDateList as DL
+from bitsea.commons import timerequestors as requestors
+from bitsea.commons import genUserDateList as DL
 import os
 import datetime
 import numpy as np
-from commons import season
-from commons import IOnames
-from commons.time_interval import TimeInterval
+from bitsea.commons import season
+from bitsea.commons import IOnames
+from bitsea.commons.time_interval import TimeInterval
 
 seasonobj = season.season()
 

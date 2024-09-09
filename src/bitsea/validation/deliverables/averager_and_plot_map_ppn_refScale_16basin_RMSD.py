@@ -70,22 +70,22 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
-from layer_integral.mapbuilder import MapBuilder, Plot
-#from layer_integral.mapplot import mapplot,pl
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.layer_integral.mapbuilder import MapBuilder, Plot
+#from bitsea.layer_integral.mapplot import mapplot,pl
 # X ppn:
 # from mapplot_ppn import mapplot,pl
-from commons.dataextractor import DataExtractor
-from commons.time_averagers import TimeAverager3D
-from layer_integral import coastline
-import commons.timerequestors as requestors
-from commons.utils import addsep
-from commons.xml_module import *
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.time_averagers import TimeAverager3D
+from bitsea.layer_integral import coastline
+import bitsea.commons.timerequestors as requestors
+from bitsea.commons.utils import addsep
+from bitsea.commons.xml_module import *
 from xml.dom import minidom
-from commons import netcdf3
+from bitsea.commons import netcdf3
 
 xmldoc = minidom.parse(args.plotlistfile)
 
@@ -228,9 +228,9 @@ for il, layer in enumerate(PLOT.layerlist):
         ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + "_refScale.nc"
         netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
 
-        from basins import V2 as OGS
-        from commons.submask import SubMask
-        from commons.utils import writetable
+        from bitsea.basins import V2 as OGS
+        from bitsea.commons.submask import SubMask
+        from bitsea.commons.utils import writetable
         tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
         tablefile_PPN_EAN =  OUTPUTDIR + '/' + var + '_ean.txt'
 

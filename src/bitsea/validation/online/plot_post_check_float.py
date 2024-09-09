@@ -25,10 +25,10 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np
 import matplotlib.pyplot as plt
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from commons.Timelist import TimeInterval
-from commons import genUserDateList as DL
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.Timelist import TimeInterval
+from bitsea.commons import genUserDateList as DL
 from layerinfo import DICTlayersQ
 
 INDIR = addsep(args.indir)

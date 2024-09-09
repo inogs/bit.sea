@@ -1,6 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-from commons.utils import is_number
+from bitsea.commons.utils import is_number
 
 class Segment(object):
     """Holds a segment.

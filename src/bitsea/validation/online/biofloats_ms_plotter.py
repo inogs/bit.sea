@@ -31,12 +31,12 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 from biofloats_ms_timeseries import timelistcontainer
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 import matplotlib.pyplot as pl
 import numpy as np
-from commons.layer import Layer
-from basins import V2 as OGS
-from commons.utils import addsep
+from bitsea.commons.layer import Layer
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from matplotlib.ticker import MaxNLocator

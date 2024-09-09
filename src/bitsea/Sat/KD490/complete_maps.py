@@ -51,8 +51,8 @@ import glob,os
 import datetime
 import netCDF4 as NC4
 import scipy.io.netcdf as NC
-from commons.mask import Mask
-from commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
 #from maskload import tmask,jpi,jpj
 
 fmt = '%Y%m%d'

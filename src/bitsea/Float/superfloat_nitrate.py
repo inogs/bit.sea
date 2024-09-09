@@ -39,22 +39,22 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
-from instruments import bio_float
-from Float.canyon_b_N3n import canyon_nitrate_correction
-from Float.woa_N3n import woa_nitrate_correction
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.instruments import bio_float
+from bitsea.Float.canyon_b_N3n import canyon_nitrate_correction
+from bitsea.Float.woa_N3n import woa_nitrate_correction
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 import superfloat_generator
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-from commons.layer import Layer
+from bitsea.commons.layer import Layer
 import seawater as sw
 import datetime
 
-import basins.V2 as basV2
-from static.climatology import get_climatology
+import bitsea.basins.V2 as basV2
+from bitsea.static.climatology import get_climatology
 
 class Metadata():
     def __init__(self, filename):

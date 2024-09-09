@@ -1,16 +1,16 @@
 import numpy as np
 
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
-from commons import netcdf3
-from layer_integral.mapbuilder import MapBuilder
-from layer_integral.mapplot import *
-from commons.dataextractor import DataExtractor
-from commons.time_averagers import TimeAverager3D
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.commons import netcdf3
+from bitsea.layer_integral.mapbuilder import MapBuilder
+from bitsea.layer_integral.mapplot import *
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.time_averagers import TimeAverager3D
 import matplotlib.pyplot as pl
-from commons import season
+from bitsea.commons import season
 
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
@@ -65,7 +65,7 @@ for req in Seas_reqs:
 
 
 # Now, the whole year
-import commons.timerequestors as requestors
+import bitsea.commons.timerequestors as requestors
 MY_YEAR = TimeInterval('20140401','20150401',"%Y%m%d")
 req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)

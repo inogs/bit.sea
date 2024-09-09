@@ -1,6 +1,6 @@
-from commons import netcdf4
+from bitsea.commons import netcdf4
 from datetime import datetime, timedelta
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 import numpy as np
 
 times_seconds=netcdf4.readfile('out.nc', 'time')

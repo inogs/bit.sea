@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 #author : epascolo
 
 class season:

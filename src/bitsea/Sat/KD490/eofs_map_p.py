@@ -44,8 +44,8 @@ import numpy as np
 import scipy.io.netcdf as NC
 import glob,os
 from eofs.standard import Eof
-from commons.mask import Mask
-from commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
 
 def modulation_func(myx,mycorr):
     mycenter=0.2*0.5

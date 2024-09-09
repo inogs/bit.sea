@@ -67,7 +67,7 @@ BGC_CLASS4_CHL_BIAS_SURF_BASIN_2    = LIST[2][:n]
 
 
 
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 nSUB = len(OGS.P.basin_list)
 

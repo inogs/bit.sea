@@ -3,10 +3,10 @@ import numpy as np
 import datetime
 import os
 import matplotlib.pyplot as pl
-from commons.utils import addsep
-from instruments.instrument import Instrument, Profile
+from bitsea.commons.utils import addsep
+from bitsea.instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
-from instruments.var_conversions import FLOATVARS as conversion
+from bitsea.instruments.var_conversions import FLOATVARS as conversion
 
 mydtype= np.dtype([
           ('file_name','U200'),
@@ -443,8 +443,8 @@ if __name__ == '__main__':
     assert (Value == Value_I).all()
 
     
-    from basins.region import Rectangle
-    from commons.time_interval import TimeInterval
+    from bitsea.basins.region import Rectangle
+    from bitsea.commons.time_interval import TimeInterval
 
     var = 'NITRATE'
     TI = TimeInterval('20240201','20240301','%Y%m%d')

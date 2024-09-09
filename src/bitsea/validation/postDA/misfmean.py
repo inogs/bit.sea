@@ -1,12 +1,12 @@
 import numpy as np
-from commons.dataextractor import DataExtractor
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import V2 as OGS
-from commons import timerequestors
-from commons.season import season
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V2 as OGS
+from bitsea.commons import timerequestors
+from bitsea.commons.season import season
 import pickle
 
 RUNname = 'RUN_TEST'

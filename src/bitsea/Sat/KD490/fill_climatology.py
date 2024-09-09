@@ -27,8 +27,8 @@ def argument():
 args = argument()
 
 
-from commons.mask import Mask
-from commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
 import numpy as np
 import netCDF4
 import scipy.interpolate

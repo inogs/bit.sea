@@ -24,30 +24,30 @@ args = argument()
 
 import os,sys
 import scipy.io.netcdf as NC
-from commons.mask import Mask
-from instruments import matchup_manager
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins.region import Region, Rectangle
-from layer_integral import coastline
-import instruments
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
+from bitsea.commons.mask import Mask
+from bitsea.instruments import matchup_manager
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins.region import Region, Rectangle
+from bitsea.layer_integral import coastline
+import bitsea.instruments
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
 
 import scipy.io.netcdf as NC
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import matplotlib.pyplot as pl
-from basins import OGS
-from validation.online.profileplotter import figure_generator, ncwriter #, add_metadata
+from bitsea.basins import OGS
+from bitsea.validation.online.profileplotter import figure_generator, ncwriter #, add_metadata
 import matplotlib
-from mhelpers.pgmean import PLGaussianMean
+from bitsea.mhelpers.pgmean import PLGaussianMean
 from profiler import *
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 
-from commons.mask import Mask
-from timeseries.plot import *
+from bitsea.commons.mask import Mask
+from bitsea.timeseries.plot import *
 meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
 import numpy.ma as ma

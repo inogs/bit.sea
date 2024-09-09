@@ -11,10 +11,10 @@ from glob import glob
 from warnings import warn
 
 try:
-    from transects.transect import Transect
-    from transects.plot import transectplot
-    from commons.mask import Mask
-    from commons.dataextractor import NotFoundError
+    from bitsea.transects.transect import Transect
+    from bitsea.transects.plot import transectplot
+    from bitsea.commons.mask import Mask
+    from bitsea.commons.dataextractor import NotFoundError
 except ImportError:
     print("You should run this script from the bit.sea root directory.", file=sys.stderr)
     sys.exit(2)

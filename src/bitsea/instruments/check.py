@@ -1,8 +1,8 @@
 import numpy as np
 import netCDF4
 import os
-from commons.utils import addsep
-from Float.oxygen_saturation import oxy_sat
+from bitsea.commons.utils import addsep
+from bitsea.Float.oxygen_saturation import oxy_sat
 
 class checkreport():
     def __init__(self, linestr, nObs,nExcl,reason, depthexc):

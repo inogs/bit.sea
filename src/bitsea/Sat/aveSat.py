@@ -1,5 +1,5 @@
 import argparse
-from utilities.argparse_types import some_among, date_from_str
+from bitsea.utilities.argparse_types import some_among, date_from_str
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generic averager for sat files.
@@ -57,15 +57,15 @@ def argument():
 args = argument()
 
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
 from datetime import datetime
-from postproc import masks
+from bitsea.postproc import masks
 import numpy as np
 import os
-import Sat.SatManager as Sat
-from commons.utils import addsep
-from utilities.mpi_serial_interface import get_mpi_communicator
+import bitsea.Sat.SatManager as Sat
+from bitsea.commons.utils import addsep
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 if not args.serial:
     import mpi4py

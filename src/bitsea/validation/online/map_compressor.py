@@ -24,7 +24,7 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os,glob
 
 try:

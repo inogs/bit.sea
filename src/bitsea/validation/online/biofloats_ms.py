@@ -36,20 +36,20 @@ def argument():
 
 args = argument()
 
-from commons import timerequestors
-from basins import V2 as OGS
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
-from instruments.matchup_manager import Matchup_Manager
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
+from bitsea.commons import timerequestors
+from bitsea.basins import V2 as OGS
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
 import numpy as np
-from matchup.statistics import matchup
+from bitsea.matchup.statistics import matchup
 import datetime
 import scipy.io as NC
-from commons.utils import addsep
-from basins.region import Rectangle
+from bitsea.commons.utils import addsep
+from bitsea.basins.region import Rectangle
 
 TheMask  = Mask(args.maskfile)
 BASEDIR =  addsep(args.basedir)

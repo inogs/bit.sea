@@ -7,8 +7,8 @@ from os.path import join
 from os import listdir
 
 from harvester_interface import HarvesterInterface
-from utilities.ftp_utilities import list_files, download_file
-from utilities.files_and_dirs import ensure_dir
+from bitsea.utilities.ftp_utilities import list_files, download_file
+from bitsea.utilities.files_and_dirs import ensure_dir
 
 ftp_url = 'nrt.cmems-du.eu'
 

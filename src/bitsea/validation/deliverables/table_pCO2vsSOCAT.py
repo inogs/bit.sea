@@ -22,13 +22,13 @@ def argument():
 
 args = argument()
 
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 INPUTDIR=addsep(args.inputdir)
 filemodel=INPUTDIR + "monthly_pCO2.txt"
 OUTDIR=addsep(args.outdir)
 import numpy as np
-from basins import V2
-from commons.utils import writetable
+from bitsea.basins import V2
+from bitsea.commons.utils import writetable
 
 socat=np.loadtxt(INPUTDIR +"monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
 num_socat=np.loadtxt(INPUTDIR +"monthly_num_socat.txt",skiprows=1,usecols=range(1,13))

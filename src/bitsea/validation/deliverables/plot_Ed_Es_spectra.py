@@ -29,9 +29,9 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from timeseries.plot import read_pickle_file
-from basins import V2 as OGS
-from commons.utils import addsep
+from bitsea.timeseries.plot import read_pickle_file
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
 
 class filereader():
     def __init__(self, filename):

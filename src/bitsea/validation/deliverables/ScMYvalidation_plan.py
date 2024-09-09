@@ -70,21 +70,21 @@ args = argument()
 
 
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
 import numpy as np
 import os
-import Sat.SatManager as Satmodule
-import matchup.matchup as matchup
-from commons.dataextractor import DataExtractor
-from layer_integral.mapbuilder import MapBuilder
-from commons.mask import Mask
-from commons.submask import SubMask
-#from basins import V2 as OGS
-from commons.layer import Layer
-from commons.utils import addsep
+import bitsea.Sat.SatManager as Satmodule
+import bitsea.matchup.matchup as matchup
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.layer_integral.mapbuilder import MapBuilder
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+#from bitsea.basins import V2 as OGS
+from bitsea.commons.layer import Layer
+from bitsea.commons.utils import addsep
 import pickle
-from instruments.var_conversions import SAT_VARS
+from bitsea.instruments.var_conversions import SAT_VARS
 
 def weighted_mean(Conc, Weight):
 
@@ -114,10 +114,10 @@ model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*.nc", filtervar=modvarname)
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
 
 if (area=="Med"):
-    from basins import V2 as OGS
+    from bitsea.basins import V2 as OGS
     BASINS=OGS.Pred
 if (area=="rivers"):
-   from basins import RiverBoxes as OGS
+   from bitsea.basins import RiverBoxes as OGS
    BASINS=OGS.P
 
 nFrames = model_TL.nTimes

@@ -1,5 +1,5 @@
-from commons.timeseries import TimeSeries
-from commons.Timelist import TimeList
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.Timelist import TimeList
 import glob
 import numpy as np
 import scipy.io.netcdf as NC
@@ -105,7 +105,7 @@ class timelistcontainer():
 
 
 if __name__ == '__main__':
-    from commons.time_interval import TimeInterval
+    from bitsea.commons.time_interval import TimeInterval
     TI = TimeInterval("20160412","20170502","%Y%m%d")
 #    ARCHIVEDIR="/pico/scratch/userexternal/gbolzon0/NRT/V4/NRT3_outputs/"
     ARCHIVEDIR="/pico/scratch/userexternal/lfeudale/ANALYSIS/NRT3_outputs/"

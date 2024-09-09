@@ -665,8 +665,8 @@ if __name__ == "__main__":
 	idepth   = 0
 	outfile  = 'example_MapPlotter_1.png'
 	outdpi   = 300
-	from commons.mask import Mask
-	from commons.dataextractor import DataExtractor
+	from bitsea.commons.mask import Mask
+	from bitsea.commons.dataextractor import DataExtractor
 
 	TheMask = Mask(maskfile)
 	data = DataExtractor(TheMask,fname, varname).values

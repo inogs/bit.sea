@@ -6,8 +6,8 @@ from os import path
 
 import numpy as np
 
-from basins.region import Polygon, Rectangle
-from basins.basin import SimpleBasin, SimplePolygonalBasin, ComposedBasin
+from bitsea.basins.region import Polygon, Rectangle
+from bitsea.basins.basin import SimpleBasin, SimplePolygonalBasin, ComposedBasin
 
 
 # If you change these parameters, please re-generate the bathymetric

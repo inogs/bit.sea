@@ -18,13 +18,13 @@ args = argument()
 
 import numpy as np
 from profiler import MassimiliReader, Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
-from commons.mask import Mask
-import basins.V2 as OGS
-from instruments.var_conversions import MASSIMILIVARS as NUTRVARS
-from commons.utils import addsep
-from commons.layer import Layer
+from bitsea.commons.mask import Mask
+import bitsea.basins.V2 as OGS
+from bitsea.instruments.var_conversions import MASSIMILIVARS as NUTRVARS
+from bitsea.commons.utils import addsep
+from bitsea.commons.layer import Layer
 
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N = MassimiliReader()

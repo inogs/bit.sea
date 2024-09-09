@@ -7,10 +7,10 @@
 from __future__ import print_function
 
 import numpy as np
-import MapPlotter as mp
+import bitsea.MapPlotter as mp
 
-from commons import netcdf4 as nc4
-from commons.mask import Mask
+from bitsea.commons import netcdf4 as nc4
+from bitsea.commons.mask import Mask
 
 ## DATA PATHS ##
 fname    = '/media/internal/disk2TiB/data/MEDICANE/AVE_PHYS/ave.20180925-12:00:00.votemper.nc'

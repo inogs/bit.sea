@@ -22,7 +22,7 @@ def argument():
 
 args = argument()
 
-from commons.utils import file2stringlist
+from bitsea.commons.utils import file2stringlist
 
 OLD=file2stringlist(args.input_OLD)
 NEW=file2stringlist(args.input_NEW)

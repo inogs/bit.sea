@@ -38,11 +38,11 @@ matplotlib.use('Agg')
 import numpy as np
 import pylab as plt
 import scipy.io.netcdf as NC
-import commons.timerequestors as requestors
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from basins import V2
+import bitsea.commons.timerequestors as requestors
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins import V2
 
 
 INDIR = addsep(args.indir)

@@ -2,15 +2,15 @@ import scipy.io.netcdf as NC
 import numpy as np
 import os
 
-from commons.layer import Layer
-from commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
 
 from profilerIspra import *
-import basins.OGS as OGS
-import basins.V2 as V2
-from instruments import lovbio_float
-from instruments import var_conversions
-from static.Ispra_reader import *
+import bitsea.basins.OGS as OGS
+import bitsea.basins.V2 as V2
+from bitsea.instruments import lovbio_float
+from bitsea.instruments import var_conversions
+from bitsea.static.Ispra_reader import *
 from loadIspraDistances import statExcludeInt,statExcludeDist
 
 M = Matchup_Manager(ISPRA_PROFILES,TL,BASEDIR)

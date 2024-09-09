@@ -1,6 +1,6 @@
 import matplotlib.pyplot as pl
 import numpy as np
-from layer_integral import coastline
+from bitsea.layer_integral import coastline
 
 class figure_generator():
     def __init__(self, S):
@@ -167,9 +167,9 @@ def clim_profile_plotter(depth,mean,std,ax_top,ax_bottom):
 
 
 if __name__=="__main__":
-    from basins import V2 as basV2
-    from commons.mask import Mask
-    from commons.submask import SubMask
+    from bitsea.basins import V2 as basV2
+    from bitsea.commons.mask import Mask
+    from bitsea.commons.submask import SubMask
 
     maskfile="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
     #maskfile="/Users/gbolzon/Documents/workspace/ogs_bounday_conditions/masks/meshmask_872.nc"

@@ -31,11 +31,11 @@ args = argument()
 
 import numpy as np
 from mydtype import *
-from instruments.instrument import ContainerProfile
+from bitsea.instruments.instrument import ContainerProfile
 from datetime import datetime
 import scipy.io.netcdf as NC
 import os
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 def unique_rows(data, prec=5):
     

@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
 import pylab as pl
-from postproc import masks
+from bitsea.postproc import masks
 from datetime import datetime
-from layer_integral import coastline
+from bitsea.layer_integral import coastline
 
 class container():
     def __init__(self, I,J,values, QI_old, QI_new):

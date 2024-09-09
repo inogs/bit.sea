@@ -11,7 +11,7 @@ import pickle
 
 from datetime import datetime
 
-from commons.utils import get_date_string
+from bitsea.commons.utils import get_date_string
 
 
 LOGGER = logging.getLogger(__name__)
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     fig.show()
 
     from glob import glob
-    from commons.mask import Mask
+    from bitsea.commons.mask import Mask
     m = Mask('./layer_integral/meshmask.nc')
     fl = sorted(glob('timeseries/*nc'))
     #fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)

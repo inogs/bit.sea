@@ -4,11 +4,11 @@ import warnings
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
-from commons.segment import Segment
-from commons.utils import is_number
-from commons.xml_module import *
-from commons.mask import Mask
-from commons.dataextractor import DataExtractor
+from bitsea.commons.segment import Segment
+from bitsea.commons.utils import is_number
+from bitsea.commons.xml_module import *
+from bitsea.commons.mask import Mask
+from bitsea.commons.dataextractor import DataExtractor
 
 class Transect(object):
     """Stores a multiple segment transect definition.

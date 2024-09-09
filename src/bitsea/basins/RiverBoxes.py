@@ -1,5 +1,5 @@
-from basins.region import Polygon, Rectangle
-from basins.basin import SimplePolygonalBasin, ComposedBasin
+from bitsea.basins.region import Polygon, Rectangle
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin
 
 Ebro = Rectangle(0.41666669, 1.41666669, 40.22916794, 41.22916794)
 Ebro = SimplePolygonalBasin('Ebro', Ebro, 'Ebro box')

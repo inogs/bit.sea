@@ -1,7 +1,7 @@
-from commons import netcdf4
-from Sat import SatManager
-from postproc import masks
-from commons.mask import Mask
+from bitsea.commons import netcdf4
+from bitsea.Sat import SatManager
+from bitsea.postproc import masks
+from bitsea.commons.mask import Mask
 import numpy as np
 import os,sys
 

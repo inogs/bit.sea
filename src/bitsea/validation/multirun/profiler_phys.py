@@ -5,11 +5,11 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-#from instruments import instruments
-from instruments import lovbio_float
-from instruments.matchup_manager import Matchup_Manager
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
+#from bitsea.instruments import instruments
+from bitsea.instruments import lovbio_float
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
 import os
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl
@@ -29,7 +29,7 @@ DATE__END = '20160101'
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"T*.nc", prefix="T", hour=0)
 
-import basins.OGS as OGS
+import bitsea.basins.OGS as OGS
 ALL_PROFILES = lovbio_float.FloatSelector(None, T_INT, OGS.med)#instruments.getAllProfiles(T_INT)
 
 vardescriptorfile="/galileo/home/userexternal/ateruzzi/bit.sea/validation/multirun/VarDescriptor_valid_online.xml"

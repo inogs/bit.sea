@@ -1,4 +1,4 @@
-from basins import V2 as basV2
+from bitsea.basins import V2 as basV2
 import os
 import pandas as pd
 import numpy as np

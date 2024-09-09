@@ -22,11 +22,11 @@ def argument():
 
 args = argument()
 
-from commons import netcdf4
+from bitsea.commons import netcdf4
 import netCDF4 as NC
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 import glob,os
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 INPUTDIR = addsep(args.inputdir)
 OUTDIR   = addsep(args.outdir)

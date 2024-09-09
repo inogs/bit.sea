@@ -25,11 +25,11 @@ def argument():
 
 args = argument()
 
-from timeseries.plot import read_pickle_file
-from commons import timerequestors
-from basins import V2 as OGS
+from bitsea.timeseries.plot import read_pickle_file
+from bitsea.commons import timerequestors
+from bitsea.basins import V2 as OGS
 import numpy as np
-from commons.utils import writetable,addsep
+from bitsea.commons.utils import writetable,addsep
 
 INPUTDIR=addsep(args.inputdir)
 OUTPUTDIR=addsep(args.outdir)

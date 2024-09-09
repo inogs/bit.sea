@@ -8,7 +8,7 @@ import warnings
 
 
 #Mask object
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 
 class NotFoundError(Exception):
     pass

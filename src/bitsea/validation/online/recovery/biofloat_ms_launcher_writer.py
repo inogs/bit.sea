@@ -1,4 +1,4 @@
-from commons.Timelist import TimeList, TimeInterval
+from bitsea.commons.Timelist import TimeList, TimeInterval
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 

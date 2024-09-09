@@ -31,11 +31,11 @@ import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as pl
-from basins import V2
-from commons.mask import Mask
-from timeseries.plot import read_pickle_file
+from bitsea.basins import V2
+from bitsea.commons.mask import Mask
+from bitsea.timeseries.plot import read_pickle_file
 import os
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 BFMv5_dict={     'Ac':'ALK',
                 'ppn': 'netPPYc',

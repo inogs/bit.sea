@@ -1,18 +1,18 @@
 import os,sys
 import scipy.io.netcdf as NC
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
 import scipy.io.netcdf as NC
 import numpy as np
 import matplotlib.pyplot as pl
-from commons.mask import Mask
-from postproc import maskload   #read_Positions_for_Pointprofiles
-from instruments import matchup_manager #	readModelProfile
+from bitsea.commons.mask import Mask
+from bitsea.postproc import maskload   #read_Positions_for_Pointprofiles
+from bitsea.instruments import matchup_manager #	readModelProfile
 from datetime import datetime
-import commons.genUserDateList as DL
+import bitsea.commons.genUserDateList as DL
 
 
-from basins.region import Rectangle
+from bitsea.basins.region import Rectangle
 import netCDF4 as nc
 import csv
 import matplotlib.dates as mpldates
@@ -82,7 +82,7 @@ ass_dates = ['20150804','20150811','20150818','20150825','20150901']
 #assim_dates=[]
 #for j in [0,1,2,3,4]: assim_dates.append(datetime.strptime(ass_dates[j]+"00","%Y%m%d%H"))
 #assim_dates_F = TimeList.fromfilenames(TI1,INPUTDIR_model,"RST.*P_l.nc",prefix='RST.')
-import commons.genUserDateList as DL
+import bitsea.commons.genUserDateList as DL
 
 #assim_dates_F =  DL.getTimeList("20150106-00:00:00","20150209-00:00:00","days=5")
 assim_dates_F =  DL.getTimeList("20150804-00:00:00","20150907-00:00:00","days=7")

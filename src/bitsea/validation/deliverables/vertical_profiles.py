@@ -33,15 +33,15 @@ def argument():
 args = argument()
 
 import matplotlib.pyplot as pl
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 import os
 import numpy as np
 from profiler_RA import *
-import basins.OGS as OGS
-import basins.COASTAL12nm as C12
-from static.Nutrients_reader import NutrientsReader
-from static.Carbon_reader import CarbonReader
-from static.climatology import DatasetInfo
+import bitsea.basins.OGS as OGS
+import bitsea.basins.COASTAL12nm as C12
+from bitsea.static.Nutrients_reader import NutrientsReader
+from bitsea.static.Carbon_reader import CarbonReader
+from bitsea.static.climatology import DatasetInfo
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()

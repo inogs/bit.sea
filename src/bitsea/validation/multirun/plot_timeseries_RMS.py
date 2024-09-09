@@ -56,7 +56,7 @@ BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
 #surf_layer = Layer(0,10)
 
-from basins import OGS
+from bitsea.basins import OGS
 
 nSUB = len(OGS.P.basin_list)
 

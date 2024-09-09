@@ -17,7 +17,7 @@ def argument():
 
 args = argument()
 
-from commons import netcdf4
+from bitsea.commons import netcdf4
 import scipy.io.netcdf as NC
 eva=netcdf4.readfile(args.inputfile, "eva")
 evc=netcdf4.readfile(args.inputfile, "evc")

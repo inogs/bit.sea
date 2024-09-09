@@ -1,6 +1,6 @@
 import numpy as np
-from commons.submask import SubMask
-from basins import V2 as OGS
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V2 as OGS
 import pickle
 import datetime
 import matplotlib.pyplot as plt

@@ -3,9 +3,9 @@ import lovbio_float
 import superfloat
 import optbio_float
 import optbio_float_2019
-#import mooring
-from static.Carbon_reader import CarbonReader
-from static.Nutrients_reader import NutrientsReader
+#import bitsea.mooring
+from bitsea.static.Carbon_reader import CarbonReader
+from bitsea.static.Nutrients_reader import NutrientsReader
 
 from var_conversions import LOVFLOATVARS, FLOATVARS, MOORINGVARS, CARBONVARS, NUTRVARS, FLOAT_OPT_VARS, FLOAT_OPT_VARS_2019, SUPERFLOAT_VARS
 
@@ -75,6 +75,6 @@ def static_Selector(var,T,region):
     return LIST
 
 def getAllProfiles(TI):
-    from basins.region import Rectangle
+    from bitsea.basins.region import Rectangle
     All_Med = Rectangle(-6,36,30,46)
     return Selector(None, TI, All_Med)

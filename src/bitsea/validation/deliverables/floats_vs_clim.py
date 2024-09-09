@@ -31,19 +31,19 @@ args = argument()
 
 import numpy as np
 import pylab as pl
-import basins.V2 as basV2
+import bitsea.basins.V2 as basV2
 import figure_generator
-from instruments import lovbio_float as bio_float
-from static.climatology import get_climatology
-from commons.layer import Layer
-from commons.mask import Mask
-from commons.submask import SubMask
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from instruments.var_conversions import LOVFLOATVARS
-from timeseries.plot import Hovmoeller_matrix
-from timeseries.plot import read_pickle_file, read_basic_info
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.static.climatology import get_climatology
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.instruments.var_conversions import LOVFLOATVARS
+from bitsea.timeseries.plot import Hovmoeller_matrix
+from bitsea.timeseries.plot import read_pickle_file, read_basic_info
 IDrun='floatcfr'
 OUTDIR=addsep(args.outdir)
 # MODDIR=addsep(args.inputdir)

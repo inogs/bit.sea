@@ -44,23 +44,23 @@ args = argument()
 
 import matplotlib
 matplotlib.use('Agg')
-from commons.mask import Mask
-from commons.Timelist import TimeList, TimeInterval
-from basins.region import Rectangle
-from instruments import superfloat as bio_float
-from instruments.var_conversions import FLOATVARS
+from bitsea.commons.mask import Mask
+from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.basins.region import Rectangle
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.var_conversions import FLOATVARS
 import numpy as np
 import numpy.ma as ma
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import matplotlib.pyplot as pl
 from matplotlib import cm
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotter
-from instruments import check
+from bitsea.instruments import check
 Check_obj = check.check("", verboselevel=0)
 
 

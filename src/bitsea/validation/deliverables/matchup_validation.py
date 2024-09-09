@@ -29,18 +29,18 @@ args = argument()
 import numpy as np
 #from profiler_RA_N import NutrientsReader, Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
 from profiler_RA import Matchup_Manager, ALL_PROFILES, TL, BASEDIR, T_INT
-from commons.mask import Mask
-import basins.V2 as OGS
-import basins.COASTAL12nm as C12
-from static.climatology import DatasetInfo
-from static.Nutrients_reader import NutrientsReader
-from static.Carbon_reader import CarbonReader
-#from instruments.var_conversions import NUTRVARS as NUTRVARS
-#from instruments.var_conversions import CARBONVARS 
-from commons.utils import addsep
-from commons.layer import Layer
+from bitsea.commons.mask import Mask
+import bitsea.basins.V2 as OGS
+import bitsea.basins.COASTAL12nm as C12
+from bitsea.static.climatology import DatasetInfo
+from bitsea.static.Nutrients_reader import NutrientsReader
+from bitsea.static.Carbon_reader import CarbonReader
+#from bitsea.instruments.var_conversions import NUTRVARS as NUTRVARS
+#from bitsea.instruments.var_conversions import CARBONVARS 
+from bitsea.commons.utils import addsep
+from bitsea.commons.layer import Layer
 
-from commons.utils import writetable
+from bitsea.commons.utils import writetable
 
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N=NutrientsReader()
@@ -79,11 +79,11 @@ column_names = [layer.string() for layer in LayerList]
 
 # SEASON CHOICE:
 if (Seas == "win" or Seas == "sum"):
-    from commons.season import season
+    from bitsea.commons.season import season
     S=season()
     S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
-    from commons import timerequestors
-    from commons.Timelist import TimeInterval, TimeList
+    from bitsea.commons import timerequestors
+    from bitsea.commons.Timelist import TimeInterval, TimeList
     if (Seas == "win" ):
         DATESTART = '20190101'
         DATE__END = '20190501'
@@ -95,7 +95,7 @@ if (Seas == "win" or Seas == "sum"):
 
     T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 #    TL=TimeList(TIMES)
-    from commons.utils import writetable
+    from bitsea.commons.utils import writetable
 
     iSeas=0 # JAN-APR
     CLIM_REQ=timerequestors.Clim_season(iSeas,S)

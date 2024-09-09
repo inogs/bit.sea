@@ -25,17 +25,17 @@ def argument():
     return parser.parse_args()
 args = argument()
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.mask import Mask
-from commons.submask import SubMask
-from commons.layer import Layer
-from timeseries.plot import read_pickle_file, read_basic_info
-from timeseries.plot import Hovmoeller_matrix
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.commons.layer import Layer
+from bitsea.timeseries.plot import read_pickle_file, read_basic_info
+from bitsea.timeseries.plot import Hovmoeller_matrix
 import numpy as np
-from basins import V2
+from bitsea.basins import V2
 import matplotlib.pyplot as pl
-from commons.utils import getcolor, addsep
+from bitsea.commons.utils import getcolor, addsep
 
 def weighted_mean(values,weights):
     if weights.sum() == 0 :

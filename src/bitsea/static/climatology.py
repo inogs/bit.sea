@@ -1,12 +1,12 @@
-from commons.time_interval import TimeInterval
-from commons import season
-from commons import timerequestors
-from static.Nutrients_reader import NutrientsReader
-from static.Carbon_reader import CarbonReader
-from instruments.var_conversions import NUTRVARS
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons import season
+from bitsea.commons import timerequestors
+from bitsea.static.Nutrients_reader import NutrientsReader
+from bitsea.static.Carbon_reader import CarbonReader
+from bitsea.instruments.var_conversions import NUTRVARS
 import numpy as np
-from basins import V2 as OGS
-from basins.basin import SimplePolygonalBasin, ComposedBasin
+from bitsea.basins import V2 as OGS
+from bitsea.basins.basin import SimplePolygonalBasin, ComposedBasin
 
 N=NutrientsReader()
 C=CarbonReader()
@@ -250,7 +250,7 @@ def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdept
 
 
 if __name__ == "__main__":
-    from commons.layer import Layer
+    from bitsea.commons.layer import Layer
     PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500,3000,4000,5000])
     LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
     SUBLIST = OGS.P.basin_list

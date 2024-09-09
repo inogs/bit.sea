@@ -27,17 +27,17 @@ def argument():
 args = argument()
 
 
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
-from commons.layer import Layer
-from basins import V2 as OGS
-from commons.utils import addsep
+from bitsea.commons.layer import Layer
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
 from profiler import TL
 import scipy.io.netcdf as NC
-from commons.utils import writetable, nanmean_without_warnings
+from bitsea.commons.utils import writetable, nanmean_without_warnings
 from datetime import datetime
 from profiler import *
 

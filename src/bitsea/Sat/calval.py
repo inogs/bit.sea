@@ -1,9 +1,9 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-import commons.IOnames as IOnames
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+import bitsea.commons.IOnames as IOnames
 import numpy as np
 import SatManager as Sat
-import matchup.matchup as matchup
+import bitsea.matchup.matchup as matchup
 import scipy.io.netcdf as NC
 
 

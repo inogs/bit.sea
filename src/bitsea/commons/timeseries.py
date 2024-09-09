@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from warnings import warn
 from string import Template
 
-from commons.time_interval import TimeInterval
+from bitsea.commons.time_interval import TimeInterval
 
 class TimeSeries(object):
     """

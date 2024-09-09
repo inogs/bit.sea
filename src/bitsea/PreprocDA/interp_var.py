@@ -44,13 +44,13 @@ args = argument()
 
 import numpy as np
 import os
-from commons.dataextractor import DataExtractor
-from commons.interpolators import surf_interp_2d
-from commons.mask import Mask
-from commons import netcdf4
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.interpolators import surf_interp_2d
+from bitsea.commons.mask import Mask
+from bitsea.commons import netcdf4
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 
 
 INDIR = addsep(args.indir)

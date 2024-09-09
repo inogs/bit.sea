@@ -43,13 +43,13 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np
 import matplotlib.pyplot as pl
-from basins import V2
-from commons.mask import Mask
-from commons import season
-from commons.Timelist import TimeList
-from commons import timerequestors
-from commons.utils import addsep
-from timeseries.plot import read_pickle_file
+from bitsea.basins import V2
+from bitsea.commons.mask import Mask
+from bitsea.commons import season
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons import timerequestors
+from bitsea.commons.utils import addsep
+from bitsea.timeseries.plot import read_pickle_file
 from datetime import datetime as date
 from datetime import timedelta as timedelta
 from xml.dom import minidom

@@ -1,8 +1,8 @@
-from commons import netcdf4
-from commons import timerequestors
-from commons.Timelist import TimeInterval, TimeList
-from Sat import SatManager
-from postproc import masks
+from bitsea.commons import netcdf4
+from bitsea.commons import timerequestors
+from bitsea.commons.Timelist import TimeInterval, TimeList
+from bitsea.Sat import SatManager
+from bitsea.postproc import masks
 import numpy as np
 import os,sys
 

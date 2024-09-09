@@ -43,17 +43,17 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from timeseries.plot import Hovmoeller_matrix
-from timeseries.plot import read_pickle_file
-from commons.mask import Mask
-from commons.layer import Layer
-from basins import V2 as basV2
-from static import climatology
-from commons.utils import addsep
-from matchup.statistics import matchup
-from commons.utils import writetable
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.timeseries.plot import Hovmoeller_matrix
+from bitsea.timeseries.plot import read_pickle_file
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.basins import V2 as basV2
+from bitsea.static import climatology
+from bitsea.commons.utils import addsep
+from bitsea.matchup.statistics import matchup
+from bitsea.commons.utils import writetable
 
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 

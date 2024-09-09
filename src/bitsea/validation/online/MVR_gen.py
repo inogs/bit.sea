@@ -43,12 +43,12 @@ args = argument()
 import numpy as np
 import netCDF4 as NC
 import datetime
-from basins import V2 as OGS
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons import genUserDateList as DL
-from commons import timerequestors as requestors
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons import genUserDateList as DL
+from bitsea.commons import timerequestors as requestors
 import calendar
 
 INDIRSAT = addsep(args.inputsat)

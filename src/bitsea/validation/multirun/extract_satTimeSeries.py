@@ -34,9 +34,9 @@ import glob,os
 import pickle
 import datetime
 
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import OGS
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import OGS
 
 
 

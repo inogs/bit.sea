@@ -1,6 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
-from basins.basin import Basin
+from bitsea.basins.basin import Basin
 
 from importlib import import_module
 from inspect import getmembers

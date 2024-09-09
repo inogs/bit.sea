@@ -4,30 +4,30 @@ import os
 import argparse
 import numpy as np
 import numpy.ma as ma
-import instruments
+import bitsea.instruments
 import matplotlib.dates as mdates
 import matplotlib.pyplot as pl
 import scipy.io.netcdf as NC
 
 from profiler_2015 import *
 
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-from commons.mask import Mask
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.mask import Mask
 
-from instruments.matchup_manager import Matchup_Manager
-from instruments.var_conversions import LOVFLOATVARS
-from instruments import lovbio_float as bio_float
-from instruments import matchup_manager
-from layer_integral import coastline
-from mhelpers.pgmean import PLGaussianMean
-from timeseries.plot import *
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments.var_conversions import LOVFLOATVARS
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.instruments import matchup_manager
+from bitsea.layer_integral import coastline
+from bitsea.mhelpers.pgmean import PLGaussianMean
+from bitsea.timeseries.plot import *
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-from validation.online.profileplotter import figure_generator, ncwriter
-from basins import OGS
-# from basins.region import Region, Rectangle
+from bitsea.validation.online.profileplotter import figure_generator, ncwriter
+from bitsea.basins import OGS
+# from bitsea.basins.region import Region, Rectangle
 # import matplotlib
 
 

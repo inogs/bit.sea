@@ -43,10 +43,10 @@ args = argument()
 
 from datetime import datetime,timedelta
 
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import V2 as OGS
-from commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import addsep
 import numpy as np
 from SatValidation import SatValidation
 

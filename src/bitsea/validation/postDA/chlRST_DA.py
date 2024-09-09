@@ -1,10 +1,10 @@
 import numpy as np
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.dataextractor import DataExtractor
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import V2 as OGS
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V2 as OGS
 import pickle
 
 

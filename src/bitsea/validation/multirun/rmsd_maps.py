@@ -1,11 +1,11 @@
 import matplotlib
 matplotlib.use('Qt5Agg')
 import numpy as np
-from commons.mask import Mask
-from commons.dataextractor import DataExtractor
-from commons.Timelist import TimeList, TimeInterval
-import matchup.matchup as matchup
-from commons import netcdf4
+from bitsea.commons.mask import Mask
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.Timelist import TimeList, TimeInterval
+import bitsea.matchup.matchup as matchup
+from bitsea.commons import netcdf4
 import pylab as pl
 
 TI = TimeInterval("20190201","20190501"); season='winter'

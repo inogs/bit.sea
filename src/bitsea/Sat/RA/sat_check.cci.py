@@ -1,9 +1,9 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
 import numpy as np
 import os
 
-from Sat import SatManager as Sat
+from bitsea.Sat import SatManager as Sat
 
 ORIGDIR  ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/DAILY/ORIG/"
 CHECKDIR ="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/CCI/DAILY/CHECKED/"

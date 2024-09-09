@@ -24,11 +24,11 @@ args = argument()
 import numpy as np
 import pylab as plt
 
-from commons.utils import addsep
-from commons.Timelist import TimeList
-from commons.Timelist import TimeInterval
-from commons import genUserDateList as DL
-from commons import timerequestors as requestors
+from bitsea.commons.utils import addsep
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.Timelist import TimeInterval
+from bitsea.commons import genUserDateList as DL
+from bitsea.commons import timerequestors as requestors
 
 from layerinfo import DICTlayersQ
 

@@ -29,13 +29,13 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.commons.mask import Mask
+from bitsea.instruments.matchup_manager import Matchup_Manager
 from profiler_RA import *
-import basins.OGS as OGS
-from instruments.var_conversions import NUTRVARS
-from static.Nutrients_reader import NutrientsReader
-from commons.layer import Layer
+import bitsea.basins.OGS as OGS
+from bitsea.instruments.var_conversions import NUTRVARS
+from bitsea.static.Nutrients_reader import NutrientsReader
+from bitsea.commons.layer import Layer
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()
 

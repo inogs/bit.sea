@@ -25,23 +25,23 @@ args = argument()
 import numpy as np
 import os,sys
 import scipy.io.netcdf as NC
-from commons.mask import Mask
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from instruments import matchup_manager
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
-from layer_integral import coastline
-from instruments.matchup_manager import Matchup_Manager
-from basins import OGS
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.instruments import matchup_manager
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.instruments.var_conversions import LOVFLOATVARS
+from bitsea.layer_integral import coastline
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.basins import OGS
 import matplotlib.dates as mdates
-from mhelpers.pgmean import PLGaussianMean
+from bitsea.mhelpers.pgmean import PLGaussianMean
 import numpy.ma as ma
 import matplotlib.pyplot as pl
 from profiler_comparison2015 import *
 from profiler_onlymodel import dep1,dep2
-from timeseries.plot import *
+from bitsea.timeseries.plot import *
 
 
 #meanObj11 = PLGaussianMean(5,1.0)

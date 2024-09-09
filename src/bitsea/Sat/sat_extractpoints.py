@@ -56,10 +56,10 @@ def argument():
 
 args = argument()
 import numpy as np
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.utils import addsep
-from postproc import masks
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
 import os
 
 import SatManager as Sat

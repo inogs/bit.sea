@@ -43,27 +43,27 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from commons.submask import SubMask
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
 
-from instruments import superfloat as bio_float
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments import superfloat as bio_float
+from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 #from profiler import ALL_PROFILES,TL,BASEDIR
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-from basins.V2 import NRT3 as OGS
-from commons.time_interval import TimeInterval
-from matchup.statistics import *
-from commons.utils import writetable
+from bitsea.basins.V2 import NRT3 as OGS
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.matchup.statistics import *
+from bitsea.commons.utils import writetable
 from datetime import datetime
 from datetime import timedelta
 from profiler import *
 
 def fig_setup(S,subbasin_name):
 # ,Lon,Lat):
-    from layer_integral import coastline
+    from bitsea.layer_integral import coastline
 
     fig = plt.figure()
 #    ax0 = plt.subplot2grid((4, 3), (0, 0), colspan=2)

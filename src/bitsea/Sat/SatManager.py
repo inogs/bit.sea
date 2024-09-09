@@ -1,4 +1,4 @@
-from postproc import masks
+from bitsea.postproc import masks
 import netCDF4 as NC
 import numpy as np
 import netCDF4

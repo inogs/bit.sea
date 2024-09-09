@@ -39,14 +39,14 @@ import matplotlib
 matplotlib.use('Agg')
 
 from sat_timeseries import timelistcontainer
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 import numpy as np
 import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-from basins import V2 as OGS
+from bitsea.basins import V2 as OGS
 
 def avoid_diagonals_in_jumps(x,y):
     n = len(x)

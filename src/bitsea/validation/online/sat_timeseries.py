@@ -1,5 +1,5 @@
-from commons.timeseries import TimeSeries
-from commons.Timelist import TimeList
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.Timelist import TimeList
 import glob
 import numpy as np
 import scipy.io.netcdf as NC

@@ -1,8 +1,8 @@
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
 import numpy as np
 import os
-import Sat.SatManager as Sat
+import bitsea.Sat.SatManager as Sat
 
 CHECKDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/DAILY/CHECKED/"
 MONTHLYDIR="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/SAT/KD490/MONTHLY/ORIGMESH/"

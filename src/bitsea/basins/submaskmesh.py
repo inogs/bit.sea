@@ -1,8 +1,8 @@
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 TheMask=Mask('/gpfs/scratch/userexternal/ateruzzi/MASKS24/meshmask.nc')
 #TheMask=Mask('/gpfs/scratch/userexternal/ateruzzi/MASKS16corrected/meshmask.nc')
-from basins import V0 as OGS
-from commons.submask import SubMask
+from bitsea.basins import V0 as OGS
+from bitsea.commons.submask import SubMask
 import numpy as np
 
 OUTDIR = '/gpfs/scratch/userexternal/ateruzzi/MASKS24/'

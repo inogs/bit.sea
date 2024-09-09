@@ -1,6 +1,6 @@
 import numpy as np 
 import seawater as sw 
-from commons.dataextractor import DataExtractor
+from bitsea.commons.dataextractor import DataExtractor
 
 def get_density(filename, Maskobj):
     '''
@@ -29,7 +29,7 @@ def get_density(filename, Maskobj):
     return RHO
 
 if __name__=="__main__":
-    from commons.mask import Mask
+    from bitsea.commons.mask import Mask
     maskfile="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/meshmask.nc"
     TheMask = Mask(maskfile,dzvarname="e3t_0")
     filename="/pico/scratch/userexternal/gbolzon0/eas_v12/eas_v12_8/wrkdir/MODEL/AVE_PHYS/ave.20150116-12:00:00.phys.nc"

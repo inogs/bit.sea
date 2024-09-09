@@ -5,12 +5,12 @@
 # such as bioFloats, mooring or vessels have been found.
 
 # When imported, this scripts only defines settings for matchup generation.
-from instruments.lovbio_float import FloatSelector
-from static.Massimili_reader import MassimiliReader
-from instruments.matchup_manager import Matchup_Manager
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins.region import Rectangle
+from bitsea.instruments.lovbio_float import FloatSelector
+from bitsea.static.Massimili_reader import MassimiliReader
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins.region import Rectangle
 import os
 # location of input big ave files, usually the TMP directory.
 # ave files are supposed to have N3n, O2o and chl

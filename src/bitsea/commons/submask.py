@@ -4,11 +4,11 @@
 import os
 import numpy as np
 import netCDF4
-from commons.mask import *
-from commons.utils import is_number
-from basins.basin import Basin
-from basins.basin import SimpleBasin
-from basins.region import Rectangle
+from bitsea.commons.mask import *
+from bitsea.commons.utils import is_number
+from bitsea.basins.basin import Basin
+from bitsea.basins.basin import SimpleBasin
+from bitsea.basins.region import Rectangle
 
 
 class SubMask(Mask):
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     # each cell can belong to an only subbasin
 
     TheMask=Mask('/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_872.nc')
-    from basins import V2
+    from bitsea.basins import V2
 
     already_assigned=np.zeros(TheMask.shape,dtype=bool)
 

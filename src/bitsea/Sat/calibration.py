@@ -5,18 +5,18 @@
 # BGC_CLASS4_CHL_BIAS_SURF_BASIN
 # of CMEMS-Med-biogeochemistry-ScCP-1.0.pdf
 
-from commons.Timelist import TimeList
-from commons.time_interval import TimeInterval
-import commons.IOnames as IOnames
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.time_interval import TimeInterval
+import bitsea.commons.IOnames as IOnames
 import numpy as np
 import SatManager as Sat
-import matchup.matchup as matchup
-from commons.dataextractor import DataExtractor
-from layer_integral.mapbuilder import MapBuilder
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import OGS
-from commons.layer import Layer
+import bitsea.matchup.matchup as matchup
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.layer_integral.mapbuilder import MapBuilder
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import OGS
+from bitsea.commons.layer import Layer
 
 TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"

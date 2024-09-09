@@ -21,9 +21,9 @@ def argument():
 
 args = argument()
 
-from commons import netcdf4
+from bitsea.commons import netcdf4
 import pylab as pl
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 
 TheMask=Mask(args.maskfile)
 

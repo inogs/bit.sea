@@ -48,10 +48,10 @@ def argument():
 
 args = argument()
 import scipy.io.netcdf as NC
-from basins import V2
-from postproc import masks
+from bitsea.basins import V2
+from bitsea.postproc import masks
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import os
 
 import SatManager as Sat

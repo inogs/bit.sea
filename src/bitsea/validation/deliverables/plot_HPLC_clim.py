@@ -1,5 +1,5 @@
 import argparse
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 # EXAMPLE: %run plot_HPLC_clim.py -i /g101_scratch/userexternal/lfeudale/HPLC/bit.sea/validation/deliverables/HPLC_output/ -o HPLC_figures -p P1l 
 #          python plot_HPLC_clim_fromTXT.py -i /g100_scratch/userexternal/lfeudale/HPLC/bit.sea/validation/deliverables/HPLC_output/ -o $OUTDIR -p P1l 
 # OUTDIR = "/g100_work/OGS_devC/Benchmark/pub/lfeudale/HPLC/run2.9/"

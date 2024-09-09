@@ -30,25 +30,25 @@ args = argument()
 import numpy as np
 import scipy.io.netcdf as NC
 
-from commons.layer import Layer
-from commons.mask import Mask
-from commons.utils import addsep
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.commons.utils import addsep
 from metrics import *
 
-from instruments import lovbio_float as bio_float
-from instruments.var_conversions import LOVFLOATVARS
-from instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.instruments.var_conversions import LOVFLOATVARS
+from bitsea.instruments.matchup_manager import Matchup_Manager
 
 from profiler_comparison2015 import *
 
-from layer_integral import coastline
-from basins import OGS
+from bitsea.layer_integral import coastline
+from bitsea.basins import OGS
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from timeseries.plot import *
+from bitsea.timeseries.plot import *
 import numpy.ma as ma
-from mhelpers.pgmean import PLGaussianMean
+from bitsea.mhelpers.pgmean import PLGaussianMean
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 

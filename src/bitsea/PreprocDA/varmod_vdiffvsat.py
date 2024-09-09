@@ -52,11 +52,11 @@ args = argument()
 
 
 import numpy as np
-from commons.dataextractor import DataExtractor
-from commons.mask import Mask 
-from commons.utils import addsep
-from postproc import masks
-from Sat import SatManager
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask 
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
+from bitsea.Sat import SatManager
 
 maskSat = getattr(masks,'Mesh24')
 

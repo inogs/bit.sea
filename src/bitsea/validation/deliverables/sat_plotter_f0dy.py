@@ -42,15 +42,15 @@ matplotlib.use('Agg')
 from matplotlib.ticker import FormatStrFormatter
 
 from sat_timeseries import timelistcontainer
-from commons.time_interval import TimeInterval
-from commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.utils import addsep
 
 import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-from basins import V2 as OGS
-from commons.utils import writetable
+from bitsea.basins import V2 as OGS
+from bitsea.commons.utils import writetable
 
 nSub=len(OGS.P.basin_list)
 Graphic_DeltaT = relativedelta(months=18)

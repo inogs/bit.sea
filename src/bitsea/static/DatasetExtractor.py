@@ -1,12 +1,12 @@
 import numpy as np
 import scipy.io.netcdf as NC
 import datetime
-from instruments.instrument import ContainerProfile
+from bitsea.instruments.instrument import ContainerProfile
 import seawater
 from seawater.library import T90conv
-from commons.utils import find_index
-from commons.time_interval import TimeInterval
-from commons import timerequestors
+from bitsea.commons.utils import find_index
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons import timerequestors
 
 
 class DatasetExtractor():

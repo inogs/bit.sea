@@ -36,17 +36,17 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from instruments import lovbio_float as bio_float
-from instruments.matchup_manager import Matchup_Manager
-from instruments.var_conversions import LOVFLOATVARS
-from commons.utils import addsep
-from commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.instruments import lovbio_float as bio_float
+from bitsea.instruments.matchup_manager import Matchup_Manager
+from bitsea.instruments.var_conversions import LOVFLOATVARS
+from bitsea.commons.utils import addsep
+from bitsea.commons.layer import Layer
 from profiler_2015 import ALL_PROFILES,TL,BASEDIR
 from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
-from basins.V2 import NRT3 as OGS
-import commons.timerequestors as requestors
+from bitsea.basins.V2 import NRT3 as OGS
+import bitsea.commons.timerequestors as requestors
 
 OUTDIR = addsep(args.outdir)
 TheMask=Mask(args.maskfile, loadtmask=False)

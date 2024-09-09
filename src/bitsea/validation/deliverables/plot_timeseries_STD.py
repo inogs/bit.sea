@@ -47,9 +47,9 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
-from commons.utils import addsep
-from basins import V2 as OGS
-from instruments.var_conversions import SAT_VARS
+from bitsea.commons.utils import addsep
+from bitsea.basins import V2 as OGS
+from bitsea.instruments.var_conversions import SAT_VARS
 
 OUTDIR=addsep(args.outdir)
 fid = open(args.inputfile,'rb')
@@ -57,9 +57,9 @@ LIST = pickle.load(fid)
 fid.close()
 
 if (args.zone == "Med"):
-    from basins import V2 as OGS
+    from bitsea.basins import V2 as OGS
 if (args.zone == "rivers"):
-    from basins import RiverBoxes as OGS
+    from bitsea.basins import RiverBoxes as OGS
 
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR,NUMB = LIST
 

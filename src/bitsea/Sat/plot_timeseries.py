@@ -13,7 +13,7 @@ SAT___MEAN                     = LIST[4]
 
 
 
-from basins import OGS 
+from bitsea.basins import OGS 
 for isub,sub in enumerate(OGS.P): 
     print sub.name
     fig, ax = pl.subplots()

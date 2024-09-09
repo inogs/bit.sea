@@ -103,9 +103,9 @@ def interp_same_resolution(Mask1, Mask2, M3d):
 
 
 if __name__ == "__main__":
-    from commons import netcdf3    
-    from commons.mask import Mask
-    from commons.dataextractor import DataExtractor
+    from bitsea.commons import netcdf3    
+    from bitsea.commons.mask import Mask
+    from bitsea.commons.dataextractor import DataExtractor
 
     Mask24=Mask("/gpfs/scratch/userexternal/plazzari/eas_v12/eas_v12_6/wrkdir/MODEL/meshmask.nc",dzvarname="e3t_0")    
     Mask16=Mask('/gpfs/scratch/userexternal/gbolzon0/RA_COAST_03/wrkdir/MODEL/meshmask.nc')

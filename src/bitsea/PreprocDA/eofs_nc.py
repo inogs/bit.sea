@@ -57,10 +57,10 @@ args = argument()
 
 
 import numpy as np
-from commons.utils import addsep
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import V0_adr as OGS
+from bitsea.commons.utils import addsep
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import V0_adr as OGS
 import pickle as pkl
 import scipy.io.netcdf as NC
 #from maskload import tmask,SUB,SUBlist,jpk,jpj,jpi

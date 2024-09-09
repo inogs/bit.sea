@@ -3,11 +3,11 @@ import numpy as np
 import datetime
 import os
 import matplotlib.pyplot as pl
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 from var_conversions import FLOAT_OPT_VARS as conversion
 
 from instrument import Instrument, Profile
-from mhelpers.pgmean import PLGaussianMean
+from bitsea.mhelpers.pgmean import PLGaussianMean
 meanObj = PLGaussianMean(5,1.0)
 
 
@@ -268,8 +268,8 @@ def filter_by_wmo(Profilelist,wmo):
 
 
 if __name__ == '__main__':
-    from basins.region import Rectangle
-    from commons.time_interval import TimeInterval
+    from bitsea.basins.region import Rectangle
+    from bitsea.commons.time_interval import TimeInterval
 
     var = 'TEMP'
     TI = TimeInterval('20120101','20170130','%Y%m%d')

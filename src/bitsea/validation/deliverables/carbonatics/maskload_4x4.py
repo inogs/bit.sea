@@ -1,8 +1,8 @@
 import numpy as np
 import os, sys
-from commons.mask import Mask
-from commons.submask import SubMask
-from basins import med18_4x4 as OGS
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.basins import med18_4x4 as OGS
 
 
 annaCoast = False

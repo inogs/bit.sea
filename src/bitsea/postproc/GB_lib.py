@@ -1,7 +1,7 @@
 import numpy as np
 import os,time
 import scipy.io.netcdf as NC
-from commons.dataextractor import DataExtractor
+from bitsea.commons.dataextractor import DataExtractor
 import netCDF4
 
 def recognize_terms(formula):

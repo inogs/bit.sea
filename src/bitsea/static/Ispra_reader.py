@@ -1,6 +1,6 @@
 
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 from IspraExtractor import IspraExtractor
 
 

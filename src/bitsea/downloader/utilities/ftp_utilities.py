@@ -3,7 +3,7 @@
 from os.path import exists, join
 from os import fsync, rename
 from time import sleep
-from commons.utils import deblank
+from bitsea.commons.utils import deblank
 
 import ftplib
 import traceback

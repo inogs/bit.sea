@@ -1,17 +1,17 @@
 import sys
 import argparse
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 import numpy as np
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from commons.mask import Mask
-from commons.layer import Layer
-from commons.utils import writetable
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.mask import Mask
+from bitsea.commons.layer import Layer
+from bitsea.commons.utils import writetable
 import netCDF4 as NC
-import commons.netcdf4 as NC4 
+import bitsea.commons.netcdf4 as NC4 
 import matplotlib.pyplot as pl
-from layer_integral.mapplot import mapplot,pl
-from layer_integral import coastline
+from bitsea.layer_integral.mapplot import mapplot,pl
+from bitsea.layer_integral import coastline
 
 def argument():
     parser = argparse.ArgumentParser(description = '''

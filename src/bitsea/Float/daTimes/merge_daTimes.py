@@ -21,11 +21,11 @@ def argument():
 args = argument()
 
 
-from commons.time_interval import TimeInterval
-from basins.region import Rectangle
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.basins.region import Rectangle
 import datetime
 import numpy as np
-from commons.utils import addsep
+from bitsea.commons.utils import addsep
 
 DIR=addsep(args.daTimes_dir)
 

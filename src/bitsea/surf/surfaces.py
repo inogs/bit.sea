@@ -1,5 +1,5 @@
 import numpy as np
-from commons.mask import Mask
+from bitsea.commons.mask import Mask
 import sys
 def mld(temperature,maskobj):
     ''' Calculates the Mixed Layer Depth based on temperature criterium of "0.2C with respect to T at 10m depth"

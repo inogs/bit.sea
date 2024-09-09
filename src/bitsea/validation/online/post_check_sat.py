@@ -29,13 +29,13 @@ def argument():
 args = argument()
 
 import numpy as np
-from commons.mask import Mask
-from commons.submask import SubMask
-from commons.dataextractor import DataExtractor
-from commons.utils import addsep
-from commons.time_interval import TimeInterval
-from commons.Timelist import TimeList
-from basins import V2
+from bitsea.commons.mask import Mask
+from bitsea.commons.submask import SubMask
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.utils import addsep
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins import V2
 
 
 

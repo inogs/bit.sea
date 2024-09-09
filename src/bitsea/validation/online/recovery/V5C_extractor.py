@@ -1,5 +1,5 @@
-from commons.timeseries import TimeSeries
-from commons.time_interval import TimeInterval
+from bitsea.commons.timeseries import TimeSeries
+from bitsea.commons.time_interval import TimeInterval
 from dateutil.relativedelta import relativedelta
 TI = TimeInterval("20190801","20190915","%Y%m%d")
 archive_dir="/gpfs/work/OGS_prod_0/OPA/V5C/prod/archive/"

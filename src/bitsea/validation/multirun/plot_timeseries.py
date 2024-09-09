@@ -59,7 +59,7 @@ BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = LIST[5]
 BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= LIST[6]
 
 
-from basins import OGS
+from bitsea.basins import OGS
 for isub,sub in enumerate(OGS.P):
     print sub.name
     fig, ax = pl.subplots()

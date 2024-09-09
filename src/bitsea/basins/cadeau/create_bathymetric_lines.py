@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shapely
 
-from commons.mask import Mask, MaskBathymetry
-from commons.bathymetry import GEBCOBathymetry, SmoothBathymetry
-from basins.region import BathymetricPolygon, Polygon
-from basins.basin import SimpleBathymetricBasin
+from bitsea.commons.mask import Mask, MaskBathymetry
+from bitsea.commons.bathymetry import GEBCOBathymetry, SmoothBathymetry
+from bitsea.basins.region import BathymetricPolygon, Polygon
+from bitsea.basins.basin import SimpleBathymetricBasin
 
-from basins.cadeau.nad_V0 import \
+from bitsea.basins.cadeau.nad_V0 import \
     BATHYMETRIC_ISOLINES_DIR, OUTSIDE_NORTH, DOMAIN_LIMIT_SOUTH, \
     OUTSIDE_WEST, DEPTHS
 

@@ -5,8 +5,7 @@ description = ""
 authors = ["OGS"]
 readme = "README.md"
 packages = [
-    { include = "bitsea/commons", from="src" },
-    { include = "bitsea/utilities", from="src" },
+    { include = "bitsea", from="src" },
 ]
 
 [tool.poetry.dependencies]

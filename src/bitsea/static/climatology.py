@@ -28,19 +28,19 @@ def DatasetInfo(modelvarname):
     if modelvarname in ['N1p','N3n','O2o','N4n','N5s','P_l']:
         var =  NUTRVARS[modelvarname]
         dataset     = N
-    if modelvarname in ['O3h', 'Ac', 'ALK'] :
+    elif modelvarname in ['O3h', 'Ac', 'ALK'] :
         var = 'ALK'
         dataset = C
-    if modelvarname in ['O3c', 'DIC'] :
+    elif modelvarname in ['O3c', 'DIC'] :
         var ='DICric'
         dataset = C
-    if modelvarname in ['pH', 'PH'] :
+    elif modelvarname in ['pH', 'PH'] :
         var='PHt_{T-Press-ins}_ric'
         dataset = C
-    if modelvarname == 'pCO2' :
+    elif modelvarname == 'pCO2' :
         var='pCO2'
         dataset = C
-    if modelvarname not in ['N1p','N3n','O2o','N4n','N5s','P_l','O3h', 'Ac','ALK','O3c', 'DIC', 'pH',',PH', 'pCO2' ]:
+    else:
         raise ValueError("variable not in static dataset ")
     return var, dataset
 

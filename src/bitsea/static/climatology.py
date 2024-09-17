@@ -109,7 +109,7 @@ def get_sub_indexes(sub_search):
 
 TI = TimeInterval('19990101','20240101',"%Y%m%d")
 
-def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False,climseason=-1):
+def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, QC=False, climseason=-1, climatology_interval=TI):
     '''
     basin_expand=True: apply research of data in close sub-basins (see basin_expansion)
     QC=True: exclude non-good subbasins (see QualityCheck)
@@ -126,7 +126,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     var, Dataset = DatasetInfo(modelvarname)
     var_exp      = Internal_conversion(modelvarname)
     if climseason==-1:
-        T_int = TI
+        T_int = climatology_interval
     if climseason in [0,1,2,3]:
         S=season.season()
         T_int = timerequestors.Clim_season(climseason,S)
@@ -173,7 +173,7 @@ def get_climatology(modelvarname, subbasinlist, LayerList, basin_expand=False, Q
     return CLIM, STD
 
 
-def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200.0, basin_expand=False, QC=False,climseason=-1):
+def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200.0, basin_expand=False, QC=False, climseason=-1, climatology_interval=TI):
     '''
     get climatolgy excluding coastal areas, it needs TheMask (a mask object)
     limit depth for coastal areas (limdepth) is 200 by default
@@ -194,7 +194,7 @@ def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdept
     mask200 = TheMask.mask_at_level(limdepth)
 
     if climseason==-1:
-        T_int = TI
+        T_int = climatology_interval
     if climseason in [0,1,2,3]:
         S=season.season()
         T_int = timerequestors.Clim_season(climseason,S)
@@ -244,7 +244,7 @@ def get_climatology_open(modelvarname, subbasinlist, LayerList, TheMask, limdept
 
     return CLIM, STD
 
-def get_histo_open(modelvarname,subbasinlist, LayerList, TheMask, limdepth = 200.0, nbins=50):
+def get_histo_open(modelvarname, subbasinlist, LayerList, TheMask, limdepth = 200.0, nbins=50, climatology_interval=TI):
     '''
     get histogram of values in open sea areas (number of values VS values)
     returns: intervals of values of the variable, number of values
@@ -259,7 +259,7 @@ def get_histo_open(modelvarname,subbasinlist, LayerList, TheMask, limdepth = 200
     var_exp      = Internal_conversion(modelvarname)
     mask200 = TheMask.mask_at_level(limdepth)
 
-    T_int = TI
+    T_int = climatology_interval
     for isub, sub in enumerate(subbasinlist):
         Profilelist =Dataset.Selector(var, T_int, sub)
         Pres  =np.zeros((0,),np.float32)
@@ -281,7 +281,7 @@ def get_histo_open(modelvarname,subbasinlist, LayerList, TheMask, limdepth = 200
 
     return NUMBER, VALUES
 
-def get_climatology_coast(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200.0, basin_expand=False, QC=False,climseason=-1):
+def get_climatology_coast(modelvarname, subbasinlist, LayerList, TheMask, limdepth=200.0, basin_expand=False, QC=False, climseason=-1, climatology_interval=TI):
     '''
     get climatolgy in coastal areas, it needs TheMask (a mask object)
     limit depth for coastal areas (limdepth) is 200 by default
@@ -304,7 +304,7 @@ def get_climatology_coast(modelvarname, subbasinlist, LayerList, TheMask, limdep
     coastmask=mask0 & (~masklimdepth)
 
     if climseason==-1:
-        T_int = TI
+        T_int = climatology_interval
     if climseason in [0,1,2,3]:
         S=season.season()
         T_int = timerequestors.Clim_season(climseason,S)

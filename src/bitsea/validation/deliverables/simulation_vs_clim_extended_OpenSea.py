@@ -1,14 +1,14 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates png files for fig4.11 and fig4.17
+    Generates png files of comparison between model and climatology
+    in open sea areas (depth higher than 200 m).
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputdir','-i',
                                 type = str,
                                 required = True,
                                 help = '')
-
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
@@ -51,7 +51,7 @@ import matplotlib.pyplot as pl
 from bitsea.commons.utils import addsep
 from bitsea.commons import genUserDateList as DL
 
-IDrun='new_dset'
+IDrun='MedBGCins'
 OUTDIR=addsep(args.outdir)
 MODDIR=addsep(args.inputdir)
 
@@ -67,28 +67,25 @@ LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
 
 z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
-#TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
-weekly=DL.getTimeList(TI.start_time, TI.end_time, days=7)
-TL=TimeList(weekly)
+TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
+#weekly=DL.getTimeList(TI.start_time, TI.end_time, days=7)
+#TL=TimeList(weekly)
 
 SUBLIST = basV2.P.basin_list
-#SUBLIST2 = basV2.P.basin_list
-#SUBLIST2.remove(SUBLIST2[6])
 
-N3n_clim, N3n_std = get_climatology_open('N3n', SUBLIST, LayerList,TheMask,basin_expand=False)# fixme erano tutti True
-N1p_clim, N1p_std = get_climatology_open('N1p', SUBLIST, LayerList,TheMask,basin_expand=False)
-O2o_clim, O2o_std = get_climatology_open('O2o', SUBLIST, LayerList,TheMask,basin_expand=False)
-N4n_clim, N4n_std = get_climatology_open('N4n', SUBLIST, LayerList,TheMask,basin_expand=False)
-N5s_clim, N5s_std = get_climatology_open('N5s', SUBLIST, LayerList,TheMask,basin_expand=False)
-
-
+N3n_clim, N3n_std, N3n_vals, N3n_profs = get_climatology_open('N3n', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False)
+N1p_clim, N1p_std, N1p_vals, N1p_profs = get_climatology_open('N1p', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64),basin_expand=False)
+O2o_clim, O2o_std, O2o_vals, O2o_profs = get_climatology_open('O2o', SUBLIST, LayerList,TheMask,basin_expand=False)
+N4n_clim, N4n_std, N4n_vals, N4n_profs = get_climatology_open('N4n', SUBLIST, LayerList,TheMask,basin_expand=False)
+N5s_clim, N5s_std, N5s_vals, N5s_profs = get_climatology_open('N5s', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False)
 
 VARLIST=['P_l','N1p','N3n','O2o','N4n','N5s']
 var_dype = [(var,np.float32) for var in VARLIST]
 nVar = len(VARLIST)
 
 # reading of input files is limited here ----------
-_, COASTLIST, STAT_LIST = read_basic_info('/g100_scratch/userexternal/vdibiagi/EMODnet_2022/forValidation/ave.20190110-12:00:00.stat_profiles.nc')
+#_, COASTLIST, STAT_LIST = read_basic_info('/g100_scratch/userexternal/vdibiagi/EMODnet_2022/forValidation/ave.20190110-12:00:00.stat_profiles.nc')
+_, COASTLIST, STAT_LIST = read_basic_info(TL.filelist[0])
 icoast = COASTLIST.index('open_sea')
 istat =  STAT_LIST.index('Mean')
 
@@ -102,11 +99,10 @@ for var in VARLIST:
 #-------------------------------------------------
 
 for iSub, sub in enumerate(basV2.P):
-#  if (1==0):
     submask = SubMask(sub,maskobject=TheMask)
     F = fg2.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
-    outfile = OUTDIR + "Fig_4.11_annual." + sub.name + ".png"
+    outfile = OUTDIR + "Fig_Appendix_nut_open_annual." + sub.name + ".png"
 
     for iTime , tTime in enumerate(TL.Timelist):
         datetimelist= [TL.Timelist[iTime] ]
@@ -163,28 +159,13 @@ for iSub, sub in enumerate(basV2.P):
     pl.close(fig)
 
 
-# Figures 4.17 (Previously Fig4.19)
-#try:
-#    Ac__clim, Ac__std = get_climatology_open('Ac' , SUBLIST, TheMask, LayerList)
-#except:
-#    print "no adr1 for ALK"
-#    Ac__clim, Ac__std = get_climatology_open('Ac' , SUBLIST2, TheMask, LayerList)
-##Ac__clim, Ac__std = get_climatology_open('ALK' , SUBLIST, LayerList)
-#try:
-#    DIC_clim, DIC_std = get_climatology_open('DIC', SUBLIST, TheMask, LayerList)
-#except:
-#    print "no adr1 for DIC"
-#    DIC_clim, DIC_std = get_climatology_open('DIC', SUBLIST2, TheMask, LayerList)
-#pCO2clim, pCO2std = get_climatology_open('pCO2',SUBLIST, TheMask, LayerList)
-#PH__clim, PH__std = get_climatology_open('pH' , SUBLIST, TheMask, LayerList)
+######
 
-Ac__clim, Ac__std = get_climatology_open('ALK' , SUBLIST, LayerList, TheMask)
-DIC_clim, DIC_std = get_climatology_open('DIC', SUBLIST, LayerList, TheMask)
-pCO2clim, pCO2std = get_climatology_open('pCO2',SUBLIST, LayerList, TheMask)
-PH__clim, PH__std = get_climatology_open('pH' , SUBLIST, LayerList, TheMask)
+Ac__clim, Ac__std, ALK_vals, ALK_profs = get_climatology_open('ALK' , SUBLIST, LayerList, TheMask)
+DIC_clim, DIC_std, DIC_vals, DIC_profs = get_climatology_open('DIC', SUBLIST, LayerList, TheMask)
+pCO2clim, pCO2std, pCO2vals, pCO2profs = get_climatology_open('pCO2',SUBLIST, LayerList, TheMask)
+PH__clim, PH__std, PH__vals, PH__profs = get_climatology_open('pH' , SUBLIST, LayerList, TheMask)
 
-
-VARLIST=['pCO2','DIC','Ac','pH']
 VARLIST=['pCO2','DIC','ALK','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
 timeseries_DICT={}
@@ -195,12 +176,11 @@ for var in VARLIST:
     TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 
-
 for iSub, sub in enumerate(basV2.P):
     submask = SubMask(sub,maskobject=TheMask)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
-    outfile = OUTDIR + "Fig_4.17_annual." + sub.name + ".png"
+    outfile = OUTDIR + "Fig_Appendix_carb_open_annual." + sub.name + ".png"
 
     for iTime , tTime in enumerate(TL.Timelist):
         datetimelist= [TL.Timelist[iTime] ]
@@ -215,7 +195,6 @@ for iSub, sub in enumerate(basV2.P):
         color = '0.4'
         figure_generator.profile_plotter(z,MEAN['pCO2'],color, axes[0], None,   label)
         figure_generator.profile_plotter(z,MEAN['DIC' ],color, axes[1], axes[5],label)
-#        figure_generator.profile_plotter(z,MEAN['Ac'  ],color, axes[2], axes[6],label)
         figure_generator.profile_plotter(z,MEAN['ALK' ],color, axes[2], axes[6],label)
         figure_generator.profile_plotter(z,MEAN['pH'  ],color, axes[3], axes[7],label)
         MEAN = np.zeros((jpk,), dtype=var_dype )
@@ -227,7 +206,6 @@ for iSub, sub in enumerate(basV2.P):
         MEAN[var] = mean_profile
     figure_generator.profile_plotter(z,MEAN['pCO2'],'k', axes[0], None,   label)
     figure_generator.profile_plotter(z,MEAN['DIC' ],'k', axes[1], axes[5],label)
-#    figure_generator.profile_plotter(z,MEAN['Ac'  ],'k', axes[2], axes[6],label)
     figure_generator.profile_plotter(z,MEAN['ALK'  ],'k', axes[2], axes[6],label)
     figure_generator.profile_plotter(z,MEAN['pH'  ],'k', axes[3], axes[7],label)
 

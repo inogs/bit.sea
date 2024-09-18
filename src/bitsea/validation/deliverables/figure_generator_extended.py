@@ -98,7 +98,7 @@ class figure_generator():
         var_list=['CHL','NO$_3$','PO$_4$','O$_2$','SiO$_2$','NH$_4$']
         TEXTxlabel=['mgChl/m'+u'\u00B3','mmolN/m'+u'\u00B3','mmolP/m'+u'\u00B3','mmolO$_2$'+'/m'+u'\u00B3','mmolSi/m'+u'\u00B3','mmolNH$_4$/m'+u'\u00B3']
         xmin=[0, 0,0,  180,0,0]
-        xmax=[1,10,0.6,280,9,1]
+        xmax=[1,10,0.6,280,9,2]
         return self._gen_structure(IDrun, season, subbasin_name, var_list, TEXTxlabel, xmin, xmax)
 
     def gen_structure_2(self,IDrun,season,subbasin_name):

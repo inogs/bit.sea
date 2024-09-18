@@ -1,25 +1,20 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Generates in output directory two files ( model and ref) 
-    containing [nSub, nLayers] arrays of climatologies.
+    Generates in output directory two files (model and ref) 
+    containing [nSub, nLayers] arrays of climatologies, 
+    both for the standard 8 layers and for 14 layers.
     These arrays will be used in the next step to generate the following metrics:
-
-    PHO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-    NIT-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-     DO-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-    ALK-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-    DIC-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-
-    ALK-PROF-Y-CLASS4-CLIM-CORR-BASIN
-    DIC-PROF-Y-CLASS4-CLIM-CORR-BASIN
+    N1p-LAYER-Y-CLASS4-CLIM
+    N1p-LAYER-Y-CLASS4-CLIM_STD
+    N1p-PROF-Y-CLASS4-CLIM-CORR-BASIN
+    and analogous ones for N3n, N4n, N5s, O2o, ALK, DIC, pH, pCO2
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputdir','-i',
                                 type = str,
                                 required = True,
                                 help = '')
-
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
                                 default = None,
@@ -56,14 +51,13 @@ from bitsea.matchup.statistics import matchup
 from bitsea.commons.utils import writetable
 from bitsea.commons import timerequestors
 
-#LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
-LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
+LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
+#LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
-#TheMask= Mask(args.maskfile, loadtmask=False)
 TheMask= Mask(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
@@ -72,7 +66,7 @@ z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 Req=timerequestors.Generic_req(TI)
-#ind,ww=TL.select(Req) 
+ind,ww=TL.select(Req) 
 
 def Layers_Mean(Pres,Values,LayerList):
     '''
@@ -97,47 +91,41 @@ def Layers_Mean(Pres,Values,LayerList):
 # BFMv2:
 #VARLIST=['N1p','N3n','O2o','Ac','DIC','pH']
 # BFMv5:
-VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','pCO2','N4n','N5s']
+VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','N4n','N5s','pCO2']
 SUBlist = basV2.Pred.basin_list
-#SUBlist2 = basV2.Pred2.basin_list
-#nSub = len(SUBlist)
 nLayers = len(LayerList)
+
 METRICvar = {'N1p':'PHO',
              'N3n':'NIT',
              'O2o':'DO',
-             'Ac':'ALK',
              'ALK':'ALK',
              'DIC':'DIC',
              'pH':'pH_t',
-            'pCO2':'pCO2',
              'N4n':'NH4',
-             'N5s':'SiO2'}
+             'N5s':'SiO2',
+             'pCO2':'pCO2'}
 
-
-# remove Atlantic buffer  from the list
+# remove Atlantic buffer from the list
 SUBlist.remove(SUBlist[-1])
 
 rows_names  =[layer.string() for layer in LayerList]
 column_names=['bias','rmse','corr']
 column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
 for ivar, var in enumerate(VARLIST):
-#  if (ivar == 4) : #3 7 
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req) 
     TIMESERIES=TIMESERIES_complete[ind,:]
     print (METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
-#    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
-#    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True)
-#    else:
-#        CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList)
-
     
-#    if ( var == 'N1p' ): 
-#        SUBlist = basV2.Pred2.basin_list
-#        print len(SUBlist)
-#    else: SUBlist = basV2.Pred.basin_list
-    CLIM_REF_static,_ = climatology.get_climatology_open(var,SUBlist, LayerList,TheMask, basin_expand=True,QC=True)
+    if var=='N1p':
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64), basin_expand=False, QC=True)
+    elif var=='N3n':
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False, QC=True)
+    elif var=='N5s':     
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64), basin_expand=False, QC=True)
+    else:    
+        CLIM_REF_static,_,_,Nprofs = climatology.get_climatology_open(var,SUBlist, LayerList, TheMask, useLogistic=False, basin_expand=False,QC=True)
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
@@ -176,11 +164,7 @@ for ivar, var in enumerate(VARLIST):
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM.txt", STATS,rows_names,column_names)
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM_STD.txt", STATS_STD,rows_names,column_names_STD)
 
-# N1p e N3n in table 4.6
-# O2o in table 4.10
-# Alk, dic, pH, pCO2 in table 4.13
-
-
+# PROF statistics
 
 PresDOWN=np.array([25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
 LayerList_2=[]
@@ -192,7 +176,6 @@ nLayers = len(LayerList_2)
 LayerList_3=LayerList_2[:7]
 print ("LayerList_3 = ", LayerList_3)
 nLayers3 = len(LayerList_3)
-
 
 rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
@@ -207,10 +190,15 @@ for var in VARLIST:
     ind,ww=TL_complete.select(Req)
     TIMESERIES=TIMESERIES_complete[ind,:]
     print (METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN")
-#    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
-    CLIM_REF_static,_ = climatology.get_climatology_open(var,SUBlist, LayerList_2, TheMask,basin_expand=True,QC=True)
-#    else:
-#        CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2)
+
+    if var=='N1p':
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64), basin_expand=False, QC=True)
+    elif var=='N3n':
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False, QC=True)
+    elif var=='N5s':
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64), basin_expand=False, QC=True)
+    else:
+        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var,SUBlist, LayerList_2, TheMask, useLogistic=False, basin_expand=False,QC=True)
 
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
@@ -220,7 +208,6 @@ for var in VARLIST:
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList_2)
     np.save(OUTDIR + var + "ref_clim14", CLIM_REF_static)
     np.save(OUTDIR + var + "mod_clim14", CLIM_MODEL)
-#    CORR = np.zeros((nSub,1),np.float32)*np.nan
     STATS = np.zeros((nSub,3),np.float32)*np.nan
     for iSub, sub in enumerate(SUBlist):
         refsubs = CLIM_REF_static[iSub,:]
@@ -230,13 +217,8 @@ for var in VARLIST:
         ngoodlayers=good.sum()
         if ngoodlayers>0:
             m = matchup(modsubs[good], refsubs[good])
-#            CORR[iSub,0] = m.correlation()
             STATS[iSub,0] = m.bias()
             STATS[iSub,1] = m.RMSE()
             STATS[iSub,2] = m.correlation()
-#    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
     writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", STATS, rows_names, ['bias','rmse','corr'])
 
-# Table 4.7 Correlazione N1p, N3n per certi subbasins
-# Table 4.11 Correlazione O2o per certi subbasins
-# Table 4.14 Bias,Rms corr per V2.Pred subs ALK, DIC, pH, pCO2

@@ -177,7 +177,7 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
 
-        Group_Matchup = matchup.matchup.ProfilesMatchup()
+        Group_Matchup = bitsea.matchup.matchup.ProfilesMatchup()
 
         THRESHOLDS={'O2o': 40.0, \
                 'N1p': 0.3, \
@@ -319,7 +319,7 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
 
-        Group_Matchup = matchup.matchup.ProfilesMatchup()
+        Group_Matchup = bitsea.matchup.matchup.ProfilesMatchup()
 
 
         for p in Profilelist:
@@ -350,13 +350,13 @@ class Matchup_Manager():
 
             if len(Pres)==0:
                 junk=np.array([],np.float32)
-                Matchup = matchup.matchup.ProfileMatchup(junk,junk,junk,junk, p, CheckReport)
+                Matchup = bitsea.matchup.matchup.ProfileMatchup(junk,junk,junk,junk, p, CheckReport)
             else:
                 if forced_depth is None:
                     if interpolation_on_Float:
                         MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
 
-                        Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p, CheckReport)
+                        Matchup = bitsea.matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p, CheckReport)
 
                     else:
                         if extrapolation is False: # for N3n Statistics
@@ -388,7 +388,7 @@ class Matchup_Manager():
                     Model_on_forced_depth[ii] = np.nan
                     Obs_on_forced_depth[ii]   = np.nan
                     Qc_on_forced_depth[ii]    = np.nan
-                    Matchup = matchup.matchup.ProfileMatchup(Model_on_forced_depth,Obs_on_forced_depth,forced_depth, Qc_on_forced_depth, p, CheckReport, accept_nans=True) 
+                    Matchup = bitsea.matchup.matchup.ProfileMatchup(Model_on_forced_depth,Obs_on_forced_depth,forced_depth, Qc_on_forced_depth, p, CheckReport, accept_nans=True) 
 
             Group_Matchup.extend(Matchup)
 

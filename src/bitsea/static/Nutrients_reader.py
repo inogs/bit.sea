@@ -5,11 +5,11 @@ from typing import Union
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.static.DatasetExtractor import DatasetExtractor
-from bitsea.commons.utils import find_index
+from bitsea.commons.utils import find_index_s
 import numpy as np
 
 DEFAULT_FILENAME = Path(
-    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/Dataset_Med_Nutrients_2023_NetCDF4.nc"
+    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/publication/Zenodo/DEFINITIVO/MedBGCins_nut.nc"
 )
 
 
@@ -17,7 +17,7 @@ class NutrientsReader:
 
     DATA_VARS = (
         'nitrate', 'phosphate', 'silicate', 'oxygen', 'nitrite', 'ammonium',
-        'chlorophyll', 'total_chlorophyll'
+        'chlorophyll'
     )
 
     def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
@@ -33,18 +33,17 @@ class NutrientsReader:
         selected = np.ones((nData,),bool)
 
         dataset = self.DataExtractor.DATA[-1,:]
-        LIST_CHECK=['Barney','BIOPT06','Boussole']
-        for inameCruise in LIST_CHECK:
-          id_dataset,namesC= find_index_s(inameCruise,self.DataExtractor.CRUISES)
-          for i in id_dataset:
-            bad = dataset==(i+1)
-            selected[bad] = False
 
-        M.DATA = M.DATA[:,selected]
+        #Example of possible hard-coded exclusion
+        #LIST_CHECK=['Boussole']
+        #for inameCruise in LIST_CHECK:
+        #  id_dataset,namesC= find_index_s(inameCruise,self.DataExtractor.CRUISES)
+        #  for i in id_dataset:
+        #    bad = dataset==(i+1)
+        #    selected[bad] = False
+        #M.DATA = M.DATA[:,selected]
 
         self.DataExtractor.DATA = M.DATA
-
-
 
 
     def CruiseSelector(self, var,Cruisename):
@@ -61,7 +60,6 @@ class NutrientsReader:
          - silicate
          - oxygen
          - chlorophyll
-         - total_chlorophyll
 
          Returns a profile list
          
@@ -83,7 +81,6 @@ class NutrientsReader:
          - silicate
          - oxygen
          - chlorophyll
-         - total_chlorophyll
          if var is None, no selection is done about variable
          '''
         if var is None:
@@ -104,7 +101,7 @@ class NutrientsReader:
 if __name__ == '__main__':
     from bitsea.basins import V2 as OGS
     var= 'nitrate'
-    TI = TimeInterval('1998','2018','%Y')
+    TI = TimeInterval('1995','2024','%Y')
     Reg= Rectangle(0,20,30,46)
     N = NutrientsReader()
 
@@ -128,7 +125,7 @@ if __name__ == '__main__':
 
     from bitsea.layer_integral import coastline
     c_lon,c_lat=coastline.get()
-    Cruisename='BIOPT06'
+    Cruisename='Boussole'
 
 
     ProfileLIST2 = N.CruiseSelector('nitrate', Cruisename)

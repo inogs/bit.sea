@@ -72,11 +72,9 @@ class DatasetExtractor():
         if False: #units =="\\mumol/kg":
             itemp  = find_index('temp'    , self.VARIABLES)
             ipsal  = find_index('salinity', self.VARIABLES)
-            idens  = find_index('density' , self.VARIABLES)
             temp   = self.DATA[itemp,:]
             sali   = self.DATA[ipsal,:]
             pres   = self.DATA[5,:]
-            dens   = self.DATA[idens,:]
             good_rho  = (sali < 1.e+19 ) & (sali>0) & (temp < 1.e+19 ) & (temp>0) & (pres < 1.e+19 ) & (pres>0)
             t = T90conv(temp)
             n = len(values)
@@ -84,15 +82,9 @@ class DatasetExtractor():
             assumed_density = np.ones((n),np.float32)*np.nan
             calculated_rho[good_rho]  = seawater.dens(sali[good_rho],t[good_rho],pres[good_rho])
 
-
-            good_dens = (dens < 1.e+19 ) & (dens>0)
             for i in range(n):
-                if good_dens[i]:
-                    assumed_density[i] = dens[i]
-                else:
-                    if good_rho[i]:
-                        assumed_density[i] = calculated_rho[i]
-
+                if good_rho[i]:
+                    assumed_density[i] = calculated_rho[i]
 
             good = ~np.isnan(assumed_density)
             values[good] = values[good] * assumed_density[good] /1000.
@@ -126,7 +118,7 @@ class DatasetExtractor():
         depth   =   depth[Selected]
         dataset = dataset[Selected]
         
-        if var == "pCO2":
+        if var == "pCO2_rec":
             Ptot= 1 + depth/10  # approximation for total pressure in atmosphere:
                                 #! press atm + press water column (in atmosphere)
             values= values /  ( np.exp( ( 1-Ptot) *0.001366 ) )

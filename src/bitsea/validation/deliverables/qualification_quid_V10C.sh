@@ -64,7 +64,7 @@ for VAR in   kd490  P_l  P1l    P2l    P3l    P4l  ; do
    opa_prex_or_die "cp Fig4.3/coast/table4.1_${VAR}.dat    table4.2/table4.2_${VAR}.dat "
 
    # RIVERS VALIDATION:
-   if [$VAR == P1l]:
+   if [$VAR == P_l]:
        opa_prex_or_die "python ScMYvalidation_plan.py -v $VAR -s $SAT_DIR -i $MODELDIR -m $MASKFILE -c everywhere -l $LAYER  -o $RIVERS_PKL -z rivers -t 20190101 -e 20200101"
        opa_prex_or_die "python plot_timeseries_STD.py -v $VAR -i $RIVERS_PKL -o ./Fig_SAT_rivers -z rivers"
        opa_prex_or_die "python plot_timeseries_RMS_CORR.py -v $VAR -i $RIVERS_PKL -o ./Fig_SAT_rivers -z rivers"

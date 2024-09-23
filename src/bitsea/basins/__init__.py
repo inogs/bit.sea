@@ -5,7 +5,9 @@ from bitsea.basins.basin import Basin
 from importlib import import_module
 from inspect import getmembers
 
-class BasinNotFoundError(Exception): pass
+class BasinNotFoundError(Exception):
+    pass
+
 
 class get_basin(object):
     def __init__(self):

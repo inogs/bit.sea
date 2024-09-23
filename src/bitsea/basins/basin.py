@@ -11,7 +11,7 @@ from bitsea.basins.region import Region, EmptyRegion
 
 # This is the default module for the basins, i.e. the basins of this
 # module do not have a prefix inside their uuids
-DEFAULT_BASIN_MODULE = 'basins.V2'
+DEFAULT_BASIN_MODULE = 'bitsea.basins.V2'
 
 
 class Basin(object):

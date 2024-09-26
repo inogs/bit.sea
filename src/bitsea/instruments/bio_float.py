@@ -8,10 +8,7 @@ import matplotlib
 import matplotlib.pyplot as pl
 
 from bitsea.instruments.instrument import Instrument, Profile
-from bitsea.mhelpers.pgmean import PLGaussianMean
-meanObj = PLGaussianMean(5,1.0)
 
-CORIOLIS_DIR="FLOAT_BIO/"
 CORIOLIS_DIR="CORIOLIS/"
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -28,13 +25,12 @@ FloatIndexer=addsep(ONLINE_REPO) + CORIOLIS_DIR + "Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
-    def __init__(self, time, lon, lat, my_float, available_params,mean=None):
+    def __init__(self, time, lon, lat, my_float, available_params):
         self.time = time
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
         self.available_params = available_params
-        self.mean = mean
         self.has_adjusted = True
 
     def __eq__(self, other):
@@ -54,7 +50,7 @@ class BioFloatProfile(Profile):
               read_adjusted as logical
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var, mean=self.mean,read_adjusted=read_adjusted)
+        return self._my_float.read(var, read_adjusted=read_adjusted)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -73,8 +69,6 @@ class BioFloatProfile(Profile):
 
 
 class BioFloat(Instrument):
-
-    default_mean = None
 
     def __init__(self,lon,lat,time,filename,available_params,parameter_data_mode):
         self.lon = lon
@@ -250,7 +244,7 @@ class BioFloat(Instrument):
 
         return np.array(indexes)
 
-    def read(self, var, mean=None, read_adjusted=True):
+    def read(self, var, read_adjusted=True):
         '''
 
         Reads profile data from file, applies a rarefaction and optionally a filter to the data
@@ -293,13 +287,8 @@ class BioFloat(Instrument):
             prof = prof[ii]
             qc   =   qc[ii]
 
-        if mean == None:
-            if BioFloat.default_mean != None:
-                return pres, BioFloat.default_mean.compute(prof, pres), qc
-            else:
-                return pres, prof, qc
-        else:
-            return pres, prof, qc
+        return pres, prof, qc
+
     def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)
@@ -331,8 +320,8 @@ class BioFloat(Instrument):
         ax.grid()
         return fig,ax
 
-    def profiles(self, var, mean=None):
-        return [BioFloatProfile(var, self.time, self.lon, self.lat, self, mean)]
+    def profiles(self, var):
+        return [BioFloatProfile(var, self.time, self.lon, self.lat, self)]
 
     @staticmethod
     def from_file(filename):
@@ -357,7 +346,7 @@ def profile_gen(lon,lat,float_time,filename,available_params,parameterdatamode):
 
     filename = ONLINE_REPO + CORIOLIS_DIR + filename
     thefloat = BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
-    return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
+    return BioFloatProfile(float_time,lon,lat, thefloat,available_params)
 
 def FloatSelector(var, T, region):
     '''
@@ -392,7 +381,7 @@ def FloatSelector(var, T, region):
             if T.contains(float_time) and region.is_inside(lon, lat):
                 selected.append(profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode))
                 #thefloat = BioFloat(lon,lat,float_time,filename,available_params)
-                #selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
+                #selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params))
 
     return selected
 
@@ -465,7 +454,7 @@ if __name__ == '__main__':
     from bitsea.commons.time_interval import TimeInterval
     import sys
 
-    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/CORIOLIS/6902902/SR6902902_456.nc'
+    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/CORIOLIS/6902902/SD6902902_456.nc'
     F = BioFloat.from_file(f)
 
     Pres, values, valuesa, Qc, Qca =F.read_very_raw('TEMP')
@@ -528,7 +517,7 @@ if __name__ == '__main__':
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)
         TheFloat = p._my_float
-        PN,N,Qc = TheFloat.read(var,    read_adjusted=True, mean=meanObj)
+        PN,N,Qc = TheFloat.read(var,    read_adjusted=True)
         #PS,S,Qc = TheFloat.read('PSAL', read_adjusted=True)
         #PT,T,Qc = TheFloat.read('TEMP', read_adjusted=True)
 

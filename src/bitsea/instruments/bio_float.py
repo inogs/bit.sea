@@ -299,7 +299,7 @@ class BioFloat(Instrument):
             else:
                 return pres, prof, qc
         else:
-            return pres, mean.compute(prof, pres), qc
+            return pres, prof, qc
     def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)

@@ -380,8 +380,6 @@ def FloatSelector(var, T, region):
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
                 selected.append(profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode))
-                #thefloat = BioFloat(lon,lat,float_time,filename,available_params)
-                #selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params))
 
     return selected
 
@@ -412,41 +410,6 @@ def filter_by_wmo(Profilelist,wmo):
     '''
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
-
-def from_lov_profile(lov_profile, verbose=True):
-    '''
-    Arguments:
-    * lov_profile * a lov profile objects
-    * verbose     * logical, used to print lov files that don't have a corresponding in coriolis
-    
-    Returns:
-    *  p * a BioFloatProfile objects
-    '''
-    wmo = lov_profile._my_float.wmo
-    INDEXES=[]
-    for iFile, filename in enumerate(INDEX_FILE['file_name']):
-        if filename.startswith(wmo):
-            INDEXES.append(iFile)
-    A = INDEX_FILE[INDEXES]
-    nFiles = len(A)
-    DELTA_TIMES = np.zeros((nFiles,), np.float32)
-    for k in range(nFiles):
-        float_time =datetime.datetime.strptime(A['time'][k],'%Y%m%d-%H:%M:%S')
-        deltat = lov_profile.time - float_time
-        DELTA_TIMES[k] = deltat.total_seconds()
-    min_DeltaT = np.abs(DELTA_TIMES).min()
-    if min_DeltaT > 3600*3 :
-        if verbose: print("no Coriolis file corresponding to "  + lov_profile._my_float.filename)
-        return None
-    F = (A['lon'] - lov_profile.lon)**2 + (A['lat'] - lov_profile.lat)**2 +  DELTA_TIMES**2
-    iFile = F.argmin()
-    timestr          = A['time'][iFile]
-    lon              = A['lon' ][iFile]
-    lat              = A['lat' ][iFile]
-    filename         = A['file_name'][iFile]
-    available_params = A['parameters'][iFile]
-    float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-    return profile_gen(lon, lat, float_time, filename, available_params)
 
 
 if __name__ == '__main__':

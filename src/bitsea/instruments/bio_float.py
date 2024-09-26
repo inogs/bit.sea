@@ -11,12 +11,12 @@ from bitsea.instruments.instrument import Instrument, Profile
 
 CORIOLIS_DIR="CORIOLIS/"
 mydtype= np.dtype([
-          ('file_name','S200'),
+          ('file_name','U200'),
           ('lat',np.float32),
           ('lon',np.float32),
-          ('time','S17'),
-          ('parameters','S200'),
-          ('parameter_data_mode','S100')] )
+          ('time','U17'),
+          ('parameters','U200'),
+          ('parameter_data_mode','U100')] )
 
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
@@ -330,12 +330,12 @@ class BioFloat(Instrument):
         '''
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile].decode()
+            timestr          = INDEX_FILE['time'][iFile]
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile].decode()
-            available_params = INDEX_FILE['parameters'][iFile].decode()
-            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+            thefilename      = INDEX_FILE['file_name'][iFile]
+            available_params = INDEX_FILE['parameters'][iFile]
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
             if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
@@ -364,12 +364,12 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile].decode()
+        timestr          = INDEX_FILE['time'][iFile]
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
         if var is None :

@@ -59,6 +59,7 @@ class Metadata():
     def __init__(self, filename):
         self.filename = filename
         self.status_var = 'n'
+        self.shift_from_coriolis=0
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
@@ -114,6 +115,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncvar=ncOUT.createVariable('CHLA','f',('nCHLA',))
     ncvar[:]=chl_profile
     setattr(ncvar, 'status_var' , metadata.status_var)
+    setattr(ncvar, 'shift_from_coriolis', metadata.shift_from_coriolis)
     setattr(ncvar, 'variable'   , 'CHLA_ADJUSTED')
     setattr(ncvar, 'units'      , "milligram/m3")
 
@@ -131,11 +133,14 @@ def treating_coriolis(pCor):
         if len(Pres)<5:
             print("few values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
             return None, None, None, metadata
+        if Pres.min() > 200:
+            print("Only deep values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
+            return None, None, None, metadata
 
-        #Pres, CHL, Qc = superfloat_generator.general_quenching(pCor, Pres, Value, Qc)
         ii=(Pres >= 400) & (Pres <= 600)
         if ii.sum() > 0:
             shift = CHL[ii].mean()
+            metadata.shift_from_coriolis = shift
             CHL = CHL - shift
         ii=CHL<=0
         CHL[ii] = 0.005

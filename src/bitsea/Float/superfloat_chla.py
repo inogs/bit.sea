@@ -1,4 +1,4 @@
-import sys
+from bitsea.utilities.argparse_types import existing_dir_path
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -19,7 +19,7 @@ def argument():
                                 default = 'NO_data',
                                 help = '''date in yyyymmss format''')
     parser.add_argument(   '--outdir','-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,                                
                                 help = 'path of the Superfloat dataset ')
     parser.add_argument(   '--force', '-f',
@@ -44,34 +44,32 @@ if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
 
-
+from pathlib import Path
 from bitsea.instruments import bio_float
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
-import superfloat_generator
-from bitsea.commons.utils import addsep
-import os
-import scipy.io as NC
+from bitsea.Float import superfloat_generator
+import netCDF4 as NC
 import numpy as np
 import datetime
 
 class Metadata():
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = str(filename)
         self.status_var = 'n'
         self.shift_from_coriolis=0
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
+    filename = outdir / wmo / p._my_float.filename.name
     return filename
 
 def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
-    PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+    _    , Temp, QcT = p.read('TEMP', read_adjusted=False)
     PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
-    print("dumping chla on " + outfile + p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
-    ncOUT = NC.netcdf_file(outfile,"w")
+    print("dumping chla on " , outfile, p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
+    ncOUT = NC.Dataset(outfile,"w")
     setattr(ncOUT, 'origin'     , 'coriolis')
     setattr(ncOUT, 'file_origin', metadata.filename)
 
@@ -115,7 +113,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncvar=ncOUT.createVariable('CHLA','f',('nCHLA',))
     ncvar[:]=chl_profile
     setattr(ncvar, 'status_var' , metadata.status_var)
-    setattr(ncvar, 'shift_from_coriolis', metadata.shift_from_coriolis)
+    setattr(ncvar, 'shift_from_coriolis', str(metadata.shift_from_coriolis))
     setattr(ncvar, 'variable'   , 'CHLA_ADJUSTED')
     setattr(ncvar, 'units'      , "milligram/m3")
 
@@ -135,25 +133,24 @@ def chla_algorithm(pCor,outfile):
     - RealTime Mode
 
     Shifts the profile in order to have mean=0 in 400-600m
-    Negative values are replaced by a background values of 0.005
+    Negative values are replaced by a background value of 0.005 mg/m3
     '''
 
     background_value=0.005
     Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
     if len(Pres)<5:
-        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        print("few values in Coriolis TEMP in " + str(pCor._my_float.filename), flush=True)
         return
 
-    os.system('mkdir -p ' + os.path.dirname(outfile))
     metadata = Metadata(pCor._my_float.filename)
     metadata.status_var = pCor._my_float.status_var('CHLA')
     if pCor._my_float.status_var('CHLA') in ['A','D'] :
         Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
-            print("few values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
+            print("few values in Coriolis in CHLA for " + str(pCor._my_float.filename), flush=True)
             return
         if Pres.min() > 200:
-            print("Only deep values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
+            print("Only deep values in Coriolis in CHLA for " + str(pCor._my_float.filename), flush=True)
             return
 
         ii=(Pres >= 400) & (Pres <= 600)
@@ -163,14 +160,14 @@ def chla_algorithm(pCor,outfile):
             CHL = CHL - shift
         ii=CHL<=0
         CHL[ii] = background_value
-        return Pres, CHL, Qc, metadata
     else:
         print("R -- not dumped ", pCor._my_float.filename, flush=True)
 
 
+    Path.mkdir(outfile.parent, exist_ok=True)
     dumpfile(outfile, pCor, Pres, CHL, Qc, metadata)
 
-OUTDIR = addsep(args.outdir)
+OUTDIR = args.outdir
 input_file=args.update_file
 
 if input_file == 'NO_file': 
@@ -194,12 +191,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile].decode()
+        timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
         

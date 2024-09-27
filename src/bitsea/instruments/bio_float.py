@@ -6,7 +6,7 @@ from bitsea.commons.utils import addsep
 from bitsea.instruments.var_conversions import FLOATVARS as conversion
 import matplotlib
 import matplotlib.pyplot as pl
-
+from pathlib import Path
 from bitsea.instruments.instrument import Instrument, Profile
 
 CORIOLIS_DIR="CORIOLIS/"
@@ -344,7 +344,7 @@ class BioFloat(Instrument):
 
 def profile_gen(lon,lat,float_time,filename,available_params,parameterdatamode):
 
-    filename = ONLINE_REPO + CORIOLIS_DIR + filename
+    filename = Path(ONLINE_REPO + CORIOLIS_DIR + filename)
     thefloat = BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
     return BioFloatProfile(float_time,lon,lat, thefloat,available_params)
 
@@ -424,24 +424,23 @@ if __name__ == '__main__':
     fig,ax =F.plot(Pres,values,'b')
 
     Pres, values, Qc=F.read('TEMP', read_adjusted=False)
-    ax.plot(values,Pres,'r.')
-    fig.savefig('prova.png')
+    #ax.plot(values,Pres,'r.')
+    #fig.savefig('prova.png')
 
-    sys.exit()
-    var = 'BBP700'
-    TI = TimeInterval('20150101','20220225','%Y%m%d')
+    var = 'CHLA'
+    TI = TimeInterval('20120101','20250225','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
 
     nP = len(PROFILE_LIST)
-    MAX=np.zeros((nP,))
+    IND=np.zeros((nP,))
     MIN=np.zeros((nP,))
     for ip, p in enumerate(PROFILE_LIST):
-        Pres, Value, Qc= p.read(var, read_adjusted=False)
+        Pres, Value, Qc= p.read(var, read_adjusted=True)
         if len(Pres)>5:
-            MIN[ip]=Value.min()
-            MAX[ip]=Value.max()
+            MIN[ip]=Pres.min()
+            IND[ip]=ip
     sys.exit()
 
     sum=0

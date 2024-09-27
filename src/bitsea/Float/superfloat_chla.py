@@ -125,17 +125,36 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncvar[:]=Qc
     ncOUT.close()
 
-def treating_coriolis(pCor):
+
+def chla_algorithm(pCor,outfile):
+    '''
+    Rejecting profiles with
+    - less than 5 CHLA values
+    - less than 5 TEMP values
+    - min of depth > 200m
+    - RealTime Mode
+
+    Shifts the profile in order to have mean=0 in 400-600m
+    Negative values are replaced by a background values of 0.005
+    '''
+
+    background_value=0.005
+    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        return
+
+    os.system('mkdir -p ' + os.path.dirname(outfile))
     metadata = Metadata(pCor._my_float.filename)
     metadata.status_var = pCor._my_float.status_var('CHLA')
     if pCor._my_float.status_var('CHLA') in ['A','D'] :
         Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
         if len(Pres)<5:
             print("few values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
-            return None, None, None, metadata
+            return
         if Pres.min() > 200:
             print("Only deep values in Coriolis in CHLA for " + pCor._my_float.filename, flush=True)
-            return None, None, None, metadata
+            return
 
         ii=(Pres >= 400) & (Pres <= 600)
         if ii.sum() > 0:
@@ -143,22 +162,12 @@ def treating_coriolis(pCor):
             metadata.shift_from_coriolis = shift
             CHL = CHL - shift
         ii=CHL<=0
-        CHL[ii] = 0.005
+        CHL[ii] = background_value
         return Pres, CHL, Qc, metadata
     else:
         print("R -- not dumped ", pCor._my_float.filename, flush=True)
-        return None, None, None, metadata
 
-def chla_algorithm(pCor,outfile):
-    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
-    if len(Pres)<5:
-        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
-        return
-    os.system('mkdir -p ' + os.path.dirname(outfile))
 
-    Pres, CHL, Qc, metadata = treating_coriolis(pCor)
-
-    if Pres is None: return # no data
     dumpfile(outfile, pCor, Pres, CHL, Qc, metadata)
 
 OUTDIR = addsep(args.outdir)

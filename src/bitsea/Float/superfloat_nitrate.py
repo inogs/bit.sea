@@ -1,4 +1,5 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of nitrate.
@@ -15,7 +16,7 @@ def argument():
                                 required = False,
                                 help = '''date in yyyymmdd format''')
     parser.add_argument(   '--outdir','-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
@@ -39,39 +40,29 @@ if (args.datestart == 'NO_data') & (args.dateend == 'NO_data') & (args.update_fi
 if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update_file == 'NO_file'):
     raise ValueError("No file nor data inserted: you have to pass both datastart and dataeend")
 
+from pathlib import Path
 from bitsea.instruments import bio_float
-from bitsea.Float.canyon_b_N3n import canyon_nitrate_correction
-from bitsea.Float.woa_N3n import woa_nitrate_correction
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
-import superfloat_generator
-from bitsea.commons.utils import addsep
+from bitsea.Float import superfloat_generator
 import os
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import numpy as np
-from bitsea.commons.layer import Layer
 import seawater as sw
 import datetime
 
-import bitsea.basins.V2 as basV2
-from bitsea.static.climatology import get_climatology
-
 class Metadata():
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = str(filename)
         self.correction = "None"
         self.shift      = "None"
         self.status_var = 'n'
 
 
-SUBLIST = basV2.P.basin_list
-LayerList=[Layer(400,600),Layer(600,800),Layer(800,1000)]
-N3n_clim, N3n_std = get_climatology('N3n', SUBLIST, LayerList)
-
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
+    filename = outdir / wmo / p._my_float.filename.name
     return filename
 
 def convert_nitrate(p,pres,profile):
@@ -79,8 +70,8 @@ def convert_nitrate(p,pres,profile):
     from micromol/Kg to  mmol/m3
     '''
     if pres.size == 0: return profile
-    Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
-    Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
+    _   , temp, _ = p.read("TEMP",read_adjusted=False)
+    Pres, sali, _ = p.read("PSAL",read_adjusted=False)
     density = sw.dens(sali,temp,Pres)
     density_on_z = np.interp(pres,Pres,density)
     return profile * density_on_z/1000.
@@ -91,7 +82,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
     if mode=='a':
         command = "cp %s %s.tmp" %(outfile,outfile)
         os.system(command)
-    ncOUT = NC.netcdf_file(outfile + ".tmp",mode)
+    ncOUT = NC.Dataset(outfile + ".tmp",mode)
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
         setattr(ncOUT, 'origin'     , 'coriolis')
         setattr(ncOUT, 'file_origin', metadata.filename)
@@ -151,7 +142,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
 def nitrate_algorithm(p, outfile, metadata, writing_mode):
     Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
     if len(Pres)<5:
-        print("few values in Coriolis TEMP in " + pCor._my_float.filename, flush=True)
+        print("few values in Coriolis TEMP in " + str(pCor._my_float.filename), flush=True)
         return
     F = p._my_float
     if F.status_var('NITRATE')=='R': return
@@ -165,45 +156,24 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
         print("few values for " + F.filename, flush=True)
         return
 
-    os.system('mkdir -p ' + os.path.dirname(outfile))
+    Path.mkdir(outfile.parent, exist_ok=True)
     if p._my_float.status_var('NITRATE')=='D':
         metadata.status_var = 'D'
         dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-        return
-
-
-    if p._my_float.status_var('NITRATE')=='A':
+    else:
         metadata.status_var="A"
-        if superfloat_generator.exist_valid_variable('DOXY', outfile):
-            DOXYp, DOXY, _ = p.read('DOXY',read_adjusted=True)
 
-
-            Pres, Value, Qc, t_lev, nit, shift = canyon_nitrate_correction(p, Pres, Value, Qc, DOXYp, DOXY)
-            metadata.correction = "Canyon-b"
+        if Pres[-1]>600:
+            Pres, Value, Qc, shift = woa_nitrate_correction(p)
+            metadata.correction = 'MedBGCins'
             metadata.shift      = shift
-            outOfClimatology = False
-            for ilayer, layer in enumerate(LayerList):
-                if (t_lev >= layer.top) & (t_lev < layer.bottom) :
-                    for iSub,sub in enumerate(SUBLIST):
-                        if sub.is_inside(p.lon,p.lat):
-                            if np.abs(N3n_clim[iSub,ilayer] - nit ) > 2 : outOfClimatology = True
-
-            if outOfClimatology:
-                    print("Out of climatology for " + F.filename, flush=True)
-                    return
             dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
         else:
-            if Pres[-1]>600:
-                Pres, Value, Qc, shift = woa_nitrate_correction(p)
-                metadata.correction = 'WOA'
-                metadata.shift      = shift
-                dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
-            else:
-                print("WOA correction not applicable for max(depth) < 600 m", flush=True)
+            print("WOA correction not applicable for max(depth) < 600 m", flush=True)
 
 
 
-OUTDIR = addsep(args.outdir)
+OUTDIR = args.outdir
 input_file=args.update_file
 
 if input_file == 'NO_file':
@@ -235,12 +205,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile].decode()
+        timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 

@@ -14,7 +14,56 @@ from bitsea.commons.utils import search_closest_sorted
 class OutsideMaskDomain(ValueError):
     pass
 
+class Grid2d(object):
+    '''
+    '''
+    def __init__(self,Lon,Lat):
+        self._xlevels = Lon
+        self._ylevels = Lat
+    def convert_lon_lat_to_indices(self, lon, lat):
+        """Converts longitude and latitude to the nearest indices on the mask.
 
+        Args:
+            - *lon*: Longitude in degrees.
+            - *lat*: Latitude in degrees.
+        Returns: a tuple of numbers, the first one is the longitude index and
+        the other one is the latitude index.
+        """
+        #Input validation
+        lon = float(lon)
+        lat = float(lat)
+        r=1.0
+        min_lon = self._xlevels.min()-r
+        max_lon = self._xlevels.max()+r
+        min_lat = self._ylevels.min()-r
+        max_lat = self._ylevels.max()+r
+        if lon > max_lon or lon < min_lon:
+            raise OutsideMaskDomain(
+                "Invalid longitude value: {} (must be between {} and "
+                "{})".format(lon, min_lon, max_lon)
+            )
+        if lat > max_lat or lat < min_lat:
+            raise OutsideMaskDomain(
+                "Invalid latitude value: {} (must be between {} and "
+                "{})".format(lat, min_lat, max_lat)
+            )
+
+        #Longitude distances matrix
+        d_lon = np.array(self._xlevels - lon)
+        d_lon *= d_lon
+        #Latitude distances matrix
+        d_lat = np.array(self._ylevels - lat)
+        d_lat *= d_lat
+
+        lon_index = d_lon.argmin()
+        lat_index = d_lat.argmin()
+
+        return lon_index, lat_index
+    def convert_i_j_to_lon_lat(self, i, j):
+        """Converts i and j indexes to longitude and latitude of center of cells
+        i is indeded as longitudinal index, as well as j is latitudinal index
+        """
+        return (self._xlevels[j,i], self._ylevels[j,i])
 class Mask(object):
     """
     Defines a mask from a NetCDF file
@@ -470,6 +519,12 @@ class NonRegularMaskBathymetry(MaskBathymetry):
 
 
 if __name__ == '__main__':
+    Lon= np.arange(10,50,0.5)
+    Lat = np.arange(30,46,0.25)
+    L = Grid2d(Lon,Lat)
+    L.convert_lon_lat_to_indices(31.25, 42.02)
+    import sys
+    sys.exit()
     #Test of convert_lon_lat_wetpoint_indices
     filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
     TheMask = Mask('/g100_work/OGS21_PRACE_P/CLIMA_100/meshmask.nc')

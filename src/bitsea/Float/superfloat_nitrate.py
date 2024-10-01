@@ -45,6 +45,7 @@ from bitsea.instruments import bio_float
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.Float import superfloat_generator
+from bitsea.Float.MedBGCins import nitrate_correction
 import os
 import netCDF4 as NC
 import numpy as np
@@ -79,97 +80,108 @@ def convert_nitrate(p,pres,profile):
 def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
     
     nP=len(Pres)
+    tmpfile=outfile.with_suffix('.nc.tmp')
     if mode=='a':
-        command = "cp %s %s.tmp" %(outfile,outfile)
+        command = "cp {} {}".format(outfile,tmpfile)
         os.system(command)
-    ncOUT = NC.Dataset(outfile + ".tmp",mode)
-    if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
-        setattr(ncOUT, 'origin'     , 'coriolis')
-        setattr(ncOUT, 'file_origin', metadata.filename)
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
-        ncOUT.createDimension("DATETIME",14)
-        ncOUT.createDimension("NPROF", 1)
-        ncOUT.createDimension('nTEMP', len(PresT))
-        ncOUT.createDimension('nPSAL', len(PresT))
+    with NC.Dataset(tmpfile,mode) as ncOUT:
+        if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+            setattr(ncOUT, 'origin'     , 'coriolis')
+            setattr(ncOUT, 'file_origin', metadata.filename)
+            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            ncOUT.createDimension("DATETIME",14)
+            ncOUT.createDimension("NPROF", 1)
+            ncOUT.createDimension('nTEMP', len(PresT))
+            ncOUT.createDimension('nPSAL', len(PresT))
 
-        ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
-        ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
-        ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
-        ncvar[:]=0.0
-        ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lon.astype(np.float64)
-        ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lat.astype(np.float64)
+            ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
+            ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
+            ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
+            ncvar[:]=0.0
+            ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lon.astype(np.float64)
+            ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lat.astype(np.float64)
+
+            ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
+            ncvar[:]=Temp
+            setattr(ncvar, 'variable'   , 'TEMP')
+            setattr(ncvar, 'units'      , "degree_Celsius")
+            ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
+            ncvar[:]=QcT
+
+            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar[:]=Sali
+            setattr(ncvar, 'variable'   , 'SALI')
+            setattr(ncvar, 'units'      , "PSS78")
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar[:]=QcS
+
+        print("dumping nitrate on " + str(outfile), flush=True)
+        nitrate_already_existing = superfloat_generator.exist_valid_variable("NITRATE", tmpfile)
+        if not nitrate_already_existing:
+            ncOUT.createDimension('nNITRATE', nP)
+            ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
+            ncvar[:]=Pres
+            ncvar=ncOUT.createVariable("NITRATE", 'f', ('nNITRATE',))
+            ncvar[:]=Value
+
+            ncvar=ncOUT.createVariable("NITRATE_QC", 'f', ('nNITRATE',))
+            ncvar[:]=Qc
+        else:
+            ncvar=ncOUT.variables['PRES_NITRATE']
+            ncvar[:]=Pres
+            ncvar=ncOUT.variables['NITRATE']
+            ncvar[:]=Value
+        setattr(ncvar, 'status_var' , metadata.status_var)
+        setattr(ncvar, 'correction' , metadata.correction)
+        setattr(ncvar, 'bottomshift', metadata.shift)
+        setattr(ncvar, 'units'      , "mmol/m3")
 
 
-        ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
-        ncvar[:]=Temp
-        setattr(ncvar, 'variable'   , 'TEMP')
-        setattr(ncvar, 'units'      , "degree_Celsius")
-        ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
-        ncvar[:]=QcT
-
-        ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
-        ncvar[:]=Sali
-        setattr(ncvar, 'variable'   , 'SALI')
-        setattr(ncvar, 'units'      , "PSS78")
-        ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
-        ncvar[:]=QcS
-
-    print("dumping nitrate on " + outfile, flush=True)
-    nitrate_already_existing="nNITRATE" in ncOUT.dimensions.keys()
-    if not nitrate_already_existing: ncOUT.createDimension('nNITRATE', nP)
-    ncvar=ncOUT.createVariable("PRES_NITRATE", 'f', ('nNITRATE',))
-    ncvar[:]=Pres
-    ncvar=ncOUT.createVariable("NITRATE", 'f', ('nNITRATE',))
-    ncvar[:]=Value
-    setattr(ncvar, 'status_var' , metadata.status_var)
-    setattr(ncvar, 'correction' , metadata.correction)
-    setattr(ncvar, 'bottomshift', metadata.shift)
-    setattr(ncvar, 'units'      , "mmol/m3")
-    ncvar=ncOUT.createVariable("NITRATE_QC", 'f', ('nNITRATE',))
-    ncvar[:]=Qc
-    ncOUT.close()
-    os.system("mv " + outfile + ".tmp " + outfile)
+    os.system("mv {}.tmp {}".format(outfile,outfile))
 
 
 
 def nitrate_algorithm(p, outfile, metadata, writing_mode):
-    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
-    if len(Pres)<5:
-        print("few values in Coriolis TEMP in " + str(pCor._my_float.filename), flush=True)
-        return
     F = p._my_float
+    Pres, _, _ = p.read('TEMP', read_adjusted=False)
+    if len(Pres)<5:
+        print("few values in Coriolis TEMP in " + str(F.filename), flush=True)
+        return
+
     if F.status_var('NITRATE')=='R': return
 
     Pres, Value, Qc= p.read("NITRATE", read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
-        print("few values for " + F.filename, flush=True)
+        print("few values for " + str(F.filename), flush=True)
         return
     if Pres[-1]<100:
-        print("few values for " + F.filename, flush=True)
+        print("few values for " + str(F.filename), flush=True)
         return
 
     Path.mkdir(outfile.parent, exist_ok=True)
-    if p._my_float.status_var('NITRATE')=='D':
+    if F.status_var('NITRATE')=='D':
         metadata.status_var = 'D'
+        Path.mkdir(outfile.parent, exist_ok=True)
         dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
     else:
         metadata.status_var="A"
 
         if Pres[-1]>600:
-            Pres, Value, Qc, shift = woa_nitrate_correction(p)
+            Pres, Value, Qc, shift = nitrate_correction(p, Pres, Value)
             metadata.correction = 'MedBGCins'
             metadata.shift      = shift
+            Path.mkdir(outfile.parent, exist_ok=True)
             dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode=writing_mode)
         else:
-            print("WOA correction not applicable for max(depth) < 600 m", flush=True)
+            print("Climatology MedBGCins correction not applicable for max(depth) < 600 m in "+ p.ID(), flush=True)
 
 
 
@@ -193,7 +205,7 @@ if input_file == 'NO_file':
             outfile = get_outfile(pCor,OUTDIR)
             writing_mode=superfloat_generator.writing_mode(outfile)
 
-            condition_to_write = ~superfloat_generator.exist_valid_variable('NITRATE',outfile)
+            condition_to_write = not superfloat_generator.exist_valid_variable('NITRATE',outfile)
             if args.force: condition_to_write=True
             if not condition_to_write: continue
 

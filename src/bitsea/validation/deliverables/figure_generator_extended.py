@@ -98,7 +98,7 @@ class figure_generator():
         var_list=['CHL','NO$_3$','PO$_4$','O$_2$','SiO$_2$','NH$_4$']
         TEXTxlabel=['mgChl/m'+u'\u00B3','mmolN/m'+u'\u00B3','mmolP/m'+u'\u00B3','mmolO$_2$'+'/m'+u'\u00B3','mmolSi/m'+u'\u00B3','mmolNH$_4$/m'+u'\u00B3']
         xmin=[0, 0,0,  180,0,0]
-        xmax=[1,10,0.6,280,9,1]
+        xmax=[1,10,0.6,280,9,2]
         return self._gen_structure(IDrun, season, subbasin_name, var_list, TEXTxlabel, xmin, xmax)
 
     def gen_structure_2(self,IDrun,season,subbasin_name):
@@ -164,6 +164,27 @@ def clim_profile_plotter(depth,mean,std,ax_top,ax_bottom):
         ax_bottom.plot(mean[bool_bot]+std[bool_bot],depth[bool_bot],'r-.')
         ax_bottom.plot(mean[bool_bot]-std[bool_bot],depth[bool_bot],'r-.')
 
+
+def clim_profile_plotter_other(depth,mean,std,ax_top,ax_bottom):
+    '''
+    Plots a model profile over two axis objects.
+
+    Arguments :
+    * depth   * numpy array of depths
+    * mean    * numpy array
+    * std     * numpy array
+    * ax_top    * axis object
+    * ax_bottom * axis object
+    '''
+    bool_top = depth>= -200
+    bool_bot = ~bool_top
+    ax_top.plot(mean,depth,'bo')
+    ax_top.plot(mean+std,depth,'b-.')
+    ax_top.plot(mean-std,depth,'b-.')
+    if ax_bottom is not None:
+        ax_bottom.plot(mean[bool_bot],depth[bool_bot],'bo')
+        ax_bottom.plot(mean[bool_bot]+std[bool_bot],depth[bool_bot],'b-.')
+        ax_bottom.plot(mean[bool_bot]-std[bool_bot],depth[bool_bot],'b-.')
 
 
 if __name__=="__main__":

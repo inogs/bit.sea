@@ -1,0 +1,6 @@
+*.png
+*.pkl
+*.err
+*.out
+static_clim/
+static_clim_*/

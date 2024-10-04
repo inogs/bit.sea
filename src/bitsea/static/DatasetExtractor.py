@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.io.netcdf as NC
+import netCDF4 as NC4
 import datetime
 from bitsea.instruments.instrument import ContainerProfile
 import seawater
@@ -8,17 +8,15 @@ from bitsea.commons.utils import find_index
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons import timerequestors
 
-
 class DatasetExtractor():
     
     def __init__(self,filename, datasetname):
-        ncIN=NC.netcdf_file(filename,'r')
-        self.DATA     = ncIN.variables['DATA'].data.copy()
-        self.UNITS    = ncIN.variables['UNITS'].data.copy()
-        self.VARIABLES= ncIN.variables['VARIABLES'].data.copy()
-        self.CRUISES  = ncIN.variables['Cruises'].data.copy()
+        with NC4.Dataset(filename,'r') as ncIN:
+            self.DATA     = ncIN.variables['DATA'][:]
+            self.UNITS    = [unit for unit in ncIN.variables['UNITS'][:]]
+            self.VARIABLES= [variable for variable in ncIN.variables['VARIABLES'][:]]
+            self.CRUISES  = [cruise for cruise in ncIN.variables['Cruises'][:]]
         self.datasetname = datasetname
-        ncIN.close()
 
     def unique_rows(self,data, prec=5):
         
@@ -52,7 +50,7 @@ class DatasetExtractor():
             Depth = depth[inthisprofile]
             
             iddataset = int(dataset[inthisprofile][0])
-            Cruise    = self.CRUISES[iddataset-1,:].tostring().strip()
+            Cruise    = self.CRUISES[iddataset-1]
             LP = ContainerProfile(lon,lat,time,Depth,Values,Cruise, self.datasetname)
             Profilelist.append(LP)
         return Profilelist
@@ -69,16 +67,14 @@ class DatasetExtractor():
         assert isinstance(T_int, (TimeInterval, timerequestors.Clim_season, timerequestors.Clim_month))
         ivar  = find_index(var, self.VARIABLES)
         values= self.DATA[ivar,:].copy()
-        units = self.UNITS[ivar,:].tostring()
+        units = self.UNITS[ivar]
 
         if False: #units =="\\mumol/kg":
             itemp  = find_index('temp'    , self.VARIABLES)
             ipsal  = find_index('salinity', self.VARIABLES)
-            idens  = find_index('density' , self.VARIABLES)
             temp   = self.DATA[itemp,:]
             sali   = self.DATA[ipsal,:]
             pres   = self.DATA[5,:]
-            dens   = self.DATA[idens,:]
             good_rho  = (sali < 1.e+19 ) & (sali>0) & (temp < 1.e+19 ) & (temp>0) & (pres < 1.e+19 ) & (pres>0)
             t = T90conv(temp)
             n = len(values)
@@ -86,15 +82,9 @@ class DatasetExtractor():
             assumed_density = np.ones((n),np.float32)*np.nan
             calculated_rho[good_rho]  = seawater.dens(sali[good_rho],t[good_rho],pres[good_rho])
 
-
-            good_dens = (dens < 1.e+19 ) & (dens>0)
             for i in range(n):
-                if good_dens[i]:
-                    assumed_density[i] = dens[i]
-                else:
-                    if good_rho[i]:
-                        assumed_density[i] = calculated_rho[i]
-
+                if good_rho[i]:
+                    assumed_density[i] = calculated_rho[i]
 
             good = ~np.isnan(assumed_density)
             values[good] = values[good] * assumed_density[good] /1000.
@@ -128,7 +118,7 @@ class DatasetExtractor():
         depth   =   depth[Selected]
         dataset = dataset[Selected]
         
-        if var == "pCO2":
+        if var == "pCO2_rec":
             Ptot= 1 + depth/10  # approximation for total pressure in atmosphere:
                                 #! press atm + press water column (in atmosphere)
             values= values /  ( np.exp( ( 1-Ptot) *0.001366 ) )
@@ -150,9 +140,9 @@ class DatasetExtractor():
         good = (values < 1e+19) & (values > 0) 
         ii = self.DATA[-1,:] == (iCruise+1)
         Selected = good & ii
-        year    = self.DATA[ 0,Selected]
-        month   = self.DATA[ 1,Selected]
-        day     = self.DATA[ 2,Selected]
+        year    = self.DATA[ 0,Selected].astype(int)
+        month   = self.DATA[ 1,Selected].astype(int)
+        day     = self.DATA[ 2,Selected].astype(int)
         lat     = self.DATA[ 3,Selected]
         lon     = self.DATA[ 4,Selected]
         depth   = self.DATA[ 5,Selected]
@@ -164,5 +154,5 @@ class DatasetExtractor():
         for i in range(nValues):
             time = datetime.datetime(year[i],month[i],day[i])
             TIME[i] = time.toordinal()
-        
+        #print(iCruise,ivar,dataset,year)
         return self.profileGenerator(TIME, lon, lat, values, depth, dataset)

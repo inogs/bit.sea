@@ -4,7 +4,7 @@ import scipy.io.netcdf as NC
 import numpy as np
 import bitsea.matchup.matchup
 import matplotlib.pyplot as pl
-import bitsea.postproc
+import bitsea.postproc as postproc
 
 
 

@@ -10,6 +10,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
+numpy = "^2.0.2"
+matplotlib = ">3.7.5"
+netcdf4 = ">1.6.5"
 
 
 [build-system]

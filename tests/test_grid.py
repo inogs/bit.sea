@@ -1,7 +1,7 @@
 import numpy as np
 
-from bitsea.commons.mask import Grid
-from bitsea.commons.mask import RegularGrid
+from bitsea.commons.grid import Grid
+from bitsea.commons.grid import RegularGrid
 
 
 def test_grid_init():

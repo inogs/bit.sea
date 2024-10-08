@@ -144,7 +144,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
         setattr(ncvar, 'units'      , "mmol/m3")
 
 
-    os.system("mv {}.tmp {}".format(outfile,outfile))
+    os.system("mv {} {}".format(tmpfile,outfile))
 
 
 

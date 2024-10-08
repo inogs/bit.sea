@@ -1,4 +1,5 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path,existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of dissolved oxygen.
@@ -15,12 +16,12 @@ def argument():
                                 required = False,
                                 help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
     parser.add_argument(   '--outdiag','-O',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path for statistics, diagnostics, logs')
@@ -51,9 +52,9 @@ from bitsea.Float import oxygen_saturation
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 import superfloat_generator
-from bitsea.commons.utils import addsep
+from pathlib import Path
 import os
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import numpy as np
 import seawater as sw
 from datetime import datetime, timedelta
@@ -69,7 +70,7 @@ df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
 
 class Metadata():
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = str(filename)
         self.status_var = 'n'
         self.drift_code = -5
         self.offset = -999
@@ -114,10 +115,11 @@ def convert_oxygen(p,doxypres,doxyprofile):
 
 def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
+    tmpfile=outfile.with_suffix('.nc.tmp')
     if mode=='a':
-        command = "cp %s %s.tmp" %(outfile,outfile)
+        command = "cp {} {}".format(outfile,tmpfile)
         os.system(command)
-    ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
+    ncOUT = NC.Dataset(tmpfile,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
         setattr(ncOUT, 'origin'     , 'coriolis')
@@ -158,36 +160,45 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print("dumping oxygen on " + outfile, flush=True)
-    doxy_already_existing="nDOXY" in ncOUT.dimensions.keys()
-    if not doxy_already_existing : ncOUT.createDimension('nDOXY', nP)
-    ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
-    ncvar[:]=Pres
-    ncvar=ncOUT.createVariable("DOXY", 'f', ('nDOXY',))
-    ncvar[:]=Value
-    #if not doxy_already_existing:
+    print("dumping oxygen on " + str(outfile), flush=True)
+    doxy_already_existing=superfloat_generator.exist_valid_variable("DOXY", tmpfile)
+    if not doxy_already_existing :
+        ncOUT.createDimension('nDOXY', nP)
+        ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
+        ncvar[:]=Pres
+        ncvar=ncOUT.createVariable("DOXY", 'f', ('nDOXY',))
+        ncvar[:]=Value
+        ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
+        ncvar[:]=Qc
+    else:
+        ncvar=ncOUT.variables['PRES_DOXY']
+        ncvar[:]=Pres
+        ncvar=ncOUT.variables['DOXY']
+        ncvar[:]=Value
+        ncvar=ncOUT.variables['DOXY_QC']
+        ncvar[:]=Qc
     setattr(ncvar, 'status_var' , metadata.status_var)
     setattr(ncvar, 'drift_code' , metadata.drift_code)
     setattr(ncvar, 'offset'     , metadata.offset)
     setattr(ncvar, 'variable'   , 'DOXY')
     setattr(ncvar, 'units'      , "mmol/m3")
-    ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
-    ncvar[:]=Qc
+
+
     ncOUT.close()
 
-    os.system("mv " + outfile + ".tmp " + outfile)
+    os.system("mv {} {}".format(tmpfile,outfile))
 
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
+    filename = outdir / wmo / p._my_float.filename.name
     return filename
 
 def read_doxy(pCor):
     Pres, Value, Qc = pCor.read('DOXY',read_adjusted=True)
     nP=len(Pres)
     if nP<5 :
-        print("few values for " + pCor._my_float.filename, flush=True)
+        print("few values for " + str(pCor._my_float.filename), flush=True)
         return None, None, None
     ValueCconv=convert_oxygen(pCor, Pres, Value)
     return Pres, ValueCconv, Qc
@@ -316,25 +327,11 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     '''
     Pres, Value, Qc  = Dataset[p.ID()]
     PresT, _, _ = p.read('TEMP', read_adjusted=False)
-    if len(Pres)<5:
-        print("few values in Coriolis TEMP in " + p._my_float.filename, flush=True)
+    if len(PresT)<5:
+        print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
         return
-#     Pres, Value, Qc = read_doxy(p)
-#     if Pres is None: return
-#
-#
-#
-#     if p._my_float.status_var('DOXY')=='D':
-#         metadata.status_var='D'
-#         condition_to_write = True
-#     else:
-#         metadata.status_var='A'
-#         condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-#
-#
-#     if not condition_to_write:
-#         print("Saturation Test not passed")
-#         return
+
+
     metadata.status_var = p._my_float.status_var('DOXY')
     df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, Profilelist_hist, Dataset)
     Oxy_Profile = Value
@@ -356,7 +353,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
                 wmo = p._my_float.wmo
                 df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
                 timenum = int(p.time.strftime("%Y%m%d"))
-                save_report( OUT_META+ "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
+                save_report( OUT_META / "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
                 return
             else:
                 Oxy_Profile = apply_detrend(Pres, Value, df_report)
@@ -364,7 +361,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
                 metadata.offset = OFFSET
                 # high freq.csv
 
-    os.system('mkdir -p ' + os.path.dirname(outfile))
+    Path.mkdir(outfile.parent, exist_ok=True)
     dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
 
 
@@ -400,8 +397,8 @@ def load_history(wmo):
 
 
 
-OUTDIR = addsep(args.outdir)
-OUT_META = addsep(args.outdiag)
+OUTDIR = Path(args.outdir)
+OUT_META = Path(args.outdiag)
 input_file=args.update_file
 if input_file == 'NO_file':
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
@@ -439,12 +436,12 @@ else:
     PROFILES_COR=[]
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile].decode()
+        timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 

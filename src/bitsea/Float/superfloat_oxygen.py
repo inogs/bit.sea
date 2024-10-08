@@ -343,8 +343,7 @@ def load_history(wmo):
     print("Loading dataset for float", wmo, "...", flush=True)
     TI     = TimeInterval("1950","2050",'%Y')
     R = Rectangle(-6,36,30,46)
-    PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
-    PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
+    PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
     Profilelist_wmo=bio_float.filter_by_wmo(PROFILES_COR, wmo)
     Profilelist=[]
     Dataset={}

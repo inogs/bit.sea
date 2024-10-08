@@ -76,32 +76,6 @@ class Metadata():
         self.offset = -999
 
 
-def remove_bad_sensors(Profilelist,var):
-    '''
-
-    Subsetter, filtering out bad sensors for that var
-
-     Arguments:
-      * Profilelist * list of Profile objects
-      * var         * string
-
-      Returns:
-        a list of Profile Objects
-    '''
- 
-    OUT_N3n = ["6903197","6901767","6901773","6901771"]
-    OUT_O2o = ["6901510"]
-    OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
-    # 0 6901766 has negative values
-
-    if ( var == 'SR_NO3' ):
-        return [p for p in Profilelist if p.name() not in OUT_N3n]
-
-    if ( var == 'DOXY' ):
-        return [p for p in Profilelist if p.name() not in OUT_O2o]
-
-    return Profilelist
-
 def convert_oxygen(p,doxypres,doxyprofile):
     '''
     from micromol/Kg to  mmol/m3
@@ -400,8 +374,7 @@ if input_file == 'NO_file':
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
-    PROFILES_COR_all =bio_float.FloatSelector('DOXY', TI, R)
-    PROFILES_COR = remove_bad_sensors(PROFILES_COR_all, "DOXY")
+    PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
 
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
     wmo_list.sort()
@@ -446,8 +419,7 @@ else:
         p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
         PROFILES_COR.append(p)
 
-    OUT_O2o = ["6901766",'6903235','6902902',"6902700"]
-    wmo_list= [p for p in bio_float.get_wmo_list(PROFILES_COR) if p not in OUT_O2o]
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
     wmo_list.sort()
 
     for wmo in wmo_list:

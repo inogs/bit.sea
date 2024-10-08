@@ -136,13 +136,13 @@ FloatIndexer=addsep(ONLINE_REPO) + float_dataset + "/Float_Index.txt"
 nFiles=INDEX_FILE.size
 PROFILE_LIST = []
 for iFile in range(nFiles):
-    timestr          = INDEX_FILE['time'][iFile].decode()
+    timestr          = INDEX_FILE['time'][iFile]
     lon              = INDEX_FILE['lon' ][iFile]
     lat              = INDEX_FILE['lat' ][iFile]
-    filename         = INDEX_FILE['file_name'][iFile].decode()
-    available_params = INDEX_FILE['parameters'][iFile].decode()
+    filename         = INDEX_FILE['file_name'][iFile]
+    available_params = INDEX_FILE['parameters'][iFile]
     float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-    parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+    parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
     
 
     filename = ONLINE_REPO + float_dataset + "/" + filename
@@ -178,7 +178,7 @@ for wmo in WMOS:
 good = np.ones((nFiles),bool)
 LINES=[]
 for iFile in range(nFiles):
-    if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile].decode() in REMOVING_LIST:
+    if ONLINE_REPO + float_dataset + "/"+ INDEX_FILE['file_name'][iFile] in REMOVING_LIST:
         good[iFile]=False
 
 

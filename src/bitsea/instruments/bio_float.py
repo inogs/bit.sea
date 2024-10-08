@@ -6,20 +6,17 @@ from bitsea.commons.utils import addsep
 from bitsea.instruments.var_conversions import FLOATVARS as conversion
 import matplotlib
 import matplotlib.pyplot as pl
-
+from pathlib import Path
 from bitsea.instruments.instrument import Instrument, Profile
-from bitsea.mhelpers.pgmean import PLGaussianMean
-meanObj = PLGaussianMean(5,1.0)
 
-CORIOLIS_DIR="FLOAT_BIO/"
 CORIOLIS_DIR="CORIOLIS/"
 mydtype= np.dtype([
-          ('file_name','S200'),
+          ('file_name','U200'),
           ('lat',np.float32),
           ('lon',np.float32),
-          ('time','S17'),
-          ('parameters','S200'),
-          ('parameter_data_mode','S100')] )
+          ('time','U17'),
+          ('parameters','U200'),
+          ('parameter_data_mode','U100')] )
 
 GSS_DEFAULT_LOC = "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/"
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
@@ -28,13 +25,12 @@ FloatIndexer=addsep(ONLINE_REPO) + CORIOLIS_DIR + "Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
 class BioFloatProfile(Profile):
-    def __init__(self, time, lon, lat, my_float, available_params,mean=None):
+    def __init__(self, time, lon, lat, my_float, available_params):
         self.time = time
         self.lon = lon
         self.lat = lat
         self._my_float = my_float
         self.available_params = available_params
-        self.mean = mean
         self.has_adjusted = True
 
     def __eq__(self, other):
@@ -54,7 +50,7 @@ class BioFloatProfile(Profile):
               read_adjusted as logical
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var, mean=self.mean,read_adjusted=read_adjusted)
+        return self._my_float.read(var, read_adjusted=read_adjusted)
 
     def name(self):
         '''returns a string, the wmo of the associated BioFloat.
@@ -73,8 +69,6 @@ class BioFloatProfile(Profile):
 
 
 class BioFloat(Instrument):
-
-    default_mean = None
 
     def __init__(self,lon,lat,time,filename,available_params,parameter_data_mode):
         self.lon = lon
@@ -250,7 +244,7 @@ class BioFloat(Instrument):
 
         return np.array(indexes)
 
-    def read(self, var, mean=None, read_adjusted=True):
+    def read(self, var, read_adjusted=True):
         '''
 
         Reads profile data from file, applies a rarefaction and optionally a filter to the data
@@ -293,13 +287,8 @@ class BioFloat(Instrument):
             prof = prof[ii]
             qc   =   qc[ii]
 
-        if mean == None:
-            if BioFloat.default_mean != None:
-                return pres, BioFloat.default_mean.compute(prof, pres), qc
-            else:
-                return pres, prof, qc
-        else:
-            return pres, mean.compute(prof, pres), qc
+        return pres, prof, qc
+
     def basicplot(self,Pres,profile):
         pl.figure()
         pl.plot(profile,Pres)
@@ -331,8 +320,8 @@ class BioFloat(Instrument):
         ax.grid()
         return fig,ax
 
-    def profiles(self, var, mean=None):
-        return [BioFloatProfile(var, self.time, self.lon, self.lat, self, mean)]
+    def profiles(self, var):
+        return [BioFloatProfile(var, self.time, self.lon, self.lat, self)]
 
     @staticmethod
     def from_file(filename):
@@ -341,12 +330,12 @@ class BioFloat(Instrument):
         '''
         nFiles=INDEX_FILE.size
         for iFile in range(nFiles):
-            timestr          = INDEX_FILE['time'][iFile].decode()
+            timestr          = INDEX_FILE['time'][iFile]
             lon              = INDEX_FILE['lon' ][iFile]
             lat              = INDEX_FILE['lat' ][iFile]
-            thefilename      = INDEX_FILE['file_name'][iFile].decode()
-            available_params = INDEX_FILE['parameters'][iFile].decode()
-            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+            thefilename      = INDEX_FILE['file_name'][iFile]
+            available_params = INDEX_FILE['parameters'][iFile]
+            parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
             float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
             if ONLINE_REPO + CORIOLIS_DIR + thefilename == filename :
@@ -355,9 +344,9 @@ class BioFloat(Instrument):
 
 def profile_gen(lon,lat,float_time,filename,available_params,parameterdatamode):
 
-    filename = ONLINE_REPO + CORIOLIS_DIR + filename
+    filename = Path(ONLINE_REPO + CORIOLIS_DIR + filename)
     thefloat = BioFloat(lon,lat,float_time,filename,available_params,parameterdatamode)
-    return BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj)
+    return BioFloatProfile(float_time,lon,lat, thefloat,available_params)
 
 def FloatSelector(var, T, region):
     '''
@@ -375,12 +364,12 @@ def FloatSelector(var, T, region):
     nFiles=INDEX_FILE.size
     selected = []
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['time'][iFile].decode()
+        timestr          = INDEX_FILE['time'][iFile]
         lon              = INDEX_FILE['lon' ][iFile]
         lat              = INDEX_FILE['lat' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
 
         if var is None :
@@ -391,8 +380,6 @@ def FloatSelector(var, T, region):
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):
                 selected.append(profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode))
-                #thefloat = BioFloat(lon,lat,float_time,filename,available_params)
-                #selected.append(BioFloatProfile(float_time,lon,lat, thefloat,available_params,meanObj))
 
     return selected
 
@@ -424,72 +411,36 @@ def filter_by_wmo(Profilelist,wmo):
 
     return [p for p in Profilelist if p._my_float.wmo == wmo]
 
-def from_lov_profile(lov_profile, verbose=True):
-    '''
-    Arguments:
-    * lov_profile * a lov profile objects
-    * verbose     * logical, used to print lov files that don't have a corresponding in coriolis
-    
-    Returns:
-    *  p * a BioFloatProfile objects
-    '''
-    wmo = lov_profile._my_float.wmo
-    INDEXES=[]
-    for iFile, filename in enumerate(INDEX_FILE['file_name']):
-        if filename.startswith(wmo):
-            INDEXES.append(iFile)
-    A = INDEX_FILE[INDEXES]
-    nFiles = len(A)
-    DELTA_TIMES = np.zeros((nFiles,), np.float32)
-    for k in range(nFiles):
-        float_time =datetime.datetime.strptime(A['time'][k],'%Y%m%d-%H:%M:%S')
-        deltat = lov_profile.time - float_time
-        DELTA_TIMES[k] = deltat.total_seconds()
-    min_DeltaT = np.abs(DELTA_TIMES).min()
-    if min_DeltaT > 3600*3 :
-        if verbose: print("no Coriolis file corresponding to "  + lov_profile._my_float.filename)
-        return None
-    F = (A['lon'] - lov_profile.lon)**2 + (A['lat'] - lov_profile.lat)**2 +  DELTA_TIMES**2
-    iFile = F.argmin()
-    timestr          = A['time'][iFile]
-    lon              = A['lon' ][iFile]
-    lat              = A['lat' ][iFile]
-    filename         = A['file_name'][iFile]
-    available_params = A['parameters'][iFile]
-    float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-    return profile_gen(lon, lat, float_time, filename, available_params)
-
 
 if __name__ == '__main__':
     from bitsea.basins.region import Rectangle
     from bitsea.commons.time_interval import TimeInterval
     import sys
 
-    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V9C/CORIOLIS/6902902/SR6902902_456.nc'
+    f='/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V10C/CORIOLIS/6902902/SD6902902_456.nc'
     F = BioFloat.from_file(f)
 
     Pres, values, valuesa, Qc, Qca =F.read_very_raw('TEMP')
     fig,ax =F.plot(Pres,values,'b')
 
     Pres, values, Qc=F.read('TEMP', read_adjusted=False)
-    ax.plot(values,Pres,'r.')
-    fig.savefig('prova.png')
+    #ax.plot(values,Pres,'r.')
+    #fig.savefig('prova.png')
 
-    sys.exit()
-    var = 'BBP700'
-    TI = TimeInterval('20150101','20220225','%Y%m%d')
+    var = 'CHLA'
+    TI = TimeInterval('20120101','20250225','%Y%m%d')
     R = Rectangle(-6,36,30,46)
 
     PROFILE_LIST=FloatSelector(var, TI, R)
 
     nP = len(PROFILE_LIST)
-    MAX=np.zeros((nP,))
+    IND=np.zeros((nP,))
     MIN=np.zeros((nP,))
     for ip, p in enumerate(PROFILE_LIST):
-        Pres, Value, Qc= p.read(var, read_adjusted=False)
+        Pres, Value, Qc= p.read(var, read_adjusted=True)
         if len(Pres)>5:
-            MIN[ip]=Value.min()
-            MAX[ip]=Value.max()
+            MIN[ip]=Pres.min()
+            IND[ip]=ip
     sys.exit()
 
     sum=0
@@ -528,7 +479,7 @@ if __name__ == '__main__':
     for p in PROFILE_LIST[:1]:
         PN,N, Qc = p.read(var,read_adjusted=True)
         TheFloat = p._my_float
-        PN,N,Qc = TheFloat.read(var,    read_adjusted=True, mean=meanObj)
+        PN,N,Qc = TheFloat.read(var,    read_adjusted=True)
         #PS,S,Qc = TheFloat.read('PSAL', read_adjusted=True)
         #PT,T,Qc = TheFloat.read('TEMP', read_adjusted=True)
 

@@ -124,8 +124,6 @@ class RegularGridDescriptor(GridDescriptor, ABC):
         raise NotImplementedError
 
 
-
-
 class Grid(GridDescriptor):
     """
     Represents a 2D discretization of a geographical region, storing the
@@ -276,7 +274,7 @@ class Grid(GridDescriptor):
                         f'from {coord_min} to {coord_max})'
                     )
                 raise OutsideDomain(
-                    f'Point with coords (lon = {lon} and lat = {lat}) is'
+                    f'Point with coords (lon = {lon} and lat = {lat}) is '
                     f'outside the domain (domain {coord_name} goes from '
                     f'{coord_min} to {coord_max})'
                 )

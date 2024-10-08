@@ -119,72 +119,68 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     if mode=='a':
         command = "cp {} {}".format(outfile,tmpfile)
         os.system(command)
-    ncOUT = NC.Dataset(tmpfile,mode)
+    with NC.Dataset(tmpfile,mode) as ncOUT:
 
-    if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
-        setattr(ncOUT, 'origin'     , 'coriolis')
-        setattr(ncOUT, 'file_origin', metadata.filename)
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
-        ncOUT.createDimension("DATETIME",14)
-        ncOUT.createDimension("NPROF", 1)
-        ncOUT.createDimension('nTEMP', len(PresT))
-        ncOUT.createDimension('nPSAL', len(PresT))
+        if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+            setattr(ncOUT, 'origin'     , 'coriolis')
+            setattr(ncOUT, 'file_origin', metadata.filename)
+            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            ncOUT.createDimension("DATETIME",14)
+            ncOUT.createDimension("NPROF", 1)
+            ncOUT.createDimension('nTEMP', len(PresT))
+            ncOUT.createDimension('nPSAL', len(PresT))
 
-        ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
-        ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
-        ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
-        ncvar[:]=0.0
-        ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lon.astype(np.float64)
-        ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lat.astype(np.float64)
-
-
- 
-        ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
-        ncvar[:]=Temp
-        setattr(ncvar, 'variable'   , 'TEMP')
-        setattr(ncvar, 'units'      , "degree_Celsius")
-        ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
-        ncvar[:]=QcT
-
-        ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
-        ncvar[:]=Sali
-        setattr(ncvar, 'variable'   , 'SALI')
-        setattr(ncvar, 'units'      , "PSS78")
-        ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
-        ncvar[:]=QcS
-
-    print("dumping oxygen on " + str(outfile), flush=True)
-    doxy_already_existing=superfloat_generator.exist_valid_variable("DOXY", tmpfile)
-    if not doxy_already_existing :
-        ncOUT.createDimension('nDOXY', nP)
-        ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
-        ncvar[:]=Pres
-        ncvar=ncOUT.createVariable("DOXY", 'f', ('nDOXY',))
-        ncvar[:]=Value
-        ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
-        ncvar[:]=Qc
-    else:
-        ncvar=ncOUT.variables['PRES_DOXY']
-        ncvar[:]=Pres
-        ncvar=ncOUT.variables['DOXY']
-        ncvar[:]=Value
-        ncvar=ncOUT.variables['DOXY_QC']
-        ncvar[:]=Qc
-    setattr(ncvar, 'status_var' , metadata.status_var)
-    setattr(ncvar, 'drift_code' , metadata.drift_code)
-    setattr(ncvar, 'offset'     , metadata.offset)
-    setattr(ncvar, 'variable'   , 'DOXY')
-    setattr(ncvar, 'units'      , "mmol/m3")
+            ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
+            ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
+            ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
+            ncvar[:]=0.0
+            ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lon.astype(np.float64)
+            ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lat.astype(np.float64)
 
 
-    ncOUT.close()
+            ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
+            ncvar[:]=Temp
+            setattr(ncvar, 'variable'   , 'TEMP')
+            setattr(ncvar, 'units'      , "degree_Celsius")
+            ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
+            ncvar[:]=QcT
+
+            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar[:]=Sali
+            setattr(ncvar, 'variable'   , 'SALI')
+            setattr(ncvar, 'units'      , "PSS78")
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar[:]=QcS
+
+        print("dumping oxygen on " + str(outfile), flush=True)
+        doxy_already_existing=superfloat_generator.exist_valid_variable("DOXY", tmpfile)
+        if not doxy_already_existing :
+            ncOUT.createDimension('nDOXY', nP)
+            ncvar=ncOUT.createVariable("PRES_DOXY", 'f', ('nDOXY',))
+            ncvar[:]=Pres
+            ncvar=ncOUT.createVariable("DOXY", 'f', ('nDOXY',))
+            ncvar[:]=Value
+            ncvar=ncOUT.createVariable("DOXY_QC", 'f', ('nDOXY',))
+            ncvar[:]=Qc
+        else:
+            ncvar=ncOUT.variables['PRES_DOXY']
+            ncvar[:]=Pres
+            ncvar=ncOUT.variables['DOXY']
+            ncvar[:]=Value
+            ncvar=ncOUT.variables['DOXY_QC']
+            ncvar[:]=Qc
+        setattr(ncvar, 'status_var' , metadata.status_var)
+        setattr(ncvar, 'drift_code' , metadata.drift_code)
+        setattr(ncvar, 'offset'     , metadata.offset)
+        setattr(ncvar, 'variable'   , 'DOXY')
+        setattr(ncvar, 'units'      , "mmol/m3")
 
     os.system("mv {} {}".format(tmpfile,outfile))
 

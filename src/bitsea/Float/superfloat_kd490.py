@@ -63,70 +63,67 @@ def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     if mode=='a':
         command = "cp {} {}".format(outfile,tmpfile)
         os.system(command)
-    ncOUT = NC.Dataset(tmpfile ,mode)
+    with NC.Dataset(tmpfile ,mode) as ncOUT:
 
-    if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
-        setattr(ncOUT, 'origin'     , 'coriolis')
-        setattr(ncOUT, 'file_origin', metadata.filename)
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
-        ncOUT.createDimension("DATETIME",14)
-        ncOUT.createDimension("NPROF", 1)
-        ncOUT.createDimension('nTEMP', len(PresT))
-        ncOUT.createDimension('nPSAL', len(PresT))
+        if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
+            setattr(ncOUT, 'origin'     , 'coriolis')
+            setattr(ncOUT, 'file_origin', metadata.filename)
+            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            ncOUT.createDimension("DATETIME",14)
+            ncOUT.createDimension("NPROF", 1)
+            ncOUT.createDimension('nTEMP', len(PresT))
+            ncOUT.createDimension('nPSAL', len(PresT))
 
-        ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
-        ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
-        ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
-        ncvar[:]=0.0
-        ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lon.astype(np.float64)
-        ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
-        ncvar[:] = p.lat.astype(np.float64)
+            ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
+            ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
+            ncvar=ncOUT.createVariable("JULD", 'd', ("NPROF",))
+            ncvar[:]=0.0
+            ncvar=ncOUT.createVariable("LONGITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lon.astype(np.float64)
+            ncvar=ncOUT.createVariable("LATITUDE", "d", ("NPROF",))
+            ncvar[:] = p.lat.astype(np.float64)
 
+            ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
+            ncvar[:]=Temp
+            setattr(ncvar, 'variable'   , 'TEMP')
+            setattr(ncvar, 'units'      , "degree_Celsius")
+            ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
+            ncvar[:]=QcT
 
- 
-        ncvar=ncOUT.createVariable('TEMP','f',('nTEMP',))
-        ncvar[:]=Temp
-        setattr(ncvar, 'variable'   , 'TEMP')
-        setattr(ncvar, 'units'      , "degree_Celsius")
-        ncvar=ncOUT.createVariable('PRES_TEMP','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
-        ncvar[:]=QcT
+            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar[:]=Sali
+            setattr(ncvar, 'variable'   , 'SALI')
+            setattr(ncvar, 'units'      , "PSS78")
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
+            ncvar[:]=PresT
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar[:]=QcS
 
-        ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
-        ncvar[:]=Sali
-        setattr(ncvar, 'variable'   , 'SALI')
-        setattr(ncvar, 'units'      , "PSS78")
-        ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-        ncvar[:]=PresT
-        ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
-        ncvar[:]=QcS
+        print("dumping kd490 on " + str(outfile), flush=True)
+        kd_already_existing=superfloat_generator.exist_valid_variable("DOWN_IRRADIANCE490", tmpfile)
+        if not kd_already_existing :
+            ncOUT.createDimension('nKD', nP)
+            ncvar=ncOUT.createVariable("PRES_DOWN_IRRADIANCE490", 'f', ('nKD',))
+            ncvar[:]=Pres
+            ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490", 'f', ('nKD',))
+            ncvar[:]=Value
+            setattr(ncvar, 'status_var' , metadata.status_var)
+            setattr(ncvar, 'variable'   , 'DOWN_IRRADIANCE490')
+            setattr(ncvar, 'units'      , "W/m^2/nm")
+            setattr(ncvar, 'longname'   , 'Downwelling irradiance at 490 nanometers')
+            ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490_QC", 'f', ('nKD',))
+            ncvar[:]=Qc
+        else:
+            ncvar=ncOUT.variables['PRES_DOWN_IRRADIANCE490']
+            ncvar[:]=Pres
+            ncvar=ncOUT.variables['DOWN_IRRADIANCE490']
+            ncvar[:]=Value
+            ncvar=ncOUT.variables['DOWN_IRRADIANCE490_QC']
+            ncvar[:]=Qc
 
-    print("dumping par on " + str(outfile), flush=True)
-    kd_already_existing=superfloat_generator.exist_valid_variable("DOWN_IRRADIANCE490", tmpfile)
-    if not kd_already_existing :
-        ncOUT.createDimension('nKD', nP)
-        ncvar=ncOUT.createVariable("PRES_DOWN_IRRADIANCE490", 'f', ('nKD',))
-        ncvar[:]=Pres
-        ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490", 'f', ('nKD',))
-        ncvar[:]=Value
-        setattr(ncvar, 'status_var' , metadata.status_var)
-        setattr(ncvar, 'variable'   , 'DOWN_IRRADIANCE490')
-        setattr(ncvar, 'units'      , "W/m^2/nm")
-        setattr(ncvar, 'longname'   , 'Downwelling irradiance at 490 nanometers')
-        ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490_QC", 'f', ('nKD',))
-        ncvar[:]=Qc
-    else:
-        ncvar=ncOUT.variables['PRES_DOWN_IRRADIANCE490']
-        ncvar[:]=Pres
-        ncvar=ncOUT.variables['DOWN_IRRADIANCE490']
-        ncvar[:]=Value
-        ncvar=ncOUT.variables['DOWN_IRRADIANCE490_QC']
-        ncvar[:]=Qc
-
-    ncOUT.close()
 
     os.system("mv {} {}".format(tmpfile,outfile))
 
@@ -169,7 +166,7 @@ if input_file == 'NO_file':
             outfile = get_outfile(pCor,OUTDIR)
             writing_mode=superfloat_generator.writing_mode(outfile)
             
-            condition_to_write = ~superfloat_generator.exist_valid_variable('DOWN_IRRADIANCE490',outfile)
+            condition_to_write = not superfloat_generator.exist_valid_variable('DOWN_IRRADIANCE490',outfile)
             if args.force: condition_to_write=True
             if not condition_to_write: continue
 

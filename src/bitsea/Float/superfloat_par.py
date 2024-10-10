@@ -102,7 +102,7 @@ def dump_par_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
             ncvar[:]=QcS
 
-        print("dumping par on " + outfile, flush=True)
+        print("dumping par on " + str(outfile), flush=True)
         par_already_existing=superfloat_generator.exist_valid_variable("DOWNWELLING_PAR", outfile)
         if not par_already_existing :
             ncOUT.createDimension('nDOWNWELLING_PAR', nP)

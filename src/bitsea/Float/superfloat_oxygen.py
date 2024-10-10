@@ -390,7 +390,7 @@ if input_file == 'NO_file':
 
             writing_mode=superfloat_generator.writing_mode(outfile)
 
-            condition_to_write = ~superfloat_generator.exist_valid_variable('DOXY',outfile)
+            condition_to_write = not superfloat_generator.exist_valid_variable('DOXY',outfile)
             if args.force: condition_to_write=True
             if not condition_to_write: continue
 

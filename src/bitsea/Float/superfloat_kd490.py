@@ -1,4 +1,5 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of down irradiance at 490nm.
@@ -15,7 +16,7 @@ def argument():
                                 required = False,
                                 help = '''date in yyyymmdd format ''')
     parser.add_argument(   '--outdir','-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 default = "/gpfs/scratch/userexternal/gbolzon0/SUPERFLOAT/",
                                 help = 'path of the Superfloat dataset ')
@@ -42,26 +43,27 @@ if ((args.datestart == 'NO_data') or (args.dateend == 'NO_data')) & (args.update
 from bitsea.instruments import bio_float
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
-import superfloat_generator
-from bitsea.commons.utils import addsep
+from bitsea.Float import superfloat_generator
+from pathlib import Path
 import os
-import scipy.io.netcdf as NC
+import netCDF4 as NC
 import numpy as np
 import datetime
 
 class Metadata():
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = str(filename)
         self.status_var = 'n'
 
 
 
 def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
+    tmpfile=outfile.with_suffix('.nc.tmp')
     if mode=='a':
-        command = "cp %s %s.tmp" %(outfile,outfile)
+        command = "cp {} {}".format(outfile,tmpfile)
         os.system(command)
-    ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
+    ncOUT = NC.Dataset(tmpfile ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
         setattr(ncOUT, 'origin'     , 'coriolis')
@@ -102,31 +104,40 @@ def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
         ncvar[:]=QcS
 
-    print("dumping par on " + outfile, flush=True)
-    kd_already_existing="nKD" in ncOUT.dimensions.keys()
-    if not kd_already_existing : ncOUT.createDimension('nKD', nP)
-    ncvar=ncOUT.createVariable("PRES_DOWN_IRRADIANCE490", 'f', ('nKD',))
-    ncvar[:]=Pres
-    ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490", 'f', ('nKD',))
-    ncvar[:]=Value
-    setattr(ncvar, 'status_var' , metadata.status_var)
-    setattr(ncvar, 'variable'   , 'DOWN_IRRADIANCE490')
-    setattr(ncvar, 'units'      , "W/m^2/nm")
-    setattr(ncvar, 'longname'   , 'Downwelling irradiance at 490 nanometers')
-    ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490_QC", 'f', ('nKD',))
-    ncvar[:]=Qc
+    print("dumping par on " + str(outfile), flush=True)
+    kd_already_existing=superfloat_generator.exist_valid_variable("DOWN_IRRADIANCE490", tmpfile)
+    if not kd_already_existing :
+        ncOUT.createDimension('nKD', nP)
+        ncvar=ncOUT.createVariable("PRES_DOWN_IRRADIANCE490", 'f', ('nKD',))
+        ncvar[:]=Pres
+        ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490", 'f', ('nKD',))
+        ncvar[:]=Value
+        setattr(ncvar, 'status_var' , metadata.status_var)
+        setattr(ncvar, 'variable'   , 'DOWN_IRRADIANCE490')
+        setattr(ncvar, 'units'      , "W/m^2/nm")
+        setattr(ncvar, 'longname'   , 'Downwelling irradiance at 490 nanometers')
+        ncvar=ncOUT.createVariable("DOWN_IRRADIANCE490_QC", 'f', ('nKD',))
+        ncvar[:]=Qc
+    else:
+        ncvar=ncOUT.variables['PRES_DOWN_IRRADIANCE490']
+        ncvar[:]=Pres
+        ncvar=ncOUT.variables['DOWN_IRRADIANCE490']
+        ncvar[:]=Value
+        ncvar=ncOUT.variables['DOWN_IRRADIANCE490_QC']
+        ncvar[:]=Qc
+
     ncOUT.close()
 
-    os.system("mv " + outfile + ".tmp " + outfile)
+    os.system("mv {} {}".format(tmpfile,outfile))
 
 def get_outfile(p,outdir):
     wmo=p._my_float.wmo
-    filename="%s%s/%s" %(outdir,wmo, os.path.basename(p._my_float.filename))
+    filename = outdir / wmo / p._my_float.filename.name
     return filename
 
 
 def kd_algorithm(pCor, outfile, metadata,writing_mode):
-    os.system('mkdir -p ' + os.path.dirname(outfile))
+    Path.mkdir(outfile.parent, exist_ok=True)
     metadata.status_var = pCor._my_float.status_var('DOWN_IRRADIANCE490')
     if metadata.status_var in ['A', 'D']:
         Pres, Value, Qc = pCor.read('DOWN_IRRADIANCE490', read_adjusted=True)
@@ -134,11 +145,11 @@ def kd_algorithm(pCor, outfile, metadata,writing_mode):
         Pres, Value, Qc = pCor.read('DOWN_IRRADIANCE490', read_adjusted=False)
     if Pres is None: return
     if len(Pres)<5:
-        print("few values in Coriolis for KD in " + pCor._my_float.filename, flush=True)
+        print("few values in Coriolis for KD in " + str(pCor._my_float.filename), flush=True)
         return
     dump_kd_file(outfile, pCor, Pres, Value, Qc, metadata,mode=writing_mode)
 
-OUTDIR = addsep(args.outdir)
+OUTDIR = args.outdir
 input_file=args.update_file
 if input_file == 'NO_file':
 
@@ -172,12 +183,12 @@ else:
     nFiles=INDEX_FILE.size
 
     for iFile in range(nFiles):
-        timestr          = INDEX_FILE['date'][iFile].decode()
+        timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
-        filename         = INDEX_FILE['file_name'][iFile].decode()
-        available_params = INDEX_FILE['parameters'][iFile].decode()
-        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile].decode()
+        filename         = INDEX_FILE['file_name'][iFile]
+        available_params = INDEX_FILE['parameters'][iFile]
+        parameterdatamode= INDEX_FILE['parameter_data_mode'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 

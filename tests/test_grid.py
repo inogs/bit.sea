@@ -1,7 +1,11 @@
+from netCDF4 import Dataset
 import numpy as np
 import pytest
 
-from bitsea.commons.grid import Grid, OutsideDomain
+from bitsea.commons.grid import Grid
+from bitsea.commons.grid import GeoPySidesCalculator
+from bitsea.commons.grid import NemoGridSidesCalculator
+from bitsea.commons.grid import OutsideDomain
 from bitsea.commons.grid import RegularGrid
 
 
@@ -59,6 +63,37 @@ def test_regular_grid_init():
     assert np.allclose(lat[:, np.newaxis], grid.ylevels)
 
     assert grid.shape == grid_shape
+
+def test_init_with_wrongs_arguments():
+    grid_shape = (19, 31)
+    xlevels = np.linspace(0, 1, grid_shape[1], dtype=np.float32)
+    xlevels = np.broadcast_to(xlevels, grid_shape)
+
+    ylevels = np.linspace(0, 1, grid_shape[0], dtype=np.float32)
+    ylevels = np.broadcast_to(ylevels[:, np.newaxis], grid_shape)
+
+    # Must have the right shape
+    with pytest.raises(ValueError):
+        Grid(xlevels=xlevels[1:-1], ylevels=ylevels)
+
+    # Must have same type
+    with pytest.raises(ValueError):
+        Grid(xlevels=xlevels, ylevels=np.asarray(ylevels, dtype=np.float64))
+
+    # Do not accept 1D arrays even if they broadcast (because they have the
+    # shape
+    with pytest.raises(ValueError):
+        Grid(xlevels=np.linspace(0, 1, 10), ylevels=np.linspace(0, 1, 10))
+
+
+def test_init_grid_does_broadcast():
+    grid_shape = (19, 31)
+    xlevels = np.linspace(0, 1, grid_shape[1], dtype=np.float32)
+
+    ylevels = np.linspace(0, 1, grid_shape[0], dtype=np.float32)
+    ylevels = np.broadcast_to(ylevels[:, np.newaxis], grid_shape)
+
+    Grid(xlevels=xlevels, ylevels=ylevels)
 
 
 def test_grid_from_file(test_data_dir):
@@ -189,3 +224,76 @@ def test_outside_domain_lon_lat_array_regular(regular_grid):
     lat = np.array((4, 5, 6, 7, 8), dtype=np.float32)
     with pytest.raises(OutsideDomain):
         regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+
+
+def test_e1t_is_read_from_file(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "nonregular_mask.nc"
+
+    grid = Grid.from_file(mask_file)
+
+    with Dataset(mask_file, 'r') as f:
+        e1t = f.variables['e1t'][0, 0].data
+
+    assert np.allclose(e1t, grid.e1t, rtol=1e-5)
+
+
+def test_e2t_is_read_from_file(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "nonregular_mask.nc"
+
+    grid = Grid.from_file(mask_file)
+
+    with Dataset(mask_file, 'r') as f:
+        e1t = f.variables['e2t'][0, 0].data
+
+    assert np.allclose(e1t, grid.e2t, rtol=1e-5)
+
+
+def test_e1t_can_be_computes(grid):
+    assert grid.e1t is not None
+    assert grid.e2t is not None
+
+
+def test_e1t_can_be_computed_regular(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "regular_mask.nc"
+
+    file_grid = RegularGrid.from_file(mask_file)
+    new_grid = RegularGrid(
+        lon=file_grid.lon,
+        lat=file_grid.lat,
+        e1t=None,
+        e2t=None
+    )
+    assert np.allclose(file_grid.e1t, new_grid.e1t, rtol=1e-4)
+
+
+def test_e2t_can_be_computed_regular(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "regular_mask.nc"
+
+    file_grid = RegularGrid.from_file(mask_file)
+    new_grid = RegularGrid(
+        lon=file_grid.lon,
+        lat=file_grid.lat,
+        e1t=None,
+        e2t=None
+    )
+    assert np.allclose(file_grid.e2t, new_grid.e2t, rtol=1e-4)
+
+
+def test_different_algorithms_give_coherent_results(grid):
+    c1 = NemoGridSidesCalculator()
+    c2 = GeoPySidesCalculator(geodesic=False)
+    c3 = GeoPySidesCalculator(geodesic=True)
+
+    e1t_c1, e2t_c1 = c1(grid.xlevels, grid.ylevels)
+    e1t_c2, e2t_c2  = c2(grid.xlevels, grid.ylevels)
+    e1t_c3, e2t_c3 = c3(grid.xlevels, grid.ylevels)
+
+    assert np.allclose(e1t_c1, e1t_c2, rtol=1e-2)
+    assert np.allclose(e1t_c2, e1t_c3, rtol=1e-2)
+
+    assert np.allclose(e2t_c1, e2t_c2, rtol=1e-1)
+    assert np.allclose(e2t_c2, e2t_c3, rtol=1e-2)

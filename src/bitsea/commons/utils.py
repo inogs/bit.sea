@@ -1,22 +1,10 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-import os, sys
+import os
 import numpy as np
 import re
 """Helper functions"""
-
-def deblank(str):
-    l =len(str)
-    for i in range(l):
-        if not str[i]==' ':
-            break
-    junk=str[i:]
-    l=len(junk)
-    for i in range(l):
-        if not junk[l-i-1]==' ':
-            break
-    return junk[:l-i]
 
 
 def get_date_string(s):

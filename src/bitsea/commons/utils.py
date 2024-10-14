@@ -1,6 +1,6 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-from __future__ import print_function
+
 import os, sys
 import numpy as np
 import re
@@ -18,18 +18,6 @@ def deblank(str):
             break
     return junk[:l-i]
 
-
-def is_number(val):
-    """Tells if a value is a number type
-
-    Args:
-        - *val*: the value to test
-
-    Returns:
-        - True if val is a number type.
-        - False if val is not a number type.
-    """
-    return isinstance(val, (int, float, complex, np.float32))
 
 def get_date_string(s):
     """Finds a date in YYYYMMDD format into a bigger string.

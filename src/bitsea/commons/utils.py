@@ -86,30 +86,6 @@ def find_index_s(substring, STRINGLIST):
     return np.array(idx),namesC
 
 
-def is_valid_path(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return path
-            else:
-                raise ValueError("'%s' is not a directory." % (path,))
-        else:
-            return path
-    else:
-        raise ValueError("'%s' is not a valid path." % (path,))
-
-def isvalidpath(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return True
-            else:
-                return False
-        else:
-            return True
-    else:
-        return False
-
 def ticklabels_degree(ax,fsize=7,intdeg=True):
     '''
     Argument : 

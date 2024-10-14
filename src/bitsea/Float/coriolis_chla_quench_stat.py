@@ -1,12 +1,11 @@
 from bitsea.instruments import bio_float
-#from bitsea.instruments import lovbio_float
+# from bitsea.instruments import lovbio_float
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
-import matplotlib.pyplot as pl
 import sys
 from bitsea.commons import calculated_depths
 import numpy as np
-import scipy.io.netcdf as NC
+
 TI = TimeInterval('2012','2020','%Y')
 R = Rectangle(-6,36,30,46)
 PROFILES_COR =bio_float.FloatSelector('CHLA', TI, R)
@@ -20,14 +19,14 @@ line = fmt %( 'flag', 'month', 'MLD', 'Pres_top', 'quench_value', 'ID')
 LINES.append(line)
 
 for iwmo, wmo in enumerate(wmo_list[57:]):
-    print iwmo, wmo
+    print((iwmo, wmo))
     if wmo == "6901765" : continue # save time
     track_list = bio_float.filter_by_wmo(PROFILES_COR, wmo)
     for pCor in track_list:
         if pCor._my_float.status_var('CHLA')=='A':
             PresC, ValueC, QcC = pCor.read('CHLA',read_adjusted=True)
             if len(ValueC) < 5:
-                print "few values in Coriolis for " + pCor._my_float.filename
+                print (f"few values in Coriolis for {pCor._my_float.filename}")
                 continue
             PresT, Temp, _ = pCor.read('TEMP', read_adjusted=False)
             mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
@@ -37,7 +36,7 @@ for iwmo, wmo in enumerate(wmo_list[57:]):
                 if PresC[0]<= mld+5:
                     ii = PresC<= mld + 5
                     if ii.sum()==0:
-                        print "found zero"
+                        print("found zero")
                         sys.exit()
                     descending_ordered = np.sort(ValueC[ii])[-1::-1]
                     n_chosen = min(3, len(descending_ordered))

@@ -85,9 +85,6 @@ def find_index_s(substring, STRINGLIST):
             namesC.append(current_str)
     return np.array(idx),namesC
 
-def die(why, exit_code=1, print_usage=True):
-    print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    sys.exit(exit_code)
 
 def is_valid_path(path, is_dir_check=False):
     if os.path.exists(path):
@@ -95,11 +92,12 @@ def is_valid_path(path, is_dir_check=False):
             if os.path.isdir(path):
                 return path
             else:
-                die("'%s' is not a directory." % (path,))
+                raise ValueError("'%s' is not a directory." % (path,))
         else:
             return path
     else:
-        die("'%s' is not a valid path." % (path,))
+        raise ValueError("'%s' is not a valid path." % (path,))
+
 def isvalidpath(path, is_dir_check=False):
     if os.path.exists(path):
         if is_dir_check:

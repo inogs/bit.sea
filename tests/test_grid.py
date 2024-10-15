@@ -251,7 +251,7 @@ def test_e2t_is_read_from_file(test_data_dir):
     assert np.allclose(e1t, grid.e2t, rtol=1e-5)
 
 
-def test_e1t_can_be_computes(grid):
+def test_e1t_can_be_computed(grid):
     assert grid.e1t is not None
     assert grid.e2t is not None
 

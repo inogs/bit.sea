@@ -2,7 +2,7 @@ from abc import ABC
 from abc import abstractmethod
 from enum import Enum
 from itertools import product as cart_prod
-from pathlib import Path
+from os import PathLike
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -61,7 +61,7 @@ def extend_from_average(v: np.ndarray, axis: int = 0,
 
     v = v.view()
     if axis != 0:
-        np.moveaxis(v, axis, 0)
+        v = np.moveaxis(v, axis, 0)
 
     output = np.empty((v.shape[0] + 1,) + v.shape[1:], dtype=v.dtype)
 
@@ -75,7 +75,7 @@ def extend_from_average(v: np.ndarray, axis: int = 0,
         output[i] = 2 * v[i - 1] - output[i - 1]
 
     if axis != 0:
-        np.moveaxis(output, 0, axis)
+        output = np.moveaxis(output, 0, axis)
 
     return output
 
@@ -329,59 +329,6 @@ class GridDescriptor(ABC):
 
         return calculator(xlevels=xlevels, ylevels=ylevels)
 
-    @staticmethod
-    def from_file(file_name: Path, ylevels_var_name: str = "nav_lat",
-                  xlevels_var_name: str = "nav_lon"):
-        """
-        Reads a NetCDF file and returns a `Grid` object.
-
-        Args:
-            file_name (Path): Path to the NetCDF file.
-            ylevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the y-levels (latitude values).
-            xlevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the x-levels (longitude values).
-
-        Returns:
-            Grid: A `Grid` object. If the file contains a regular grid,
-            a `RegularGrid` object is returned instead.
-        """
-        with netCDF4.Dataset(file_name) as f:
-            ylevels = np.asarray(f.variables[ylevels_var_name])
-            xlevels = np.asarray(f.variables[xlevels_var_name])
-
-            if len(xlevels.shape) == 4:
-                xlevels = xlevels[0, 0, :, :]
-            if len(ylevels.shape) == 4:
-                ylevels = ylevels[0, 0, :, :]
-
-            if 'e1t' in f.variables:
-                e1t = np.asarray(
-                    f.variables['e1t'][0, 0, :, :], dtype=np.float32
-                )
-            else:
-                e1t = None
-
-            if 'e2t' in f.variables:
-                e2t = np.asarray(
-                    f.variables['e2t'][0, 0, :, :], dtype=np.float32
-                )
-            else:
-                e2t = None
-
-        # Now we check if the grid is regular by checking if replicating
-        # the first row of the longitudes and the first column of the
-        # latitudes we get the same grid that we have read from the file
-        x1d = xlevels[0, :]
-        y1d = ylevels[:, 0]
-        x2d = x1d[np.newaxis, :]
-        y2d = y1d[:, np.newaxis]
-        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
-        if dist < 1e-8:
-            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
-
-        return Grid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
-
 
 class RegularGridDescriptor(GridDescriptor, ABC):
     """
@@ -410,22 +357,6 @@ class RegularGridDescriptor(GridDescriptor, ABC):
         grid
         """
         raise NotImplementedError
-
-    @staticmethod
-    def from_file(file_name: Path, ylevels_var_name: str = "nav_lat",
-                  xlevels_var_name: str = "nav_lon"):
-        grid = super(RegularGridDescriptor, RegularGridDescriptor).from_file(
-            file_name,
-            ylevels_var_name=ylevels_var_name,
-            xlevels_var_name=xlevels_var_name
-        )
-
-        if not grid.is_regular():
-            raise ValueError(
-                f'File {file_name} does not contain a regular grid'
-            )
-
-        return grid
 
 
 class Grid(GridDescriptor):
@@ -700,6 +631,86 @@ class Grid(GridDescriptor):
                                j: Union[int, np.ndarray]) -> Tuple:
         return self._xlevels[i, j], self._ylevels[i, j]
 
+    @staticmethod
+    def from_file(file_path: PathLike, ylevels_var_name: str = "nav_lat",
+                  xlevels_var_name: str = "nav_lon"):
+        """
+        Reads a NetCDF file and returns a `Grid` object.
+
+        Args:
+            file_path (PathLike): Path to the NetCDF file.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned instead.
+        """
+        with netCDF4.Dataset(file_path) as f:
+            return Grid.from_file_pointer(
+                f, ylevels_var_name, xlevels_var_name
+            )
+
+    @staticmethod
+    def from_file_pointer(file_pointer: netCDF4.Dataset,
+                          ylevels_var_name: str = "nav_lat",
+                          xlevels_var_name: str = "nav_lon"):
+        """
+        Reads a NetCDF file and returns a `Grid` object.
+
+        This function is very similar to the `from_file` static method;
+        the only difference is that this function requires a file_pointer
+        instead of the Path of the file
+
+        Args:
+            file_pointer (netCDF4.Dataset): A open NetCDF Dataset.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned instead.
+        """
+
+        ylevels = np.asarray(file_pointer.variables[ylevels_var_name])
+        xlevels = np.asarray(file_pointer.variables[xlevels_var_name])
+
+        if len(xlevels.shape) == 4:
+            xlevels = xlevels[0, 0, :, :]
+        if len(ylevels.shape) == 4:
+            ylevels = ylevels[0, 0, :, :]
+
+        if 'e1t' in file_pointer.variables:
+            e1t = np.asarray(
+                file_pointer.variables['e1t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e1t = None
+
+        if 'e2t' in file_pointer.variables:
+            e2t = np.asarray(
+                file_pointer.variables['e2t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e2t = None
+
+        # Now we check if the grid is regular by checking if replicating
+        # the first row of the longitudes and the first column of the
+        # latitudes we get the same grid that we have read from the file
+        x1d = xlevels[0, :]
+        y1d = ylevels[:, 0]
+        x2d = x1d[np.newaxis, :]
+        y2d = y1d[:, np.newaxis]
+        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
+        if dist < 1e-8:
+            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
+
+        return Grid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
+
 
 class RegularGrid(RegularGridDescriptor):
     """
@@ -874,3 +885,19 @@ class RegularGrid(RegularGridDescriptor):
             j = int(j)
 
         return i, j
+
+    @staticmethod
+    def from_file(file_name: PathLike, ylevels_var_name: str = "nav_lat",
+                  xlevels_var_name: str = "nav_lon"):
+        grid = Grid.from_file(
+            file_name,
+            ylevels_var_name=ylevels_var_name,
+            xlevels_var_name=xlevels_var_name
+        )
+
+        if not grid.is_regular():
+            raise ValueError(
+                f'File {file_name} does not contain a regular grid'
+            )
+
+        return grid

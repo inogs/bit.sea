@@ -121,3 +121,23 @@ class Mesh(GridDescriptor):
         returns 192.60
         """
         return np.max(np.searchsorted(self._zlevels, z, side='right') - 1, 0)
+
+
+class RegularMesh(Mesh, RegularGridDescriptor):
+    def __init__(self, regular_grid: RegularGridDescriptor, zlevels: np.ndarray,
+                 e3t: Optional[np.ndarray] = None):
+        if not regular_grid.is_regular():
+            raise ValueError(
+                'regular_grid must be a regular grid.'
+            )
+        super().__init__(regular_grid, zlevels, e3t)
+
+    @property
+    def lon(self):
+        # noinspection PyUnresolvedReferences
+        return self._grid.lon
+
+    @property
+    def lat(self):
+        # noinspection PyUnresolvedReferences
+        return self._grid.lat

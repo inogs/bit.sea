@@ -1,6 +1,8 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-from bitsea.commons.utils import is_number
+
+from numbers import Real
+
 
 class Segment(object):
     """Holds a segment.
@@ -28,7 +30,7 @@ class Segment(object):
             raise ValueError("lon_lat_min and lon_lat_max must hold two values")
         for t in [lon_lat_min, lon_lat_max]:
             for el in t:
-                if not is_number(el):
+                if not isinstance(el, Real):
                     raise ValueError("%s is not a number" % (el,))
         self.__lon_min = lon_lat_min[0]
         self.__lat_min = lon_lat_min[1]
@@ -37,7 +39,7 @@ class Segment(object):
         self.points = None
         #If the segment is diagonal check that points is a number greater than 0
         if (self.__lon_min != self.__lon_max) and (self.__lat_min != self.__lat_max):
-            if not is_number(points) or (points <= 0):
+            if not isinstance(points, Real) or (points <= 0):
                 raise ValueError("points must be defined as a number greater than zero")
             else:
                 self.points = points

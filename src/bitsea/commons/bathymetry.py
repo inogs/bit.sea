@@ -24,6 +24,7 @@ class Bathymetry(ABC, Callable):
     def __call__(self, lon, lat):
         raise NotImplementedError
 
+    @abstractmethod
     def is_inside_domain(self, lon, lat):
         raise NotImplementedError
 

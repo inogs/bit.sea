@@ -1,35 +1,11 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-from __future__ import print_function
-import os, sys
+
+import os
 import numpy as np
 import re
 """Helper functions"""
 
-def deblank(str):
-    l =len(str)
-    for i in range(l):
-        if not str[i]==' ':
-            break
-    junk=str[i:]
-    l=len(junk)
-    for i in range(l):
-        if not junk[l-i-1]==' ':
-            break
-    return junk[:l-i]
-
-
-def is_number(val):
-    """Tells if a value is a number type
-
-    Args:
-        - *val*: the value to test
-
-    Returns:
-        - True if val is a number type.
-        - False if val is not a number type.
-    """
-    return isinstance(val, (int, float, complex, np.float32))
 
 def get_date_string(s):
     """Finds a date in YYYYMMDD format into a bigger string.
@@ -97,32 +73,6 @@ def find_index_s(substring, STRINGLIST):
             namesC.append(current_str)
     return np.array(idx),namesC
 
-def die(why, exit_code=1, print_usage=True):
-    print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    sys.exit(exit_code)
-
-def is_valid_path(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return path
-            else:
-                die("'%s' is not a directory." % (path,))
-        else:
-            return path
-    else:
-        die("'%s' is not a valid path." % (path,))
-def isvalidpath(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return True
-            else:
-                return False
-        else:
-            return True
-    else:
-        return False
 
 def ticklabels_degree(ax,fsize=7,intdeg=True):
     '''

@@ -2,15 +2,15 @@ from abc import ABC
 from abc import abstractmethod
 from enum import Enum
 from itertools import product as cart_prod
-from pathlib import Path
+from os import PathLike
 from typing import Optional
-from typing import List
 from typing import Tuple
 from typing import Union
 
 import netCDF4
 import numpy as np
 from geopy import distance
+from numpy.typing import ArrayLike
 from sklearn.neighbors import BallTree
 
 
@@ -24,7 +24,8 @@ class GridSidesAlgorithm(Enum):
     GEODESIC = 3
 
 
-def _extend_from_average(v: np.ndarray, axis: int =0):
+def extend_from_average(v: np.ndarray, axis: int = 0,
+                        first_value: Optional[ArrayLike] = None) -> np.ndarray:
     """
     Given a vector `v`, create a new vector `w` with the same shape as
     `v` on all axes except for the specified `axis`, where `w` has one
@@ -37,53 +38,44 @@ def _extend_from_average(v: np.ndarray, axis: int =0):
 
     This is especially useful for calculating the positions of the
     faces of a grid based on the positions of its centers.
+
+    Args:
+        v (np.ndarray): the array with the positions
+        axis (int): the axis along which to extend the vector
+        first_value (Optional[ArrayLike]): the first value of the output vector;
+          if this is `None`, then the first value is chosen such that w[1] is
+          in the middle between v[0] and v[1].
     """
-    # We use this list of slices as a template to build all the other
-    # slices we will use later in the code
-    take_all_slice: List[Union[slice, int]] = [slice(None) for _ in v.shape]
+    if axis < 0:
+        axis += v.ndim
 
-    # Unfortunately, we can not simply write [0, :] or [:, 0] at the
-    # end of an array, because we do not know in advance what is the
-    # position of the 0: it depends on the value of the `axis` argument
-    # Therefore, we are forced to build the slices in this way, using
-    # take_all_slice as a template and then editing the entry that is
-    # on the `axis` position
-    first_element = take_all_slice.copy()
-    first_element[axis] = 0
-    first_element = tuple(first_element)
+    if axis >= v.ndim:
+        raise IndexError(
+            f'Invalid axis {axis} when the array has only {v.ndim} dimensions.'
+        )
+    if axis < 0:
+        raise IndexError(
+            f'Invalid axis {axis - v.ndim} when the array has only {v.ndim} '
+            f'dimensions.'
+        )
 
-    second_element = take_all_slice.copy()
-    second_element[axis] = 1
-    second_element = tuple(second_element)
+    v = v.view()
+    if axis != 0:
+        v = np.moveaxis(v, axis, 0)
 
-    all_but_first = take_all_slice.copy()
-    all_but_first[axis] = slice(1, None)
-    all_but_first = tuple(all_but_first)
+    output = np.empty((v.shape[0] + 1,) + v.shape[1:], dtype=v.dtype)
 
-    all_but_last = take_all_slice.copy()
-    all_but_last[axis] = slice(None, -1)
-    all_but_last = tuple(all_but_last)
+    if first_value is None:
+        output[1] = (v[0] + v[1]) / 2.
+        output[0] = 2 * v[0] - output[1]
+    else:
+        output[0] = first_value
 
-    last_element = take_all_slice.copy()
-    last_element[axis] = -1
-    last_element = tuple(last_element)
+    for i in range(1, v.shape[0] + 1):
+        output[i] = 2 * v[i - 1] - output[i - 1]
 
-    second_last_element = take_all_slice.copy()
-    second_last_element[axis] = -2
-    second_last_element = tuple(second_last_element)
-
-    middle_slice = take_all_slice.copy()
-    middle_slice[axis] = slice(1, -1)
-    middle_slice = tuple(middle_slice)
-
-    output_shape = tuple(
-        k  + 1 if i == axis else k for i, k in enumerate(v.shape)
-    )
-    output = np.zeros(output_shape, dtype=v.dtype)
-
-    output[middle_slice] = (v[all_but_first] + v[all_but_last]) / 2.
-    output[first_element] = 2 * v[first_element] - output[second_element]
-    output[last_element] = 2 * v[last_element] - output[second_last_element]
+    if axis != 0:
+        output = np.moveaxis(output, 0, axis)
 
     return output
 
@@ -180,10 +172,10 @@ class GeoPySidesCalculator:
         self._geodesic = bool(geodesic)
 
     def __call__(self, xlevels, ylevels):
-        u_faces_lon_coords = _extend_from_average(xlevels, axis=1)
-        u_faces_lat_coords = _extend_from_average(ylevels, axis=1)
-        v_faces_lon_coords = _extend_from_average(xlevels, axis=0)
-        v_faces_lat_coords = _extend_from_average(ylevels, axis=0)
+        u_faces_lon_coords = extend_from_average(xlevels, axis=1)
+        u_faces_lat_coords = extend_from_average(ylevels, axis=1)
+        v_faces_lon_coords = extend_from_average(xlevels, axis=0)
+        v_faces_lat_coords = extend_from_average(ylevels, axis=0)
 
         # For reference, here we report the original Fortran names
         # used inside NEMO model:
@@ -337,59 +329,6 @@ class GridDescriptor(ABC):
 
         return calculator(xlevels=xlevels, ylevels=ylevels)
 
-    @staticmethod
-    def from_file(file_name: Path, ylevels_var_name: str = "nav_lat",
-                  xlevels_var_name: str = "nav_lon"):
-        """
-        Reads a NetCDF file and returns a `Grid` object.
-
-        Args:
-            file_name (Path): Path to the NetCDF file.
-            ylevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the y-levels (latitude values).
-            xlevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the x-levels (longitude values).
-
-        Returns:
-            Grid: A `Grid` object. If the file contains a regular grid,
-            a `RegularGrid` object is returned instead.
-        """
-        with netCDF4.Dataset(file_name) as f:
-            ylevels = np.asarray(f.variables[ylevels_var_name])
-            xlevels = np.asarray(f.variables[xlevels_var_name])
-
-            if len(xlevels.shape) == 4:
-                xlevels = xlevels[0, 0, :, :]
-            if len(ylevels.shape) == 4:
-                ylevels = ylevels[0, 0, :, :]
-
-            if 'e1t' in f.variables:
-                e1t = np.asarray(
-                    f.variables['e1t'][0, 0, :, :], dtype=np.float32
-                )
-            else:
-                e1t = None
-
-            if 'e2t' in f.variables:
-                e2t = np.asarray(
-                    f.variables['e2t'][0, 0, :, :], dtype=np.float32
-                )
-            else:
-                e2t = None
-
-        # Now we check if the grid is regular by checking if replicating
-        # the first row of the longitudes and the first column of the
-        # latitudes we get the same grid that we have read from the file
-        x1d = xlevels[0, :]
-        y1d = ylevels[:, 0]
-        x2d = x1d[np.newaxis, :]
-        y2d = y1d[:, np.newaxis]
-        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
-        if dist < 1e-8:
-            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
-
-        return Grid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
-
 
 class RegularGridDescriptor(GridDescriptor, ABC):
     """
@@ -418,22 +357,6 @@ class RegularGridDescriptor(GridDescriptor, ABC):
         grid
         """
         raise NotImplementedError
-
-    @staticmethod
-    def from_file(file_name: Path, ylevels_var_name: str = "nav_lat",
-                  xlevels_var_name: str = "nav_lon"):
-        grid = super(RegularGridDescriptor, RegularGridDescriptor).from_file(
-            file_name,
-            ylevels_var_name=ylevels_var_name,
-            xlevels_var_name=xlevels_var_name
-        )
-
-        if not grid.is_regular():
-            raise ValueError(
-                f'File {file_name} does not contain a regular grid'
-            )
-
-        return grid
 
 
 class Grid(GridDescriptor):
@@ -708,6 +631,86 @@ class Grid(GridDescriptor):
                                j: Union[int, np.ndarray]) -> Tuple:
         return self._xlevels[i, j], self._ylevels[i, j]
 
+    @staticmethod
+    def from_file(file_path: PathLike, ylevels_var_name: str = "nav_lat",
+                  xlevels_var_name: str = "nav_lon"):
+        """
+        Reads a NetCDF file and returns a `Grid` object.
+
+        Args:
+            file_path (PathLike): Path to the NetCDF file.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned instead.
+        """
+        with netCDF4.Dataset(file_path) as f:
+            return Grid.from_file_pointer(
+                f, ylevels_var_name, xlevels_var_name
+            )
+
+    @staticmethod
+    def from_file_pointer(file_pointer: netCDF4.Dataset,
+                          ylevels_var_name: str = "nav_lat",
+                          xlevels_var_name: str = "nav_lon"):
+        """
+        Reads a NetCDF file and returns a `Grid` object.
+
+        This function is very similar to the `from_file` static method;
+        the only difference is that this function requires a file_pointer
+        instead of the Path of the file
+
+        Args:
+            file_pointer (netCDF4.Dataset): A open NetCDF Dataset.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned instead.
+        """
+
+        ylevels = np.asarray(file_pointer.variables[ylevels_var_name])
+        xlevels = np.asarray(file_pointer.variables[xlevels_var_name])
+
+        if len(xlevels.shape) == 4:
+            xlevels = xlevels[0, 0, :, :]
+        if len(ylevels.shape) == 4:
+            ylevels = ylevels[0, 0, :, :]
+
+        if 'e1t' in file_pointer.variables:
+            e1t = np.asarray(
+                file_pointer.variables['e1t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e1t = None
+
+        if 'e2t' in file_pointer.variables:
+            e2t = np.asarray(
+                file_pointer.variables['e2t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e2t = None
+
+        # Now we check if the grid is regular by checking if replicating
+        # the first row of the longitudes and the first column of the
+        # latitudes we get the same grid that we have read from the file
+        x1d = xlevels[0, :]
+        y1d = ylevels[:, 0]
+        x2d = x1d[np.newaxis, :]
+        y2d = y1d[:, np.newaxis]
+        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
+        if dist < 1e-8:
+            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
+
+        return Grid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
+
 
 class RegularGrid(RegularGridDescriptor):
     """
@@ -882,3 +885,19 @@ class RegularGrid(RegularGridDescriptor):
             j = int(j)
 
         return i, j
+
+    @staticmethod
+    def from_file(file_name: PathLike, ylevels_var_name: str = "nav_lat",
+                  xlevels_var_name: str = "nav_lon"):
+        grid = Grid.from_file(
+            file_name,
+            ylevels_var_name=ylevels_var_name,
+            xlevels_var_name=xlevels_var_name
+        )
+
+        if not grid.is_regular():
+            raise ValueError(
+                f'File {file_name} does not contain a regular grid'
+            )
+
+        return grid

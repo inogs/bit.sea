@@ -7,6 +7,7 @@ from bitsea.commons.grid import GeoPySidesCalculator
 from bitsea.commons.grid import NemoGridSidesCalculator
 from bitsea.commons.grid import OutsideDomain
 from bitsea.commons.grid import RegularGrid
+from bitsea.commons.grid import extend_from_average
 
 
 @pytest.fixture
@@ -250,7 +251,7 @@ def test_e2t_is_read_from_file(test_data_dir):
     assert np.allclose(e1t, grid.e2t, rtol=1e-5)
 
 
-def test_e1t_can_be_computes(grid):
+def test_e1t_can_be_computed(grid):
     assert grid.e1t is not None
     assert grid.e2t is not None
 
@@ -297,3 +298,13 @@ def test_different_algorithms_give_coherent_results(grid):
 
     assert np.allclose(e2t_c1, e2t_c2, rtol=1e-1)
     assert np.allclose(e2t_c2, e2t_c3, rtol=1e-2)
+
+
+def test_extend_from_average():
+    t_array = np.linspace(0, 10, 7)
+    t_array *= t_array
+
+    v_array = extend_from_average(t_array)
+    v_mean = (v_array[1:] + v_array[:-1]) / 2
+
+    assert np.allclose(v_mean, t_array)

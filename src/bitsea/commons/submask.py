@@ -2,10 +2,8 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
 import os
-import numpy as np
-import netCDF4
+from numbers import Real
 from bitsea.commons.mask import *
-from bitsea.commons.utils import is_number
 from bitsea.basins.basin import Basin
 from bitsea.basins.basin import SimpleBasin
 from bitsea.basins.region import Rectangle
@@ -165,11 +163,11 @@ class SubMask(Mask):
         # Input validation
         if not isinstance(mask, Mask):
             raise ValueError("mask must be an instance of Mask")
-        if not is_number(degrees):
+        if not isinstance(degrees, Real):
             raise ValueError("degrees must be a number")
-        if not is_number(start_lon):
+        if not isinstance(start_lon, Real):
             raise ValueError("start_lon must be a number")
-        if not is_number(start_lat):
+        if not isinstance(start_lat, Real):
             raise ValueError("start_lat must be a number")
         # Get mask dimensions
         min_lon = mask.xlevels.min()

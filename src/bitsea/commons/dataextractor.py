@@ -112,9 +112,6 @@ class DataExtractor(object):
             self.__filename = fn
             self.__varname = v
 
-        if not isinstance(mask, (Mask,)):
-            raise ValueError("mask must be a Mask object")
-
         #test dimensions
         if self.dims==3:
             if self.__shape[1:] != mask.shape[1:]:

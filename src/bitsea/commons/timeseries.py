@@ -91,7 +91,7 @@ class TimeSeries(object):
         Returns: a list of tuples (datetime, filename) of assimilation/hindcast
         computations.
         """
-        #Build the list of paths where we have to search for the files
+        # Build the list of paths where we have to search for the files
         search_paths = self.get_runs(rundays)
         output = list()
         #For each directory
@@ -104,7 +104,7 @@ class TimeSeries(object):
             for _ in range(7):
                 #For each filename
                 for filename in file_list:
-                    #Get the basename
+                    # Get the basename
                     bn = path.basename(filename)
                     #If there's a filename with that date and within the time interval
                     if (bn.find(t.strftime("%Y%m%d")) != -1) and self._time_interval.contains(t):

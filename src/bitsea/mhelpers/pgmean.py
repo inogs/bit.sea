@@ -42,11 +42,16 @@ class PGaussianMean(GaussianMean):
             - *pressure_values*: the array of pressure values to be used on the
               weights. MUST have the same length of values.
         """
-        if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
-            return np.array(values)
+        values = np.asarray(values)
         l = len(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)
+
+        if pressure_values is None:
+            raise ValueError(
+                'pressure_values must be an array; it can not be `None`'
+            )
+
         pressure_values = np.array(pressure_values, dtype=float)
         output = np.empty((l,), dtype=float)
         #Build base gaussian weights
@@ -117,13 +122,18 @@ class PLGaussianMean(GaussianMean):
             - *pressure_values*: the array of pressure values to be used on the
               weights. MUST have the same length of values.
         """
-        if self._check_compute_input(values, pressure_values, pressure_required=True) == False:
-            return np.array(values)
+        if pressure_values is None:
+            raise ValueError(
+                'pressure_values must be an array; it can not be `None`'
+            )
+
+        values = np.asarray(values, dtype=float)
+        pressure_values = np.asarray(pressure_values, dtype=float)
         l = len(values)
-        #Ensure we have np.arrays
-        values = np.array(values, dtype=float)
-        pressure_values = np.array(pressure_values, dtype=float)
-        output = np.empty((l,), dtype=float)
+
+        # Ensure we have np.arrays
+        output = np.empty_like(values, dtype=float)
+
         w = np.zeros(self._i, dtype=float)
         for i in range(l):
             #Build indices

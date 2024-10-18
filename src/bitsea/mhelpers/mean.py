@@ -1,14 +1,16 @@
 # Copyright (c) 2015 eXact Lab srl
 # Authors: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 #          Stefano Piani <stefano.piani@exact-lab.it>
+from abc import ABC, abstractmethod
 import numpy as np
 from scipy.signal import gaussian
 
-class Mean(object):
+class Mean(ABC):
     """Base class for data filtering.
 
     This is an abstract class, do not attempt to create a Mean object.
     """
+    @abstractmethod
     def __init__(self, interval):
         """Mean class constructor.
 
@@ -20,8 +22,9 @@ class Mean(object):
         Raises:
             - *NotImplementedError* because this is an abstract class.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
+    @abstractmethod
     def compute(self, values, pressure_values):
         """Performs the filtering.
 
@@ -36,30 +39,6 @@ class Mean(object):
         """
         raise NotImplementedError()
 
-    def _check_compute_input(self, values, pressure_values, pressure_required=False):
-        """Helper function to perform input validation and avoid meaningless computation.
-
-        Args:
-            - *values*: the same input vector that has been passed to compute.
-            - *pressure_values*: the same input vector that has been passed to compute.
-            - *pressure_required*: if False pressure_values can be set to None.
-
-        Raises:
-            - *TypeError* if values is not an array of numbers.
-        """
-        assert not values is None
-        if pressure_required:
-            assert (not (pressure_values is None)) and (len(values) == len(pressure_values))
-        else:
-            assert (pressure_values is None) or (len(values) == len(pressure_values))
-        l = len(values)
-        if l==0:
-            return False
-        if not isinstance(values[0], (int, float, complex, np.float32)):
-            raise TypeError()
-        if l == 1 or self._i == 0:
-            return False
-        return True
 
 class GaussianMean(Mean):
     """Gaussian weighted moving average helper object.
@@ -81,18 +60,20 @@ class GaussianMean(Mean):
             - *ValueError* if interval or sigma are negative or if they cannot
               be converted to a number.
         """
-        if isinstance(interval, int ):
-            self._i = interval
-        elif isinstance(int(interval), int):
-            self._i = int(interval)
+        self._i = int(interval)
+
         if self._i < 0:
             raise ValueError("interval should be positive")
-        if isinstance(float(sigma), (float,)):
-            sigma = float(sigma)
-            if sigma >=0:
-                self._sigma = sigma
-            else:
-                raise ValueError("sigma should be positive")
+
+        if self._i % 2 == 0:
+            self._i += 1
+
+        sigma = float(sigma)
+        if sigma < 0:
+            raise ValueError("sigma should be positive")
+
+        self._sigma = sigma
+
 
     def compute(self, values, pressure_values=None):
         """Performs the gaussian filtering based on values' indices.
@@ -116,17 +97,18 @@ class GaussianMean(Mean):
             - *pressure_values*: ignored (can be set to None). If it is set it
               MUST have the same lenght of values' array.
         """
-        if self._check_compute_input(values, pressure_values) == False:
-            return np.array(values)
+        values = np.asarray(values, dtype=float)
         l = len(values)
-        #Ensure we have np.arrays
-        values = np.array(values, dtype=float)
-        output = np.empty((l,), dtype=float)
-        #Build gaussian weights
+
+        # Prepare output
+        output = np.empty_like(values)
+
+        # Build gaussian weights
         w = gaussian(self._i, self._sigma)
         for i in range(l):
-            rbegin = (i - (self._i // 2))
-            rend = (i + (self._i // 2)) + 1
+            rbegin = i - (self._i // 2)
+            rend = i + (self._i // 2) + 1
+
             wbegin = 0
             if rbegin < 0:
                 wbegin = -rbegin
@@ -171,8 +153,8 @@ class MovingAverage(Mean):
             - *pressure_values*: ignored (can be set to None). If it is set it
               MUST have the same lenght of values' array.
         """
-        if self._check_compute_input(values, pressure_values) == False:
-            return np.array(values)
+        values = np.asarray(values)
+
         l = len(values)
         #Ensure we have np.arrays
         values = np.array(values, dtype=float)

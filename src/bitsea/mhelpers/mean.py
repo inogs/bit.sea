@@ -3,7 +3,7 @@
 #          Stefano Piani <stefano.piani@exact-lab.it>
 from abc import ABC, abstractmethod
 import numpy as np
-from scipy.signal import gaussian
+from scipy.signal.windows import gaussian
 
 class Mean(ABC):
     """Base class for data filtering.

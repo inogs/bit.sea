@@ -1,7 +1,7 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 import numpy as np
-from scipy.signal import gaussian
+from scipy.signal.windows import gaussian
 from bitsea.mhelpers.mean import GaussianMean
 from math import exp
 

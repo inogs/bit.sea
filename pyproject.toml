@@ -31,3 +31,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "uses_test_data: Needs external data not downloaded from the repository"
+]

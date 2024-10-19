@@ -8,6 +8,7 @@ import pytest
 import requests
 import shutil
 import tarfile
+import traceback
 
 from bitsea.utilities.argparse_types import existing_dir_path
 from bitsea.utilities.argparse_types import existing_file_path
@@ -29,6 +30,10 @@ TEST_DATA_URL = "https://medeaf.ogs.it/internal-validation/spiani00/bitsea_test_
 # If this directory exists, then we do not download the file from the
 # previous URL, but we use this directory instead
 DEFAULT_TEST_DATA_DIR = Path(__file__).parent / 'data'
+
+
+class TestDataDirIsMissing(Exception):
+    pass
 
 
 def pytest_addoption(parser):
@@ -173,19 +178,41 @@ def prepare_test_data_dir(session):
 
 
 def pytest_sessionstart(session):
-    prepare_test_data_dir(session)
+    # noinspection PyBroadException
+    try:
+        prepare_test_data_dir(session)
+    except Exception:
+        print(
+            f'Error while preparing the test data directory:\n'
+            f'{traceback.format_exc()}\n'
+            f'Execution will continue anyway but the tests that require the '
+            f'data will be skipped!'
+        )
+        session.config.option.test_data_dir = None
+        session.config.option.delete_test_data_dir = False
 
 
 def pytest_sessionfinish(session):
-    if session.config.option.delete_test_data_dir:
+    data_dir = session.config.option.test_data_dir
+    delete_data_dir = session.config.option.delete_test_data_dir
+    if delete_data_dir:
         try:
-            session.config.option.test_data_dir.cleanup()
+            data_dir.cleanup()
         except AttributeError:
-            shutil.rmtree(session.config.option.test_data_dir)
+            shutil.rmtree(data_dir)
+
+
+def pytest_runtest_setup(item):
+    data_dir_not_available = item.session.config.option.test_data_dir is None
+    if 'uses_test_data' in item.keywords and data_dir_not_available:
+        pytest.skip("Test skipped because test data directory is not available")
 
 
 @pytest.fixture
 def test_data_dir(request) -> Path:
+    if request.session.config.option.test_data_dir is None:
+        raise TestDataDirIsMissing
+
     if not isinstance(request.session.config.option.test_data_dir, Path):
         return Path(request.session.config.option.test_data_dir.name)
     return request.session.config.option.test_data_dir

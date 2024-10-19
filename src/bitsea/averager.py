@@ -32,11 +32,11 @@ Seas_reqs = TL.getSeasonList(s)
 
 # AC_2014.aut.0000-0050m.nc
 for req in Seas_reqs:
-    print req
+    print(req)
     indexes, weights = TL.select(req)
     prefix = req.string.replace(" ","")
     for var in VARLIST:
-        print var
+        print(var)
         # setting up filelist for requested season -----------------
         filelist=[]
         for k in indexes:
@@ -47,7 +47,7 @@ for req in Seas_reqs:
 
         M3d = TimeAverager3D(filelist, weights, var, TheMask)
         for layer in LAYERLIST:
-            print layer
+            print(layer)
             De         = DataExtractor(TheMask,rawdata=M3d)
             integrated = MapBuilder.get_layer_average(De, layer)
             clim = [M3d[TheMask.mask].min(), M3d[TheMask.mask].max()]
@@ -71,7 +71,7 @@ req = requestors.Generic_req(MY_YEAR)
 indexes,weights = TL.select(req)
 
 for var in VARLIST:
-    print var
+    print(var)
     # setting up filelist for requested period -----------------
     filelist=[]
     for k in indexes:

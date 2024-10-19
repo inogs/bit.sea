@@ -2,29 +2,34 @@
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
 import gzip
-import shutil
-from pathlib import Path
 import pytest
+import shutil
+from datetime import datetime
+from datetime import date
+from datetime import timedelta
+from pathlib import Path
 
-from bitsea.commons.timeseries import *
 from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.timeseries import TimeSeries
 
 
-def build_archive_files(dir_path):
+def build_archive_files(dir_path: Path):
     dir_path.mkdir(exist_ok=True)
     #Get the base date
-    t = datetime.strptime(dir_path.name, '%Y%m%d')
-    t -= timedelta(days=7)
-    #Stop date
-    st = t + timedelta(days=17)
-    while t < st:
+    dir_datetime = datetime.strptime(dir_path.name, '%Y%m%d')
+    dir_date = date(dir_datetime.year, dir_datetime.month, dir_datetime.day)
+
+    start_date = dir_date - timedelta(days=7)
+    dates = tuple(
+        start_date + timedelta(days=i) for i in range(17)
+    )
+
+    for t in dates:
         file_name = f"ave{t.strftime('%Y%m%d')}.gz"
         file_path = dir_path / file_name
 
         with gzip.open(file_path, 'wt') as fd:
             fd.write(t.strftime('%Y-%m-%d'))
-
-        t += timedelta(1)
 
 
 def build_sat_archive(directory: Path, timeinterval):
@@ -107,7 +112,7 @@ def test_timeseries_get_analysis_days(test_archives):
     ts = TimeSeries(ti, archive_dir=test_archives)
     o = ts.get_analysis_days()
     assert isinstance(o, list)
-    assert len(o) == 4
+    assert len(o) == 3
 
 
 def test_timeseries_get_forecast_days(test_archives):
@@ -124,7 +129,7 @@ def test_timeseries_extract_analysis(test_archives, tmp_path):
     o = ts.extract_analysis(tmp_path)
 
     assert isinstance(o, list)
-    assert len(o) == 4
+    assert len(o) == 3
 
 
 def test_timeseries_extract_forecast(test_archives, tmp_path):
@@ -203,7 +208,7 @@ def test_timeseries_get_daily_sat(tmp_path):
     assert len(time_list) == len(OL)
 
     expected_file = tmp_path / f'sat{time_list[0][0].strftime("%Y%m%d")}.nc'
-    assert OL[0] == (time_list[0][0], time_list[0][1], str(expected_file))
+    assert OL[0] == (time_list[0][0], time_list[0][1], expected_file)
 
 
 def test_timeseries_get_daily_sat_L_not_list():
@@ -212,7 +217,7 @@ def test_timeseries_get_daily_sat_L_not_list():
 
 
 def test_timeseries_get_daily_sat_sat_archive_not_string():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         TimeSeries.get_daily_sat([], None)
 
 

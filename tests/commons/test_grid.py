@@ -97,6 +97,7 @@ def test_init_grid_does_broadcast():
     Grid(xlevels=xlevels, ylevels=ylevels)
 
 
+@pytest.mark.uses_test_data
 def test_grid_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -105,6 +106,7 @@ def test_grid_from_file(test_data_dir):
     assert not grid.is_regular()
 
 
+@pytest.mark.uses_test_data
 def test_regular_grid_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"
@@ -227,6 +229,7 @@ def test_outside_domain_lon_lat_array_regular(regular_grid):
         regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
 
 
+@pytest.mark.uses_test_data
 def test_e1t_is_read_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -239,6 +242,7 @@ def test_e1t_is_read_from_file(test_data_dir):
     assert np.allclose(e1t, grid.e1t, rtol=1e-5)
 
 
+@pytest.mark.uses_test_data
 def test_e2t_is_read_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -256,6 +260,7 @@ def test_e1t_can_be_computed(grid):
     assert grid.e2t is not None
 
 
+@pytest.mark.uses_test_data
 def test_e1t_can_be_computed_regular(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"
@@ -270,6 +275,7 @@ def test_e1t_can_be_computed_regular(test_data_dir):
     assert np.allclose(file_grid.e1t, new_grid.e1t, rtol=1e-4)
 
 
+@pytest.mark.uses_test_data
 def test_e2t_can_be_computed_regular(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"

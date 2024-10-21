@@ -140,6 +140,7 @@ def test_mesh_from_levels(mesh):
     assert np.allclose(new_mesh.zlevels, mesh.zlevels)
 
 
+@pytest.mark.uses_test_data
 def test_mesh_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -153,6 +154,7 @@ def test_mesh_from_file(test_data_dir):
     assert not file_mesh.is_regular()
 
 
+@pytest.mark.uses_test_data
 def test_mesh_from_file_regular(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"
@@ -162,6 +164,7 @@ def test_mesh_from_file_regular(test_data_dir):
     assert file_mesh.is_regular()
 
 
+@pytest.mark.uses_test_data
 def test_regular_mesh_checks_if_file_is_regular(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -170,6 +173,7 @@ def test_regular_mesh_checks_if_file_is_regular(test_data_dir):
         RegularMesh.from_file(mask_file)
 
 
+@pytest.mark.uses_test_data
 def test_mesh_from_file_reading_e3t(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"

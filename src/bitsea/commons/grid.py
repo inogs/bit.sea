@@ -881,8 +881,12 @@ class RegularGrid(RegularGridDescriptor):
         j = np.argmin(lat_distances, axis=0)
 
         if not return_array:
-            i = int(i)
-            j = int(j)
+            i = np.squeeze(i)
+            j = np.squeeze(j)
+            assert i.shape == tuple()
+            assert j.shape == tuple()
+            i = int(i.item())
+            j = int(j.item())
 
         return i, j
 

@@ -204,7 +204,36 @@ class GeoPySidesCalculator:
         return e1t, e2t
 
 
-class GridDescriptor(ABC):
+class Regular(ABC):
+    """
+    We say that a Grid object is regular if all columns of `xlevels`
+    and all rows of `ylevels` are identical.
+    This feature allows the grid's position to be represented using
+    only two 1D arrays, resulting in substantial memory savings.
+
+    This class extends the interface of any class by providing two additional
+    methods for retrieving these 1D arrays.
+    """
+    @property
+    @abstractmethod
+    def lon(self):
+        """
+        Returns a 1D array with the longitudes of the center points of the
+        grid
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def lat(self):
+        """
+        Returns a 1D array with the latitudes of the center points of the
+        grid
+        """
+        raise NotImplementedError
+
+
+class Grid(ABC):
     """
     A `Grid` represents a 2D structure that defines the positions of the
     cell centers in our models.
@@ -330,36 +359,90 @@ class GridDescriptor(ABC):
         return calculator(xlevels=xlevels, ylevels=ylevels)
 
 
-class RegularGridDescriptor(GridDescriptor, ABC):
-    """
-    In a regular grid, all columns of `xlevels` and all rows of
-    `ylevels` are identical.
-    This feature allows the grid's position to be represented using
-    only two 1D arrays, resulting in substantial memory savings.
-
-    This class extends the `GridDescriptor` by providing two additional
-    methods for retrieving these 1D arrays.
-    """
-    @property
-    @abstractmethod
-    def lon(self):
+    @staticmethod
+    def from_file(file_path: PathLike, ylevels_var_name: str = "nav_lat",
+                  xlevels_var_name: str = "nav_lon"):
         """
-        Returns a 1D array with the longitudes of the center points of the
-        grid
-        """
-        raise NotImplementedError
+        Reads a NetCDF file and returns a `Grid` object.
 
-    @property
-    @abstractmethod
-    def lat(self):
+        Args:
+            file_path (PathLike): Path to the NetCDF file.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned; otherwise it produces
+            an IrregularGrid.
         """
-        Returns a 1D array with the latitudes of the center points of the
-        grid
+        with netCDF4.Dataset(file_path) as f:
+            return Grid.from_file_pointer(
+                f, ylevels_var_name, xlevels_var_name
+            )
+
+    @staticmethod
+    def from_file_pointer(file_pointer: netCDF4.Dataset,
+                          ylevels_var_name: str = "nav_lat",
+                          xlevels_var_name: str = "nav_lon"):
         """
-        raise NotImplementedError
+        Reads a NetCDF file and returns a `Grid` object.
+
+        This function is very similar to the `from_file` static method;
+        the only difference is that this function requires a file_pointer
+        instead of the Path of the file
+
+        Args:
+            file_pointer (netCDF4.Dataset): A open NetCDF Dataset.
+            ylevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the y-levels (latitude values).
+            xlevels_var_name (str): Name of the variable in the NetCDF
+              file that contains the x-levels (longitude values).
+
+        Returns:
+            Grid: A `Grid` object. If the file contains a regular grid,
+            a `RegularGrid` object is returned; otherwise it produces
+            an IrregularGrid.
+        """
+
+        ylevels = np.asarray(file_pointer.variables[ylevels_var_name])
+        xlevels = np.asarray(file_pointer.variables[xlevels_var_name])
+
+        if len(xlevels.shape) == 4:
+            xlevels = xlevels[0, 0, :, :]
+        if len(ylevels.shape) == 4:
+            ylevels = ylevels[0, 0, :, :]
+
+        if 'e1t' in file_pointer.variables:
+            e1t = np.asarray(
+                file_pointer.variables['e1t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e1t = None
+
+        if 'e2t' in file_pointer.variables:
+            e2t = np.asarray(
+                file_pointer.variables['e2t'][0, 0, :, :], dtype=np.float32
+            )
+        else:
+            e2t = None
+
+        # Now we check if the grid is regular by checking if replicating
+        # the first row of the longitudes and the first column of the
+        # latitudes we get the same grid that we have read from the file
+        x1d = xlevels[0, :]
+        y1d = ylevels[:, 0]
+        x2d = x1d[np.newaxis, :]
+        y2d = y1d[:, np.newaxis]
+        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
+        if dist < 1e-8:
+            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
+
+        return IrregularGrid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
 
 
-class Grid(GridDescriptor):
+class IrregularGrid(Grid):
     """
     Represents a 2D discretization of a geographical region, storing the
     positions of cell centers in terms of longitude and latitude.
@@ -631,88 +714,8 @@ class Grid(GridDescriptor):
                                j: Union[int, np.ndarray]) -> Tuple:
         return self._xlevels[i, j], self._ylevels[i, j]
 
-    @staticmethod
-    def from_file(file_path: PathLike, ylevels_var_name: str = "nav_lat",
-                  xlevels_var_name: str = "nav_lon"):
-        """
-        Reads a NetCDF file and returns a `Grid` object.
 
-        Args:
-            file_path (PathLike): Path to the NetCDF file.
-            ylevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the y-levels (latitude values).
-            xlevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the x-levels (longitude values).
-
-        Returns:
-            Grid: A `Grid` object. If the file contains a regular grid,
-            a `RegularGrid` object is returned instead.
-        """
-        with netCDF4.Dataset(file_path) as f:
-            return Grid.from_file_pointer(
-                f, ylevels_var_name, xlevels_var_name
-            )
-
-    @staticmethod
-    def from_file_pointer(file_pointer: netCDF4.Dataset,
-                          ylevels_var_name: str = "nav_lat",
-                          xlevels_var_name: str = "nav_lon"):
-        """
-        Reads a NetCDF file and returns a `Grid` object.
-
-        This function is very similar to the `from_file` static method;
-        the only difference is that this function requires a file_pointer
-        instead of the Path of the file
-
-        Args:
-            file_pointer (netCDF4.Dataset): A open NetCDF Dataset.
-            ylevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the y-levels (latitude values).
-            xlevels_var_name (str): Name of the variable in the NetCDF
-              file that contains the x-levels (longitude values).
-
-        Returns:
-            Grid: A `Grid` object. If the file contains a regular grid,
-            a `RegularGrid` object is returned instead.
-        """
-
-        ylevels = np.asarray(file_pointer.variables[ylevels_var_name])
-        xlevels = np.asarray(file_pointer.variables[xlevels_var_name])
-
-        if len(xlevels.shape) == 4:
-            xlevels = xlevels[0, 0, :, :]
-        if len(ylevels.shape) == 4:
-            ylevels = ylevels[0, 0, :, :]
-
-        if 'e1t' in file_pointer.variables:
-            e1t = np.asarray(
-                file_pointer.variables['e1t'][0, 0, :, :], dtype=np.float32
-            )
-        else:
-            e1t = None
-
-        if 'e2t' in file_pointer.variables:
-            e2t = np.asarray(
-                file_pointer.variables['e2t'][0, 0, :, :], dtype=np.float32
-            )
-        else:
-            e2t = None
-
-        # Now we check if the grid is regular by checking if replicating
-        # the first row of the longitudes and the first column of the
-        # latitudes we get the same grid that we have read from the file
-        x1d = xlevels[0, :]
-        y1d = ylevels[:, 0]
-        x2d = x1d[np.newaxis, :]
-        y2d = y1d[:, np.newaxis]
-        dist = np.max((x2d - xlevels) ** 2 + (y2d - ylevels) ** 2)
-        if dist < 1e-8:
-            return RegularGrid(lon=x1d, lat=y1d, e1t=e1t, e2t=e2t)
-
-        return Grid(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
-
-
-class RegularGrid(RegularGridDescriptor):
+class RegularGrid(Grid, Regular):
     """
     A `RegularGrid` is defined by two vectors: `lon` (longitude) and
     `lat` (latitude).
@@ -893,7 +896,7 @@ class RegularGrid(RegularGridDescriptor):
     @staticmethod
     def from_file(file_name: PathLike, ylevels_var_name: str = "nav_lat",
                   xlevels_var_name: str = "nav_lon"):
-        grid = Grid.from_file(
+        grid = IrregularGrid.from_file(
             file_name,
             ylevels_var_name=ylevels_var_name,
             xlevels_var_name=xlevels_var_name

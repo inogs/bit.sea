@@ -7,22 +7,20 @@ from typing import Union
 import netCDF4
 import numpy as np
 
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import Grid
-from bitsea.commons.grid import GridDescriptor
+from bitsea.commons.grid import Regular
 from bitsea.commons.grid import RegularGrid
-from bitsea.commons.grid import RegularGridDescriptor
 from bitsea.commons.grid import extend_from_average
 
 
-class Mesh(GridDescriptor):
+class Mesh(Grid):
     """
-    A `Mesh` is a 3D extension of a `Grid`, containing all the
-    information from a `GridDescriptor`, while also adding details
-    about vertical levels.
+    A `Mesh` is a 3D extension of a `Grid`, containing all its
+    information, while also adding details about vertical levels.
 
     Args:
-        grid (GridDescriptor): A `GridDescriptor` providing 2D grid
-          information.
+        grid (Grid): A `Grid` providing 2D grid information.
         zlevels (np.ndarray): A 1D array representing the depth (in
           meters) of cell centers along the vertical axis.
         e3t (Optional[np.ndarray]): A 3D array representing the
@@ -35,7 +33,7 @@ class Mesh(GridDescriptor):
           case, `e3t[:, i, j]` will be uniform across the grid, and
           detailed information about the bottom layer may be lost.
     """
-    def __init__(self, grid: GridDescriptor, zlevels: np.ndarray,
+    def __init__(self, grid: Grid, zlevels: np.ndarray,
                  e3t: Optional[np.ndarray] = None):
         self._grid = grid
 
@@ -88,9 +86,9 @@ class Mesh(GridDescriptor):
             )
 
     @property
-    def grid(self) -> GridDescriptor:
+    def grid(self) -> Grid:
         """
-        Returns a `GridDescriptor` that contains the 2D information of
+        Returns a `Grid` that contains the 2D information of
         this object, but not the zlevels
         """
         return self._grid
@@ -157,7 +155,7 @@ class Mesh(GridDescriptor):
         If `z` is above the first level, 0 is returned.
 
         Example:
-        >>> grid = Grid(np.linspace(0, 10, 11), np.linspace(0, 10, 23))
+        >>> grid = RegularGrid(np.linspace(0, 10, 11), np.linspace(0, 10, 23))
         >>> mesh = Mesh(grid, zlevels=5 + np.arange(30) * 10.)
         >>> k = mesh.get_depth_index(200.)
         >>> mesh.zlevels[k]
@@ -190,14 +188,14 @@ class Mesh(GridDescriptor):
             zlevels (np.ndarray): A 1D array containing the depth (in
               meters) of the centers of the cells.
         """
-        grid = Grid(xlevels=xlevels, ylevels=ylevels)
+        grid = IrregularGrid(xlevels=xlevels, ylevels=ylevels)
         return Mesh(grid, zlevels)
 
     @classmethod
     def from_file(cls, file_path: PathLike, zlevels_var_name: str = "nav_lev",
                   read_e3t: bool = False):
         with netCDF4.Dataset(file_path, 'r') as f:
-            grid = Grid.from_file_pointer(f)
+            grid = IrregularGrid.from_file_pointer(f)
 
             zlevels = np.array(
                 f.variables[zlevels_var_name][:], dtype=np.float32
@@ -231,8 +229,8 @@ class Mesh(GridDescriptor):
         return cls(grid, zlevels, e3t)
 
 
-class RegularMesh(Mesh, RegularGridDescriptor):
-    def __init__(self, regular_grid: RegularGridDescriptor, zlevels: np.ndarray,
+class RegularMesh(Mesh, Regular):
+    def __init__(self, regular_grid: RegularGrid, zlevels: np.ndarray,
                  e3t: Optional[np.ndarray] = None):
         if not regular_grid.is_regular():
             raise ValueError(

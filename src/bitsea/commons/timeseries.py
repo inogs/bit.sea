@@ -88,7 +88,7 @@ class TimeSeries:
             if t.isoweekday() not in rundays:
                 continue
 
-            file_name = f'{t.strftime('%Y%m%d')}{self._postfix_dir}'
+            file_name = f"{t.strftime('%Y%m%d')}{self._postfix_dir}"
             run_path = self._archive_dir / file_name
             if run_path.is_dir():
                 output.append((t, run_path))

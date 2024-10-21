@@ -30,7 +30,3 @@ repos:
       additional_dependencies: [tomli]
       # only apply to the package dir, not the tests
       files: ^mer/.*$
-- repo: https://github.com/fpgmaas/deptry.git
-  rev: 0.20.0
-  hooks:
-    - id: deptry

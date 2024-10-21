@@ -93,117 +93,130 @@ def argument():
     return parser.parse_args()
 
 
-args = argument()
+def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
+    maskIn = getattr(masks, inmesh)
 
+    if not serial:
+        pass
 
-maskIn = getattr(masks, args.inmesh)
+    comm = get_mpi_communicator()
+    rank = comm.Get_rank()
+    nranks = comm.size
 
+    TheMask = Mask(maskfile)
+    x = TheMask.xlevels[0, :]
+    y = TheMask.ylevels[:, 0]
 
-if not args.serial:
-    pass
+    xOrig = maskIn.lon
+    yOrig = maskIn.lat
 
+    I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
+    J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
 
-comm = get_mpi_communicator()
-rank = comm.Get_rank()
-nranks = comm.size
+    INPUTDIR = addsep(inputdir)
+    OUTPUTDIR = addsep(outputdir)
+    dateformat = "%Y%m%d"
 
-TheMask = Mask(args.maskfile)
-x = TheMask.xlevels[0, :]
-y = TheMask.ylevels[:, 0]
+    Timestart = "19500101"
+    Time__end = "20500101"
 
-xOrig = maskIn.lon
-yOrig = maskIn.lat
+    TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
+    TL = TimeList.fromfilenames(
+        TI, INPUTDIR, "*.nc", prefix="", dateformat=dateformat
+    )
 
-I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
-J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
+    for filename in TL.filelist[rank::nranks]:
+        outfile = OUTPUTDIR + os.path.basename(filename)
+        condition_for_points = False
 
-INPUTDIR = addsep(args.inputdir)
-OUTPUTDIR = addsep(args.outputdir)
-dateformat = "%Y%m%d"
+        for varname in varnames:
+            writing_mode = Sat.writing_mode(outfile)
 
-Timestart = "19500101"
-Time__end = "20500101"
-
-TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
-TL = TimeList.fromfilenames(
-    TI, INPUTDIR, "*.nc", prefix="", dateformat=dateformat
-)
-
-
-for filename in TL.filelist[rank::nranks]:
-    outfile = OUTPUTDIR + os.path.basename(filename)
-    condition_for_points = False
-
-    for varname in args.varnames:
-        writing_mode = Sat.writing_mode(outfile)
-
-        attributes = {}
-        try:
-            attributes["average_of"] = Sat.read_variable_attribute(
-                filename, varname, "average_of"
-            )
-        except AttributeError:
-            pass
-        try:
-            attributes["from_variable_created_at"] = (
-                Sat.read_variable_attribute(filename, varname, "creation_time")
-            )
-        except AttributeError:
-            pass
-
-        # condition_to write section ######
-        condition_to_write = not Sat.exist_valid_variable(varname, outfile)
-
-        if args.force:
-            condition_to_write = True
-
-        if not condition_to_write:
+            attributes = {}
             try:
-                attr_value = Sat.read_variable_attribute(
-                    outfile, varname, "from_variable_created_at"
+                attributes["average_of"] = Sat.read_variable_attribute(
+                    filename, varname, "average_of"
                 )
             except AttributeError:
-                attr_value = None
-
-            if (
-                attr_value is not None
-            ) and "from_variable_created_at" in attributes:
-                d_out = datetime.strptime(attr_value, "%Y%m%d-%H:%M:%S")
-                d_in = datetime.strptime(
-                    attributes["from_variable_created_at"], "%Y%m%d-%H:%M:%S"
+                pass
+            try:
+                attributes["from_variable_created_at"] = (
+                    Sat.read_variable_attribute(
+                        filename, varname, "creation_time"
+                    )
                 )
-                condition_to_write = d_in > d_out
-            else:
+            except AttributeError:
+                pass
+
+            # condition_to write section ######
+            condition_to_write = not Sat.exist_valid_variable(varname, outfile)
+
+            if force:
                 condition_to_write = True
 
-        if not condition_to_write:
-            continue
-            ##################################
+            if not condition_to_write:
+                try:
+                    attr_value = Sat.read_variable_attribute(
+                        outfile, varname, "from_variable_created_at"
+                    )
+                except AttributeError:
+                    attr_value = None
 
-        condition_for_points = True
-        Mfine = Sat.readfromfile(filename, varname)
-        print(outfile, varname, flush=True)
+                if (
+                    attr_value is not None
+                ) and "from_variable_created_at" in attributes:
+                    d_out = datetime.strptime(attr_value, "%Y%m%d-%H:%M:%S")
+                    d_in = datetime.strptime(
+                        attributes["from_variable_created_at"],
+                        "%Y%m%d-%H:%M:%S",
+                    )
+                    condition_to_write = d_in > d_out
+                else:
+                    condition_to_write = True
 
-        Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
-            Mfine,
-            TheMask,
-            I_START,
-            I_END,
-            J_START,
-            J_END,
-            min_cov=0.0,
-            ave_func=Sat.mean,
-        )
-        Sat.dumpGenericfile(
-            outfile,
-            Mout,
-            varname,
-            mesh=TheMask,
-            mode=writing_mode,
-            var_attributes=attributes,
-        )
+            if not condition_to_write:
+                continue
+                ##################################
 
-    if condition_for_points:
-        Sat.dumpGenericfile(
-            outfile, usedPoints, "Points", mesh=TheMask, mode="a"
+            condition_for_points = True
+            Mfine = Sat.readfromfile(filename, varname)
+            print(outfile, varname, flush=True)
+
+            Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
+                Mfine,
+                TheMask,
+                I_START,
+                I_END,
+                J_START,
+                J_END,
+                min_cov=0.0,
+                ave_func=Sat.mean,
+            )
+            Sat.dumpGenericfile(
+                outfile,
+                Mout,
+                varname,
+                mesh=TheMask,
+                mode=writing_mode,
+                var_attributes=attributes,
+            )
+
+        if condition_for_points:
+            Sat.dumpGenericfile(
+                outfile, usedPoints, "Points", mesh=TheMask, mode="a"
+            )
+    return 0
+
+
+if __name__ == "__main__":
+    args = argument()
+    exit(
+        main(
+            inmesh=args.inmesh,
+            serial=args.serial,
+            maskfile=args.maskfile,
+            inputdir=args.inputdir,
+            outputdir=args.outputdir,
+            varnames=args.varnames,
         )
+    )

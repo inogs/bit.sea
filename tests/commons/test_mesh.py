@@ -2,8 +2,8 @@ import netCDF4
 import pytest
 import numpy as np
 
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import Grid
-from bitsea.commons.grid import GridDescriptor
 from bitsea.commons.mesh import Mesh
 from bitsea.commons.mesh import RegularMesh
 
@@ -18,7 +18,7 @@ def grid():
     y_levels = np.linspace(20, 30, grid_shape[0])
     ylevels = np.broadcast_to(y_levels[:, np.newaxis], grid_shape)
 
-    return Grid(xlevels=xlevels, ylevels=ylevels)
+    return IrregularGrid(xlevels=xlevels, ylevels=ylevels)
 
 
 @pytest.fixture
@@ -29,8 +29,8 @@ def mesh(grid):
 def test_mesh_grid_descriptor_interface(mesh):
     grid = mesh.grid
 
-    for m in GridDescriptor.__abstractmethods__:
-        m_method = getattr(GridDescriptor, m)
+    for m in Grid.__abstractmethods__:
+        m_method = getattr(Grid, m)
         if isinstance(m_method, property):
             if m == 'shape':
                 assert grid.shape == mesh.shape[1:]
@@ -146,7 +146,7 @@ def test_mesh_from_file(test_data_dir):
     mask_file = mask_dir / "nonregular_mask.nc"
 
     file_mesh = Mesh.from_file(mask_file)
-    file_grid = Grid.from_file(mask_file)
+    file_grid = IrregularGrid.from_file(mask_file)
 
     assert np.allclose(file_mesh.xlevels, file_grid.xlevels)
     assert np.allclose(file_mesh.ylevels, file_grid.ylevels)

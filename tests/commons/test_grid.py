@@ -2,7 +2,7 @@ from netCDF4 import Dataset
 import numpy as np
 import pytest
 
-from bitsea.commons.grid import Grid
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import GeoPySidesCalculator
 from bitsea.commons.grid import NemoGridSidesCalculator
 from bitsea.commons.grid import OutsideDomain
@@ -20,7 +20,7 @@ def grid():
     y_levels = np.linspace(20, 30, grid_shape[0])
     ylevels = np.broadcast_to(y_levels[:, np.newaxis], grid_shape)
 
-    return Grid(xlevels=xlevels, ylevels=ylevels)
+    return IrregularGrid(xlevels=xlevels, ylevels=ylevels)
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def test_grid_init():
     ylevels = np.linspace(0, 1, grid_shape[0])
     ylevels = np.broadcast_to(ylevels[:, np.newaxis], grid_shape)
 
-    grid = Grid(xlevels=xlevels, ylevels=ylevels)
+    grid = IrregularGrid(xlevels=xlevels, ylevels=ylevels)
 
     assert np.allclose(xlevels, grid.xlevels)
     assert np.allclose(ylevels, grid.ylevels)
@@ -75,16 +75,16 @@ def test_init_with_wrongs_arguments():
 
     # Must have the right shape
     with pytest.raises(ValueError):
-        Grid(xlevels=xlevels[1:-1], ylevels=ylevels)
+        IrregularGrid(xlevels=xlevels[1:-1], ylevels=ylevels)
 
     # Must have same type
     with pytest.raises(ValueError):
-        Grid(xlevels=xlevels, ylevels=np.asarray(ylevels, dtype=np.float64))
+        IrregularGrid(xlevels=xlevels, ylevels=np.asarray(ylevels, dtype=np.float64))
 
     # Do not accept 1D arrays even if they broadcast (because they have the
     # shape
     with pytest.raises(ValueError):
-        Grid(xlevels=np.linspace(0, 1, 10), ylevels=np.linspace(0, 1, 10))
+        IrregularGrid(xlevels=np.linspace(0, 1, 10), ylevels=np.linspace(0, 1, 10))
 
 
 def test_init_grid_does_broadcast():
@@ -94,7 +94,7 @@ def test_init_grid_does_broadcast():
     ylevels = np.linspace(0, 1, grid_shape[0], dtype=np.float32)
     ylevels = np.broadcast_to(ylevels[:, np.newaxis], grid_shape)
 
-    Grid(xlevels=xlevels, ylevels=ylevels)
+    IrregularGrid(xlevels=xlevels, ylevels=ylevels)
 
 
 @pytest.mark.uses_test_data
@@ -102,7 +102,7 @@ def test_grid_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
 
-    grid = Grid.from_file(mask_file)
+    grid = IrregularGrid.from_file(mask_file)
     assert not grid.is_regular()
 
 
@@ -111,7 +111,7 @@ def test_regular_grid_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"
 
-    grid = Grid.from_file(mask_file)
+    grid = IrregularGrid.from_file(mask_file)
     assert grid.is_regular()
 
 
@@ -234,7 +234,7 @@ def test_e1t_is_read_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
 
-    grid = Grid.from_file(mask_file)
+    grid = IrregularGrid.from_file(mask_file)
 
     with Dataset(mask_file, 'r') as f:
         e1t = f.variables['e1t'][0, 0].data
@@ -247,7 +247,7 @@ def test_e2t_is_read_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
 
-    grid = Grid.from_file(mask_file)
+    grid = IrregularGrid.from_file(mask_file)
 
     with Dataset(mask_file, 'r') as f:
         e1t = f.variables['e2t'][0, 0].data

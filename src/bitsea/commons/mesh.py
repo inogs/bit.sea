@@ -6,18 +6,16 @@ from typing import Union
 
 import netCDF4
 import numpy as np
-
-from bitsea.commons.grid import IrregularGrid
+from bitsea.commons.grid import extend_from_average
 from bitsea.commons.grid import Grid
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import Regular
 from bitsea.commons.grid import RegularGrid
-from bitsea.commons.grid import extend_from_average
 
 
 class Mesh(Grid):
-    """
-    A `Mesh` is a 3D extension of a `Grid`, containing all its
-    information, while also adding details about vertical levels.
+    """A `Mesh` is a 3D extension of a `Grid`, containing all its information,
+    while also adding details about vertical levels.
 
     Args:
         grid (Grid): A `Grid` providing 2D grid information.
@@ -33,8 +31,10 @@ class Mesh(Grid):
           case, `e3t[:, i, j]` will be uniform across the grid, and
           detailed information about the bottom layer may be lost.
     """
-    def __init__(self, grid: Grid, zlevels: np.ndarray,
-                 e3t: Optional[np.ndarray] = None):
+
+    def __init__(
+        self, grid: Grid, zlevels: np.ndarray, e3t: Optional[np.ndarray] = None
+    ):
         self._grid = grid
 
         self._zlevels = np.asarray(zlevels).view()
@@ -42,21 +42,19 @@ class Mesh(Grid):
 
         if self._zlevels.ndim != 1:
             raise ValueError(
-                f'zlevels must be a 1D array: its current shape is '
-                f'{self._zlevels.shape}'
+                f"zlevels must be a 1D array: its current shape is "
+                f"{self._zlevels.shape}"
             )
 
         if np.any(self._zlevels < 0):
             negative_index = np.where(self._zlevels < 0)[0]
             raise ValueError(
-                f'zlevels must be non-negative, but zlevels[{negative_index}] '
-                f'is {zlevels[negative_index]}'
+                f"zlevels must be non-negative, but zlevels[{negative_index}] "
+                f"is {zlevels[negative_index]}"
             )
 
         if np.any(self._zlevels[:-1] - self._zlevels[1:] >= 0):
-            raise ValueError(
-                'zlevels values should be strictly increasing'
-            )
+            raise ValueError("zlevels values should be strictly increasing")
 
         if e3t is not None:
             expected_shape = (self._zlevels.shape[0],) + self._grid.shape
@@ -72,25 +70,23 @@ class Mesh(Grid):
                     self._e3t = np.broadcast_to(self._e3t, expected_shape)
                 except ValueError:
                     raise ValueError(
-                        f'e3t is expected to be {expected_shape}, but got '
-                        f'an array with shape {e3t.shape}'
+                        f"e3t is expected to be {expected_shape}, but got "
+                        f"an array with shape {e3t.shape}"
                     )
             self._e3t.setflags(write=False)
         else:
             # We construct e3t so that zlevels is its average
-            layer_boundaries = extend_from_average(self._zlevels, 0, 0.)
+            layer_boundaries = extend_from_average(self._zlevels, 0, 0.0)
             e3t_md = layer_boundaries[1:] - layer_boundaries[:-1]
             self._e3t = np.broadcast_to(
                 e3t_md[:, np.newaxis, np.newaxis],
-                (self._zlevels.shape[0],) + self._grid.shape
+                (self._zlevels.shape[0],) + self._grid.shape,
             )
 
     @property
     def grid(self) -> Grid:
-        """
-        Returns a `Grid` that contains the 2D information of
-        this object, but not the zlevels
-        """
+        """Returns a `Grid` that contains the 2D information of this object,
+        but not the zlevels."""
         return self._grid
 
     def is_regular(self):
@@ -130,25 +126,27 @@ class Mesh(Grid):
 
     @property
     def dz(self) -> np.ndarray:
-        """
-        `dz` is a 1D version of the `e3t` array, representing the vertical
-        size of the cells. It does not account for the seabed, so each depth
-        level has a single value, making it a 1D array.
+        """`dz` is a 1D version of the `e3t` array, representing the vertical
+        size of the cells.
+
+        It does not account for the seabed, so each depth level has a
+        single value, making it a 1D array.
         """
         return np.max(self.e3t, axis=(1, 2))
 
-    def convert_lon_lat_to_indices(self, *, lon: Union[float, np.ndarray],
-                                   lat: Union[float, np.ndarray]) -> Tuple:
+    def convert_lon_lat_to_indices(
+        self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
+    ) -> Tuple:
         return self._grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
 
-    def convert_i_j_to_lon_lat(self, i: Union[int, np.ndarray],
-                               j: Union[int, np.ndarray]) -> Tuple:
+    def convert_i_j_to_lon_lat(
+        self, i: Union[int, np.ndarray], j: Union[int, np.ndarray]
+    ) -> Tuple:
         return self._grid.convert_i_j_to_lon_lat(i=i, j=j)
 
     def get_depth_index(self, z: Real) -> int:
-        """
-        Converts a depth expressed in meters to the corresponding
-        index level.
+        """Converts a depth expressed in meters to the corresponding index
+        level.
 
         The returned value is an integer indicating the previous
         (*not* the nearest) depth in the z-levels.
@@ -163,22 +161,20 @@ class Mesh(Grid):
         """
         z = np.asarray(z)
         output = np.maximum(
-            np.searchsorted(self._zlevels, z, side='right') - 1,
-            0
+            np.searchsorted(self._zlevels, z, side="right") - 1, 0
         )
         if output.ndim == 0:
             output = int(output)
         return output
 
     @staticmethod
-    def from_levels(xlevels: np.ndarray, ylevels:np.ndarray,
-                    zlevels:np.ndarray):
-        """
-        Create a `Mesh` from the three arrays that define the position
-        of the centers of the cells. This is the minimum amount of
-        information needed to generate a Mesh (the size of the cells
-        in each direction will be approximate by the algorithms of
-        `bit.sea`)
+    def from_levels(
+        xlevels: np.ndarray, ylevels: np.ndarray, zlevels: np.ndarray
+    ):
+        """Create a `Mesh` from the three arrays that define the position of
+        the centers of the cells. This is the minimum amount of information
+        needed to generate a Mesh (the size of the cells in each direction will
+        be approximate by the algorithms of `bit.sea`)
 
         Args:
             xlevels (np.ndarray): A 2D array containing the longitudes
@@ -192,9 +188,13 @@ class Mesh(Grid):
         return Mesh(grid, zlevels)
 
     @classmethod
-    def from_file(cls, file_path: PathLike, zlevels_var_name: str = "nav_lev",
-                  read_e3t: bool = False):
-        with netCDF4.Dataset(file_path, 'r') as f:
+    def from_file(
+        cls,
+        file_path: PathLike,
+        zlevels_var_name: str = "nav_lev",
+        read_e3t: bool = False,
+    ):
+        with netCDF4.Dataset(file_path, "r") as f:
             grid = IrregularGrid.from_file_pointer(f)
 
             zlevels = np.array(
@@ -204,13 +204,11 @@ class Mesh(Grid):
             if zlevels.ndim != 1:
                 # Reduce zlevels to a 1D array
                 if zlevels.ndim == 2:
-                    raise ValueError(
-                        'zlevels can not be a 2D array'
-                    )
+                    raise ValueError("zlevels can not be a 2D array")
 
                 if zlevels.ndim > 4:
                     raise ValueError(
-                        'zlevels can not have more than 4 dimensions'
+                        "zlevels can not have more than 4 dimensions"
                     )
 
                 zlevels_slice = [0 for _ in range(zlevels.ndim)]
@@ -230,12 +228,14 @@ class Mesh(Grid):
 
 
 class RegularMesh(Mesh, Regular):
-    def __init__(self, regular_grid: RegularGrid, zlevels: np.ndarray,
-                 e3t: Optional[np.ndarray] = None):
+    def __init__(
+        self,
+        regular_grid: RegularGrid,
+        zlevels: np.ndarray,
+        e3t: Optional[np.ndarray] = None,
+    ):
         if not regular_grid.is_regular():
-            raise ValueError(
-                'regular_grid argument must be a regular grid.'
-            )
+            raise ValueError("regular_grid argument must be a regular grid.")
         super().__init__(regular_grid, zlevels, e3t)
 
     @property
@@ -249,13 +249,13 @@ class RegularMesh(Mesh, Regular):
         return self._grid.lat
 
     @staticmethod
-    def from_coordinates(*, lon: np.ndarray, lat: np.ndarray,
-                    zlevels: np.ndarray):
-        """
-        Create a `Mesh` from the three arrays that define the position
-        of the centers of the cells. This function is very similar to
-        the `from_levels` method of the class `Mesh`, but the
-        coordinates of the regular grid are defined by two 1D arrays
+    def from_coordinates(
+        *, lon: np.ndarray, lat: np.ndarray, zlevels: np.ndarray
+    ):
+        """Create a `Mesh` from the three arrays that define the position of
+        the centers of the cells. This function is very similar to the
+        `from_levels` method of the class `Mesh`, but the coordinates of the
+        regular grid are defined by two 1D arrays.
 
         Args:
             lon (np.ndarray): A 1D array containing the longitudes

@@ -1,6 +1,16 @@
 import argparse
+import os
+from datetime import datetime
 
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
+from bitsea.Sat import interp2d
+from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.argparse_types import some_among
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
 def argument():
@@ -85,18 +95,6 @@ def argument():
 
 args = argument()
 
-
-from bitsea.commons.Timelist import TimeList
-from bitsea.commons.time_interval import TimeInterval
-from bitsea.Sat import SatManager as Sat
-from bitsea.Sat import interp2d
-from bitsea.commons.mask import Mask
-from bitsea.postproc import masks
-from bitsea.commons.utils import addsep
-import os
-from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
-
-from datetime import datetime
 
 maskIn = getattr(masks, args.inmesh)
 

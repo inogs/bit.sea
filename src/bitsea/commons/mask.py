@@ -7,7 +7,6 @@ from scipy import spatial
 import netCDF4
 
 from bitsea.commons.bathymetry import Bathymetry
-from bitsea.commons.grid import OutsideDomain
 from bitsea.commons.utils import search_closest_sorted
 
 
@@ -157,11 +156,13 @@ class Mask(object):
         min_lat = self._ylevels.min()-r
         max_lat = self._ylevels.max()+r
         if lon > max_lon or lon < min_lon:
+            from bitsea.commons.grid import OutsideDomain
             raise OutsideDomain(
                 "Invalid longitude value: {} (must be between {} and "
                 "{})".format(lon, min_lon, max_lon)
             )
         if lat > max_lat or lat < min_lat:
+            from bitsea.commons.grid import OutsideDomain
             raise OutsideDomain(
                 "Invalid latitude value: {} (must be between {} and "
                 "{})".format(lat, min_lat, max_lat)

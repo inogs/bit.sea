@@ -97,7 +97,7 @@ def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
     maskIn = getattr(masks, inmesh)
 
     if not serial:
-        pass
+        import mpi4py  # noqa: F401
 
     comm = get_mpi_communicator()
     rank = comm.Get_rank()

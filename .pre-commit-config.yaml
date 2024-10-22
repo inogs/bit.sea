@@ -23,10 +23,3 @@ repos:
   hooks:
     - id: bandit
       args: ["--exclude", "tests/*", "benchmarks/*", "examples/*"]
-- repo: https://github.com/PyCQA/docformatter
-  rev: v1.7.5
-  hooks:
-    - id: docformatter
-      additional_dependencies: [tomli]
-      # only apply to the package dir, not the tests
-      files: ^mer/.*$

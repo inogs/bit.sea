@@ -13,3 +13,4 @@ makefile
 *.grib
 tests/*.tar.xz
 /.pytest_cache/
+tests/.hypothesis

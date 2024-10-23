@@ -156,7 +156,6 @@ def write_2d_file(M2d,varname,outfile,mask,fillValue=1.e+20, compression=False):
 
     if os.path.exists(outfile):
         ncOUT=NC.Dataset(outfile,'a')
-        print("appending ", varname, " in ", outfile)
         variable_exist= varname in ncOUT.variables.keys()
         if variable_exist:
             ncvar2d=ncOUT.variables[varname]

@@ -3,6 +3,7 @@ from abc import abstractmethod
 from enum import Enum
 from itertools import product as cart_prod
 from os import PathLike
+from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -12,6 +13,8 @@ import numpy as np
 from geopy import distance
 from numpy.typing import ArrayLike
 from sklearn.neighbors import BallTree
+
+from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
 class OutsideDomain(ValueError):
@@ -506,8 +509,14 @@ class IrregularGrid(Grid):
             self._e2t = None
 
         # BallTree to find the nearest cell center to a given point.
-        # Initialized as None and set up only when needed.
-        self._balltree: Optional[BallTree] = None
+        # Initialized as a list that contains only `None`; when we need a
+        # BallTree we will replace the first element of the list with a BallTree
+        # object (the list will never have more than one element).
+        # This mechanism allows to share the cache among different objects that
+        # represent the same grid (see, for example, the MaskLayers objects);
+        # when one of the objects initialize the cache, it is initialized for
+        # all of them
+        self._balltree_cache: List[Optional[BallTree]] = [None]
 
     @property
     def xlevels(self) -> np.ndarray:
@@ -568,7 +577,7 @@ class IrregularGrid(Grid):
         data = np.stack((self.ylevels, self.xlevels), axis=-1)
         data = data.reshape(-1, 2)
 
-        self._balltree = BallTree(data, metric="haversine")
+        self._balltree_cache[0] = BallTree(data, metric="haversine")
 
     def _check_if_inside_rectangle(
         self,
@@ -655,8 +664,9 @@ class IrregularGrid(Grid):
         lon, lat = np.broadcast_arrays(lon, lat)
 
         # Ensure that the balltree is initialized
-        if self._balltree is None:
+        if self._balltree_cache[0] is None:
             self._initialize_balltree()
+        balltree = self._balltree_cache[0]
 
         # Reshape the points so that it becomes a couple of longitudes and
         # latitudes
@@ -669,7 +679,7 @@ class IrregularGrid(Grid):
         if len(query_data.shape) > 2:
             query_data = query_data.reshape((-1, 2))
 
-        _, center_indices = self._balltree.query(query_data)
+        _, center_indices = balltree.query(query_data)
         center_indices = center_indices.reshape(lon.shape)
 
         # We need to reshape again the indices to be compatible with the
@@ -887,3 +897,125 @@ class RegularGrid(Grid, Regular):
             )
 
         return grid
+
+
+class MaskLayer(Grid, BooleanArrayWrapper, ABC):
+    """The `MaskLayer` class represents a single layer of a mask at a defined
+    depth. It encapsulates all information from a `Grid`, along with additional
+    attributes: the depth, the thickness of the layer, and a boolean mask.
+    The mask indicates whether each cell contains water (`True`) or lies on
+    land (`False`)."""
+
+    def __init__(self, depth: float, thickness: float, mask: np.ndarray):
+        self._depth = depth
+        self._thickness = thickness
+        self._mask = mask
+
+        BooleanArrayWrapper.__init__(self, mask)
+
+    @property
+    def depth(self) -> float:
+        return self._depth
+
+    @property
+    def thickness(self) -> float:
+        return self._thickness
+
+    @classmethod
+    def from_grid(
+        cls, grid: Grid, *, depth: float, thickness: float, mask: np.ndarray
+    ):
+        """
+        Extends a grid object and transforms it into a grid. This is usually
+        more
+        efficient than using the initializer directly, as it can reuse some cached
+        values from the original grid object, reducing the need for copying.
+        """
+        if isinstance(grid, RegularGrid):
+            return RegularMaskLayer.from_grid(
+                grid, depth=depth, thickness=thickness, mask=mask
+            )
+        else:
+            return IrregularMaskLayer.from_grid(
+                grid, depth=depth, thickness=thickness, mask=mask
+            )
+
+
+class RegularMaskLayer(RegularGrid, MaskLayer):
+    def __init__(
+        self,
+        *,
+        lon: np.ndarray,
+        lat: np.ndarray,
+        depth: float,
+        thickness: float,
+        mask: np.ndarray,
+        e1t: Optional[np.ndarray] = None,
+        e2t: Optional[np.ndarray] = None,
+    ):
+        super().__init__(lon=lon, lat=lat, e1t=e1t, e2t=e2t)
+        MaskLayer.__init__(self, depth=depth, thickness=thickness, mask=mask)
+
+        if self.shape != self._data_array.shape:
+            raise ValueError(
+                "The mask array is not coherent with the current grid"
+            )
+
+    @classmethod
+    def from_grid(
+        cls, grid: Grid, *, depth: float, thickness: float, mask: np.ndarray
+    ):
+        if not isinstance(grid, RegularGrid):
+            raise ValueError("grid must be a RegularGrid")
+
+        return cls(
+            lon=grid.lon,
+            lat=grid.lat,
+            depth=depth,
+            thickness=thickness,
+            mask=mask,
+            e1t=grid._e1t,
+            e2t=grid._e2t,
+        )
+
+
+class IrregularMaskLayer(IrregularGrid, MaskLayer):
+    def __init__(
+        self,
+        *,
+        xlevels: np.ndarray,
+        ylevels: np.ndarray,
+        depth: float,
+        thickness: float,
+        mask: np.ndarray,
+        e1t: Optional[np.ndarray] = None,
+        e2t: Optional[np.ndarray] = None,
+    ):
+        super().__init__(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
+        MaskLayer.__init__(self, depth=depth, thickness=thickness, mask=mask)
+
+        if self.shape != self._data_array.shape:
+            raise ValueError(
+                "The mask array is not coherent with the current grid"
+            )
+
+    @classmethod
+    def from_grid(
+        cls, grid: Grid, *, depth: float, thickness: float, mask: np.ndarray
+    ):
+        if not isinstance(grid, IrregularGrid):
+            raise ValueError("grid must be a IrregularGrid")
+
+        output = cls(
+            xlevels=grid.xlevels,
+            ylevels=grid.ylevels,
+            depth=depth,
+            thickness=thickness,
+            mask=mask,
+            e1t=grid._e1t,
+            e2t=grid._e2t,
+        )
+
+        output._balltree_cache = grid._balltree_cache
+
+        return output

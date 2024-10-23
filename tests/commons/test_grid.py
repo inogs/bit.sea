@@ -1,13 +1,16 @@
-from netCDF4 import Dataset
 import numpy as np
 import pytest
+from netCDF4 import Dataset
 
-from bitsea.commons.grid import IrregularGrid
+from bitsea.commons.grid import extend_from_average
 from bitsea.commons.grid import GeoPySidesCalculator
+from bitsea.commons.grid import IrregularGrid
+from bitsea.commons.grid import IrregularMaskLayer
+from bitsea.commons.grid import MaskLayer
 from bitsea.commons.grid import NemoGridSidesCalculator
 from bitsea.commons.grid import OutsideDomain
 from bitsea.commons.grid import RegularGrid
-from bitsea.commons.grid import extend_from_average
+from bitsea.commons.grid import RegularMaskLayer
 
 
 @pytest.fixture
@@ -65,6 +68,7 @@ def test_regular_grid_init():
 
     assert grid.shape == grid_shape
 
+
 def test_init_with_wrongs_arguments():
     grid_shape = (19, 31)
     xlevels = np.linspace(0, 1, grid_shape[1], dtype=np.float32)
@@ -79,12 +83,16 @@ def test_init_with_wrongs_arguments():
 
     # Must have same type
     with pytest.raises(ValueError):
-        IrregularGrid(xlevels=xlevels, ylevels=np.asarray(ylevels, dtype=np.float64))
+        IrregularGrid(
+            xlevels=xlevels, ylevels=np.asarray(ylevels, dtype=np.float64)
+        )
 
     # Do not accept 1D arrays even if they broadcast (because they have the
     # shape
     with pytest.raises(ValueError):
-        IrregularGrid(xlevels=np.linspace(0, 1, 10), ylevels=np.linspace(0, 1, 10))
+        IrregularGrid(
+            xlevels=np.linspace(0, 1, 10), ylevels=np.linspace(0, 1, 10)
+        )
 
 
 def test_init_grid_does_broadcast():
@@ -122,8 +130,7 @@ def test_convert_lon_lat_to_indices(grid):
             current_lat = float(grid.ylevels[i, j]) - 0.0002
 
             p_coords = grid.convert_lon_lat_to_indices(
-                lon=current_lon,
-                lat=current_lat
+                lon=current_lon, lat=current_lat
             )
 
             assert p_coords == (i, j)
@@ -136,10 +143,7 @@ def test_convert_lon_lat_to_indices_array(grid):
     lon_test = grid.xlevels[i_indices, j_indices] + 0.0002
     lat_test = grid.ylevels[i_indices, j_indices] - 0.0002
 
-    p_coords = grid.convert_lon_lat_to_indices(
-        lon=lon_test,
-        lat=lat_test
-    )
+    p_coords = grid.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
 
     assert np.all(p_coords[0] == i_indices)
     assert np.all(p_coords[1] == j_indices)
@@ -159,8 +163,7 @@ def test_convert_lon_lat_to_indices_regular(regular_grid):
             current_lat = float(lat[j]) - 0.0002
 
             p_coords = grid.convert_lon_lat_to_indices(
-                lon=current_lon,
-                lat=current_lat
+                lon=current_lon, lat=current_lat
             )
 
             assert p_coords == (i, j)
@@ -173,8 +176,7 @@ def test_convert_lon_lat_to_indices_array_regular(regular_grid):
     lat_values = regular_grid.lat[j_values]
 
     p_coords = regular_grid.convert_lon_lat_to_indices(
-        lon=lon_values,
-        lat=lat_values
+        lon=lon_values, lat=lat_values
     )
 
     assert np.all(p_coords[0] == i_values)
@@ -219,11 +221,11 @@ def test_outside_domain_lon_lat_array(grid):
 
 def test_outside_domain_lon_lat_array_regular(regular_grid):
     lon = np.array((35, 36, 37, 38, 30), dtype=np.float32)
-    lat = 4.
+    lat = 4.0
     with pytest.raises(OutsideDomain):
         regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
 
-    lon = 20.
+    lon = 20.0
     lat = np.array((4, 5, 6, 7, 8), dtype=np.float32)
     with pytest.raises(OutsideDomain):
         regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
@@ -236,8 +238,8 @@ def test_e1t_is_read_from_file(test_data_dir):
 
     grid = IrregularGrid.from_file(mask_file)
 
-    with Dataset(mask_file, 'r') as f:
-        e1t = f.variables['e1t'][0, 0].data
+    with Dataset(mask_file, "r") as f:
+        e1t = f.variables["e1t"][0, 0].data
 
     assert np.allclose(e1t, grid.e1t, rtol=1e-5)
 
@@ -249,8 +251,8 @@ def test_e2t_is_read_from_file(test_data_dir):
 
     grid = IrregularGrid.from_file(mask_file)
 
-    with Dataset(mask_file, 'r') as f:
-        e1t = f.variables['e2t'][0, 0].data
+    with Dataset(mask_file, "r") as f:
+        e1t = f.variables["e2t"][0, 0].data
 
     assert np.allclose(e1t, grid.e2t, rtol=1e-5)
 
@@ -267,10 +269,7 @@ def test_e1t_can_be_computed_regular(test_data_dir):
 
     file_grid = RegularGrid.from_file(mask_file)
     new_grid = RegularGrid(
-        lon=file_grid.lon,
-        lat=file_grid.lat,
-        e1t=None,
-        e2t=None
+        lon=file_grid.lon, lat=file_grid.lat, e1t=None, e2t=None
     )
     assert np.allclose(file_grid.e1t, new_grid.e1t, rtol=1e-4)
 
@@ -282,10 +281,7 @@ def test_e2t_can_be_computed_regular(test_data_dir):
 
     file_grid = RegularGrid.from_file(mask_file)
     new_grid = RegularGrid(
-        lon=file_grid.lon,
-        lat=file_grid.lat,
-        e1t=None,
-        e2t=None
+        lon=file_grid.lon, lat=file_grid.lat, e1t=None, e2t=None
     )
     assert np.allclose(file_grid.e2t, new_grid.e2t, rtol=1e-4)
 
@@ -296,7 +292,7 @@ def test_different_algorithms_give_coherent_results(grid):
     c3 = GeoPySidesCalculator(geodesic=True)
 
     e1t_c1, e2t_c1 = c1(grid.xlevels, grid.ylevels)
-    e1t_c2, e2t_c2  = c2(grid.xlevels, grid.ylevels)
+    e1t_c2, e2t_c2 = c2(grid.xlevels, grid.ylevels)
     e1t_c3, e2t_c3 = c3(grid.xlevels, grid.ylevels)
 
     assert np.allclose(e1t_c1, e1t_c2, rtol=1e-2)
@@ -314,3 +310,61 @@ def test_extend_from_average():
     v_mean = (v_array[1:] + v_array[:-1]) / 2
 
     assert np.allclose(v_mean, t_array)
+
+
+def test_mask_layer_irregular(grid):
+    mask = np.ones(grid.shape, dtype=bool)
+    depth = 100.0
+    thickness = 1.0
+    mask_layer = MaskLayer.from_grid(
+        grid, depth=depth, thickness=thickness, mask=mask
+    )
+
+    assert isinstance(mask_layer, IrregularMaskLayer)
+
+    assert mask_layer.shape == mask_layer.as_array().shape
+    assert mask_layer.depth == depth
+    assert mask_layer.thickness == thickness
+
+
+def test_mask_layer_regular(regular_grid):
+    mask = np.ones(regular_grid.shape, dtype=bool)
+    depth = 100.0
+    thickness = 1.0
+    mask_layer = MaskLayer.from_grid(
+        regular_grid, depth=depth, thickness=thickness, mask=mask
+    )
+
+    assert isinstance(mask_layer, RegularMaskLayer)
+
+    assert mask_layer.shape == mask_layer.as_array().shape
+    assert mask_layer.depth == depth
+    assert mask_layer.thickness == thickness
+
+
+def test_mask_layer_checks_mask_shape(grid, regular_grid):
+    mask = np.ones(tuple(i + 1 for i in grid.shape), dtype=bool)
+    depth = 100.0
+    thickness = 1.0
+    with pytest.raises(ValueError):
+        MaskLayer.from_grid(grid, depth=depth, thickness=thickness, mask=mask)
+
+    regular_mask = np.ones(tuple(i + 1 for i in regular_grid.shape), dtype=bool)
+    with pytest.raises(ValueError):
+        MaskLayer.from_grid(
+            regular_grid, depth=depth, thickness=thickness, mask=regular_mask
+        )
+
+
+def test_regular_mask_layer_checks_grid_is_regular(grid):
+    mask = np.ones(grid.shape, dtype=bool)
+    with pytest.raises(ValueError):
+        RegularMaskLayer.from_grid(grid, depth=100.0, thickness=1.0, mask=mask)
+
+
+def test_irregular_mask_layer_checks_grid_is_regular(regular_grid):
+    mask = np.ones(regular_grid.shape, dtype=bool)
+    with pytest.raises(ValueError):
+        IrregularMaskLayer.from_grid(
+            regular_grid, depth=100.0, thickness=1.0, mask=mask
+        )

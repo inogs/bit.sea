@@ -195,31 +195,40 @@ class Mesh(Grid):
         read_e3t: bool = False,
     ):
         with netCDF4.Dataset(file_path, "r") as f:
-            grid = IrregularGrid.from_file_pointer(f)
+            return cls.from_file_pointer(f, zlevels_var_name, read_e3t)
 
-            zlevels = np.array(
-                f.variables[zlevels_var_name][:], dtype=np.float32
-            )
+    @classmethod
+    def from_file_pointer(
+        cls,
+        file_pointer: netCDF4.Dataset,
+        zlevels_var_name: str = "nav_lev",
+        read_e3t: bool = False,
+    ):
+        grid = Grid.from_file_pointer(file_pointer)
 
-            if zlevels.ndim != 1:
-                # Reduce zlevels to a 1D array
-                if zlevels.ndim == 2:
-                    raise ValueError("zlevels can not be a 2D array")
+        zlevels = np.array(
+            file_pointer.variables[zlevels_var_name][:], dtype=np.float32
+        )
 
-                if zlevels.ndim > 4:
-                    raise ValueError(
-                        "zlevels can not have more than 4 dimensions"
-                    )
+        if zlevels.ndim != 1:
+            # Reduce zlevels to a 1D array
+            if zlevels.ndim == 2:
+                raise ValueError("zlevels can not be a 2D array")
 
-                zlevels_slice = [0 for _ in range(zlevels.ndim)]
-                zlevels_slice[-3] = slice(None)
+            if zlevels.ndim > 4:
+                raise ValueError(
+                    "zlevels can not have more than 4 dimensions"
+                )
 
-                zlevels = zlevels[tuple(zlevels_slice)]
+            zlevels_slice = [0 for _ in range(zlevels.ndim)]
+            zlevels_slice[-3] = slice(None)
 
-            if read_e3t:
-                e3t = np.array(f.variables["e3t"][0, :, :, :])
-            else:
-                e3t = None
+            zlevels = zlevels[tuple(zlevels_slice)]
+
+        if read_e3t:
+            e3t = np.ma.getdata(file_pointer.variables["e3t"][0, :, :, :])
+        else:
+            e3t = None
 
         if isinstance(grid, RegularGrid):
             return RegularMesh(grid, zlevels, e3t)

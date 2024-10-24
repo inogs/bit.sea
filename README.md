@@ -10,7 +10,7 @@ to manage the [preprocessing](https://github.com/inogs/ogstm_preproc) and [postp
 The tool is employed in the context of operational oceanography within [Marine Copernicus](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_BGC_006_014/description)
 to generate quality checked observational datasets used in production and to manage the [validation framework](https://catalogue.marine.copernicus.eu/documents/QUID/CMEMS-MED-QUID-006-014.pdf).
 
-##Installation:
+## Installation:
 
 ```bash
 git clone git@github.com:inogs/bit.sea.git
@@ -18,7 +18,7 @@ cd bit.sea
 pip install bit.sea .
 ```
 
-##Usage
+## Usage
 
 ```bash
 import bit.sea

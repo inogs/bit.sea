@@ -31,4 +31,4 @@ indexes,weights = TL.select(Hourly_req)
 ```
 
 
-The software responsible is [@gbolzon]((https://www.github.com/gbolzon).
+The software responsible is [@gbolzon](https://www.github.com/gbolzon).

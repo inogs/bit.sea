@@ -4,8 +4,9 @@ import warnings
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
+from numbers import Real
+
 from bitsea.commons.segment import Segment
-from bitsea.commons.utils import is_number
 from bitsea.commons.xml_module import *
 from bitsea.commons.mask import Mask
 from bitsea.commons.dataextractor import DataExtractor
@@ -37,7 +38,8 @@ class Transect(object):
             self.__unit = None
         else:
             self.__unit = str(unit)
-        if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
+        if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (
+                isinstance(clim[0], Real) and isinstance(clim[1], Real)):
             raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
         if not isinstance(segmentlist, (list, tuple)) or ((len(segmentlist) > 0) and not isinstance(segmentlist[0], (Segment,))):
@@ -172,9 +174,9 @@ class Transect(object):
         return output
 
     #Private methods
-    def __get_segment_data(self, segment_index):
+    def __get_segment_data(self, segment_index: int):
         #Input validation
-        if not is_number(segment_index):
+        if not isinstance(segment_index, Real):
             raise ValueError("'%s' is not a number." % (segment_index,))
         seg = self.__segmentlist[segment_index]
         #Retrieve indices

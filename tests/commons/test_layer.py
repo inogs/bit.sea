@@ -1,25 +1,24 @@
 # Copyright (c) 2016 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-from nose.tools import *
-from ..layer import *
+import pytest
 
-def test_initial():
-    assert True
+from bitsea.commons.layer import Layer
+
 
 def test_layer_constructor():
     l = Layer(0, 10)
-    assert not (l is None)
     assert (l.top == 0)
     assert (l.bottom == 10)
 
-@raises(ValueError)
-def test_layer_constructor_wrong_order():
-    l = Layer(10, 0)
 
-@raises(ValueError)
+def test_layer_constructor_wrong_order():
+    with pytest.raises(ValueError):
+        Layer(10, 0)
+
 def test_layer_constructor_zero_height():
-    l = Layer(10, 10)
+    with pytest.raises(ValueError):
+        Layer(10.1, 10)
 
 def test_layer_repr():
     l = Layer(0, 10)

@@ -2,8 +2,9 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 
-from __future__ import print_function
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path
+from bitsea.utilities.argparse_types import existing_file_path
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -12,14 +13,14 @@ def argument():
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(   '--inputdir', '-i',
-                                type = str,
+                                type = existing_dir_path,
                                 required =False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/wrkdir/2/POSTPROC/AVE_FREQ_1/TMP/",
                                 help = ''' Input directory'''
                                 )
 
     parser.add_argument(   '--outputdir', '-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 default = '/pico/scratch/usera07ogs/a07ogs02/layer_maps/',
                                 help = 'Output directory')
@@ -31,13 +32,13 @@ def argument():
                                 help = 'glob search pattern')
 
     parser.add_argument(   '--plotlistfile', '-p',
-                                type = str,
+                                type = existing_file_path,
                                 required = False,
                                 default = 'postproc/Plotlist.xml',
                                 help = 'Path to plot list XML file')
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
+                                type = existing_file_path,
                                 required = False,
                                 default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
                                 help = 'Path to mask file')
@@ -53,9 +54,7 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 import sys
-from bitsea.commons.utils import is_valid_path, nan_compare
-import numpy as np
-from glob import glob
+from bitsea.commons.utils import is_valid_path
 from bitsea.commons.Timelist import TimeInterval, TimeList
 from bitsea.commons.mask import Mask
 from mpl_toolkits.basemap import Basemap
@@ -79,15 +78,11 @@ except ImportError:
     sys.exit(2)
 
 
-def die(why, exit_code=1, print_usage=True):
-    print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    sys.exit(exit_code)
 
-
-maskfile     = is_valid_path(args.maskfile)
-plotlistfile = is_valid_path(args.plotlistfile)
-inputdir     = is_valid_path(args.inputdir,True)
-outputdir    = is_valid_path(args.outputdir,True)
+maskfile     = args.maskfile
+plotlistfile = args.plotlistfile
+inputdir     = args.inputdir
+outputdir    = args.outputdir
 file_pattern = args.pattern
 
 xlim=[-6.5,36.5]

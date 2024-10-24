@@ -1,0 +1,25 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+-   repo: https://github.com/asottile/reorder-python-imports
+    rev: v3.13.0
+    hooks:
+    -   id: reorder-python-imports
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.6.9
+  hooks:
+    # Run the linter.
+    - id: ruff
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
+      args: [--line-length=80]
+- repo: https://github.com/PyCQA/bandit
+  rev: '1.7.10'
+  hooks:
+    - id: bandit
+      args: ["--exclude", "tests/*", "benchmarks/*", "examples/*"]

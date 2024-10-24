@@ -10,18 +10,18 @@ var="P_l"
 T_bio = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/ARCHIVE/',glob_pattern="ave*" +var + ".nc.gz")
 
 
-print "#! /bin/bash"
-print "ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/"
-print "MASKFILE=/gpfs/work/OGS_prod_0/OPA/V5C/prod/wrkdir/2/MODEL/meshmask.nc"
-print "SAT_WEEKLY_DIR=${ONLINE_REPO}/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/"
-print "SAT_DAILY_DIR=${ONLINE_REPO}/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/"
-print "FORECAST_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/AVE/FORECAST"
-print ""
+print("#! /bin/bash")
+print("ONLINE_REPO=/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/")
+print("MASKFILE=/gpfs/work/OGS_prod_0/OPA/V5C/prod/wrkdir/2/MODEL/meshmask.nc")
+print("SAT_WEEKLY_DIR=${ONLINE_REPO}/SAT/MULTISENSOR/1Km/NRT/WEEKLY_2_24/")
+print("SAT_DAILY_DIR=${ONLINE_REPO}/SAT/MULTISENSOR/1Km/NRT/DAILY/CHECKED_24/")
+print("FORECAST_DIR=/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/AVE/FORECAST")
+print("")
 
 Tuplelist=T_bio.get_runs([2])
 RUNDATE_DIR="/gpfs/scratch/userexternal/gbolzon0/CHAIN_V5C/SAT_VALIDATION_ARCHIVE"
 command = "mkdir -p " + RUNDATE_DIR
-print command
+print(command)
 
 for time, path in Tuplelist[1:]:
     RUNDATE=time.strftime("%Y%m%d")
@@ -42,6 +42,4 @@ for time, path in Tuplelist[1:]:
     command_f1_d=basecommand_d  %( time_f1.strftime("%Y%m%d"), f_1__daily_name)
     command_f2_d=basecommand_d  %( time_f2.strftime("%Y%m%d"), f_2__daily_name)
     for command in [command_f0_w, command_f0_d, command_f1_d, command_f2_d ] :
-        print command
-    
-    
+        print(command)

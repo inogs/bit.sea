@@ -15,7 +15,7 @@ to generate quality checked observational datasets used in production and to man
 ```bash
 git clone git@github.com:inogs/bit.sea.git
 cd bit.sea
-pip install bit.sea .
+pip install .
 ```
 
 ## Usage

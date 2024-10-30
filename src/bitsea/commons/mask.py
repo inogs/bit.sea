@@ -377,7 +377,15 @@ class Mask(object):
             dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
             self._regular = dist == 0
         return self._regular
-
+    def CellArea(self,lon,lat,side,nVerticalCells):
+        '''
+        Returns the lateral area of watercolumn of n Vertical cells
+        '''
+        ji,jj = self.convert_lon_lat_to_indices(lon, lat)
+        if side in ["E","W"]:
+            return self.e2t[jj,ji] * self.e3t[:nVerticalCells,jj,ji].sum()
+        if side in ["N","S"]:
+            return self.e1t[jj,ji] * self.e3t[:nVerticalCells,jj,ji].sum()
 
 class MaskBathymetry(Bathymetry, ABC):
     """

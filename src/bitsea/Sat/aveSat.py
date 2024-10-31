@@ -68,7 +68,7 @@ from bitsea.commons.utils import addsep
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 if not args.serial:
-    import mpi4py
+    import mpi4py.MPI
 
 
 comm = get_mpi_communicator()

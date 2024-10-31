@@ -82,7 +82,7 @@ def argument():
 
     return parser.parse_args()
 
-
+from typing import Iterable
 import os
 from datetime import datetime
 
@@ -95,7 +95,14 @@ from bitsea.Sat import interp2d
 from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
-def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
+def interpolator(*,
+inmesh : str,
+serial : bool,
+maskfile : str,
+inputdir: str,
+outputdir:str,
+varnames: Iterable[str],
+force = bool):
     maskIn = getattr(masks, inmesh)
 
     if not serial:
@@ -213,7 +220,7 @@ def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
 if __name__ == "__main__":
     args = argument()
     exit(
-        main(
+        interpolator(
             inmesh=args.inmesh,
             serial=args.serial,
             maskfile=args.maskfile,

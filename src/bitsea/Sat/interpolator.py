@@ -1,16 +1,6 @@
 import argparse
-import os
-from datetime import datetime
 
-from bitsea.commons.mask import Mask
-from bitsea.commons.time_interval import TimeInterval
-from bitsea.commons.Timelist import TimeList
-from bitsea.commons.utils import addsep
-from bitsea.postproc import masks
-from bitsea.Sat import interp2d
-from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.argparse_types import some_among
-from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
 def argument():
@@ -92,6 +82,18 @@ def argument():
 
     return parser.parse_args()
 
+
+import os
+from datetime import datetime
+
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
+from bitsea.Sat import interp2d
+from bitsea.Sat import SatManager as Sat
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
     maskIn = getattr(masks, inmesh)
@@ -218,5 +220,6 @@ if __name__ == "__main__":
             inputdir=args.inputdir,
             outputdir=args.outputdir,
             varnames=args.varnames,
+            force = args.force,
         )
     )

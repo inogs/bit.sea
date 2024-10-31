@@ -1,16 +1,6 @@
 import argparse
-import os
-from datetime import datetime
 
-from bitsea.commons.mask import Mask
-from bitsea.commons.time_interval import TimeInterval
-from bitsea.commons.Timelist import TimeList
-from bitsea.commons.utils import addsep
-from bitsea.postproc import masks
-from bitsea.Sat import interp2d
-from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.argparse_types import some_among
-from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
 def argument():
@@ -92,12 +82,31 @@ def argument():
 
     return parser.parse_args()
 
+from typing import Iterable
+import os
+from datetime import datetime
 
-def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.postproc import masks
+from bitsea.Sat import interp2d
+from bitsea.Sat import SatManager as Sat
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
+
+def interpolator(*,
+inmesh : str,
+serial : bool,
+maskfile : str,
+inputdir: str,
+outputdir:str,
+varnames: Iterable[str],
+force = bool):
     maskIn = getattr(masks, inmesh)
 
     if not serial:
-        import mpi4py  # noqa: F401
+        import mpi4py.MPI  # noqa: F401
 
     comm = get_mpi_communicator()
     rank = comm.Get_rank()
@@ -211,12 +220,13 @@ def main(*, inmesh, serial, maskfile, inputdir, outputdir, varnames, force):
 if __name__ == "__main__":
     args = argument()
     exit(
-        main(
+        interpolator(
             inmesh=args.inmesh,
             serial=args.serial,
             maskfile=args.maskfile,
             inputdir=args.inputdir,
             outputdir=args.outputdir,
             varnames=args.varnames,
+            force = args.force,
         )
     )

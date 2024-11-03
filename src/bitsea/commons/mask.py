@@ -1,264 +1,151 @@
-# Copyright (c) 2015 eXact Lab srl
-# Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from abc import ABC
+from os import PathLike
+from typing import Optional
+from typing import Tuple
+from warnings import warn
 
-import numpy as np
-from scipy import spatial
+import matplotlib.pyplot as plt
 import netCDF4
+import numpy as np
+from numpy.typing import ArrayLike
+from scipy import spatial
 
 from bitsea.commons.bathymetry import Bathymetry
-from bitsea.commons.grid import OutsideDomain
+from bitsea.commons.grid import Grid
+from bitsea.commons.grid import MaskLayer
+from bitsea.commons.mesh import Mesh
+from bitsea.commons.mesh import RegularMesh
 from bitsea.commons.utils import search_closest_sorted
+from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
+# The fill value used for the missing values
+FILL_VALUE = 1e20
 
-class Mask(object):
-    """
-    Defines a mask from a NetCDF file
-    """
-    def __init__(self, filename, maskvarname="tmask", zlevelsvar="nav_lev", ylevelsmatvar="nav_lat", xlevelsmatvar="nav_lon", dzvarname="e3t", loadtmask=True):
-        filename = str(filename)
 
-        with netCDF4.Dataset(filename, 'r') as dset:
-            if (maskvarname in dset.variables) and loadtmask:
-                m = dset.variables[maskvarname]
-                if len(m.shape) == 4:
-                    self._mask = np.array(m[0, :, :, :], dtype=bool)
-                elif len(m.shape) == 3:
-                    self._mask = np.array(m[:, :, :], dtype=bool)
-                else:
-                    raise ValueError("Wrong shape: %s" % (m.shape,))
-                self._shape = self._mask.shape
+class Mask(BooleanArrayWrapper, Mesh):
+    def __init__(
+        self,
+        grid: Grid,
+        zlevels: ArrayLike,
+        mask_array: ArrayLike,
+        allow_broadcast: bool = False,
+        e3t: Optional[np.ndarray] = None,
+    ):
+        mask_array = np.asarray(mask_array)
+        zlevels = np.asarray(zlevels)
+
+        if zlevels.ndim != 1:
+            raise ValueError(
+                f"zlevels must be a 1D array; its current shape is "
+                f"{zlevels.shape}"
+            )
+
+        expected_shape = (zlevels.shape[0],) + grid.shape
+        if mask_array.shape != expected_shape:
+            if allow_broadcast:
+                mask_array = np.broadcast_to(mask_array, expected_shape)
             else:
-                if loadtmask:
-                    raise ValueError("maskvarname '%s' not found" % (str(maskvarname),))
-                else:
-                    dims = dset.dimensions
-                    self._shape = (dims['z'].size, dims['y'].size, dims['x'].size)
-            if zlevelsvar in dset.variables:
-                if zlevelsvar == "nav_lev":
-                    z = dset.variables[zlevelsvar]
-                else:
-                    z = dset.variables[zlevelsvar][0,:,0,0]
-                self._zlevels = np.array(z)
+                raise ValueError(
+                    f"mask_array has shape {mask_array.shape} while the "
+                    f"expected shape was {expected_shape}"
+                )
 
-                if len(z.shape) != 1:
-                    raise ValueError("zlevelsvar must have only one dimension")
-                if not z.shape[0] in self._shape:
-                    raise ValueError("cannot match %s lenght with any of %s dimensions" % (zlevelsvar, maskvarname))
-            else:
-                raise ValueError("zlevelsvar '%s' not found" % (str(zlevelsvar),))
-            if dzvarname in dset.variables:
-                self.e3t =  np.array(dset.variables[dzvarname][0,:,:,:])
-                #self._dz = np.array(dset.variables[dzvarname][0,:,0,0])
-            else:
-                if 'e3t_0' in dset.variables:
-                    self.e3t = np.array(dset.variables['e3t_0'][0,:,:,:])
-                else:
-                    raise ValueError("dzvarname '%s' not found" % (str(dzvarname),))
-            if ylevelsmatvar in dset.variables:
-                if ylevelsmatvar =='nav_lat': self._ylevels = np.array(dset.variables[ylevelsmatvar])
-                if ylevelsmatvar in ['gphit','gphif','gphiu','gphiv']: self._ylevels = np.array(dset.variables[ylevelsmatvar][0,0,:,:])
-            else:
-                raise ValueError("ylevelsmatvar '%s' not found" % (str(ylevelsmatvar),))
-            if xlevelsmatvar in dset.variables:
-                if xlevelsmatvar=='nav_lon': self._xlevels = np.array(dset.variables[xlevelsmatvar])
-                if xlevelsmatvar in ['glamt','glamf','glamu', 'glamv']: self._xlevels = np.array(dset.variables[xlevelsmatvar][0,0,:,:])
-            else:
-                raise ValueError("xlevelsmatvar '%s' not found" % (str(xlevelsmatvar),))
-            m = dset.variables['e1t']
-            if len(m.shape) == 4:
-                self.e1t = np.array(dset.variables['e1t'][0,0,:,:]).astype(np.float32)
-                self.e2t = np.array(dset.variables['e2t'][0,0,:,:]).astype(np.float32)
-            else:
-                self.e1t = np.array(dset.variables['e1t'][0,:,:]).astype(np.float32)
-                self.e2t = np.array(dset.variables['e2t'][0,:,:]).astype(np.float32)
-
-            if loadtmask:
-                k = 1
-                # Here we look for the first layer from the bottom (i.e. the
-                # deepest one) that contains a water cell. In this way, we
-                # are sure that in the following part of the code we will read
-                # e3t on the deepest column that we have
-                while np.all(np.logical_not(self._mask[-k, :])):
-                    k += 1
-                water_points = np.where(self._mask[-k, :])
-                water_point_x, water_point_y = (k[0] for k in water_points)
-            else:
-                k = 1
-                water_point_x, water_point_y = 0, 0
-
-            self._area = self.e1t * self.e2t
-            self._dz = self.e3t[:, water_point_x, water_point_y]
-
-            # If we have some layers that contain only land, we use the height
-            # of the last land for them
-            if k != 1:
-                self._dz[-k + 1:] = self._dz[-k]
-
-        self._regular = None
+        super().__init__(
+            grid=grid, zlevels=zlevels, e3t=e3t, wrapped_data=mask_array
+        )
 
     @property
     def mask(self):
-        return self._mask
+        warn(
+            "This method is deprecated. Use the object itself instead",
+            DeprecationWarning,
+        )
+        return self
 
-    @property
-    def xlevels(self):
-        return self._xlevels
+    def get_sea_cells(self):
+        return self[:]
 
-    @property
-    def ylevels(self):
-        return self._ylevels
+    def get_water_cells(self):
+        return self[:]
 
-    @property
-    def zlevels(self):
-        return self._zlevels
-    @property
-    def lon(self):
-        return self._xlevels[0,:]
-    @property
-    def lat(self):
-        return self._ylevels[:,0]
-    @property
-    def jpi(self):
-        return self._shape[2]
-    @property
-    def jpj(self):
-       return self._shape[1]
-    @property
-    def jpk(self):
-        return self._shape[0]
-    @property
-    def dz(self):
-        return self._dz
-
-    @property
-    def shape(self):
-        return self._shape
-    @property
-    def area(self):
-        return self._area
-
-    def convert_lon_lat_to_indices(self, lon, lat):
-        """Converts longitude and latitude to the nearest indices on the mask.
+    def convert_lon_lat_wetpoint_indices(
+        self, *, lon: float, lat: float, max_radius: Optional[int] = 2
+    ):
+        """Converts longitude and latitude to the nearest water point index
+        on the mask with maximum distance limit
 
         Args:
-            - *lon*: Longitude in degrees.
-            - *lat*: Latitude in degrees.
-        Returns: a tuple of numbers, the first one is the longitude index and
-        the other one is the latitude index.
+            lon (float): Longitude in degrees.
+            lat (float): Latitude in degrees.
+            max_radius (Optional[int]): Maximum distance where the water point
+              is searched (in grid units, integer, default: 2)
+
+        Returns:
+            a tuple of numbers, the first one is the longitude index and
+            the other one is the latitude index.
         """
-        #Input validation
-        lon = float(lon)
-        lat = float(lat)
-        r=1.0
-        min_lon = self._xlevels.min()-r
-        max_lon = self._xlevels.max()+r
-        min_lat = self._ylevels.min()-r
-        max_lat = self._ylevels.max()+r
-        if lon > max_lon or lon < min_lon:
-            raise OutsideDomain(
-                "Invalid longitude value: {} (must be between {} and "
-                "{})".format(lon, min_lon, max_lon)
+
+        # Indexes of the input lon, lat
+        jp, ip = self.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        if self[0, jp, ip]:
+            return jp, ip
+
+        if max_radius is None:
+            max_radius = max(self.shape[1], self.shape[2])
+
+        # Candidate indices where we can look for a wet point
+        left_i_side = max(ip - max_radius, 0)
+        right_i_side = min(ip + max_radius + 1, self.shape[2])
+        i_indices = np.arange(left_i_side, right_i_side)
+        ip_position = left_i_side
+
+        left_j_side = max(jp - max_radius, 0)
+        right_j_side = min(jp + max_radius + 1, self.shape[1])
+        j_indices = np.arange(left_j_side, right_j_side)
+        jp_position = left_j_side
+
+        # We cut the mask around the point we have found
+        j_slice = slice(j_indices[0], j_indices[-1] + 1)
+        i_slice = slice(i_indices[0], i_indices[-1] + 1)
+        cut_mask = self[0, j_slice, i_slice].copy()
+
+        # We create a 2D array that saves the distances of these points
+        # from (jp, ip) in grid units
+        i_dist = i_indices - ip
+        i_dist *= i_dist
+
+        j_dist = j_indices - jp
+        j_dist *= j_dist
+
+        distances = np.sqrt(i_dist + j_dist[:, np.newaxis])
+
+        # Remove all the points whose distance is greater than the max_radius
+        cut_mask[distances > max_radius] = False
+
+        # If there is no water in the slice, we return (jp, ip) but we
+        # also raise a warning
+        if not np.any(cut_mask):
+            warn(
+                f"Around point (lon={lon}, lat={lat}), whose closest grid "
+                f"point is ({jp}, {ip}), there is no water point in a radius "
+                f"of {max_radius} grid points"
             )
-        if lat > max_lat or lat < min_lat:
-            raise OutsideDomain(
-                "Invalid latitude value: {} (must be between {} and "
-                "{})".format(lat, min_lat, max_lat)
-            )
+            return jp, ip
 
-        #Longitude distances matrix
-        d_lon = np.array(self._xlevels - lon)
-        d_lon *= d_lon
-        #Latitude distances matrix
-        d_lat = np.array(self._ylevels - lat)
-        d_lat *= d_lat
+        # Outside water, we fix a distance that is bigger than any other
+        # distance
+        distances[~cut_mask] = max_radius * max_radius + 1
 
-        if self.is_regular():
-            #Compute minimum indices
-            min_d_lon = d_lon.min()
-            min_d_lat = d_lat.min()
-            lon_index = np.where(d_lon == min_d_lon)[1][0]
-            lat_index = np.where(d_lat == min_d_lat)[0][0]
-        else:
-            dist= d_lon + d_lat
-            indlat, indlon =np.where(dist==dist.min())
-            lon_index=indlon[0]
-            lat_index=indlat[0]
+        local_min = np.unravel_index(
+            np.argmin(distances, axis=None), distances.shape
+        )
 
-        return lon_index, lat_index
+        return jp_position + int(local_min[0]), ip_position + int(local_min[1])
 
-
-
-    def convert_lon_lat_wetpoint_indices(self, lon, lat, maxradius=2):
-        """Converts longitude and latitude to the nearest water point indices on the mask with maximum distance limit
-
-        Args:
-            - *lon*: Longitude in degrees.
-            - *lat*: Latitude in degrees.
-            - *maxradius* : Maximum distance where the water point is searched (in grid units, integer, default: 2)
-        Returns: a tuple of numbers, the first one is the longitude index and
-        the other one is the latitude index.
+    def mask_at_level(self, z: float) -> np.ndarray:
         """
-        #Indexes of the input lon, lat
-        lon = float(lon)
-        lat = float(lat)
-        ip,jp = self.convert_lon_lat_to_indices(lon,lat)
-        if self.mask[0,jp,ip] : return ip, jp
-        #Matrixes of indexes of the Mask
-        Ilist = np.arange(self.shape[2])
-        II = np.tile(Ilist,(self.shape[1],1))
-        Jlist = np.arange(self.shape[1]).T
-        JJ = np.tile(Jlist,(self.shape[2],1)).T
-        IImask = II[self.mask[0,:,:]]
-        JJmask = JJ[self.mask[0,:,:]]
-        #Find distances from wet points
-        distind = (ip-IImask)**2+(jp-JJmask)**2
-        if maxradius is None :
-            maxradius = distind.min()
-        indd = distind<=maxradius
-        #Limit to distance < maxradius)
-        ipnarr = IImask[indd]
-        jpnarr = JJmask[indd]
-        #Assign the nearest wet points 
-        if len(ipnarr)>0:
-            distmask = distind[indd]
-            indmin = np.argmin(distmask)
-            newip = ipnarr[indmin]
-            newjp = jpnarr[indmin]
-            return newip,newjp
-        #If there aren't wet points with distance < maxradius, assign the non-wet point
-        else:
-            print('WARNING: Using terrain point indexes, put maxradius=',distind.min(), ' or maxradius=None')
-            return ip,jp
-
-
-    def convert_i_j_to_lon_lat(self, i, j):
-        """Converts i and j indexes to longitude and latitude of center of cells
-        i is indeded as longitudinal index, as well as j is latitudinal index
-        """
-        return (self._xlevels[j,i], self._ylevels[j,i])
-
-    def getDepthIndex(self, z):
-        '''Converts a depth expressed in meters in the corresponding index level
-        The returned value is an integer indicating the previous (not nearest) depth in the z-levels.
-
-        Example:
-        M = Mask(filename)
-        k = M.getDepthIndex(200.)
-        M.zlevels[k]
-          returns 192.60
-        '''
-        jk_m = 0
-        for jk,depth in enumerate(self.zlevels):
-            if depth < z:
-                jk_m=jk
-        return jk_m
-
-    def mask_at_level(self, z):
-        '''
-        Returns a 2d map of logicals, for the depth (m) provided as argument.
-        as a slice of the tmask.
+        Returns a 2d slice of the tmask for the depth (m) provided as argument.
 
         When z is not a point in the discretization, jk_m is selected as the
         point immediately before. This depth level should not be included in
@@ -269,123 +156,177 @@ class Mask(object):
         z----------------------
         (jk_m +1)  TTTTTTTTTTTTTTTT
         (jk_m +2)  TTTTTTTTTTTTTTTT
-        '''
+        """
         if z < self.zlevels[0]:
-            return self.mask[0, :, :].copy()
+            return self[0, :, :]
 
-        jk_m = self.getDepthIndex(z)
-        level_mask = self.mask[jk_m+1, :, :].copy()
-        return level_mask
+        jk_m = self.get_depth_index(z)
 
-    def bathymetry_in_cells(self):
-        '''
-        Returns a 2d array of integers
-        '''
-        return self._mask.sum(axis=0)
+        # if we are beyond the last level, return False everywhere
+        if jk_m == self.zlevels.shape[0] - 1:
+            return np.zeros_like(self)
+
+        return self[jk_m + 1, :, :]
+
+    def bathymetry_in_cells(self) -> np.ndarray:
+        """
+        Returns a 2d map that for each columns associates the number of water
+        cells that are present on that column.
+
+        Returns:
+            A 2d numpy array of integers
+        """
+        return np.count_nonzero(self._data_array, axis=0)
+
     def rough_bathymetry(self):
-        '''
-        Calculates the bathymetry used by the model 
-        It does not not takes in account e3t
+        """
+        Calculates the bathymetry used by the model
+        It does not takes in account e3t
 
         Returns:
         * bathy * a 2d numpy array of floats
-        '''
-        Cells = self.bathymetry_in_cells()
-        zlevels =np.concatenate((np.array([0]) , self.zlevels))
-        bathy = zlevels[Cells]
-        return bathy
+        """
+        n_cells_per_column = self.bathymetry_in_cells()
+        zlevels = np.concatenate((np.array([0]), self.zlevels))
+        return zlevels[n_cells_per_column]
 
     def bathymetry(self):
-        '''
+        """
         Calculates the bathymetry used by the model
-        Best evalutation, since it takes in account e3t.
+        Best evaluation, since it takes in account e3t.
 
         Returns:
-        * bathy * a 2d numpy array of floats
-        '''
-        if (self.e3t.shape !=self.shape ) :
-            print("Warning: e3t is not provided as 3D array in maskfile: Bathymetry will be calculated as function of tmask and zlevels ")
-            return self.rough_bathymetry()
+          a 2d numpy array of floats
+        """
+        bathymetry = np.sum(self.e3t, axis=0, where=self[:])
+        bathymetry[~self[0, :, :]] = FILL_VALUE
+        return bathymetry
 
-        cells_bathy = self.bathymetry_in_cells()
-        _,jpj,jpi = self.shape
-        Bathy = np.ones((jpj,jpi),np.float32)*1.e+20
-        for ji in range(jpi):
-            for jj in range(jpj):
-                max_lev=cells_bathy[jj,ji]
-                if max_lev > 0:
-                    Bathy[jj,ji] = self.e3t[:max_lev,jj,ji].sum()
-        return Bathy
+    def coastline(
+        self, depth: float, min_line_length: int = 30
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculates a mesh-dependent coastline at a chosen depth.
 
-    def cut_at_level(self,index):
-        '''
+        Arguments :
+          depth (float): depths expressed in meters
+          min_line_length (int): integer indicating the minimum number of
+            points of each coastline, it is a threshold to avoid a lot of
+            small islands.
+
+        Returns:
+          (x,y): A tuple with two numpy 1d arrays, containing NaNs to separate
+            the lines, in order to be easily plotted.
+        """
+        level_mask = self.mask_at_level(depth).astype(np.float64)
+
+        mask_contour = plt.contour(
+            self.xlevels, self.ylevels, level_mask, levels=[float(0.5)]
+        )
+
+        path_list = mask_contour.collections[0].get_paths()
+
+        point_coords = np.zeros((0, 2))
+        nan = np.full((1, 2), np.nan, dtype=np.float32)
+
+        for p in path_list:
+            v = p.vertices
+            n_points, _ = v.shape
+            if n_points > min_line_length:
+                point_coords = np.concatenate((point_coords, v, nan), axis=0)
+
+        return point_coords[:-1, 0], point_coords[:-1, 1]
+
+    def cut_at_level(self, index):
+        """
         Arguments:
         * index * integer, depth index
 
         Returns copy of the mask object, reduced on a single horizontal slice,
         the one of the provided depth index.
-        '''
-        import copy
-        New_mask = copy.copy(self)
+        """
+        return MaskLayer.from_grid(
+            self.grid,
+            depth=self.zlevels[index],
+            thickness=self.dz[index],
+            mask=self[index, :],
+        )
 
-        _,jpj,jpi = self.shape
-        red_mask = np.zeros((1,jpj,jpi),dtype=bool)
-        red_mask[0,:,:] = self._mask[index,:,:]
-        New_mask._mask = red_mask
+    def CellArea(self, ji: int, jj: int, side, n_vertical_cells: int):
+        warn(
+            'This method has been renamed "column_side_are".',
+            DeprecationWarning,
+        )
+        return self.column_side_area(ji, jj, side, n_vertical_cells)
 
-        New_mask._shape = red_mask.shape
-        New_mask._zlevels = [self._zlevels[index]]
-        New_mask._dz      = [self._dz[index]]
-        return New_mask
-    def coastline(self,depth, min_line_length=30):
-        '''
-        Calculates a mesh-dependent coastline at a chosen depth.
+    def column_side_area(self, ji: int, jj: int, side, n_vertical_cells: int):
+        """
+        Returns the lateral area of watercolumn of n Vertical cells.
+        """
+        # ji,jj = self.convert_lon_lat_to_indices(lon, lat)
+        if side in ["E", "W"]:
+            return self.e2t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
+        elif side in ["N", "S"]:
+            return self.e1t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
+        else:
+            raise ValueError(f'Invalid side: "{side}"')
 
-        Arguments :
-        * level           * depths expressed in meters
-        * min_line_length * integer indicating the minimum number of points of each coastline,
-                            it is a threshold to avoid a lot of small islands.
-        Returns:
-        * x,y *  numpy 1d arrays, containing nans to separate the lines, in order to be easily plotted.
-        '''
-        import matplotlib.pyplot as pl 
-        tmask= self.mask_at_level(depth).astype(np.float64)
+    @classmethod
+    def from_file_pointer(
+        cls,
+        file_pointer: netCDF4.Dataset,
+        zlevels_var_name: str = "nav_lev",
+        mask_var_name: str = "tmask",
+        read_e3t: bool = True,
+    ):
+        mesh = Mesh.from_file_pointer(file_pointer, zlevels_var_name, read_e3t)
 
-        H = pl.contour(self.xlevels, self.ylevels, tmask, levels=[float(0.5)])
+        mask_array = np.asarray(
+            file_pointer.variables[mask_var_name][:], dtype=bool
+        )
 
-        PATH_LIST = H.collections[0].get_paths()
+        if mask_array.ndim == 4:
+            mask_array = mask_array[0, :, :, :]
 
-        X = np.zeros((0,2))
-        nan = np.zeros((1,2))*np.nan
-        for p in PATH_LIST:
-            v = p.vertices
-            nPoints, _ = v.shape
-            if nPoints > min_line_length:
-                X = np.concatenate((X, v, nan),axis=0)
-        x = X[:-1,0]
-        y = X[:-1,1]
-        return x,y
-    def is_regular(self):
-        '''
-        Returns True if a mesh is regular, False if is not.
-        Regular means that (xlevels, ylevels) can be obtained by np.meshgrid(xlevels[k,:], ylevels[:,k])
-        '''
-        if self._regular is None:
-            x1d_0 = self._xlevels[0,:]
-            y1d_0 = self._ylevels[:,0]
-            X2D, Y2D = np.meshgrid(x1d_0, y1d_0)
-            dist = ((X2D - self.xlevels)**2 + (Y2D - self.ylevels)**2).sum()
-            self._regular = dist == 0
-        return self._regular
-    def CellArea(self,ji,jj,side,nVerticalCells):
-        '''
-        Returns the lateral area of watercolumn of n Vertical cells
-        '''
-        #ji,jj = self.convert_lon_lat_to_indices(lon, lat)
-        if side in ["E","W"]:
-            return self.e2t[jj,ji] * self.e3t[:nVerticalCells,jj,ji].sum()
-        if side in ["N","S"]:
-            return self.e1t[jj,ji] * self.e3t[:nVerticalCells,jj,ji].sum()
+        if read_e3t:
+            e3t = mesh.e3t
+        else:
+            e3t = None
+
+        if mesh.is_regular():
+            return RegularMask(mesh.grid, mesh.zlevels, mask_array, e3t)
+
+        return cls(mesh.grid, mesh.zlevels, mask_array, e3t)
+
+    @classmethod
+    def from_file(
+        cls,
+        file_path: PathLike,
+        zlevels_var_name: str = "nav_lev",
+        mask_var_name: str = "tmask",
+        read_e3t: bool = True,
+    ):
+        with netCDF4.Dataset(file_path, "r") as f:
+            return cls.from_file_pointer(
+                f, zlevels_var_name, mask_var_name, read_e3t
+            )
+
+
+class RegularMask(Mask, RegularMesh):
+    def __init__(
+        self,
+        grid: Grid,
+        zlevels: ArrayLike,
+        mask_array: ArrayLike,
+        e3t: Optional[np.ndarray] = None,
+    ):
+        if not grid.is_regular():
+            raise ValueError("Grid must be regular")
+
+        super().__init__(
+            grid=grid, zlevels=zlevels, mask_array=mask_array, e3t=e3t
+        )
+
 
 class MaskBathymetry(Bathymetry, ABC):
     """
@@ -393,6 +334,7 @@ class MaskBathymetry(Bathymetry, ABC):
     returns the z-coordinate of the bottom face of the deepest cell of the
     column that contains the point (lon, lat).
     """
+
     def __init__(self, mask):
         self._mask = mask
         self._bathymetry_data = mask.bathymetry()
@@ -427,15 +369,17 @@ class RegularMaskBathymetry(MaskBathymetry):
     def __init__(self, mask):
         if not mask.is_regular():
             raise ValueError(
-                'A RegularMaskBathymetry can be generated only from a '
-                'regular mask'
+                "A RegularMaskBathymetry can be generated only from a "
+                "regular mask"
             )
         super().__init__(mask)
 
-        assert np.all(self._mask.lon[1:] - self._mask.lon[:-1] > 0), \
-            "lon array is not ordered"
-        assert np.all(self._mask.lat[1:] - self._mask.lat[:-1] > 0), \
-            "lat array is not ordered"
+        assert np.all(
+            self._mask.lon[1:] - self._mask.lon[:-1] > 0
+        ), "lon array is not ordered"
+        assert np.all(
+            self._mask.lat[1:] - self._mask.lat[:-1] > 0
+        ), "lat array is not ordered"
 
     def __call__(self, lon, lat):
         lon_index = search_closest_sorted(self._mask.lon, lon)
@@ -446,10 +390,7 @@ class RegularMaskBathymetry(MaskBathymetry):
 class NonRegularMaskBathymetry(MaskBathymetry):
     def __init__(self, mask):
         super().__init__(mask)
-        data = np.stack(
-            (self._mask.xlevels, self._mask.ylevels),
-            axis=-1
-        )
+        data = np.stack((self._mask.xlevels, self._mask.ylevels), axis=-1)
         data = data.reshape(-1, 2)
 
         self._kdtree = spatial.KDTree(data)
@@ -472,37 +413,3 @@ class NonRegularMaskBathymetry(MaskBathymetry):
                 center_indices = center_indices[0]
 
         return self._bathymetry_data.flatten()[center_indices]
-
-
-if __name__ == '__main__':
-    Lon= np.arange(10,50,0.5)
-    Lat = np.arange(30,46,0.25)
-    L = Grid(Lon,Lat)
-    L.convert_lon_lat_to_indices(31.25, 42.02)
-    import sys
-    sys.exit()
-    #Test of convert_lon_lat_wetpoint_indices
-    filename="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/Somot/meshmask_843_S.nc"
-    TheMask = Mask('/g100_work/OGS21_PRACE_P/CLIMA_100/meshmask.nc')
-    lat=33.25925
-    lon=11.18359
-    print(TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2))
-    import sys
-    sys.exit()
-    #TheMask = Mask(filename,zlevelsvar='gdepw', xlevelsmatvar='glamf')
-    print(TheMask.is_regular())
-
-    lon = 18.1398
-    lat = 37.9585
-    i, j = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,2)
-    id, jd = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
-    ip, jp = TheMask.convert_lon_lat_to_indices(lon,lat)
-    lon = 9.44
-    lat = 40.25
-    il, jl = TheMask.convert_lon_lat_wetpoint_indices(lon,lat,30)
-    it, jt = TheMask.convert_lon_lat_wetpoint_indices(lon,lat)
-    ipt, jpt = TheMask.convert_lon_lat_to_indices(lon,lat)
-    x,y = TheMask.coastline(200, min_line_length=20)
-
-
-

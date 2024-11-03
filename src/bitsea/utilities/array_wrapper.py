@@ -18,8 +18,9 @@ class ArrayWrapper:
     `False`, ensuring the data of this object remains unmodified.
     """
 
-    def __init__(self, data):
-        self._data_array = data.view()
+    def __init__(self, *, wrapped_data: np.ndarray, **kwargs):
+        self._data_array = np.asarray(wrapped_data).view()
+        super().__init__(**kwargs)
 
     def as_array(self) -> np.ndarray:
         """
@@ -87,11 +88,11 @@ class BooleanArrayWrapper(ArrayWrapper):
     to NumPy arrays of booleans.
     """
 
-    def __init__(self, data: np.ndarray):
-        if np.asarray(data).dtype not in (bool, np.bool_):
+    def __init__(self, *, wrapped_data: np.ndarray, **kwargs):
+        if np.asarray(wrapped_data).dtype not in (bool, np.bool_):
             raise ValueError("Data must be a boolean array")
 
-        super().__init__(data)
+        super().__init__(wrapped_data=wrapped_data, **kwargs)
 
     def __invert__(self) -> np.ndarray:
         return np.logical_not(self._data_array)

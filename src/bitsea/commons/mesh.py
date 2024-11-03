@@ -9,7 +9,7 @@ import netCDF4
 import numpy as np
 from numpy.typing import ArrayLike
 
-from bitsea.commons.grid import extend_from_average
+from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import Regular
@@ -86,7 +86,7 @@ class Mesh(Grid):
                 (self._zlevels.shape[0],) + self._grid.shape,
             )
 
-        super().__init__(e1t=None, e2t=None)
+        super().__init__()
 
     @property
     def grid(self) -> Grid:

@@ -2,12 +2,9 @@ import numpy as np
 import pytest
 from netCDF4 import Dataset
 
-from bitsea.commons.grid import extend_from_average
-from bitsea.commons.grid import GeoPySidesCalculator
 from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import IrregularMaskLayer
 from bitsea.commons.grid import MaskLayer
-from bitsea.commons.grid import NemoGridSidesCalculator
 from bitsea.commons.grid import OutsideDomain
 from bitsea.commons.grid import RegularGrid
 from bitsea.commons.grid import RegularMaskLayer
@@ -284,32 +281,6 @@ def test_e2t_can_be_computed_regular(test_data_dir):
         lon=file_grid.lon, lat=file_grid.lat, e1t=None, e2t=None
     )
     assert np.allclose(file_grid.e2t, new_grid.e2t, rtol=1e-4)
-
-
-def test_different_algorithms_give_coherent_results(grid):
-    c1 = NemoGridSidesCalculator()
-    c2 = GeoPySidesCalculator(geodesic=False)
-    c3 = GeoPySidesCalculator(geodesic=True)
-
-    e1t_c1, e2t_c1 = c1(grid.xlevels, grid.ylevels)
-    e1t_c2, e2t_c2 = c2(grid.xlevels, grid.ylevels)
-    e1t_c3, e2t_c3 = c3(grid.xlevels, grid.ylevels)
-
-    assert np.allclose(e1t_c1, e1t_c2, rtol=1e-2)
-    assert np.allclose(e1t_c2, e1t_c3, rtol=1e-2)
-
-    assert np.allclose(e2t_c1, e2t_c2, rtol=1e-1)
-    assert np.allclose(e2t_c2, e2t_c3, rtol=1e-2)
-
-
-def test_extend_from_average():
-    t_array = np.linspace(0, 10, 7)
-    t_array *= t_array
-
-    v_array = extend_from_average(t_array)
-    v_mean = (v_array[1:] + v_array[:-1]) / 2
-
-    assert np.allclose(v_mean, t_array)
 
 
 def test_mask_layer_irregular(grid):

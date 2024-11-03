@@ -1,11 +1,14 @@
 from numbers import Real
 from os import PathLike
+from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
 
 import netCDF4
 import numpy as np
+from numpy.typing import ArrayLike
+
 from bitsea.commons.grid import extend_from_average
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import IrregularGrid
@@ -33,7 +36,7 @@ class Mesh(Grid):
     """
 
     def __init__(
-        self, grid: Grid, zlevels: np.ndarray, e3t: Optional[np.ndarray] = None
+        self, grid: Grid, zlevels: ArrayLike, e3t: Optional[np.ndarray] = None
     ):
         self._grid = grid
 
@@ -82,6 +85,8 @@ class Mesh(Grid):
                 e3t_md[:, np.newaxis, np.newaxis],
                 (self._zlevels.shape[0],) + self._grid.shape,
             )
+
+        super().__init__(e1t=None, e2t=None)
 
     @property
     def grid(self) -> Grid:
@@ -216,17 +221,25 @@ class Mesh(Grid):
                 raise ValueError("zlevels can not be a 2D array")
 
             if zlevels.ndim > 4:
-                raise ValueError(
-                    "zlevels can not have more than 4 dimensions"
-                )
+                raise ValueError("zlevels can not have more than 4 dimensions")
 
-            zlevels_slice = [0 for _ in range(zlevels.ndim)]
+            zlevels_slice: List[Union[int, slice]] = [
+                0 for _ in range(zlevels.ndim)
+            ]
             zlevels_slice[-3] = slice(None)
 
             zlevels = zlevels[tuple(zlevels_slice)]
 
         if read_e3t:
-            e3t = np.ma.getdata(file_pointer.variables["e3t"][0, :, :, :])
+            e3t_names = ("e3t", "e3t_0")
+            for e3t_name in e3t_names:
+                if e3t_name in file_pointer.variables:
+                    e3t = np.ma.getdata(
+                        file_pointer.variables[e3t_name][0, :, :, :]
+                    )
+                    break
+            else:
+                raise KeyError("No e3t variable found inside netCDF file.")
         else:
             e3t = None
 
@@ -239,13 +252,14 @@ class Mesh(Grid):
 class RegularMesh(Mesh, Regular):
     def __init__(
         self,
-        regular_grid: RegularGrid,
-        zlevels: np.ndarray,
+        grid: RegularGrid,
+        zlevels: ArrayLike,
         e3t: Optional[np.ndarray] = None,
     ):
-        if not regular_grid.is_regular():
+        if not grid.is_regular():
             raise ValueError("regular_grid argument must be a regular grid.")
-        super().__init__(regular_grid, zlevels, e3t)
+        super().__init__(grid, zlevels, e3t)
+        self._grid: RegularGrid
 
     @property
     def lon(self):

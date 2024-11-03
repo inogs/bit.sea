@@ -240,6 +240,30 @@ class Grid(ABC):
     information and functionality that a grid-like object might provide.
     """
 
+    def __init__(
+        self,
+        *,
+        e1t: Optional[np.ndarray] = None,
+        e2t: Optional[np.ndarray] = None,
+        **kwargs,
+    ):
+        if e1t is not None:
+            self._e1t = e1t.view()
+            self._e1t.setflags(write=False)
+        else:
+            self._e1t = None
+
+        if e2t is not None:
+            self._e2t = e2t.view()
+            self._e2t.setflags(write=False)
+        else:
+            self._e2t = None
+
+        self._default_side_algorithm = GridSidesAlgorithm.GEODESIC
+
+        # Mixin behaviour
+        super().__init__(**kwargs)
+
     @property
     @abstractmethod
     def xlevels(self) -> np.ndarray:
@@ -341,6 +365,17 @@ class Grid(ABC):
             raise ValueError("Not implemented algorithm: {}".format(algorithm))
 
         return calculator(xlevels=xlevels, ylevels=ylevels)
+
+    def _build_and_store_e_t_arrays(self):
+        e1t, e2t = self._build_e_t_arrays(
+            algorithm=self._default_side_algorithm
+        )
+        if self._e1t is None:
+            self._e1t = e1t
+            self._e1t.setflags(write=False)
+        if self._e2t is None:
+            self._e2t = e2t
+            self._e2t.setflags(write=False)
 
     @staticmethod
     def from_file(
@@ -496,17 +531,7 @@ class IrregularGrid(Grid):
             np.average(np.abs(self._ylevels[1:, :] - self._ylevels[:-1, :])),
         )
 
-        if e1t is not None:
-            self._e1t = e1t.view()
-            self._e1t.setflags(write=False)
-        else:
-            self._e1t = None
-
-        if e2t is not None:
-            self._e2t = e2t.view()
-            self._e2t.setflags(write=False)
-        else:
-            self._e2t = None
+        super().__init__(e1t=e1t, e2t=e2t)
 
         # BallTree to find the nearest cell center to a given point.
         # Initialized as a list that contains only `None`; when we need a
@@ -533,15 +558,6 @@ class IrregularGrid(Grid):
     @property
     def coordinate_dtype(self):
         return self._xlevels.dtype
-
-    def _build_and_store_e_t_arrays(self):
-        e1t, e2t = self._build_e_t_arrays(algorithm=GridSidesAlgorithm.GEODESIC)
-        if self._e1t is None:
-            self._e1t = e1t
-            self._e1t.setflags(write=False)
-        if self._e2t is None:
-            self._e2t = e2t
-            self._e2t.setflags(write=False)
 
     @property
     def lon(self):
@@ -577,6 +593,7 @@ class IrregularGrid(Grid):
         data = np.stack((self.ylevels, self.xlevels), axis=-1)
         data = data.reshape(-1, 2)
 
+        # noinspection PyArgumentList
         self._balltree_cache[0] = BallTree(data, metric="haversine")
 
     def _check_if_inside_rectangle(
@@ -767,17 +784,8 @@ class RegularGrid(Grid, Regular):
         self._average_lat_dist = np.mean(np.abs(self._lat[1:] - self._lat[:-1]))
         self._average_lon_dist = np.mean(np.abs(self._lon[1:] - self._lon[:-1]))
 
-        if e1t is not None:
-            self._e1t = e1t.view()
-            self._e1t.setflags(write=False)
-        else:
-            self._e1t = None
-
-        if e2t is not None:
-            self._e2t = e2t.view()
-            self._e2t.setflags(write=False)
-        else:
-            self._e2t = None
+        super().__init__(e1t=e1t, e2t=e2t)
+        self._default_side_algorithm = GridSidesAlgorithm.NEMO
 
     @property
     def lon(self):
@@ -804,15 +812,6 @@ class RegularGrid(Grid, Regular):
     @property
     def coordinate_dtype(self):
         return self._lon.dtype
-
-    def _build_and_store_e_t_arrays(self):
-        e1t, e2t = self._build_e_t_arrays(algorithm=GridSidesAlgorithm.NEMO)
-        if self._e1t is None:
-            self._e1t = e1t
-            self._e1t.setflags(write=False)
-        if self._e2t is None:
-            self._e2t = e2t
-            self._e2t.setflags(write=False)
 
     @property
     def e1t(self) -> np.ndarray:
@@ -899,19 +898,35 @@ class RegularGrid(Grid, Regular):
         return grid
 
 
-class MaskLayer(Grid, BooleanArrayWrapper, ABC):
+class MaskLayer(BooleanArrayWrapper, Grid, ABC):
     """The `MaskLayer` class represents a single layer of a mask at a defined
     depth. It encapsulates all information from a `Grid`, along with additional
     attributes: the depth, the thickness of the layer, and a boolean mask.
     The mask indicates whether each cell contains water (`True`) or lies on
     land (`False`)."""
 
-    def __init__(self, depth: float, thickness: float, mask: np.ndarray):
+    def __init__(
+        self,
+        *,
+        depth: float,
+        thickness: float,
+        mask: np.ndarray,
+        e1t: Optional[np.ndarray] = None,
+        e2t: Optional[np.ndarray] = None,
+        **kwargs,
+    ):
         self._depth = depth
         self._thickness = thickness
-        self._mask = mask
 
-        BooleanArrayWrapper.__init__(self, mask)
+        super().__init__(wrapped_data=mask, e1t=e1t, e2t=e2t, **kwargs)
+
+        if (
+            super(BooleanArrayWrapper.__bases__[0], self).shape
+            != self._data_array.shape
+        ):
+            raise ValueError(
+                "The mask array is not coherent with the current grid"
+            )
 
     @property
     def depth(self) -> float:
@@ -941,7 +956,7 @@ class MaskLayer(Grid, BooleanArrayWrapper, ABC):
             )
 
 
-class RegularMaskLayer(RegularGrid, MaskLayer):
+class RegularMaskLayer(MaskLayer, RegularGrid):
     def __init__(
         self,
         *,
@@ -953,13 +968,15 @@ class RegularMaskLayer(RegularGrid, MaskLayer):
         e1t: Optional[np.ndarray] = None,
         e2t: Optional[np.ndarray] = None,
     ):
-        super().__init__(lon=lon, lat=lat, e1t=e1t, e2t=e2t)
-        MaskLayer.__init__(self, depth=depth, thickness=thickness, mask=mask)
-
-        if self.shape != self._data_array.shape:
-            raise ValueError(
-                "The mask array is not coherent with the current grid"
-            )
+        super().__init__(
+            depth=depth,
+            thickness=thickness,
+            mask=mask,
+            lon=lon,
+            lat=lat,
+            e1t=e1t,
+            e2t=e2t,
+        )
 
     @classmethod
     def from_grid(
@@ -979,7 +996,7 @@ class RegularMaskLayer(RegularGrid, MaskLayer):
         )
 
 
-class IrregularMaskLayer(IrregularGrid, MaskLayer):
+class IrregularMaskLayer(MaskLayer, IrregularGrid):
     def __init__(
         self,
         *,
@@ -991,13 +1008,15 @@ class IrregularMaskLayer(IrregularGrid, MaskLayer):
         e1t: Optional[np.ndarray] = None,
         e2t: Optional[np.ndarray] = None,
     ):
-        super().__init__(xlevels=xlevels, ylevels=ylevels, e1t=e1t, e2t=e2t)
-        MaskLayer.__init__(self, depth=depth, thickness=thickness, mask=mask)
-
-        if self.shape != self._data_array.shape:
-            raise ValueError(
-                "The mask array is not coherent with the current grid"
-            )
+        super().__init__(
+            depth=depth,
+            thickness=thickness,
+            mask=mask,
+            xlevels=xlevels,
+            ylevels=ylevels,
+            e1t=e1t,
+            e2t=e2t,
+        )
 
     @classmethod
     def from_grid(

@@ -162,8 +162,8 @@ def convert_lon_lat_wetpoint_indices_reference_implementation(
 @pytest.mark.parametrize("max_radius", [0, 1, 2, 3, None])
 @pytest.mark.filterwarnings("ignore:Around point")
 def test_mask_convert_lon_lat_wetpoint_indices(mask, max_radius):
-    lon_values = np.linspace(0, 31.5, 25)
-    lat_values = np.linspace(0, 19, 23)[:, np.newaxis]
+    lon_values = np.linspace(0, 30, 25)
+    lat_values = np.linspace(0, 18, 23)[:, np.newaxis]
 
     lon_values, lat_values = np.broadcast_arrays(lon_values, lat_values)
     lon_values = lon_values.flatten()

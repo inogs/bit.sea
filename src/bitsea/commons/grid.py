@@ -8,8 +8,13 @@ from typing import Union
 
 import netCDF4
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.neighbors import BallTree
 
+from bitsea.basins.region import Polygon
+from bitsea.basins.region import Rectangle
+from bitsea.basins.region import Region
+from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.geodistances import GeoPySidesCalculator
 from bitsea.commons.geodistances import GridSidesAlgorithm
 from bitsea.commons.geodistances import NemoGridSidesCalculator
@@ -100,6 +105,35 @@ class Grid(ABC):
         """A 2D numpy array such that area[i, j] is the area of the cell `(i,
         j)` (in square meters)."""
         return self.e1t * self.e2t
+
+    @abstractmethod
+    def is_inside_domain(
+        self,
+        *,
+        lon: Union[float, ArrayLike],
+        lat: Union[float, ArrayLike],
+        raise_if_outside: bool = False,
+    ):
+        """
+        Check if one or more points described by their coordinates are over
+        one of the cells of the grid.
+
+        Args:
+            lon (float or array): Longitude of the point, or an array
+              of longitudes if multiple points are being checked.
+            lat (float or array): Latitude of the point, or an array
+              of latitudes if multiple points are being checked.
+            raise_if_outside (bool): If True, raises an `OutsideDomain`
+              exception if any point is outside the rectangle.
+
+        Returns:
+            An array of boolean
+
+        Raises:
+            An `OutsideDomain` exception if the `raise_if_outside` flag is True
+            and any point is outside the area occupied by the grid
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def convert_lon_lat_to_indices(
@@ -253,8 +287,42 @@ class BaseGrid(Grid, ABC):
 
         self._default_side_algorithm = GridSidesAlgorithm.GEODESIC
 
+        self._domain: Optional[Region] = None
+
         # Mixin behaviour
         super().__init__(**kwargs)
+
+    @abstractmethod
+    def _build_domain(self) -> Region:
+        raise NotImplementedError
+
+    def is_inside_domain(
+        self,
+        *,
+        lon: Union[float, ArrayLike],
+        lat: Union[float, ArrayLike],
+        raise_if_outside: bool = False,
+    ):
+        if self._domain is None:
+            self._domain = self._build_domain()
+        output = self._domain.is_inside(lon=lon, lat=lat)
+
+        if not raise_if_outside or np.all(output):
+            return output
+
+        if output.ndim > 0:
+            outside_indices = np.nonzero(~output)
+            first_point = tuple(p[0] for p in outside_indices)
+            raise OutsideDomain(
+                f"Point {first_point} with coords lon = "
+                f"{lon[first_point]} and lat = {lat[first_point]} "
+                f"is outside the domain"
+            )
+
+        raise OutsideDomain(
+            f"Point with coords (lon = {lon} and lat = {lat}) is "
+            f"outside the domain"
+        )
 
     def _build_e_t_arrays(
         self, algorithm: GridSidesAlgorithm
@@ -340,21 +408,6 @@ class IrregularGrid(BaseGrid):
         self._xlevels.setflags(write=False)
         self._ylevels.setflags(write=False)
 
-        self._lon_min = np.min(self._xlevels)
-        self._lat_min = np.min(self._ylevels)
-
-        self._lon_max = np.max(self._xlevels)
-        self._lat_max = np.max(self._ylevels)
-
-        self._average_lon_dist = max(
-            np.average(np.abs(self._xlevels[:, 1:] - self._xlevels[:, :-1])),
-            np.average(np.abs(self._xlevels[1:, :] - self._xlevels[:-1, :])),
-        )
-        self._average_lat_dist = max(
-            np.average(np.abs(self._ylevels[:, 1:] - self._ylevels[:, :-1])),
-            np.average(np.abs(self._ylevels[1:, :] - self._ylevels[:-1, :])),
-        )
-
         super().__init__(e1t=e1t, e2t=e2t)
 
         # BallTree to find the nearest cell center to a given point.
@@ -420,77 +473,71 @@ class IrregularGrid(BaseGrid):
         # noinspection PyArgumentList
         self._balltree_cache[0] = BallTree(data, metric="haversine")
 
-    def _check_if_inside_rectangle(
-        self,
-        lon: Union[float, np.ndarray],
-        lat: Union[float, np.ndarray],
-        tolerance: Optional[float] = None,
-        raise_if_outside: bool = True,
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Checks whether one or more points, defined by their coordinates, are
-        within a rectangle that bounds all the cell centers of this grid.
+    def _build_domain(self):
+        # We initialize a Polygon by attaching together all the center of
+        # the faces that are on the boundary of the domain. Here we compute
+        # the coordinates of the faces
+        u_faces_lon_coords = extend_from_average(self.xlevels, axis=1)
+        u_faces_lat_coords = extend_from_average(self.ylevels, axis=1)
+        v_faces_lon_coords = extend_from_average(self.xlevels, axis=0)
+        v_faces_lat_coords = extend_from_average(self.ylevels, axis=0)
 
-        Args:
-            lon (float or array): Longitude of the point, or an array
-              of longitudes if multiple points are being checked.
-            lat (float or array): Latitude of the point, or an array
-              of latitudes if multiple points are being checked.
-            tolerance (float): Expands the boundary of the rectangle by
-              this value.
-            raise_if_outside (bool): If True, raises an `OutsideDomain`
-              exception if any point is outside the rectangle.
-
-        Returns:
-            tuple: Two boolean arrays. The first array is `True` for
-            points within the longitude range, and the second is `True`
-            for points within the latitude range. Performing a logical
-            and on these two arrays we get the points that are inside
-            the rectangle
-        """
-
-        if tolerance is None:
-            r = 2 * max(self._average_lat_dist, self._average_lon_dist)
-        else:
-            r = tolerance
-        min_lon = self._lon_min - r
-        max_lon = self._lon_max + r
-        min_lat = self._lat_min - r
-        max_lat = self._lat_max + r
-
-        outside_lon = np.logical_or(lon > max_lon, lon < min_lon)
-        outside_lat = np.logical_or(lat > max_lat, lat < min_lat)
-
-        # Here we perform the broadcast just to be sure that we return numpy
-        # arrays (even if the input were two floats) and to be sure that we
-        # return two arrays of the same dimension
-        outside_lon, outside_lat = np.broadcast_arrays(outside_lon, outside_lat)
-
-        def check_if_inside_coord(outside, coord_min, coord_max, coord_name):
-            if np.any(outside):
-                if len(outside.shape) > 0:
-                    outside_indices = np.nonzero(outside)
-                    first_point = tuple(p[0] for p in outside_indices)
-                    raise OutsideDomain(
-                        f"Point {first_point} with coords lon = "
-                        f"{lon[first_point]} and lat = {lat[first_point]} "
-                        f"is outside the domain (domain {coord_name} goes "
-                        f"from {coord_min} to {coord_max})"
-                    )
-                raise OutsideDomain(
-                    f"Point with coords (lon = {lon} and lat = {lat}) is "
-                    f"outside the domain (domain {coord_name} goes from "
-                    f"{coord_min} to {coord_max})"
-                )
-
-        if raise_if_outside:
-            check_if_inside_coord(
-                outside_lon, self._lon_min, self._lon_max, "longitude"
+        # The points of the boundary of the polygon that are on the right
+        # The first and last vertices are choosen accordingly to the lower and
+        # upper value of the faces on the top and bottom
+        right_boundary_lon = np.concatenate(
+            (
+                (u_faces_lon_coords[0, -1],),
+                u_faces_lon_coords[:, -1],
+                (u_faces_lon_coords[-1, -1],),
             )
-            check_if_inside_coord(
-                outside_lat, self._lat_min, self._lat_max, "latitude"
+        )
+        right_boundary_lat = np.concatenate(
+            (
+                (v_faces_lat_coords[0, -1],),
+                u_faces_lat_coords[:, -1],
+                (v_faces_lat_coords[-1, -1],),
             )
+        )
 
-        return outside_lon, outside_lat
+        # Now we do the same for the other sides. Here we need to concatenate
+        # only two elements because one of the vertex is shared with the
+        # previous side
+        top_boundary_lon = np.concatenate(
+            (v_faces_lon_coords[-1, :][::-1], (u_faces_lon_coords[-1, 0],))
+        )
+        top_boundary_lat = np.concatenate(
+            (v_faces_lat_coords[-1, :][::-1], (v_faces_lat_coords[-1, 0],))
+        )
+
+        left_boundary_lon = np.concatenate(
+            (u_faces_lon_coords[:, 0][::-1], (u_faces_lon_coords[0, 0],))
+        )
+        left_boundary_lat = np.concatenate(
+            (u_faces_lat_coords[:, 0][::-1], (v_faces_lat_coords[0, 0],))
+        )
+
+        bottom_boundary_lon = v_faces_lon_coords[0, :]
+        bottom_boundary_lat = v_faces_lat_coords[0, :]
+
+        lon_boundary = np.concatenate(
+            (
+                right_boundary_lon,
+                top_boundary_lon,
+                left_boundary_lon,
+                bottom_boundary_lon,
+            )
+        )
+        lat_boundary = np.concatenate(
+            (
+                right_boundary_lat,
+                top_boundary_lat,
+                left_boundary_lat,
+                bottom_boundary_lat,
+            )
+        )
+
+        return Polygon(lon_list=lon_boundary, lat_list=lat_boundary)
 
     def convert_lon_lat_to_indices(
         self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
@@ -500,7 +547,7 @@ class IrregularGrid(BaseGrid):
         np.broadcast(lon, lat)
 
         # Raise an OutsideDomain error if a point is too far from the grid
-        self._check_if_inside_rectangle(lon, lat)
+        self.is_inside_domain(lon=lon, lat=lat, raise_if_outside=True)
 
         lon, lat = np.broadcast_arrays(lon, lat)
 
@@ -605,9 +652,6 @@ class RegularGrid(BaseGrid, Regular):
                 f"{self._lat.dtype}"
             )
 
-        self._average_lat_dist = np.mean(np.abs(self._lat[1:] - self._lat[:-1]))
-        self._average_lon_dist = np.mean(np.abs(self._lon[1:] - self._lon[:-1]))
-
         super().__init__(e1t=e1t, e2t=e2t)
         self._default_side_algorithm = GridSidesAlgorithm.NEMO
 
@@ -655,6 +699,16 @@ class RegularGrid(BaseGrid, Regular):
     def convert_i_j_to_lon_lat(self, i, j):
         return self.lon[j], self.lat[i]
 
+    def _build_domain(self):
+        faces_lon = extend_from_average(self.lon)
+        faces_lat = extend_from_average(self.lat)
+        return Rectangle(
+            lonmin=faces_lon[0],
+            lonmax=faces_lon[-1],
+            latmin=faces_lat[0],
+            latmax=faces_lat[-1],
+        )
+
     def convert_lon_lat_to_indices(self, *, lon, lat):
         return_array = False
         if isinstance(lon, np.ndarray) or isinstance(lat, np.ndarray):
@@ -662,29 +716,8 @@ class RegularGrid(BaseGrid, Regular):
 
         lon, lat = np.broadcast_arrays(lon, lat)
 
-        lon_min = self._lon[0] - 2 * self._average_lon_dist
-        lon_max = self._lon[-1] + 2 * self._average_lon_dist
-        lat_min = self._lat[0] - 2 * self._average_lat_dist
-        lat_max = self._lat[-1] + 2 * self._average_lat_dist
-
-        lon_out = np.logical_or(lon < lon_min, lon > lon_max)
-        lat_out = np.logical_or(lat < lat_min, lat > lat_max)
-        if np.any(lon_out) or np.any(lat_out):
-            if np.any(lon_out) and len(lon_out.shape) == 0:
-                raise OutsideDomain(
-                    f"Point (lat={lat}, lon={lat}) is outside the domain ("
-                )
-            if np.any(lat_out) and len(lat_out.shape) == 0:
-                raise OutsideDomain(
-                    f"Point (lat={lat}, lon={lat}) is outside the domain ("
-                )
-            outside_indices = np.nonzero(np.logical_or(lon_out, lat_out))
-            first_point = tuple(p[0] for p in outside_indices)
-            raise OutsideDomain(
-                f"Point {first_point} with coords lon = "
-                f"{lon[first_point]} and lat = {lat[first_point]} "
-                f"is outside the domain"
-            )
+        # Raise an OutsideDomain error if a point is too far from the grid
+        self.is_inside_domain(lon=lon, lat=lat, raise_if_outside=True)
 
         lon_distances = np.abs(self.lon[:, np.newaxis] - lon)
         lat_distances = np.abs(self.lat[:, np.newaxis] - lat)

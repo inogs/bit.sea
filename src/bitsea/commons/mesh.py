@@ -129,6 +129,17 @@ class Mesh(Grid):
     def e3t(self) -> np.ndarray:
         return self._e3t
 
+    def is_inside_domain(
+        self,
+        *,
+        lon: Union[float, ArrayLike],
+        lat: Union[float, ArrayLike],
+        raise_if_outside: bool = False,
+    ):
+        return self._grid.is_inside_domain(
+            lon=lon, lat=lat, raise_if_outside=raise_if_outside
+        )
+
     @property
     def dz(self) -> np.ndarray:
         """`dz` is a 1D version of the `e3t` array, representing the vertical

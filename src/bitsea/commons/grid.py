@@ -468,7 +468,7 @@ class IrregularGrid(BaseGrid):
         # Here we put ylevels and then xlevels because the balltree
         # needs the first coordinate to be the latitude
         data = np.stack((self.ylevels, self.xlevels), axis=-1)
-        data = data.reshape(-1, 2)
+        data = np.radians(data.reshape(-1, 2))
 
         # noinspection PyArgumentList
         self._balltree_cache[0] = BallTree(data, metric="haversine")
@@ -558,7 +558,7 @@ class IrregularGrid(BaseGrid):
 
         # Reshape the points so that it becomes a couple of longitudes and
         # latitudes
-        query_data = np.stack((lat, lon), axis=-1)
+        query_data = np.radians(np.stack((lat, lon), axis=-1))
         assert query_data.shape[-1] == 2
 
         # BallTree wants two-dimensional arrays

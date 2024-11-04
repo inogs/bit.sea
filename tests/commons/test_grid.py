@@ -154,10 +154,10 @@ def test_convert_lon_lat_to_indices_regular(regular_grid):
 
     grid = RegularGrid(lon=lon, lat=lat)
 
-    for i in (0, 10, 100, 299):
-        current_lon = float(lon[i]) + 0.0002
-        for j in (0, 10, 25, 99):
-            current_lat = float(lat[j]) - 0.0002
+    for i in (0, 10, 25, 99):
+        current_lat = float(lat[i]) - 0.0002
+        for j in (0, 10, 100, 299):
+            current_lon = float(lon[j]) + 0.0002
 
             p_coords = grid.convert_lon_lat_to_indices(
                 lon=current_lon, lat=current_lat
@@ -167,10 +167,10 @@ def test_convert_lon_lat_to_indices_regular(regular_grid):
 
 
 def test_convert_lon_lat_to_indices_array_regular(regular_grid):
-    i_values = np.array((0, 10, 100, 299), dtype=int)
-    j_values = np.array((0, 10, 25, 99), dtype=int)
-    lon_values = regular_grid.lon[i_values]
-    lat_values = regular_grid.lat[j_values]
+    i_values = np.array((0, 10, 25, 99), dtype=int)
+    j_values = np.array((0, 10, 100, 299), dtype=int)
+    lat_values = regular_grid.lat[i_values]
+    lon_values = regular_grid.lon[j_values]
 
     p_coords = regular_grid.convert_lon_lat_to_indices(
         lon=lon_values, lat=lat_values
@@ -339,3 +339,63 @@ def test_irregular_mask_layer_checks_grid_is_regular(regular_grid):
         IrregularMaskLayer.from_grid(
             regular_grid, depth=100.0, thickness=1.0, mask=mask
         )
+
+
+def test_regular_convert_lat_lon(regular_grid):
+    lon_test = np.linspace(regular_grid.lon[0], regular_grid.lon[-1], 50)
+    lat_test = np.linspace(regular_grid.lat[0], regular_grid.lat[-1], 100)
+
+    for lon in lon_test:
+        i, j = regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat_test[0])
+
+        expected_j = np.argmin(np.abs(lon - regular_grid.lon))
+        assert j == expected_j
+
+    for lat in lat_test:
+        i, j = regular_grid.convert_lon_lat_to_indices(lon=lon_test[0], lat=lat)
+
+        expected_i = np.argmin(np.abs(lat - regular_grid.lat))
+        assert i == expected_i
+
+
+def test_regular_and_irregular_convert_i_j_to_lon_lat(regular_grid):
+    irregular = IrregularGrid(
+        xlevels=regular_grid.xlevels, ylevels=regular_grid.ylevels
+    )
+
+    i = np.arange(0, regular_grid.shape[0])[:, np.newaxis]
+    j = np.arange(0, regular_grid.shape[1])[np.newaxis, :]
+
+    assert np.all(
+        irregular.convert_i_j_to_lon_lat(i, j)[0] == irregular.xlevels[i, j]
+    )
+    assert np.all(
+        irregular.convert_i_j_to_lon_lat(i, j)[1] == irregular.ylevels[i, j]
+    )
+    assert np.all(
+        regular_grid.convert_i_j_to_lon_lat(i, j)[0]
+        == regular_grid.xlevels[i, j]
+    )
+    assert np.all(
+        regular_grid.convert_i_j_to_lon_lat(i, j)[1]
+        == regular_grid.ylevels[i, j]
+    )
+
+
+def test_regular_and_irregular_convert_lat_lon_to_i_j(regular_grid):
+    irregular = IrregularGrid(
+        xlevels=regular_grid.xlevels, ylevels=regular_grid.ylevels
+    )
+
+    lon_test = np.linspace(regular_grid.lon[0], regular_grid.lon[-1], 50)[
+        np.newaxis, :
+    ]
+    lat_test = np.linspace(regular_grid.lat[0], regular_grid.lat[-1], 100)[
+        :, np.newaxis
+    ]
+
+    t1 = regular_grid.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
+    t2 = irregular.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
+
+    for i in range(2):
+        assert np.all(t1[i] == t2[i])

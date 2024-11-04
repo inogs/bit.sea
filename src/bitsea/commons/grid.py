@@ -18,6 +18,7 @@ from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.geodistances import GeoPySidesCalculator
 from bitsea.commons.geodistances import GridSidesAlgorithm
 from bitsea.commons.geodistances import NemoGridSidesCalculator
+from bitsea.commons.utils import search_closest_sorted
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
@@ -719,21 +720,18 @@ class RegularGrid(BaseGrid, Regular):
         # Raise an OutsideDomain error if a point is too far from the grid
         self.is_inside_domain(lon=lon, lat=lat, raise_if_outside=True)
 
-        lon_distances = np.abs(self.lon[:, np.newaxis] - lon)
-        lat_distances = np.abs(self.lat[:, np.newaxis] - lat)
-
-        i = np.argmin(lon_distances, axis=0)
-        j = np.argmin(lat_distances, axis=0)
+        lon_index = search_closest_sorted(self.lon, lon)
+        lat_index = search_closest_sorted(self.lat, lat)
 
         if not return_array:
-            i = np.squeeze(i)
-            j = np.squeeze(j)
-            assert i.shape == tuple()
-            assert j.shape == tuple()
-            i = int(i.item())
-            j = int(j.item())
+            lon_index = np.squeeze(lon_index)
+            lat_index = np.squeeze(lat_index)
+            assert lon_index.shape == tuple()
+            assert lat_index.shape == tuple()
+            lon_index = int(lon_index.item())
+            lat_index = int(lat_index.item())
 
-        return i, j
+        return lat_index, lon_index
 
     @staticmethod
     def from_file(

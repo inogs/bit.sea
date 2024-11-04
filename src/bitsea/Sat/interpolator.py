@@ -1,6 +1,6 @@
 import argparse
 
-from bitsea.utilities.argparse_types import some_among
+from bitsea.utilities.argparse_types import some_among,existing_dir_path
 
 
 def argument():
@@ -14,7 +14,7 @@ def argument():
     parser.add_argument(
         "--inputdir",
         "-i",
-        type=str,
+        type=existing_dir_path,
         required=True,
         help=""" E.g. dir with files on 1km mesh (ORIG)""",
     )
@@ -22,7 +22,7 @@ def argument():
     parser.add_argument(
         "--outputdir",
         "-o",
-        type=str,
+        type=existing_dir_path,
         required=True,
         help=""" E.g. dir with files on 1/24 mesh (interpolated)""",
     )
@@ -79,17 +79,26 @@ def argument():
     parser.add_argument(
         "--serial", action="store_true", help="""Do not use mpi"""
     )
+    parser.add_argument(
+        "--method",
+        type=str,
+        required=False,
+        choices=[
+            "nearest",
+            "FineToCoarse",
+        ],
+        default = "FineToCoarse",
+        help=""" interp method""",
+    )
 
     return parser.parse_args()
 
 from typing import Iterable
-import os
 from datetime import datetime
 
 from bitsea.commons.mask import Mask
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons.Timelist import TimeList
-from bitsea.commons.utils import addsep
 from bitsea.postproc import masks
 from bitsea.Sat import interp2d
 from bitsea.Sat import SatManager as Sat
@@ -102,7 +111,10 @@ maskfile : str,
 inputdir: str,
 outputdir:str,
 varnames: Iterable[str],
-force = bool):
+force = bool,
+method : str = "FineToCoarse",
+):
+
     maskIn = getattr(masks, inmesh)
 
     if not serial:
@@ -113,8 +125,8 @@ force = bool):
     nranks = comm.size
 
     TheMask = Mask(maskfile)
-    x = TheMask.xlevels[0, :]
-    y = TheMask.ylevels[:, 0]
+    x = TheMask.lon
+    y = TheMask.lat
 
     xOrig = maskIn.lon
     yOrig = maskIn.lat
@@ -122,8 +134,8 @@ force = bool):
     I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
     J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
 
-    INPUTDIR = addsep(inputdir)
-    OUTPUTDIR = addsep(outputdir)
+    INPUTDIR = inputdir
+    OUTPUTDIR = outputdir
     dateformat = "%Y%m%d"
 
     Timestart = "19500101"
@@ -135,7 +147,7 @@ force = bool):
     )
 
     for filename in TL.filelist[rank::nranks]:
-        outfile = OUTPUTDIR + os.path.basename(filename)
+        outfile = OUTPUTDIR / filename.name
         condition_for_points = False
 
         for varname in varnames:
@@ -191,16 +203,24 @@ force = bool):
             Mfine = Sat.readfromfile(filename, varname)
             print(outfile, varname, flush=True)
 
-            Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
-                Mfine,
-                TheMask,
-                I_START,
-                I_END,
-                J_START,
-                J_END,
-                min_cov=0.0,
-                ave_func=Sat.mean,
-            )
+            if method == "nearest":
+                Mout, usedPoints = interp2d.nearest(
+                    Mfine,
+                    maskIn,
+                    TheMask
+                    )
+            else:
+                Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
+                    Mfine,
+                    TheMask,
+                    I_START,
+                    I_END,
+                    J_START,
+                    J_END,
+                    min_cov=0.0,
+                    ave_func=Sat.mean,
+                )
+
             Sat.dumpGenericfile(
                 outfile,
                 Mout,
@@ -217,6 +237,9 @@ force = bool):
     return 0
 
 
+
+
+
 if __name__ == "__main__":
     args = argument()
     exit(
@@ -228,5 +251,6 @@ if __name__ == "__main__":
             outputdir=args.outputdir,
             varnames=args.varnames,
             force = args.force,
+            method = args.method
         )
     )

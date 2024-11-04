@@ -1,5 +1,6 @@
 import numpy as np
 from bitsea.Sat import SatManager
+from scipy import interpolate
 
 def get_2_indices_for_slicing(array,MinValue,MaxValue, istart):
     n = len(array)
@@ -85,16 +86,36 @@ def interp_2d_by_cells_slices(Mfine, Maskout, I_START, I_END, J_START, J_END, fi
                         OUT[jj,ji] = ave_func(localcell[goods])
     return OUT, NP
 
+def nearest(Min, MaskIn, Maskout):
+    M = Min.copy()
+    x = MaskIn.lon
+    y = MaskIn.lat
+    goods = M > 0
+    M[ ~ goods] = np.nan
+    X,Y = np.meshgrid(x,y)
+    nPoints = X.size
+    Xpoints = np.zeros((nPoints,2),float)
+    Xpoints[:,0] = X.ravel()
+    Xpoints[:,1] = Y.ravel()
+    interp = interpolate.NearestNDInterpolator(Xpoints, M.ravel())
+    _,jpj,jpi = Maskout.shape
+    Z = interp(Maskout.xlevels, Maskout.ylevels)
+
+
+    NP = np.ones((jpj,jpi),int)
+    NP[np.isnan(Z)] = 0
+    return Z, NP
 
 if __name__== "__main__":
 
     from bitsea.commons.mask import Mask
     from bitsea.Sat import SatManager as Sat
-    TheMask=Mask('/g100_work/OGS_prodC/MIT/V1M-dev/V1/devel/wrkdir/POSTPROC/meshmask.nc')
+    TheMask=Mask('/leonardo_scratch/large/userexternal/gbolzon0/MIT/V1/devel/wrkdir/BC_IC/mask.nc')
 
     jpk,jpj,jpi = TheMask.shape
-    x = TheMask.xlevels[0,:]
-    y = TheMask.ylevels[:,0]
+    x = TheMask.lon
+    y = TheMask.lat
+
 
     x1km = Sat.masks.KD490mesh.lon
     y1km = Sat.masks.KD490mesh.lat
@@ -103,11 +124,12 @@ if __name__== "__main__":
     J_START, J_END = array_of_indices_for_slicing(y, y1km)
 
 
-    inputfile="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V8C/SAT/CHL/MULTISENSOR/1Km/NRT/DAILY/CHECKED/20170804_d-OC_CNR-L3-CHL-MedOC4AD4_MULTI_1KM-MED-NRT-v02.nc"
+    inputfile="/leonardo_scratch/large/userexternal/gbolzon0/ONLINE//SAT/CHL/DT/WEEKLY_1_1km/20241021_cmems_obs-oc_med_bgc-plankton_myint_l3-multi-1km_P1D.nc"
     CHL = Sat.readfromfile(inputfile,'CHL')
 
-    Mout, Usedpoints =interp_2d_by_cells_slices(CHL, TheMask, I_START, I_END, J_START, J_END)
-    Sat.dumpGenericNativefile('test.nc', Mout, 'CHL', Sat.masks.CadeauMesh)
+    #Mout, Usedpoints =interp_2d_by_cells_slices(CHL, TheMask, I_START, I_END, J_START, J_END)
+    Mout, Usedpoints = nearest(CHL, Sat.masks.KD490mesh, TheMask )
+    Sat.dumpGenericfile('test.nc', Mout, 'CHL', Sat.masks.CadeauMesh)
         
 
             

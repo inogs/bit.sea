@@ -4,7 +4,6 @@ import pytest
 from bitsea.commons.mask import FILL_VALUE
 from bitsea.commons.mask import Mask
 from bitsea.commons.mask import MaskBathymetry
-from bitsea.commons.mask import RegularMask
 from bitsea.commons.mesh import Mesh
 
 
@@ -86,7 +85,7 @@ def test_mask_from_file_when_regular(test_data_dir):
 
     test_mask = Mask.from_file(mask_file)
     assert test_mask.is_regular()
-    assert isinstance(test_mask, RegularMask)
+    assert isinstance(test_mask, Mask)
 
 
 def test_mask_attributes(mask):

@@ -1,6 +1,8 @@
 from os import PathLike
+from pathlib import Path
 from typing import Optional
 from typing import Tuple
+from typing import Union
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -12,7 +14,6 @@ from bitsea.commons.bathymetry import Bathymetry
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import MaskLayer
 from bitsea.commons.mesh import Mesh
-from bitsea.commons.mesh import RegularMesh
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
@@ -290,9 +291,6 @@ class Mask(BooleanArrayWrapper, Mesh):
         else:
             e3t = None
 
-        if mesh.is_regular():
-            return RegularMask(mesh.grid, mesh.zlevels, mask_array, e3t)
-
         return cls(mesh.grid, mesh.zlevels, mask_array, e3t)
 
     @classmethod
@@ -308,21 +306,37 @@ class Mask(BooleanArrayWrapper, Mesh):
                 f, zlevels_var_name, mask_var_name, read_e3t
             )
 
+    def _add_attributes_on_file(self, file_pointer):
+        pass
 
-class RegularMask(Mask, RegularMesh):
-    def __init__(
-        self,
-        grid: Grid,
-        zlevels: ArrayLike,
-        mask_array: ArrayLike,
-        e3t: Optional[np.ndarray] = None,
-    ):
-        if not grid.is_regular():
-            raise ValueError("Grid must be regular")
+    def save_as_netcdf(self, file_path: Union[PathLike, str]):
+        file_path = Path(file_path)
 
-        super().__init__(
-            grid=grid, zlevels=zlevels, mask_array=mask_array, e3t=e3t
-        )
+        with netCDF4.Dataset(file_path, "w") as netCDF_out:
+            # Add the spatial dimensions
+            netCDF_out.createDimension("z", self.shape[0])
+            netCDF_out.createDimension("y", self.shape[1])
+            netCDF_out.createDimension("x", self.shape[2])
+
+            # Add nav_lev data
+            nav_lev = netCDF_out.createVariable("nav_lev", "f4", ("z",))
+            nav_lev[:] = self.zlevels
+
+            # Create the nav_lat NetCDF variable
+            nav_lat = netCDF_out.createVariable("nav_lat", "f4", ("y", "x"))
+            nav_lat[:, :] = self.ylevels
+
+            # Create the nav_lon NetCDF variable
+            nav_lon = netCDF_out.createVariable("nav_lon", "f4", ("y", "x"))
+            nav_lon[:, :] = self.xlevels
+
+            # Create a variable to hold the data
+            mask = netCDF_out.createVariable("tmask", "u1", ("z", "y", "x"))
+
+            # Assign the data to the NetCDF variable
+            mask[:, :, :] = self[:, :, :]
+
+            self._add_attributes_on_file(netCDF_out)
 
 
 class MaskBathymetry(Bathymetry):

@@ -439,14 +439,14 @@ class IrregularGrid(BaseGrid):
 
     @property
     def lon(self):
-        raise ValueError(
+        raise AttributeError(
             "This grid is not regular, so the 1D lon array is not defined. "
             "Use .xlevels instead."
         )
 
     @property
     def lat(self):
-        raise ValueError(
+        raise AttributeError(
             "This grid is not regular, so the 1D lat array is not defined. "
             "Use .ylevels instead."
         )

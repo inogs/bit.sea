@@ -1,11 +1,10 @@
 import netCDF4
-import pytest
 import numpy as np
+import pytest
 
-from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import Grid
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.mesh import Mesh
-from bitsea.commons.mesh import RegularMesh
 
 
 @pytest.fixture
@@ -23,7 +22,7 @@ def grid():
 
 @pytest.fixture
 def mesh(grid):
-    return Mesh(grid, 5. + np.arange(10) * 10.)
+    return Mesh(grid, 5.0 + np.arange(10) * 10.0)
 
 
 def test_mesh_grid_descriptor_interface(mesh):
@@ -32,10 +31,10 @@ def test_mesh_grid_descriptor_interface(mesh):
     for m in Grid.__abstractmethods__:
         m_method = getattr(Grid, m)
         if isinstance(m_method, property):
-            if m == 'shape':
+            if m == "shape":
                 assert grid.shape == mesh.shape[1:]
                 continue
-            if m == 'coordinate_dtype':
+            if m == "coordinate_dtype":
                 assert grid.coordinate_dtype == mesh.coordinate_dtype
                 continue
             assert np.allclose(getattr(grid, m), getattr(mesh, m))
@@ -70,7 +69,7 @@ def test_mesh_computes_e3t_correctly(mesh):
     )
     cell_heights[1:] = np.cumsum(mesh.e3t[:, 0, 0])
 
-    expected_zlevels = (cell_heights[1:] + cell_heights[:-1]) / 2.
+    expected_zlevels = (cell_heights[1:] + cell_heights[:-1]) / 2.0
 
     assert np.allclose(mesh.zlevels, expected_zlevels)
 
@@ -86,7 +85,7 @@ def test_mesh_can_handle_1d_e3t_arrays(grid):
 
 
 def test_mesh_checks_if_e3t_has_the_right_shape(grid):
-    e3t = np.ones((10, ) + grid.shape, dtype=np.float32)
+    e3t = np.ones((10,) + grid.shape, dtype=np.float32)
     zlevels = np.arange(9) + 0.5
 
     with pytest.raises(ValueError):
@@ -105,7 +104,7 @@ def test_mesh_get_depth_index(mesh):
     min_depth = mesh.zlevels[0]
     max_depth = mesh.zlevels[-1]
 
-    for depth in np.linspace(min_depth, max_depth + 10., 50):
+    for depth in np.linspace(min_depth, max_depth + 10.0, 50):
         depth_index = mesh.get_depth_index(depth)
 
         assert depth >= mesh.zlevels[depth_index]
@@ -123,7 +122,7 @@ def test_mesh_get_depth_index_vectorize(mesh):
     min_depth = mesh.zlevels[0]
     max_depth = mesh.zlevels[-1]
 
-    d = np.linspace(min_depth, max_depth + 10., 50)
+    d = np.linspace(min_depth, max_depth + 10.0, 50)
 
     d_indices = mesh.get_depth_index(d)
 
@@ -165,15 +164,6 @@ def test_mesh_from_file_regular(test_data_dir):
 
 
 @pytest.mark.uses_test_data
-def test_regular_mesh_checks_if_file_is_regular(test_data_dir):
-    mask_dir = test_data_dir / "masks"
-    mask_file = mask_dir / "nonregular_mask.nc"
-
-    with pytest.raises(ValueError):
-        RegularMesh.from_file(mask_file)
-
-
-@pytest.mark.uses_test_data
 def test_mesh_from_file_reading_e3t(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "nonregular_mask.nc"
@@ -192,9 +182,9 @@ def test_regular_mesh_from_coordinates():
 
     zlevels = np.geomspace(1, 200, 50)
 
-    regular_mesh = RegularMesh.from_coordinates(
-        lon=lon, lat=lat, zlevels=zlevels
-    )
+    regular_mesh = Mesh.from_coordinates(lon=lon, lat=lat, zlevels=zlevels)
+
+    assert regular_mesh.is_regular()
 
     assert np.allclose(regular_mesh.lon, lon)
     assert np.allclose(regular_mesh.lat, lat)

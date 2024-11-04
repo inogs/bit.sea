@@ -12,7 +12,6 @@ from numpy.typing import ArrayLike
 from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import IrregularGrid
-from bitsea.commons.grid import Regular
 from bitsea.commons.grid import RegularGrid
 
 
@@ -128,6 +127,30 @@ class Mesh(Grid):
     @property
     def e3t(self) -> np.ndarray:
         return self._e3t
+
+    @property
+    def lon(self):
+        try:
+            # noinspection PyUnresolvedReferences
+            return self._grid.lon
+        except AttributeError:
+            raise AttributeError(
+                f"This {self.__class__.__name__} object is constructed on a "
+                f'Grid that is not a RegularGrid; therefore, the "lon" '
+                f"attribute is not available"
+            )
+
+    @property
+    def lat(self):
+        try:
+            # noinspection PyUnresolvedReferences
+            return self._grid.lat
+        except AttributeError:
+            raise AttributeError(
+                f"This {self.__class__.__name__} object is constructed on a "
+                f'Grid that is not a RegularGrid; therefore, the "lon" '
+                f"attribute is not available"
+            )
 
     def is_inside_domain(
         self,
@@ -254,33 +277,7 @@ class Mesh(Grid):
         else:
             e3t = None
 
-        if isinstance(grid, RegularGrid):
-            return RegularMesh(grid, zlevels, e3t)
-
         return cls(grid, zlevels, e3t)
-
-
-class RegularMesh(Mesh, Regular):
-    def __init__(
-        self,
-        grid: RegularGrid,
-        zlevels: ArrayLike,
-        e3t: Optional[np.ndarray] = None,
-    ):
-        if not grid.is_regular():
-            raise ValueError("regular_grid argument must be a regular grid.")
-        super().__init__(grid, zlevels, e3t)
-        self._grid: RegularGrid
-
-    @property
-    def lon(self):
-        # noinspection PyUnresolvedReferences
-        return self._grid.lon
-
-    @property
-    def lat(self):
-        # noinspection PyUnresolvedReferences
-        return self._grid.lat
 
     @staticmethod
     def from_coordinates(
@@ -300,4 +297,4 @@ class RegularMesh(Mesh, Regular):
               meters) of the centers of the cells.
         """
         grid = RegularGrid(lon=lon, lat=lat)
-        return RegularMesh(grid, zlevels)
+        return Mesh(grid, zlevels)

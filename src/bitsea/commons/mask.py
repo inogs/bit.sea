@@ -1,4 +1,3 @@
-from abc import ABC
 from os import PathLike
 from typing import Optional
 from typing import Tuple
@@ -8,14 +7,12 @@ import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
 from numpy.typing import ArrayLike
-from scipy import spatial
 
 from bitsea.commons.bathymetry import Bathymetry
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import MaskLayer
 from bitsea.commons.mesh import Mesh
 from bitsea.commons.mesh import RegularMesh
-from bitsea.commons.utils import search_closest_sorted
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
@@ -328,72 +325,30 @@ class RegularMask(Mask, RegularMesh):
         )
 
 
-class MaskBathymetry(Bathymetry, ABC):
+class MaskBathymetry(Bathymetry):
     """
     This class is a bathymetry,  generated starting from a mask, i.e., it
     returns the z-coordinate of the bottom face of the deepest cell of the
     column that contains the point (lon, lat).
     """
 
-    def __init__(self, mask):
+    def __init__(self, mask: Mask):
         self._mask = mask
         self._bathymetry_data = mask.bathymetry()
 
         # Fix the bathymetry of the land cells to 0 (to be coherent with the
         # behaviour of the bathymetry classes). Otherwise, if we let the land
-        # points to have bathymetry = 1e20, they will be in every depth basin
-        self._bathymetry_data[np.logical_not(self._mask.mask[0, :, :])] = 0
+        # points to have bathymetry = 1e20, they will be in every
+        # BathymetricBasin
+        self._bathymetry_data[np.logical_not(self._mask[0, :, :])] = 0
 
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, repr(self._mask))
 
     def is_inside_domain(self, lon, lat):
-        r = 1
-        min_lon = self._mask.xlevels.min() - r
-        max_lon = self._mask.xlevels.max() + r
-        min_lat = self._mask.ylevels.min() - r
-        max_lat = self._mask.ylevels.max() + r
-
-        inside_lon = np.logical_and(lon >= min_lon, lon <= max_lon)
-        inside_lat = np.logical_and(lat >= min_lat, lat <= max_lat)
-        return np.logical_and(inside_lon, inside_lat)
-
-    @staticmethod
-    def build_bathymetry(mask):
-        if mask.is_regular():
-            return RegularMaskBathymetry(mask)
-        return NonRegularMaskBathymetry(mask)
-
-
-class RegularMaskBathymetry(MaskBathymetry):
-    def __init__(self, mask):
-        if not mask.is_regular():
-            raise ValueError(
-                "A RegularMaskBathymetry can be generated only from a "
-                "regular mask"
-            )
-        super().__init__(mask)
-
-        assert np.all(
-            self._mask.lon[1:] - self._mask.lon[:-1] > 0
-        ), "lon array is not ordered"
-        assert np.all(
-            self._mask.lat[1:] - self._mask.lat[:-1] > 0
-        ), "lat array is not ordered"
-
-    def __call__(self, lon, lat):
-        lon_index = search_closest_sorted(self._mask.lon, lon)
-        lat_index = search_closest_sorted(self._mask.lat, lat)
-        return self._bathymetry_data[lat_index, lon_index]
-
-
-class NonRegularMaskBathymetry(MaskBathymetry):
-    def __init__(self, mask):
-        super().__init__(mask)
-        data = np.stack((self._mask.xlevels, self._mask.ylevels), axis=-1)
-        data = data.reshape(-1, 2)
-
-        self._kdtree = spatial.KDTree(data)
+        return self._mask.is_inside_domain(
+            lon=lon, lat=lat, raise_if_outside=False
+        )
 
     def __call__(self, lon, lat):
         return_float = True
@@ -401,15 +356,16 @@ class NonRegularMaskBathymetry(MaskBathymetry):
             return_float = False
 
         lon, lat = np.broadcast_arrays(lon, lat)
+        inside_domain = self.is_inside_domain(lon, lat)
 
-        query_data = np.stack((lon, lat), axis=-1)
-        assert query_data.shape[-1] == 2
+        output = np.zeros_like(lon, dtype=np.float32)
+        if np.any(inside_domain):
+            indices = self._mask.convert_lon_lat_to_indices(
+                lon=lon[inside_domain], lat=lat[inside_domain]
+            )
+            output[inside_domain] = self._bathymetry_data[indices]
 
-        _, center_indices = self._kdtree.query(query_data)
+        if not return_float:
+            return output
 
-        if return_float:
-            assert center_indices.shape == (1,) or center_indices.shape == ()
-            if center_indices.shape == (1,):
-                center_indices = center_indices[0]
-
-        return self._bathymetry_data.flatten()[center_indices]
+        return float(output.squeeze().item())

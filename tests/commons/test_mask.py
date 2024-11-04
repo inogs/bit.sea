@@ -3,6 +3,7 @@ import pytest
 
 from bitsea.commons.mask import FILL_VALUE
 from bitsea.commons.mask import Mask
+from bitsea.commons.mask import MaskBathymetry
 from bitsea.commons.mask import RegularMask
 from bitsea.commons.mesh import Mesh
 
@@ -268,3 +269,53 @@ def test_cut_at_level(mask):
 def test_mask_coastline(mask):
     coastline = mask.coastline(depth=0)
     assert len(coastline) > 0
+
+
+def test_bathymetry_from_mask(mask):
+    bathymetry = MaskBathymetry(mask)
+
+    for i in range(mask.grid.shape[0]):
+        for j in range(mask.grid.shape[1]):
+            lon, lat = mask.xlevels[i, j], mask.ylevels[i, j]
+
+            assert bathymetry.is_inside_domain(lon=lon, lat=lat)
+
+    assert not bathymetry.is_inside_domain(
+        lon=np.max(mask.xlevels) + 1, lat=mask.ylevels[0, 0]
+    )
+
+
+def test_bathymetry_is_zero_on_land(mask):
+    bathymetry = MaskBathymetry(mask)
+
+    land_points_lon = mask.xlevels[~mask[0]]
+    land_points_lat = mask.ylevels[~mask[0]]
+
+    assert np.all(bathymetry(lon=land_points_lon, lat=land_points_lat) == 0)
+
+
+def test_bathymetry_vectorizes(mask):
+    bathymetry = MaskBathymetry(mask)
+
+    min_lon = np.min(mask.xlevels)
+    max_lon = np.max(mask.xlevels)
+
+    min_lat = np.min(mask.ylevels)
+    max_lat = np.max(mask.ylevels)
+
+    lon_test = np.array(
+        [min_lon, (max_lon - min_lon) / 3, (max_lon - min_lon) / 3 * 2, max_lon]
+    )
+    lat_test = np.array([min_lat, (max_lat - min_lat) / 2, max_lat])
+
+    lon_broadcast, lat_broadcast = np.broadcast_arrays(
+        lon_test, lat_test[:, np.newaxis]
+    )
+
+    bathymetry_values = bathymetry(lon=lon_broadcast, lat=lat_broadcast)
+    for i in range(lat_test.shape[0]):
+        for j in range(lon_test.shape[0]):
+            assert (
+                bathymetry(lon=lon_test[j], lat=lat_test[i])
+                == bathymetry_values[i, j]
+            )

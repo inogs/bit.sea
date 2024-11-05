@@ -118,7 +118,7 @@ varnames: Iterable[str],
 force = bool,
 method : str = "FineToCoarse",
 ):
-
+    assert method in ["FineToCoarse","nearest"]
     maskIn = getattr(masks, inmesh)
 
     if not serial:
@@ -208,7 +208,7 @@ method : str = "FineToCoarse",
                     maskIn,
                     TheMask
                     )
-            else:
+            if method == "FineToCoarse":
                 Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
                     Mfine,
                     TheMask,

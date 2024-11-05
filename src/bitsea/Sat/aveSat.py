@@ -82,6 +82,9 @@ week_day : int = 1,
 force : bool,
 )-> List[Path]:
 
+    assert outfrequency in ['monthly','weekly','ten_days']
+    assert week_day in range(7)
+
     if not serial:
         import mpi4py.MPI
 

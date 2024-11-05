@@ -1,6 +1,5 @@
 import argparse
-
-from bitsea.utilities.argparse_types import some_among,existing_dir_path
+from bitsea.utilities.argparse_types import some_among,existing_dir_path, generic_path
 
 
 def argument():
@@ -44,7 +43,7 @@ def argument():
     parser.add_argument(
         "--maskfile",
         "-m",
-        type=str,
+        type=generic_path,
         required=True,
         help=""" Path of the meshmask corresponding to output sat files""",
     )
@@ -93,7 +92,11 @@ def argument():
 
     return parser.parse_args()
 
-from typing import Iterable
+
+
+
+from pathlib import Path
+from typing import List,Iterable
 from datetime import datetime
 
 from bitsea.commons.mask import Mask
@@ -103,12 +106,13 @@ from bitsea.postproc import masks
 from bitsea.Sat import interp2d
 from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
+from sys import exit
 
 def interpolator(*,
 inmesh : str,
 serial : bool,
-maskfile : str,
-inputdir: str,
+maskfile : Path,
+inputfiles: List[str],
 outputdir:str,
 varnames: Iterable[str],
 force = bool,
@@ -125,28 +129,23 @@ method : str = "FineToCoarse",
     nranks = comm.size
 
     TheMask = Mask(maskfile)
-    x = TheMask.lon
-    y = TheMask.lat
 
-    xOrig = maskIn.lon
-    yOrig = maskIn.lat
+    if method == 'FineToCoarse':
+        x = TheMask.lon
+        y = TheMask.lat
 
-    I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
-    J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
+        xOrig = maskIn.lon
+        yOrig = maskIn.lat
 
-    INPUTDIR = inputdir
+        I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
+        J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
+
+
     OUTPUTDIR = outputdir
-    dateformat = "%Y%m%d"
+    outinterpfiles = [ OUTPUTDIR / f.name for f in inputfiles]
 
-    Timestart = "19500101"
-    Time__end = "20500101"
 
-    TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
-    TL = TimeList.fromfilenames(
-        TI, INPUTDIR, "*.nc", prefix="", dateformat=dateformat
-    )
-
-    for filename in TL.filelist[rank::nranks]:
+    for filename in inputfiles[rank::nranks]:
         outfile = OUTPUTDIR / filename.name
         condition_for_points = False
 
@@ -234,23 +233,34 @@ method : str = "FineToCoarse",
             Sat.dumpGenericfile(
                 outfile, usedPoints, "Points", mesh=TheMask, mode="a"
             )
+    return outinterpfiles
+
+
+
+
+
+def main():
+    args = argument()
+
+    Timestart = "19500101"
+    Time__end = "20500101"
+
+    TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
+    TL = TimeList.fromfilenames(
+        TI, args.inputdir, "*.nc", prefix="", dateformat="%Y%m%d"
+    )
+
+    interpolator(
+        inmesh=args.inmesh,
+        serial=args.serial,
+        maskfile=args.maskfile,
+        inputfiles= TL.filelist,
+        outputdir=args.outputdir,
+        varnames=args.varnames,
+        force = args.force,
+        method = args.method,
+    )
     return 0
 
-
-
-
-
 if __name__ == "__main__":
-    args = argument()
-    exit(
-        interpolator(
-            inmesh=args.inmesh,
-            serial=args.serial,
-            maskfile=args.maskfile,
-            inputdir=args.inputdir,
-            outputdir=args.outputdir,
-            varnames=args.varnames,
-            force = args.force,
-            method = args.method
-        )
-    )
+    exit(main())

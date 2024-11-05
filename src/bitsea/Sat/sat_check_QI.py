@@ -60,17 +60,18 @@ def argument():
 args = argument()
 
 from pathlib import Path
-from typing import List
+from typing import List, Iterable
 from bitsea.commons.Timelist import TimeList
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.postproc import masks
 import numpy as np
 from bitsea.Sat import SatManager as Sat
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
+from sys import exit
 
 
 def sat_check(*,
-inputdir : Path,
+inputfiles : Iterable[Path],
 outputdir: Path,
 mesh: str,
 varnames : List[str],
@@ -78,9 +79,9 @@ QI : float,
 Kd_min: float = float(0.021),
 force : bool = False,
 serial : bool = False,
-):
+) -> List[Path] :
     if not serial:
-        import mpi4py
+        import mpi4py.MPI
 
 
     comm = get_mpi_communicator()
@@ -88,26 +89,23 @@ serial : bool = False,
     nranks =comm.size
 
 
-    ORIGDIR = inputdir
     CHECKDIR = outputdir
     THRESHOLD = QI
 
     maskSat = getattr(masks,mesh)
 
-    Timestart="19501231"
-    Time__end="20500101"
-    TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
-    TL_orig = TimeList.fromfilenames(TI, ORIGDIR ,"*.nc",prefix='',dateformat='%Y%m%d')
+    checkedFileList=[CHECKDIR / f.name for f in inputfiles]
 
-    for filename in TL_orig.filelist[rank::nranks]:
+    for filename in inputfiles[rank::nranks]:
 
         outfile = CHECKDIR / filename.name
+
         for varname in varnames:
 
             writing_mode = Sat.writing_mode(outfile)
 
             condition_to_write = not Sat.exist_valid_variable(varname,outfile)
-            if args.force: condition_to_write=True
+            if force: condition_to_write=True
             if not condition_to_write: continue
 
 
@@ -125,20 +123,32 @@ serial : bool = False,
             VALUES[bad] = Sat.fillValue
             print(outfile, varname, flush=True)
             Sat.dumpGenericfile(outfile, VALUES, varname, mesh=maskSat,mode=writing_mode)
+    return checkedFileList
+
+
+
+
+def main():
+    args = argument()
+
+
+    Timestart="19501231"
+    Time__end="20500101"
+    TI = TimeInterval(Timestart,Time__end,"%Y%m%d")
+    TL_orig = TimeList.fromfilenames(TI, args.origdir ,"*.nc",prefix='',dateformat='%Y%m%d')
+
+
+    sat_check(
+        inputfiles=TL_orig.filelist,
+        outputdir=args.checkdir,
+        mesh=args.mesh,
+        varnames=args.varnames,
+        QI = float(args.QI),
+        Kd_min = float(args.Kd_min),
+        force = args.force,
+        serial=args.serial,
+    )
     return 0
 
 if __name__ == "__main__":
-    args = argument()
-    exit(
-        sat_check(
-            inputdir=args.origdir,
-            outputdir=args.checkdir,
-            mesh=args.mesh,
-            varnames=args.varnames,
-            QI = float(args.QI),
-            Kd_min = float(args.Kd_min),
-            force = args.force,
-            serial=args.serial,
-        )
-    )
-
+    exit(main())

@@ -58,27 +58,30 @@ def argument():
 args = argument()
 
 from pathlib import Path
-from typing import List
+from typing import List, Iterable
 from bitsea.commons.Timelist import TimeList
 from bitsea.commons.time_interval import TimeInterval
 from datetime import datetime
 from bitsea.postproc import masks
 import numpy as np
 import bitsea.Sat.SatManager as Sat
+from sys import exit
 
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
 def aveSat(*,
-inputdir: Path,
+inputfiles: Iterable[Path],
+datetimes: List[str],
 outputdir: Path,
 mesh: str,
 varnames = List[str],
-ignore_after: str = None,
 serial : bool = False,
-timeaverage : str,
+outfrequency : str = "weekly",
+week_day : int = 1,
 force : bool,
-):
+)-> List[Path]:
+
     if not serial:
         import mpi4py.MPI
 
@@ -87,33 +90,20 @@ force : bool,
     rank  = comm.Get_rank()
     nranks =comm.size
 
-    CHECKDIR = inputdir
     OUTDIR   = outputdir
     maskSat = getattr(masks,mesh)
 
 
+    suffix = inputfiles[0].name[8:]
+    TLCheck = TimeList(datetimes)
+    if outfrequency == 'monthly'    : TIME_reqs=TLCheck.getMonthlist()
+    if outfrequency == "weekly"     : TIME_reqs=TLCheck.getWeeklyList(week_day)
+    if outfrequency == "ten_days"   : TIME_reqs=TLCheck.getSpecificIntervalList(10,"19971001-12:00:00")
 
-
-    Timestart = datetime.strptime("19500101", "%Y%m%d")
-    Time__end = datetime.strptime("20500101", "%Y%m%d")
-
-    if ignore_after is not None:
-        Time__end = ignore_after
-
-    TI = TimeInterval.fromdatetimes(Timestart, Time__end)
-    TLCheck = TimeList.fromfilenames(TI, CHECKDIR,"*.nc",prefix='',dateformat='%Y%m%d')
-    suffix = TLCheck.filelist[0].name[8:]
-
-
-    if timeaverage == 'monthly'        : TIME_reqs=TLCheck.getMonthlist()
-    if timeaverage == 'weekly_tuesday' : TIME_reqs=TLCheck.getWeeklyList(2)
-    if timeaverage == 'weekly_friday'  : TIME_reqs=TLCheck.getWeeklyList(5)
-    if timeaverage == 'weekly_monday'  : TIME_reqs=TLCheck.getWeeklyList(1)
-    if timeaverage == 'weekly_thursday': TIME_reqs=TLCheck.getWeeklyList(4)
-    if timeaverage == 'tendays'        : TIME_reqs=TLCheck.getSpecificIntervalList(10,"19971001-12:00:00")
 
     jpi = maskSat.jpi
     jpj = maskSat.jpj
+    averaged_filelist = [ OUTDIR / (req.string + suffix) for req in TIME_reqs ]
 
 
 
@@ -152,10 +142,10 @@ force : bool,
 
             M = np.zeros((nFiles,jpj,jpi),np.float32)
             for iFrame, j in enumerate(ii):
-                inputfile = TLCheck.filelist[j]
+                inputfile = inputfiles[j]
                 VALUES = Sat.readfromfile(inputfile, varname)
                 M[iFrame,:,:] = VALUES
-                idate = TLCheck.Timelist[j]
+                idate = datetimes[j]
                 date8 = idate.strftime('%Y%m%d')
                 dateweek.append(date8)
             if varname == 'KD490':
@@ -165,19 +155,43 @@ force : bool,
             dateweek_string=','.join(dateweek)
             var_attributes={'average_of':dateweek_string}
             Sat.dumpGenericfile(outfile, OUT, varname, mesh=maskSat, mode=writing_mode, var_attributes=var_attributes)
+    return averaged_filelist
+
+
+def main():
+    args = argument()
+
+    Timestart = datetime.strptime("19500101", "%Y%m%d")
+    Time__end = datetime.strptime("20500101", "%Y%m%d")
+
+    if args.ignore_after is not None:
+        Time__end = args.ignore_after
+
+    TI = TimeInterval.fromdatetimes(Timestart, Time__end)
+    TL = TimeList.fromfilenames(TI, args.checkdir,"*.nc",prefix='',dateformat='%Y%m%d')
+
+    outfrequency = 'weekly'
+    weekday = None
+    if args.timeaverage == 'monthly'        : outfrequency = 'monthly'
+    if args.timeaverage == 'weekly_tuesday' : weekday=2
+    if args.timeaverage == 'weekly_friday'  : weekday=5
+    if args.timeaverage == 'weekly_monday'  : weekday=1
+    if args.timeaverage == 'weekly_thursday': weekday=4
+    if args.timeaverage == 'tendays'        : outfrequency = 'tendays'
+
+    aveSat(
+        inputfiles=TL.filelist,
+        datetimes = TL.Timelist,
+        outputdir=args.outdir,
+        mesh=args.mesh,
+        varnames=args.varnames,
+        outfrequency=outfrequency,
+        week_day = weekday,
+        force = args.force,
+        serial=args.serial,
+    )
+    return 0
+
 
 if __name__ == "__main__":
-    args = argument()
-    exit(
-        aveSat(
-            inputdir=args.checkdir,
-            outputdir=args.outdir,
-            mesh=args.mesh,
-            varnames=args.varnames,
-            timeaverage=args.timeaverage,
-            ignore_after = args.ignore_after,
-            force = args.force,
-            serial=args.serial,
-        )
-    )
-
+    exit(main())

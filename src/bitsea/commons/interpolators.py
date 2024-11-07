@@ -2,6 +2,7 @@ from scipy.interpolate import griddata
 import numpy as np
 from bitsea.commons.utils import data_for_linear_interp
 from scipy import interpolate
+from scipy.interpolate import RegularGridInterpolator
 
 def shift(M2d,pos, verso):
     out = np.ones_like(M2d)*np.nan
@@ -189,23 +190,82 @@ def vertical_plane_interpolator(mask2, mask1, M2d, side):
 
         # Non lo calcola e si tiene il precedente, che ha sicuramente gia' calcolato
     return M
+def regular(Mask1,Mask2,VAR, method="linear",rescale=False):
+    '''
+    rescale works on a box cube
+    With rescale = False and method = 'nearest'
+    horizontal distances (deg) are much lesser than vertical ones (meters)
+    So the nearest points are at the same level.
+    '''
+    if rescale:
+        jpk,jpj,jpi = Mask1.shape
+        x1 = np.array(range(jpi))
+        y1 = np.array(range(jpj))
+        z1 = np.array(range(jpk))
+        x2 = np.interp(Mask2.lon,Mask1.lon,x1)
+        y2 = np.interp(Mask2.lat,Mask1.lat,y1)
+        z2 = np.interp(Mask2.zlevels,Mask1.zlevels,z1)
+    else:
+        x1,y1,z1 = Mask1.lon,Mask1.lat,Mask1.zlevels
+        x2,y2,z2 = Mask2.lon,Mask2.lat,Mask2.zlevels
+
+    def bound_check(arr1,arr2):
+        ''' Extent arr1 to arr2 limits
+        to be compliant with RegularGridInterpolator
+        '''
+        if arr1[0]> arr2[0]  : arr1[0] = arr2[0]
+        if arr1[-1]<arr2[-1] : arr1[-1] = arr2[-1]
+    bound_check(z1, z2)
+    bound_check(y1, y2)
+    bound_check(x1, x2)
+
+
+    Values=VAR.copy()
+    Values[~Mask1.mask] = np.nan
+    f = RegularGridInterpolator((z1,y1,x1),Values, method=method)
+    X2,Y2,Z2=np.meshgrid(x2,y2,z2, indexing='ij')
+    nPoints = X2.size
+    points = np.zeros((nPoints,3),float)
+    points[:,2] = X2.ravel()
+    points[:,1] = Y2.ravel()
+    points[:,0] = Z2.ravel()
+    F2 = f(points)
+    jpk,jpj,jpi = Mask2.shape
+    M2 = F2.reshape((jpi,jpj,jpk)).T
+    return M2
+
+def compose_methods(Mask1,Mask2,VAR):
+    L = regular(Mask1, Mask2, VAR, method='linear')
+    N = regular(Mask1, Mask2, VAR, method='nearest')
+    G = space_interpolator_griddata(Mask2, Mask1, VAR)
+    OUT = L.copy()
+    toFill=np.isnan(L) & (~np.isnan(N))
+    OUT[toFill] = N[toFill]
+    toFill = np.isnan(OUT) & Mask2.mask
+    OUT[toFill] = G[toFill]
+    return OUT
 
 
 if __name__ == "__main__":
-    from bitsea.commons import netcdf3    
+
+    from bitsea.commons import netcdf4
     from bitsea.commons.mask import Mask
     from bitsea.commons.dataextractor import DataExtractor
-
-    Mask24=Mask("/gpfs/scratch/userexternal/plazzari/eas_v12/eas_v12_6/wrkdir/MODEL/meshmask.nc",dzvarname="e3t_0")    
-    Mask16=Mask('/gpfs/scratch/userexternal/gbolzon0/RA_COAST_03/wrkdir/MODEL/meshmask.nc')
     
-    filename="/gpfs/scratch/userexternal/gbolzon0/RA_COAST_03/wrkdir/POSTPROC/output/AVE_FREQ_2/TMP/ave.20120816-12:00:00.P_l.nc"
 
+    Mask1=Mask("/Users/gbolzon/Downloads/test_interp/mask_006_014_reduced.nc")
+    Mask2=Mask('/Users/gbolzon/Downloads/test_interp/mask.nc')
 
-    VAR = DataExtractor(Mask16,filename,"P_l").values
-    VAR24 = surf_interp_2d(Mask16, Mask24, VAR[0,:,:])
+    filename="/Users/gbolzon/Downloads/test_interp/ave.20241027-12:00:00.N1p.nc"
+    VAR = DataExtractor(Mask1,filename,"N1p").values
     
-    netcdf3.write_2d_file(VAR24, 'P_l', 'P_l_24.nc', Mask24, fillValue=1e+20)
+    A = space_interpolator_griddata(Mask2, Mask1, VAR)
+    B = regular(Mask1, Mask2, VAR, method='nearest')
+    C = compose_methods(Mask1, Mask2, VAR)
+    A[~Mask2.mask] = 1.e20
 
 
+    netcdf4.write_3d_file(A, 'N1p', 'griddata.nc', Mask2, fillValue=1e+20)
+    netcdf4.write_3d_file(B, 'N1p', 'regular.nc' , Mask2, fillValue=1e+20)
+    netcdf4.write_3d_file(C, 'N1p', 'composed.nc', Mask2, fillValue=1e+20)
 

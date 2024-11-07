@@ -1,3 +1,5 @@
+from itertools import product as cart_prod
+
 import netCDF4
 import numpy as np
 import pytest
@@ -189,3 +191,34 @@ def test_regular_mesh_from_coordinates():
     assert np.allclose(regular_mesh.lon, lon)
     assert np.allclose(regular_mesh.lat, lat)
     assert np.allclose(regular_mesh.zlevels, zlevels)
+
+
+def test_mesh_column_side_area(mesh):
+    for i, j in cart_prod((0, 5, 10, 23), (3, 9, 21, 12)):
+        assert (
+            mesh.column_side_area(i, j, "N", 1)
+            == mesh.e3t[0, j, i] * mesh.grid.e1t[j, i]
+        )
+        assert (
+            mesh.column_side_area(i, j, "W", 1)
+            == mesh.e3t[0, j, i] * mesh.grid.e2t[j, i]
+        )
+
+        assert mesh.column_side_area(i, j, "N", 0) == 0
+
+        assert (
+            mesh.column_side_area(i, j, "N", 5)
+            == np.sum(mesh.e3t[:5, j, i]) * mesh.grid.e1t[j, i]
+        )
+        assert (
+            mesh.column_side_area(i, j, "W", 5)
+            == np.sum(mesh.e3t[:5, j, i]) * mesh.grid.e2t[j, i]
+        )
+
+
+def test_mesh_column_side_area_sanitize_input(mesh):
+    with pytest.raises(ValueError):
+        mesh.column_side_area(0, 0, "N", None)
+
+    with pytest.raises(ValueError):
+        mesh.column_side_area(0, 0, "Q", 3)

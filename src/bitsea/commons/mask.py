@@ -18,8 +18,9 @@ from bitsea.commons.mesh import Mesh
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
-# The fill value used for the missing values
-FILL_VALUE = 1e20
+# The fill value used for the missing values; this is a low precision number
+# so it is stable no matter what dtype is used for the numpy array
+FILL_VALUE = np.float16(1e20)
 
 
 class Mask(BooleanArrayWrapper, Mesh):
@@ -317,7 +318,7 @@ class Mask(BooleanArrayWrapper, Mesh):
         ji: int,
         jj: int,
         side: Literal["N", "S", "W", "E"],
-        n_vertical_cells: Optional[int],
+        n_vertical_cells: Optional[int] = None,
     ) -> float:
         """
         Calculates the lateral area of a water column with the specified depth.
@@ -336,9 +337,9 @@ class Mask(BooleanArrayWrapper, Mesh):
             float: The lateral area of the specified column side.
         """
         if n_vertical_cells is None:
-            n_vertical_cells = np.count_nonzero(self[jj, ji], axis=0)
+            n_vertical_cells = np.count_nonzero(self[:, jj, ji], axis=0)
 
-        return super().column_side_area(jj, jj, side, n_vertical_cells)
+        return super().column_side_area(ji, jj, side, n_vertical_cells)
 
     @classmethod
     def from_file_pointer(
@@ -440,6 +441,7 @@ class Mask(BooleanArrayWrapper, Mesh):
 
         with netCDF4.Dataset(file_path, "w") as netCDF_out:
             # Add the spatial dimensions
+            netCDF_out.createDimension("t", 1)
             netCDF_out.createDimension("z", self.shape[0])
             netCDF_out.createDimension("y", self.shape[1])
             netCDF_out.createDimension("x", self.shape[2])
@@ -455,6 +457,15 @@ class Mask(BooleanArrayWrapper, Mesh):
             # Create the nav_lon NetCDF variable
             nav_lon = netCDF_out.createVariable("nav_lon", "f4", ("y", "x"))
             nav_lon[:, :] = self.xlevels
+
+            e1t = netCDF_out.createVariable("e1t", "f4", ("y", "x"))
+            e1t[:] = self.e1t
+
+            e2t = netCDF_out.createVariable("e2t", "f4", ("y", "x"))
+            e2t[:] = self.e2t
+
+            e3t = netCDF_out.createVariable("e3t", "f4", ("t", "z", "y", "x"))
+            e3t[:] = self.e3t
 
             # Create a variable to hold the data
             mask = netCDF_out.createVariable("tmask", "u1", ("z", "y", "x"))

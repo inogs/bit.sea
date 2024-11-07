@@ -250,16 +250,16 @@ class Grid(ABC):
             ylevels = ylevels[0, 0, :, :]
 
         if "e1t" in file_pointer.variables:
-            e1t = np.asarray(
-                file_pointer.variables["e1t"][0, 0, :, :], dtype=np.float32
-            )
+            e1t = np.asarray(file_pointer.variables["e1t"][:], dtype=np.float32)
+            while len(e1t.shape) > 2 and e1t.shape[0] == 1:
+                e1t = e1t[0]
         else:
             e1t = None
 
         if "e2t" in file_pointer.variables:
-            e2t = np.asarray(
-                file_pointer.variables["e2t"][0, 0, :, :], dtype=np.float32
-            )
+            e2t = np.asarray(file_pointer.variables["e2t"][:], dtype=np.float32)
+            while len(e2t.shape) > 2 and e2t.shape[0] == 1:
+                e2t = e2t[0]
         else:
             e2t = None
 

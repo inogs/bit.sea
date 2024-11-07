@@ -1,3 +1,5 @@
+from itertools import product as cart_prod
+
 import numpy as np
 import pytest
 
@@ -20,7 +22,7 @@ def mesh():
     y_levels = np.arange(0, mesh_shape[1], dtype=np.float32)
     ylevels = np.broadcast_to(y_levels[:, np.newaxis], mesh_shape[1:])
 
-    z_levels = np.geomspace(1, 1000, mesh_shape[0])
+    z_levels = np.geomspace(1, 1000, mesh_shape[0], dtype=np.float32)
 
     mesh = Mesh.from_levels(xlevels, ylevels, z_levels)
 
@@ -47,6 +49,7 @@ def mask(mesh):
         zlevels=mesh.zlevels,
         mask_array=mask_array,
         allow_broadcast=True,
+        e3t=mesh.e3t,
     )
 
 
@@ -242,7 +245,7 @@ def test_bathymetry(mask):
 def bathymetry_reference_implementation(mask):
     cells_bathy = mask.bathymetry_in_cells()
     _, jpj, jpi = mask.shape
-    Bathy = np.ones((jpj, jpi), np.float32) * 1.0e20
+    Bathy = np.ones((jpj, jpi), np.float32) * np.float16(1.0e20)
     for ji in range(jpi):
         for jj in range(jpj):
             max_lev = cells_bathy[jj, ji]
@@ -318,3 +321,39 @@ def test_bathymetry_vectorizes(mask):
                 bathymetry(lon=lon_test[j], lat=lat_test[i])
                 == bathymetry_values[i, j]
             )
+
+
+def test_mask_column_side_area(mesh, mask):
+    i_test = (0, 5, 10, 23)
+    j_test = (3, 9, 12, 11)
+    k_test = (1, 5, 9)
+
+    for i, j, k in cart_prod(i_test, j_test, k_test):
+        assert mask.column_side_area(i, j, "N", k) == mesh.column_side_area(
+            i, j, "N", k
+        )
+        assert mask.column_side_area(i, j, "W", k) == mesh.column_side_area(
+            i, j, "W", k
+        )
+
+    cell_bathymetry = mask.bathymetry_in_cells()
+    for i, j in cart_prod(i_test, k_test):
+        depth = cell_bathymetry[j, i]
+        assert mask.column_side_area(i, j, "N") == mesh.column_side_area(
+            i, j, "N", depth
+        )
+
+
+def test_mask_save(tmp_path, mask):
+    mask_path = tmp_path / "mask.nc"
+    mask.save_as_netcdf(mask_path)
+    new_mask = Mask.from_file(mask_path)
+
+    assert np.all(new_mask.xlevels == mask.xlevels)
+    assert np.all(new_mask.ylevels == mask.ylevels)
+    assert np.all(new_mask.zlevels == mask.zlevels)
+    assert np.all(new_mask.e1t == mask.e1t)
+    assert np.all(new_mask.e2t == mask.e2t)
+    assert np.all(new_mask.e3t == mask.e3t)
+
+    mask_path.unlink()

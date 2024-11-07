@@ -174,10 +174,10 @@ class Mesh(Grid):
         """
         return np.max(self.e3t, axis=(1, 2))
 
-    def convert_lon_lat_to_indices(
+    def convert_lat_lon_to_indices(
         self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
     ) -> Tuple:
-        return self._grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        return self._grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     def convert_i_j_to_lon_lat(
         self, i: Union[int, np.ndarray], j: Union[int, np.ndarray]

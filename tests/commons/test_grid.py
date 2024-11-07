@@ -126,7 +126,7 @@ def test_convert_lon_lat_to_indices(grid):
             current_lon = float(grid.xlevels[i, j]) + 0.0002
             current_lat = float(grid.ylevels[i, j]) - 0.0002
 
-            p_coords = grid.convert_lon_lat_to_indices(
+            p_coords = grid.convert_lat_lon_to_indices(
                 lon=current_lon, lat=current_lat
             )
 
@@ -140,7 +140,7 @@ def test_convert_lon_lat_to_indices_array(grid):
     lon_test = grid.xlevels[i_indices, j_indices] + 0.0002
     lat_test = grid.ylevels[i_indices, j_indices] - 0.0002
 
-    p_coords = grid.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
+    p_coords = grid.convert_lat_lon_to_indices(lon=lon_test, lat=lat_test)
 
     assert np.all(p_coords[0] == i_indices)
     assert np.all(p_coords[1] == j_indices)
@@ -159,7 +159,7 @@ def test_convert_lon_lat_to_indices_regular(regular_grid):
         for j in (0, 10, 100, 299):
             current_lon = float(lon[j]) + 0.0002
 
-            p_coords = grid.convert_lon_lat_to_indices(
+            p_coords = grid.convert_lat_lon_to_indices(
                 lon=current_lon, lat=current_lat
             )
 
@@ -172,7 +172,7 @@ def test_convert_lon_lat_to_indices_array_regular(regular_grid):
     lat_values = regular_grid.lat[i_values]
     lon_values = regular_grid.lon[j_values]
 
-    p_coords = regular_grid.convert_lon_lat_to_indices(
+    p_coords = regular_grid.convert_lat_lon_to_indices(
         lon=lon_values, lat=lat_values
     )
 
@@ -184,48 +184,48 @@ def test_outside_domain_lon_lat(grid):
     lon = -11
     lat = 21
     with pytest.raises(OutsideDomain):
-        grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     lon = -5
     lat = 19
     with pytest.raises(OutsideDomain):
-        grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
 
 def test_outside_domain_lon_lat_regular(regular_grid):
     lon = 38
     lat = 4
     with pytest.raises(OutsideDomain):
-        regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        regular_grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     lon = 20
     lat = 8
     with pytest.raises(OutsideDomain):
-        regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        regular_grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
 
 def test_outside_domain_lon_lat_array(grid):
     lon = np.array((1, 2, 3, -11, 10), dtype=np.float32)
     lat = np.array((21, 21, 21, 21, 21), dtype=np.float32)
     with pytest.raises(OutsideDomain):
-        grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     lon = np.array((-5, -5, -5, -5, -5), dtype=np.float32)
     lat = np.array((1, 10, 20, 50, 100), dtype=np.float32)
     with pytest.raises(OutsideDomain):
-        grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
 
 def test_outside_domain_lon_lat_array_regular(regular_grid):
     lon = np.array((35, 36, 37, 38, 30), dtype=np.float32)
     lat = 4.0
     with pytest.raises(OutsideDomain):
-        regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        regular_grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     lon = 20.0
     lat = np.array((4, 5, 6, 7, 8), dtype=np.float32)
     with pytest.raises(OutsideDomain):
-        regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        regular_grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
 
 @pytest.mark.uses_test_data
@@ -346,13 +346,13 @@ def test_regular_convert_lat_lon(regular_grid):
     lat_test = np.linspace(regular_grid.lat[0], regular_grid.lat[-1], 100)
 
     for lon in lon_test:
-        i, j = regular_grid.convert_lon_lat_to_indices(lon=lon, lat=lat_test[0])
+        i, j = regular_grid.convert_lat_lon_to_indices(lon=lon, lat=lat_test[0])
 
         expected_j = np.argmin(np.abs(lon - regular_grid.lon))
         assert j == expected_j
 
     for lat in lat_test:
-        i, j = regular_grid.convert_lon_lat_to_indices(lon=lon_test[0], lat=lat)
+        i, j = regular_grid.convert_lat_lon_to_indices(lon=lon_test[0], lat=lat)
 
         expected_i = np.argmin(np.abs(lat - regular_grid.lat))
         assert i == expected_i
@@ -363,22 +363,22 @@ def test_regular_and_irregular_convert_i_j_to_lon_lat(regular_grid):
         xlevels=regular_grid.xlevels, ylevels=regular_grid.ylevels
     )
 
-    i = np.arange(0, regular_grid.shape[0])[:, np.newaxis]
-    j = np.arange(0, regular_grid.shape[1])[np.newaxis, :]
+    i = np.arange(0, regular_grid.shape[1])[:, np.newaxis]
+    j = np.arange(0, regular_grid.shape[0])[np.newaxis, :]
 
     assert np.all(
-        irregular.convert_i_j_to_lon_lat(i, j)[0] == irregular.xlevels[i, j]
+        irregular.convert_i_j_to_lon_lat(i, j)[0] == irregular.xlevels[j, i]
     )
     assert np.all(
-        irregular.convert_i_j_to_lon_lat(i, j)[1] == irregular.ylevels[i, j]
+        irregular.convert_i_j_to_lon_lat(i, j)[1] == irregular.ylevels[j, i]
     )
     assert np.all(
         regular_grid.convert_i_j_to_lon_lat(i, j)[0]
-        == regular_grid.xlevels[i, j]
+        == regular_grid.xlevels[j, i]
     )
     assert np.all(
         regular_grid.convert_i_j_to_lon_lat(i, j)[1]
-        == regular_grid.ylevels[i, j]
+        == regular_grid.ylevels[j, i]
     )
 
 
@@ -394,8 +394,8 @@ def test_regular_and_irregular_convert_lat_lon_to_i_j(regular_grid):
         :, np.newaxis
     ]
 
-    t1 = regular_grid.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
-    t2 = irregular.convert_lon_lat_to_indices(lon=lon_test, lat=lat_test)
+    t1 = regular_grid.convert_lat_lon_to_indices(lon=lon_test, lat=lat_test)
+    t2 = irregular.convert_lat_lon_to_indices(lon=lon_test, lat=lat_test)
 
     for i in range(2):
         assert np.all(t1[i] == t2[i])

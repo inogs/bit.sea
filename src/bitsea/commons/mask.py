@@ -107,7 +107,11 @@ class Mask(BooleanArrayWrapper, Mesh):
         self, *, lon: float, lat: float, max_radius: Optional[int] = 2
     ):
         """Converts longitude and latitude to the nearest water point index
-        on the mask with maximum distance limit
+        on the mask with maximum distance limit.
+
+        Be aware that this function returns the indices following the "first
+        lon then lat" convention. Therefore, they are in the opposite order
+        respect to the 2d arrays returned by this object
 
         Args:
             lon (float): Longitude in degrees.
@@ -121,44 +125,44 @@ class Mask(BooleanArrayWrapper, Mesh):
         """
 
         # Indexes of the input lon, lat
-        jp, ip = self.convert_lon_lat_to_indices(lon=lon, lat=lat)
+        jp, ip = self.convert_lat_lon_to_indices(lon=lon, lat=lat)
         if self[0, jp, ip]:
-            return jp, ip
+            return ip, jp
 
         if max_radius is None:
             max_radius = max(self.shape[1], self.shape[2])
 
         # Candidate indices where we can look for a wet point
-        # i_indices is the i indices of the mask that must be analyzed when
+        # j_indices is the i indices of the mask that must be analyzed when
         # we look for the minimum (excluding the points that are too far).
         # Later we will do the same also for j. Moreover, ip_position is the
         # position of our first candidate inside the new array of indices that
         # we have just created. This is useful because, if we work on a small
         # portion of the domain, we need a way to go back to the original
         # indices. For example, for every 1D array
-        # v[ip] = v[i_indices][ip_position]
-        left_i_side = max(ip - max_radius, 0)
-        right_i_side = min(ip + max_radius + 1, self.shape[2])
-        i_indices = np.arange(left_i_side, right_i_side)
-        ip_position = left_i_side
-
+        # v[ip] = v[j_indices][ip_position]
         left_j_side = max(jp - max_radius, 0)
         right_j_side = min(jp + max_radius + 1, self.shape[1])
         j_indices = np.arange(left_j_side, right_j_side)
         jp_position = left_j_side
 
+        left_i_side = max(ip - max_radius, 0)
+        right_i_side = min(ip + max_radius + 1, self.shape[2])
+        i_indices = np.arange(left_i_side, right_i_side)
+        ip_position = left_i_side
+
         # We cut the mask around the point we have found
-        j_slice = slice(j_indices[0], j_indices[-1] + 1)
         i_slice = slice(i_indices[0], i_indices[-1] + 1)
+        j_slice = slice(j_indices[0], j_indices[-1] + 1)
         cut_mask = self[0, j_slice, i_slice].copy()
 
         # We create a 2D array that saves the distances of these points
         # from (jp, ip) in grid units
-        i_dist = i_indices - ip
-        i_dist *= i_dist
-
         j_dist = j_indices - jp
         j_dist *= j_dist
+
+        i_dist = i_indices - ip
+        i_dist *= i_dist
 
         distances = np.sqrt(i_dist + j_dist[:, np.newaxis])
 
@@ -173,7 +177,7 @@ class Mask(BooleanArrayWrapper, Mesh):
                 f"point is ({jp}, {ip}), there is no water point in a radius "
                 f"of {max_radius} grid points"
             )
-            return jp, ip
+            return ip, jp
 
         # Outside water, we fix a distance that is bigger than any other
         # distance
@@ -187,7 +191,7 @@ class Mask(BooleanArrayWrapper, Mesh):
 
         # The previous indices are computed on the cut_mask. Here we go back
         # to the original indices
-        return jp_position + int(local_min[0]), ip_position + int(local_min[1])
+        return ip_position + int(local_min[1]), jp_position + int(local_min[0])
 
     def mask_at_level(self, z: float) -> np.ndarray:
         """
@@ -496,7 +500,7 @@ class MaskBathymetry(Bathymetry):
 
         output = np.zeros_like(lon, dtype=np.float32)
         if np.any(inside_domain):
-            indices = self._mask.convert_lon_lat_to_indices(
+            indices = self._mask.convert_lat_lon_to_indices(
                 lon=lon[inside_domain], lat=lat[inside_domain]
             )
             output[inside_domain] = self._bathymetry_data[indices]

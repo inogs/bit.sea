@@ -114,14 +114,14 @@ def convert_lon_lat_wetpoint_indices_reference_implementation(
     """
     This was the previous implementation of the convert_lon_lat_wetpoint_indices
     method.
-    We keep it as a reference and we test that our current implementation is
+    We keep it as a reference, and we test that our current implementation is
     coherent with this one.
     """
     # Indexes of the input lon, lat
     lon = float(lon)
     lat = float(lat)
 
-    jp, ip = mask.convert_lon_lat_to_indices(lon=lon, lat=lat)
+    jp, ip = mask.convert_lat_lon_to_indices(lon=lon, lat=lat)
 
     if mask[0, jp, ip]:
         return ip, jp
@@ -179,7 +179,7 @@ def test_mask_convert_lon_lat_wetpoint_indices(mask, max_radius):
             )
         )
 
-        assert current_result == previous_implementation[::-1]
+        assert current_result == previous_implementation
 
 
 def test_mask_attribute_mask_is_deprecated(mask):

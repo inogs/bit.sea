@@ -137,20 +137,40 @@ class Grid(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def convert_lon_lat_to_indices(
-        self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
+    def convert_lat_lon_to_indices(
+        self, *, lat: Union[float, np.ndarray], lon: Union[float, np.ndarray]
     ) -> Tuple:
-        """Converts longitude and latitude to the nearest indices on the mask.
+        """Converts latitude and longitudes to the nearest indices on the mask.
+
+        This method follows the "first lat then lon" convention; the first
+        index is the index `j` related to the latitude and then the index `i`
+        that describes the longitude. This is coherent with the structure of
+        the 2d array stored in this object (for example, xlevels)
 
         Args:
-            - *lon*: Longitude in degrees.
             - *lat*: Latitude in degrees.
+            - *lon*: Longitude in degrees.
         Returns:
             a tuple with two numbers i and j, so that `xlevels[i, j]`
             is the longitude of the closest center point of the grid
             and `ylevels[i, j]` is the latitude of the same point.
         """
         raise NotImplementedError
+
+    def convert_lon_lat_to_indices(
+        self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
+    ) -> Tuple:
+        """Converts latitude and longitudes to the nearest indices on the mask.
+
+        This function is very similar to the `convert_lat_lon_to_indices`
+        method, but it follows a different convention for the order of the
+        indices. It returns the index `i` related to the longitude and then
+        the index `j` for the latitude.
+
+        Be aware that this is the opposite order respect to the structure of
+        the 2d arrays stored in this object (for example, xlevels)
+        """
+        return self.convert_lat_lon_to_indices(lat=lat, lon=lon)
 
     @abstractmethod
     def convert_i_j_to_lon_lat(
@@ -160,8 +180,8 @@ class Grid(ABC):
         of the point identified by indices i and j.
 
         Args:
-            i (int): The index representing the row.
-            j (int): The index representing the column.
+            i (int): The index representing the column.
+            j (int): The index representing the row.
 
         Returns:
             tuple: A tuple containing the longitude and latitude of the point.
@@ -540,7 +560,7 @@ class IrregularGrid(BaseGrid):
 
         return Polygon(lon_list=lon_boundary, lat_list=lat_boundary)
 
-    def convert_lon_lat_to_indices(
+    def convert_lat_lon_to_indices(
         self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
     ) -> Tuple:
         # If lon and lat are numpy array, check if their shape is compatible
@@ -573,20 +593,20 @@ class IrregularGrid(BaseGrid):
 
         # We need to reshape again the indices to be compatible with the
         # shape of xlevels and ylevels
-        i_indices = center_indices // self.xlevels.shape[-1]
-        j_indices = center_indices % self.xlevels.shape[-1]
+        j_indices = center_indices // self.xlevels.shape[-1]
+        i_indices = center_indices % self.xlevels.shape[-1]
 
-        if not isinstance(i_indices, np.ndarray):
-            i_indices = int(i_indices)
         if not isinstance(j_indices, np.ndarray):
             j_indices = int(j_indices)
+        if not isinstance(i_indices, np.ndarray):
+            i_indices = int(i_indices)
 
-        return i_indices, j_indices
+        return j_indices, i_indices
 
     def convert_i_j_to_lon_lat(
         self, i: Union[int, np.ndarray], j: Union[int, np.ndarray]
     ) -> Tuple:
-        return self._xlevels[i, j], self._ylevels[i, j]
+        return self._xlevels[j, i], self._ylevels[j, i]
 
 
 class RegularGrid(BaseGrid, Regular):
@@ -698,7 +718,7 @@ class RegularGrid(BaseGrid, Regular):
         return True
 
     def convert_i_j_to_lon_lat(self, i, j):
-        return self.lon[j], self.lat[i]
+        return self.lon[i], self.lat[j]
 
     def _build_domain(self):
         faces_lon = extend_from_average(self.lon)
@@ -710,7 +730,7 @@ class RegularGrid(BaseGrid, Regular):
             latmax=faces_lat[-1],
         )
 
-    def convert_lon_lat_to_indices(self, *, lon, lat):
+    def convert_lat_lon_to_indices(self, *, lon, lat):
         return_array = False
         if isinstance(lon, np.ndarray) or isinstance(lat, np.ndarray):
             return_array = True

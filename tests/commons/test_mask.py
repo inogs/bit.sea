@@ -245,7 +245,7 @@ def test_bathymetry(mask):
 def bathymetry_reference_implementation(mask):
     cells_bathy = mask.bathymetry_in_cells()
     _, jpj, jpi = mask.shape
-    Bathy = np.ones((jpj, jpi), np.float32) * np.float16(1.0e20)
+    Bathy = np.ones((jpj, jpi), np.float32) * FILL_VALUE
     for ji in range(jpi):
         for jj in range(jpj):
             max_lev = cells_bathy[jj, ji]

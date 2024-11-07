@@ -40,8 +40,8 @@ class SubMask(Mask):
     def from_square_cutting(
         mask: Mask,
         degrees: Real,
-        start_lon: Optional[Real],
-        start_lat: Optional[Real],
+        start_lon: Optional[Real] = None,
+        start_lat: Optional[Real] = None,
     ) -> List[Rectangle]:
         """
         Divides a `Mask` object into square sections, returning a list of

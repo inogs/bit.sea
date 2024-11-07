@@ -20,7 +20,7 @@ from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 # The fill value used for the missing values; this is a low precision number
 # so it is stable no matter what dtype is used for the numpy array
-FILL_VALUE = np.float16(1e20)
+FILL_VALUE = np.float32(1e20)
 
 
 class Mask(BooleanArrayWrapper, Mesh):

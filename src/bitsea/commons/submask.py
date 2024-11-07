@@ -1,4 +1,7 @@
+from itertools import product as cart_prod
 from numbers import Real
+from typing import Iterable
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -39,20 +42,32 @@ class SubMask(Mask):
         degrees: Real,
         start_lon: Optional[Real],
         start_lat: Optional[Real],
-    ):
+    ) -> List[Rectangle]:
         """
-        Creates a list of SubMask objects from cutting a Mask object into
-        square sections.  The cutting starts from a point and proceeds to cut
-        along longitude then along latitude.
+        Divides a `Mask` object into square sections, returning a list of
+        `Rectangle` objects representing each section.
+        The division starts from a specified starting point and proceeds along
+        the longitude, followed by the latitude.
 
         Args:
-            - *mask*: a Mask object.
-            - *degrees*: number of degrees for a sigle section side.
-            - *start_lon*: starting longitude point.
-            - *start_lat*: starting latitude point.
+            mask (Mask): The `Mask` object to be divided.
+            degrees (Real): The side length of each square section,
+              specified in degrees.
+            start_lon (Optional[Real]): The longitude coordinate to start the
+              division from. If not provided, the minimum longitude of the
+              `Mask` object is used.
+            start_lat (Optional[Real]): The latitude coordinate to start the
+              division from. If not provided, the minimum latitude of the
+              `Mask` object is used.
 
-        Returns: a list of basin objecs mapping a single section each.
+        Returns:
+            List[Rectangle]: A list of `Rectangle` objects representing the
+            square sections that collectively cover the entire area of the
+            original `Mask` object.
         """
+        if degrees <= 0:
+            raise ValueError("degrees must be greater than 0.")
+
         # Get mask dimensions
         min_lon = mask.xlevels.min()
         max_lon = mask.xlevels.max()
@@ -61,79 +76,72 @@ class SubMask(Mask):
 
         # Compute maximum value for degrees
         max_deg = min([(max_lon - min_lon), (max_lat - min_lat)])
-        if degrees <= 0:
-            raise ValueError("degrees must be greater than 0.")
 
         if degrees > max_deg:
             raise ValueError(
-                f"The degrees value of {degrees} is too big for this mask (maximum: {max_deg})"
+                f"The degrees value of {degrees} is too big for this mask "
+                f"(maximum: {max_deg})"
             )
 
         if start_lon is None:
-            start_lon = min_lat - min(degrees / 100.0, 1e-8)
-        if start_lon is None:
             start_lon = min_lon - min(degrees / 100.0, 1e-8)
+        if start_lat is None:
+            start_lat = min_lat - min(degrees / 100.0, 1e-8)
 
-        output = list()
+        lon_points = []
+        lat_points = []
 
-        # Bottom Left point
-        bl_point = [start_lon, start_lat]
-        # Top Right point
-        tr_point = [start_lon + degrees, start_lat + degrees]
+        current_lon = start_lon
+        while current_lon < max_lon:
+            lon_points.append(current_lon)
+            current_lon += degrees
 
-        # Section indices
-        lon_in = 0
-        lat_in = 0
+        current_lat = start_lat
+        while current_lat < max_lat:
+            lat_points.append(current_lat)
+            current_lat += degrees
 
-        # Latitude cycle
-        while tr_point[1] <= max_lat:
-            # Longitude cycle
-            while tr_point[0] <= max_lon:
-                # Create the Rectangle
-                rect = Rectangle(
-                    bl_point[0], tr_point[0], bl_point[1], tr_point[1]
-                )
+        output = []
+        for square_lon, square_lat in cart_prod(lon_points, lat_points):
+            rect = Rectangle(
+                square_lon,
+                square_lon + degrees,
+                square_lat,
+                square_lat + degrees,
+            )
+            output.append(rect)
 
-                # Create the SubMask and append it to output
-                output.append(rect)
-                # Increment longitude index
-                lon_in += 1
-                # Increment longitude
-                bl_point[0] += degrees
-                tr_point[0] += degrees
-            # Increment latitude index
-            lat_in += 1
-            # Increment latitude
-            bl_point[1] += degrees
-            tr_point[1] += degrees
-            # Reset Longitude index
-            lon_in = 0
-            # Reset Longitude
-            bl_point[0] = start_lon
-            tr_point[0] = start_lon + degrees
         return output
 
+    @staticmethod
+    def build_partition(
+        mask: Mask, regions: Iterable[Union[Basin, Region]]
+    ) -> List:
+        """
+        Creates a list of submasks from a given `Mask` object, with each
+        submask corresponding to a specified `Basin` or `Region`.
+        The submasks are mutually exclusive, meaning that each point in the
+        `Mask` belongs to only one submask. If a point lies
+        within multiple basins or regions, it is assigned to the first one in
+        the input order.
 
-if __name__ == "__main__":
-    # submask.nc generator using no-repetition technique
-    # each cell can belong to an only subbasin
+        Args:
+            mask (Mask): The `Mask` object to be subdivided.
+            regions (Iterable[Union[Basin, Region]]): An iterable of `Basin`
+            or `Region` objects defining the areas for the submasks.
 
-    TheMask = Mask(
-        "/Users/gbolzon/Documents/workspace/ogstm_boundary_conditions/masks/meshmask_872.nc"
-    )
-    from bitsea.basins import V2
+        Returns:
+            List[SubMask]: A list of `SubMask` objects, one for each `Basin`
+            or `Region` in the input iterable, with no overlapping areas.
+        """
+        not_assignable = ~mask[:]
+        submasks = []
 
-    already_assigned = np.zeros(TheMask.shape, dtype=bool)
+        for region in regions:
+            submask = SubMask(region, mask)
+            submask[not_assignable] = False
+            not_assignable[submask] = True
 
-    for sub in V2.Pred.basin_list:
-        S = SubMask(sub, maskobject=TheMask)
+            submasks.append(submask)
 
-        #         fig,ax = mapplot({'data':S.mask[0,:,:], 'clim':[0,1]}, mask=TheMask)
-        #         ax.set_xlim([-9, 36])
-        #         ax.set_ylim([30, 46])
-        #         outfile=sub.name + ".png"
-        #         fig.savefig(outfile)
-        #         continue
-        S.mask[already_assigned] = False
-        S.save_as_netcdf("submask.nc", maskvarname=sub.name)
-        already_assigned[S.mask] = True
+        return submasks

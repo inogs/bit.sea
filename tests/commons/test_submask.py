@@ -8,7 +8,7 @@ from bitsea.commons.submask import SubMask
 
 
 @pytest.mark.uses_test_data
-def test_mask_from_file_when_regular(test_data_dir):
+def test_mask_from_file(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "regular_mask.nc"
 

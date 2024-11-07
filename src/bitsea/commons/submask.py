@@ -17,7 +17,7 @@ class SubMask(Mask):
         super().__init__(
             grid=mask.grid,
             zlevels=mask.zlevels,
-            mask_array=np.logical_and(basin_mask, mask),
+            mask_array=np.logical_and(basin_mask, mask.get_sea_cells()),
             e3t=mask.e3t,
         )
         self._original_mask = mask
@@ -28,10 +28,10 @@ class SubMask(Mask):
         return self._basin
 
     def get_sea_cells(self):
-        return self._original_mask[:]
+        return self._original_mask.get_sea_cells()
 
     def get_water_cells(self):
-        return self._original_mask[:]
+        return self._original_mask.get_water_cells()
 
     @staticmethod
     def from_square_cutting(
@@ -44,10 +44,6 @@ class SubMask(Mask):
         Creates a list of SubMask objects from cutting a Mask object into
         square sections.  The cutting starts from a point and proceeds to cut
         along longitude then along latitude.
-
-        ++++++++    ++++++++    s->+++++
-        ++++++++ -> s->+++++ -> ssssssss
-        s->+++++    ssssssss    ssssssss
 
         Args:
             - *mask*: a Mask object.

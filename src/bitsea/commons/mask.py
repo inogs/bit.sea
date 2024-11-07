@@ -1,5 +1,6 @@
 from os import PathLike
 from pathlib import Path
+from typing import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -22,6 +23,16 @@ FILL_VALUE = 1e20
 
 
 class Mask(BooleanArrayWrapper, Mesh):
+    """
+    A `Mask` object represents the geometry of the domain in which the model
+    operates.
+
+    As a subclass of `Mesh`, it stores detailed information about cell geometry
+    and the positions of cell centers. Additionally, it assigns a boolean value
+    to each cell, indicating whether it contains data (water cell) or not (land
+    cell).
+    """
+
     def __init__(
         self,
         grid: Grid,
@@ -61,10 +72,35 @@ class Mask(BooleanArrayWrapper, Mesh):
         )
         return self
 
-    def get_sea_cells(self):
+    def get_sea_cells(self) -> np.ndarray:
+        """
+        Generates a 3D boolean array marking each water cell within the sea.
+
+        For a standard `Mask` object, this output matches the mask content
+        directly. However, for complex objects (e.g., those accounting for
+        rivers), the result may differ, reflecting additional features.
+
+        Returns:
+            np.ndarray: A 3D array of boolean values, where `True` indicates
+            a water cell located within the sea.
+        """
         return self[:]
 
-    def get_water_cells(self):
+    def get_water_cells(self) -> np.ndarray:
+        """
+        Generates a 3D boolean array indicating the presence of water in each
+        cell.
+
+        For a standard `Mask` object, this output matches the full mask
+        content. However, for specialized objects like a `SubMask`, which
+        defines a subset of the original mask, only a portion of the water
+        cells are marked as `True`. In this case, this method returns `True`
+        also for the water cells that are outside the basin of the `SubMask`.
+
+        Returns:
+            np.ndarray: A 3D array of boolean values, where `True` indicates
+            the presence of water in a cell.
+        """
         return self[:]
 
     def convert_lon_lat_wetpoint_indices(
@@ -93,6 +129,14 @@ class Mask(BooleanArrayWrapper, Mesh):
             max_radius = max(self.shape[1], self.shape[2])
 
         # Candidate indices where we can look for a wet point
+        # i_indices is the i indices of the mask that must be analyzed when
+        # we look for the minimum (excluding the points that are too far).
+        # Later we will do the same also for j. Moreover, ip_position is the
+        # position of our first candidate inside the new array of indices that
+        # we have just created. This is useful because, if we work on a small
+        # portion of the domain, we need a way to go back to the original
+        # indices. For example, for every 1D array
+        # v[ip] = v[i_indices][ip_position]
         left_i_side = max(ip - max_radius, 0)
         right_i_side = min(ip + max_radius + 1, self.shape[2])
         i_indices = np.arange(left_i_side, right_i_side)
@@ -135,10 +179,14 @@ class Mask(BooleanArrayWrapper, Mesh):
         # distance
         distances[~cut_mask] = max_radius * max_radius + 1
 
+        # We get the index of the minimum value. We need to unravel because
+        # argmin works on the flatten array
         local_min = np.unravel_index(
             np.argmin(distances, axis=None), distances.shape
         )
 
+        # The previous indices are computed on the cut_mask. Here we go back
+        # to the original indices
         return jp_position + int(local_min[0]), ip_position + int(local_min[1])
 
     def mask_at_level(self, z: float) -> np.ndarray:
@@ -172,23 +220,23 @@ class Mask(BooleanArrayWrapper, Mesh):
         cells that are present on that column.
 
         Returns:
-            A 2d numpy array of integers
+            np.ndarray: A 2d numpy array of integers
         """
         return np.count_nonzero(self._data_array, axis=0)
 
-    def rough_bathymetry(self):
+    def rough_bathymetry(self) -> np.ndarray:
         """
         Calculates the bathymetry used by the model
         It does not takes in account e3t
 
         Returns:
-        * bathy * a 2d numpy array of floats
+            np.ndarray: a 2d numpy array of floats
         """
         n_cells_per_column = self.bathymetry_in_cells()
         zlevels = np.concatenate((np.array([0]), self.zlevels))
         return zlevels[n_cells_per_column]
 
-    def bathymetry(self):
+    def bathymetry(self) -> np.ndarray:
         """
         Calculates the bathymetry used by the model
         Best evaluation, since it takes in account e3t.
@@ -235,13 +283,16 @@ class Mask(BooleanArrayWrapper, Mesh):
 
         return point_coords[:-1, 0], point_coords[:-1, 1]
 
-    def cut_at_level(self, index):
+    def cut_at_level(self, index: int):
         """
-        Arguments:
-        * index * integer, depth index
+        Retrieves a `MaskLayer` at the specified depth level.
 
-        Returns copy of the mask object, reduced on a single horizontal slice,
-        the one of the provided depth index.
+        Arguments:
+            index (int): The depth level index.
+
+        Returns:
+            MaskLayer: The `MaskLayer` corresponding to the specified depth
+              index.
         """
         return MaskLayer.from_grid(
             self.grid,
@@ -257,17 +308,33 @@ class Mask(BooleanArrayWrapper, Mesh):
         )
         return self.column_side_area(ji, jj, side, n_vertical_cells)
 
-    def column_side_area(self, ji: int, jj: int, side, n_vertical_cells: int):
+    def column_side_area(
+        self,
+        ji: int,
+        jj: int,
+        side: Literal["N", "S", "W", "E"],
+        n_vertical_cells: Optional[int],
+    ) -> float:
         """
-        Returns the lateral area of watercolumn of n Vertical cells.
+        Calculates the lateral area of a water column with the specified depth.
+
+        Args:
+            ji (int): Longitudinal index.
+            jj (int): Latitudinal index.
+            side (Literal["N", "S", "W", "E"]): The side of the column for
+              which to compute the area, specified by the first letter of a
+              cardinal direction.
+            n_vertical_cells (Optional[int]): The number of cells in the
+              column. If it is `None`, the column goes from the surface to
+              the bottom layer
+
+        Returns:
+            float: The lateral area of the specified column side.
         """
-        # ji,jj = self.convert_lon_lat_to_indices(lon, lat)
-        if side in ["E", "W"]:
-            return self.e2t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
-        elif side in ["N", "S"]:
-            return self.e1t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
-        else:
-            raise ValueError(f'Invalid side: "{side}"')
+        if n_vertical_cells is None:
+            n_vertical_cells = np.count_nonzero(self[jj, ji], axis=0)
+
+        return super().column_side_area(jj, jj, side, n_vertical_cells)
 
     @classmethod
     def from_file_pointer(
@@ -277,6 +344,22 @@ class Mask(BooleanArrayWrapper, Mesh):
         mask_var_name: str = "tmask",
         read_e3t: bool = True,
     ):
+        """
+        Creates a new `Mask` object from a netCDF file.
+
+        Args:
+            file_pointer (netCDF4.Dataset): The netCDF file containing mask
+              data.
+            zlevels_var_name (str): The name of the variable representing
+              depth levels (zlevels) in the file.
+            mask_var_name (str): The name of the variable representing the
+              mask in the file.
+            read_e3t (bool): If `True`, reads the `e3t` variable from the
+              file; if `False`, computes `e3t` from `zlevels`.
+
+        Returns:
+            Mask: A new `Mask` object created from the specified netCDF data.
+        """
         mesh = Mesh.from_file_pointer(file_pointer, zlevels_var_name, read_e3t)
 
         mask_array = np.asarray(
@@ -301,15 +384,54 @@ class Mask(BooleanArrayWrapper, Mesh):
         mask_var_name: str = "tmask",
         read_e3t: bool = True,
     ):
+        """
+        Creates a new `Mask` object from a netCDF file.
+
+        This method is similar to `from_file_pointer`, but instead of
+        accepting a netCDF `Dataset` object, it takes the file path as input.
+
+        Args:
+            file_path (PathLike): The path to the netCDF file containing
+              the mask.
+            zlevels_var_name (str): The name of the variable representing
+              depth levels (zlevels) in the file.
+            mask_var_name (str): The name of the variable representing the
+              mask in the file.
+            read_e3t (bool): If `True`, reads the `e3t` variable from the
+              file; if `False`, computes `e3t` from `zlevels`.
+
+        Returns:
+            Mask: A new `Mask` object created from the specified netCDF file.
+        """
         with netCDF4.Dataset(file_path, "r") as f:
             return cls.from_file_pointer(
                 f, zlevels_var_name, mask_var_name, read_e3t
             )
 
     def _add_attributes_on_file(self, file_pointer):
+        """
+        Called by the `save_as_netcdf` method.
+
+        This method does nothing by default, but subclasses of `Mask` can
+        override it to add custom attributes to the netCDF file generated by
+        `save_as_netcdf`.
+
+        Args:
+            file_pointer (netCDF4.Dataset): The netCDF dataset where attributes
+             will be saved.
+        """
         pass
 
     def save_as_netcdf(self, file_path: Union[PathLike, str]):
+        """
+        Saves the current `Mask` object to a netCDF file, which can later
+        be loaded using the `from_file` method.
+
+        Args:
+            file_path (Union[PathLike, str]): The path to the netCDF file
+            where the `Mask` object will be saved.
+        """
+
         file_path = Path(file_path)
 
         with netCDF4.Dataset(file_path, "w") as netCDF_out:

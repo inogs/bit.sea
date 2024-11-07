@@ -1,6 +1,7 @@
 from numbers import Real
 from os import PathLike
 from typing import List
+from typing import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -205,6 +206,41 @@ class Mesh(Grid):
         if output.ndim == 0:
             output = int(output)
         return output
+
+    def column_side_area(
+        self,
+        ji: int,
+        jj: int,
+        side: Literal["N", "S", "W", "E"],
+        n_vertical_cells: int,
+    ) -> float:
+        """
+        Calculates the lateral area of a water column with the specified depth.
+
+        Args:
+            ji (int): Longitudinal index.
+            jj (int): Latitudinal index.
+            side (Literal["N", "S", "W", "E"]): The side of the column for
+              which to compute the area, specified by the first letter of a
+              cardinal direction.
+            n_vertical_cells (int): The number of cells in the column.
+
+        Returns:
+            float: The lateral area of the specified column side.
+        """
+        if n_vertical_cells is None:
+            raise ValueError(
+                "A `mesh` object does not know which cells contain water. Therefore, "
+                "the `column_side_area` method requires an explicit number of vertical "
+                "cells; the parameter `n_vertical_cells` can not be `None`"
+            )
+
+        if side in ["E", "W"]:
+            return self.e2t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
+        elif side in ["N", "S"]:
+            return self.e1t[jj, ji] * self.e3t[:n_vertical_cells, jj, ji].sum()
+        else:
+            raise ValueError(f'Invalid side: "{side}"')
 
     @staticmethod
     def from_levels(

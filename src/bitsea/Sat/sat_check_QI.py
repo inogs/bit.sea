@@ -101,17 +101,14 @@ def argument():
     return parser.parse_args()
 
 
-args = argument()
-
-
 def sat_check(
     *,
     inputfiles: Iterable[Path],
     outputdir: Path,
     mesh: str,
     varnames: List[str],
-    QI: float,
-    Kd_min: float = float(0.021),
+    qi_threshold: float,
+    Kd_min: float = 0.021,
     force: bool = False,
     serial: bool = False,
 ) -> List[Path]:
@@ -122,15 +119,12 @@ def sat_check(
     rank = comm.Get_rank()
     nranks = comm.size
 
-    CHECKDIR = outputdir
-    THRESHOLD = QI
-
     maskSat = getattr(masks, mesh)
 
-    checkedFileList = [CHECKDIR / f.name for f in inputfiles]
+    checked_file_list = [outputdir / f.name for f in inputfiles]
 
     for filename in inputfiles[rank::nranks]:
-        outfile = CHECKDIR / filename.name
+        outfile = outputdir / filename.name
 
         for varname in varnames:
             writing_mode = Sat.writing_mode(outfile)
@@ -142,32 +136,32 @@ def sat_check(
                 continue
 
             if varname in ["DIATO", "NANO", "PICO", "DINO"]:
-                QI = Sat.readfromfile(filename, "QI_CHL")
+                sat_qi = Sat.readfromfile(filename, "QI_CHL")
             else:
-                QI = Sat.readfromfile(filename, "QI_" + varname)
-            VALUES = Sat.readfromfile(filename, varname)
+                sat_qi = Sat.readfromfile(filename, "QI_" + varname)
+            sat_values = Sat.readfromfile(filename, varname)
 
             if varname == "KD490":
-                # VALUES[(VALUES<Kd_min) & (VALUES>0)] = Kd_min
-                VALUES[(VALUES < Kd_min) & (VALUES > 0)] = (
+                # sat_values[(sat_values<Kd_min) & (sat_values>0)] = Kd_min
+                sat_values[(sat_values < Kd_min) & (sat_values > 0)] = (
                     Sat.fillValue
                 )  # Filter out values below Kd490_min threshold
 
-            bad = np.abs(QI) > THRESHOLD  # 2.0
-            VALUES[bad] = Sat.fillValue
+            bad = np.abs(sat_qi) > qi_threshold  # 2.0
+            sat_values[bad] = Sat.fillValue
             print(outfile, varname, flush=True)
             Sat.dumpGenericfile(
-                outfile, VALUES, varname, mesh=maskSat, mode=writing_mode
+                outfile, sat_values, varname, mesh=maskSat, mode=writing_mode
             )
-    return checkedFileList
+    return checked_file_list
 
 
 def main():
     args = argument()
 
-    Timestart = "19501231"
-    Time__end = "20500101"
-    TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
+    time_start = "19501231"
+    time_end = "20500101"
+    TI = TimeInterval(time_start, time_end, "%Y%m%d")
     TL_orig = TimeList.fromfilenames(
         TI, args.origdir, "*.nc", prefix="", dateformat="%Y%m%d"
     )
@@ -177,7 +171,7 @@ def main():
         outputdir=args.checkdir,
         mesh=args.mesh,
         varnames=args.varnames,
-        QI=float(args.QI),
+        qi_threshold=float(args.QI),
         Kd_min=float(args.Kd_min),
         force=args.force,
         serial=args.serial,

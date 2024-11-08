@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 from typing import Literal
 from typing import Union
 
@@ -73,24 +74,33 @@ def zeroPadding(
         return np.zeros((mask.jpk, mask.jpi), dtype=np.float32)
 
 
-def writeSideCheckFile(OUTPUTDIR, M, Mask2, side, t, var, interpdir):
-    tmask2 = side_tmask(side, Mask2)
-    checkfile = OUTPUTDIR / ("CHECK/OBC_" + side + "." + t + "." + var + ".nc")
-    Mcheck = M.copy()
+def writeSideCheckFile(
+    outputdir: Path, mask_array, mask2, side, t, var, interpdir
+):
+    if isinstance(side, str):
+        side = Side(side)
+
+    tmask2 = side_tmask(side, mask2)
+    checkfile = outputdir / Path("CHECK") / f"OBC_{side}.{t}.{var}.nc"
+    Mcheck = mask_array.copy()
+
     if interpdir is not None:
         missing_value = 1.0e20
         Mcheck[~tmask2] = missing_value
     else:
         missing_value = 0
 
-    NCout = netCDF4.Dataset(checkfile, "w")
-    NCout.createDimension("Lon", Mask2.jpi)
-    NCout.createDimension("Lat", Mask2.jpj)
-    NCout.createDimension("Depth", Mask2.jpk)
-    if side in ["E", "W"]:
-        ncvar = NCout.createVariable(var, "f", ("Depth", "Lat"))
-    if side in ["N", "S"]:
-        ncvar = NCout.createVariable(var, "f", ("Depth", "Lon"))
-    setattr(ncvar, "missing_value", missing_value)
-    ncvar[:] = Mcheck
-    NCout.close()
+    with netCDF4.Dataset(checkfile, "w") as NCout:
+        NCout.createDimension("Lon", mask2.jpi)
+        NCout.createDimension("Lat", mask2.jpj)
+        NCout.createDimension("Depth", mask2.jpk)
+        if side in (Side.EAST, Side.WEST):
+            ncvar = NCout.createVariable(
+                var, "f", ("Depth", "Lat"), fill_value=missing_value
+            )
+        if side in (Side.SOUTH, Side.NORTH):
+            ncvar = NCout.createVariable(
+                var, "f", ("Depth", "Lon"), fill_value=missing_value
+            )
+        setattr(ncvar, "missing_value", missing_value)
+        ncvar[:] = Mcheck

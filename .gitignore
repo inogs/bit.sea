@@ -12,3 +12,4 @@ makefile
 *.hdf5
 *.grib
 tests/*.tar.xz
+/.pytest_cache/

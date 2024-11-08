@@ -1,6 +1,7 @@
 from enum import Enum
 from pathlib import Path
 from typing import Literal
+from typing import Optional
 from typing import Union
 
 import netCDF4
@@ -75,14 +76,37 @@ def zeroPadding(
 
 
 def writeSideCheckFile(
-    outputdir: Path, mask_array, mask2, side, t, var, interpdir
+    outputdir: Path,
+    boundary_values: np.ndarray,
+    maskObj: Mask,
+    side: Literal["N", "S", "W", "E"],
+    t: str,
+    var: str,
+    interpdir: Optional[str],
 ):
+    """
+    Writes a 2D netCDF file, which is a lateral side(E,W,N,S) of 3D ndarray
+    in order to have a checkpoint in boundary condition generation system.
+    Arguments:
+     * outputdir * is intended as the dir where BC files are generated,
+                   the netCDF files will be written in a CHECK/ subdir
+     * boundary_values * 2D ndarray
+     * maskObj   * a Mask object, consistent with boundary_values
+     * t         * time string
+     * var       * varname
+    * interpdir  * used only to format correcly the NetCDF file
+
+    Usually called by
+    https://github.com/inogs/MITgcm_BC_IC/blob/main/mitgcm/bc_ic/BC_files_gen.py
+
+
+    """
     if isinstance(side, str):
         side = Side(side)
 
-    tmask2 = side_tmask(side, mask2)
+    tmask2 = side_tmask(side, maskObj)
     checkfile = outputdir / Path("CHECK") / f"OBC_{side}.{t}.{var}.nc"
-    Mcheck = mask_array.copy()
+    Mcheck = boundary_values.copy()
 
     if interpdir is not None:
         missing_value = 1.0e20
@@ -91,9 +115,9 @@ def writeSideCheckFile(
         missing_value = 0
 
     with netCDF4.Dataset(checkfile, "w") as NCout:
-        NCout.createDimension("Lon", mask2.jpi)
-        NCout.createDimension("Lat", mask2.jpj)
-        NCout.createDimension("Depth", mask2.jpk)
+        NCout.createDimension("Lon", maskObj.jpi)
+        NCout.createDimension("Lat", maskObj.jpj)
+        NCout.createDimension("Depth", maskObj.jpk)
         if side in (Side.EAST, Side.WEST):
             ncvar = NCout.createVariable(
                 var, "f", ("Depth", "Lat"), fill_value=missing_value

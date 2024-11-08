@@ -16,7 +16,7 @@ from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.grid import RegularGrid
 
 
-class Mesh(Grid):
+class Mesh:
     """A `Mesh` is a 3D extension of a `Grid`, containing all its information,
     while also adding details about vertical levels.
 

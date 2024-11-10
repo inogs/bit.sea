@@ -1,5 +1,20 @@
 import argparse
-from bitsea.utilities.argparse_types import some_among,existing_dir_path, generic_path
+from datetime import datetime
+from pathlib import Path
+from sys import exit as sys_exit
+from typing import Iterable
+from typing import List
+
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.postproc import masks
+from bitsea.Sat import interp2d
+from bitsea.Sat import SatManager as Sat
+from bitsea.utilities.argparse_types import existing_dir_path
+from bitsea.utilities.argparse_types import generic_path
+from bitsea.utilities.argparse_types import some_among
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
 def argument():
@@ -86,43 +101,28 @@ def argument():
             "nearest",
             "FineToCoarse",
         ],
-        default = "FineToCoarse",
+        default="FineToCoarse",
         help=""" interp method""",
     )
 
     return parser.parse_args()
 
 
-
-
-from pathlib import Path
-from typing import List,Iterable
-from datetime import datetime
-
-from bitsea.commons.mask import Mask
-from bitsea.commons.time_interval import TimeInterval
-from bitsea.commons.Timelist import TimeList
-from bitsea.postproc import masks
-from bitsea.Sat import interp2d
-from bitsea.Sat import SatManager as Sat
-from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
-from sys import exit
-
-def interpolator(*,
-inmesh : str,
-serial : bool,
-maskfile : Path,
-inputfiles: List[str],
-outputdir:str,
-varnames: Iterable[str],
-force = bool,
-method : str = "FineToCoarse",
+def interpolator(
+    *,
+    inmesh: str,
+    maskfile: Path,
+    inputfiles: List[Path],
+    outputdir: Path,
+    varnames: Iterable[str],
+    force: bool,
+    method: str = "FineToCoarse",
 ):
-    assert method in ["FineToCoarse","nearest"]
+    if method not in ("FineToCoarse", "nearest"):
+        raise ValueError(
+            f'Method must be one among: "FineToCoarse", "nearest"; received: "{method}"'
+        )
     maskIn = getattr(masks, inmesh)
-
-    if not serial:
-        import mpi4py.MPI  # noqa: F401
 
     comm = get_mpi_communicator()
     rank = comm.Get_rank()
@@ -130,7 +130,7 @@ method : str = "FineToCoarse",
 
     TheMask = Mask(maskfile)
 
-    if method == 'FineToCoarse':
+    if method == "FineToCoarse":
         x = TheMask.lon
         y = TheMask.lat
 
@@ -140,13 +140,10 @@ method : str = "FineToCoarse",
         I_START, I_END = interp2d.array_of_indices_for_slicing(x, xOrig)
         J_START, J_END = interp2d.array_of_indices_for_slicing(y, yOrig)
 
-
-    OUTPUTDIR = outputdir
-    outinterpfiles = [ OUTPUTDIR / f.name for f in inputfiles]
-
+    outinterpfiles = [outputdir / f.name for f in inputfiles]
 
     for filename in inputfiles[rank::nranks]:
-        outfile = OUTPUTDIR / filename.name
+        outfile = outputdir / filename.name
         condition_for_points = False
 
         for varname in varnames:
@@ -203,13 +200,9 @@ method : str = "FineToCoarse",
             print(outfile, varname, flush=True)
 
             if method == "nearest":
-                Mout, usedPoints = interp2d.nearest(
-                    Mfine,
-                    maskIn,
-                    TheMask
-                    )
-            if method == "FineToCoarse":
-                Mout, usedPoints = interp2d.interp_2d_by_cells_slices(
+                Mout, used_points = interp2d.nearest(Mfine, maskIn, TheMask)
+            elif method == "FineToCoarse":
+                Mout, used_points = interp2d.interp_2d_by_cells_slices(
                     Mfine,
                     TheMask,
                     I_START,
@@ -219,6 +212,8 @@ method : str = "FineToCoarse",
                     min_cov=0.0,
                     ave_func=Sat.mean,
                 )
+            else:
+                raise ValueError(f'Unimplemented method: "{method}"')
 
             Sat.dumpGenericfile(
                 outfile,
@@ -231,36 +226,36 @@ method : str = "FineToCoarse",
 
         if condition_for_points:
             Sat.dumpGenericfile(
-                outfile, usedPoints, "Points", mesh=TheMask, mode="a"
+                outfile, used_points, "Points", mesh=TheMask, mode="a"
             )
     return outinterpfiles
-
-
-
 
 
 def main():
     args = argument()
 
-    Timestart = "19500101"
-    Time__end = "20500101"
+    if not args.serial:
+        import mpi4py.MPI
 
-    TI = TimeInterval(Timestart, Time__end, "%Y%m%d")
+    time_start = "19500101"
+    time_end = "20500101"
+
+    TI = TimeInterval(time_start, time_end, "%Y%m%d")
     TL = TimeList.fromfilenames(
         TI, args.inputdir, "*.nc", prefix="", dateformat="%Y%m%d"
     )
 
     interpolator(
         inmesh=args.inmesh,
-        serial=args.serial,
         maskfile=args.maskfile,
-        inputfiles= TL.filelist,
+        inputfiles=TL.filelist,
         outputdir=args.outputdir,
         varnames=args.varnames,
-        force = args.force,
-        method = args.method,
+        force=args.force,
+        method=args.method,
     )
     return 0
 
+
 if __name__ == "__main__":
-    exit(main())
+    sys_exit(main())

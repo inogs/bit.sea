@@ -33,3 +33,7 @@ pythonpath = ["src"]
 markers = [
     "uses_test_data: Needs external data not downloaded from the repository"
 ]
+
+
+[tool.ruff.lint.pyflakes]
+allowed-unused-imports = ["mpi4py.MPI"]

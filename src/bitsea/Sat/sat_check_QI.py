@@ -110,11 +110,7 @@ def sat_check(
     qi_threshold: float,
     Kd_min: float = 0.021,
     force: bool = False,
-    serial: bool = False,
 ) -> List[Path]:
-    if not serial:
-        pass
-
     comm = get_mpi_communicator()
     rank = comm.Get_rank()
     nranks = comm.size
@@ -159,6 +155,10 @@ def sat_check(
 def main():
     args = argument()
 
+    if not args.serial:
+        # noinspection PyUnresolvedReferences
+        import mpi4py.MPI
+
     time_start = "19501231"
     time_end = "20500101"
     TI = TimeInterval(time_start, time_end, "%Y%m%d")
@@ -174,7 +174,6 @@ def main():
         qi_threshold=float(args.QI),
         Kd_min=float(args.Kd_min),
         force=args.force,
-        serial=args.serial,
     )
     return 0
 

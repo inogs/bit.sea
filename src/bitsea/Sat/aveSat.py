@@ -17,7 +17,7 @@ from bitsea.utilities.argparse_types import some_among
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
 
-def configure_argparse():
+def argument():
     parser = argparse.ArgumentParser(
         description="""
     Generic averager for sat files.
@@ -239,7 +239,7 @@ def aveSat(
 
 
 def main():
-    args = configure_argparse()
+    args = argument()
 
     if not args.serial:
         # noinspection PyUnresolvedReferences

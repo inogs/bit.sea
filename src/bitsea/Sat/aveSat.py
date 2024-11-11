@@ -1,4 +1,5 @@
 import argparse
+import logging
 from datetime import datetime
 from pathlib import Path
 from sys import exit as sys_exit
@@ -145,6 +146,8 @@ def aveSat(
     rank = comm.Get_rank()
     nranks = comm.size
 
+    logger = logging.getLogger(__name__)
+
     mask_sat = getattr(masks, mesh)
 
     suffix = inputfiles[0].name[8:]
@@ -170,9 +173,11 @@ def aveSat(
         ii, w = TLCheck.select(req)
         n_files = len(ii)
         if n_files < 3:
-            print(req, "less than 3 files - Skipping average generation")
-            print(
-                " ".join([TLCheck.Timelist[k].strftime("%Y%m%d") for k in ii])
+            logger.info(
+                "For %s there are less than 3 files - Skipping "
+                "average generation; %s",
+                req,
+                " ".join([TLCheck.Timelist[k].strftime("%Y%m%d") for k in ii]),
             )
             continue
 
@@ -188,7 +193,14 @@ def aveSat(
                 n_dates = len(dateweek_string.split(","))
 
                 if n_files > n_dates:
-                    pass  # print('Not skipping ' + req.string + " for " + varname)
+                    logger.debug(
+                        "For req %s there are more files (%s) than "
+                        "dates (%s)",
+                        req,
+                        n_files,
+                        n_dates,
+                    )
+                    pass
                 else:
                     condition_to_write = not Sat.exist_valid_variable(
                         varname, outfile
@@ -198,7 +210,7 @@ def aveSat(
                     if not condition_to_write:
                         continue
 
-            print(outfile, varname, flush=True)
+            logger.info("Writing variable %s inside file %s", varname, outfile)
             dateweek = []
 
             M = np.zeros((n_files, jpj, jpi), np.float32)
@@ -232,6 +244,8 @@ def main():
     if not args.serial:
         # noinspection PyUnresolvedReferences
         import mpi4py.MPI  # unused import
+
+    logging.basicConfig(level=logging.INFO)
 
     time_start = datetime.strptime("19500101", "%Y%m%d")
     time_end = datetime.strptime("20500101", "%Y%m%d")

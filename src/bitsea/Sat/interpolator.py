@@ -87,11 +87,10 @@ def argument():
         "--force",
         "-f",
         action="store_true",
-        help="""Overwrite existing variables in files
-                                """,
+        help="Overwrite existing variables in files",
     )
     parser.add_argument(
-        "--serial", action="store_true", help="""Do not use mpi"""
+        "--serial", action="store_true", help="Do not use mpi"
     )
     parser.add_argument(
         "--method",
@@ -115,7 +114,7 @@ def interpolator(
     inputfiles: List[Path],
     outputdir: Path,
     varnames: Iterable[str],
-    force: bool,
+    force: bool = False,
     method: str = "FineToCoarse",
 ):
     if method not in ("FineToCoarse", "nearest"):

@@ -77,7 +77,7 @@ LAYERLIST = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150
 nLayers = len(LAYERLIST)
 
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi=TheMask.shape
 area = TheMask.area
 e3t = TheMask.dz

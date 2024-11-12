@@ -2,7 +2,7 @@ from bitsea.commons.mask import Mask
 import numpy as np
 import netCDF4
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask = Mask.from_file('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 CLIM_FILE="Climatology_KD490.nc"
 tmask = TheMask.mask_at_level(0)
 

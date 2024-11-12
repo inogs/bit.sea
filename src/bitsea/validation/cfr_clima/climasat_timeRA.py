@@ -65,7 +65,7 @@ CLIMDIR = addsep(args.satclimdir)
 INSAT   = addsep(args.insat)
 OUTDIR  = addsep(args.outdir)
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 mask200 = TheMask.mask_at_level(200)
 
 print 'Subbasin masks'

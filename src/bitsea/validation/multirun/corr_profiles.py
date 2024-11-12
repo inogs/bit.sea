@@ -61,8 +61,8 @@ import pickle
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
-TheMask = Mask(args.maskfile)
-TheMask_phys = Mask(args.maskfilephys)
+TheMask = Mask.from_file(args.maskfile)
+TheMask_phys = Mask.from_file(args.maskfilephys)
 
 OUTDIR = addsep(args.outdir)
 depth_lim = args.depth

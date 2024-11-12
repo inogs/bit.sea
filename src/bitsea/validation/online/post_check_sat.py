@@ -41,7 +41,7 @@ from bitsea.basins import V2
 
 INDADIR = addsep(args.indadir)
 OUTDIR = addsep(args.outdir)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 _,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)

@@ -62,7 +62,7 @@ args = argument()
 
 meanObj11 = PLGaussianMean(5, 1.0)
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
 plotlines = False

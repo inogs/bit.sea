@@ -18,7 +18,7 @@ if annaCoast:
         print "Error: Environment variable KCOASTFILE must be defined "
         sys.exit(1)
 
-TheMask=Mask(maskfile,ylevelsmatvar="gphit", xlevelsmatvar="glamt")
+TheMask = Mask.from_file(maskfile, ylevels_var_name="gphit", xlevels_var_name="glamt")
 jpk,jpj,jpi = TheMask.shape
 
 

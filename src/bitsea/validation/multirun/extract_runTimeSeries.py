@@ -83,7 +83,7 @@ COAST_LIST = ['coast', 'open_sea', 'everywhere']
 DEPTH_LIST = [0, 50, 150]
 
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 
 def extract_from_runs(run, varname, subbasin, coast=CoastEnum.open_sea, stat=StatEnum.mean):
     """

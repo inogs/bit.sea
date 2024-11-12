@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
     from glob import glob
     from bitsea.commons.mask import Mask
-    m = Mask('./layer_integral/meshmask.nc')
+    m = Mask.from_file('./layer_integral/meshmask.nc')
     fl = sorted(glob('timeseries/*nc'))
     #fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
     #plt.show()

@@ -36,7 +36,7 @@ OUTdir = DICToutdir[RUNname]
 
 
 maskfile = '/gpfs/scratch/userexternal/ateruzzi/TEST_2017aprjun/wrkdir/MODEL/meshmask.nc'
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 _,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)
 

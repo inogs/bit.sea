@@ -63,7 +63,7 @@ maskSat = getattr(masks,'Mesh24')
 INSAT = addsep(args.insat)
 INDIF = addsep(args.indif)
 OUTDIR = addsep(args.outdir)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 minvmodLIST = args.minvmod
 
 indGib,_ = TheMask.convert_lon_lat_to_indices(-5.2,35.9)

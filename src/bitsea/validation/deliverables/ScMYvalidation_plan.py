@@ -94,7 +94,7 @@ def weighted_mean(Conc, Weight):
     Weighted_Std    = np.sqrt(((Conc - Weighted_Mean)**2*Weight).sum()/Weight_sum)
     return Weighted_Mean, Weighted_Std
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 Sup_mask = TheMask.cut_at_level(0)
 MODEL_DIR= addsep(args.inputmodeldir)
 REF_DIR  = addsep(args.satdir)

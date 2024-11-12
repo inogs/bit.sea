@@ -58,7 +58,7 @@ MODDIR=addsep(args.inputdir)
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 Req=timerequestors.Generic_req(TI)
 
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 

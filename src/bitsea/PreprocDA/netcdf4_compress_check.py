@@ -25,7 +25,7 @@ from bitsea.commons import netcdf4
 import pylab as pl
 from bitsea.commons.mask import Mask
 
-TheMask=Mask(args.maskfile)
+TheMask=Mask.from_file(args.maskfile)
 
 evc_old=netcdf4.readfile(args.inputfile,"evc")
 evc_new=netcdf4.readfile(args.outfile,  "evc")

@@ -29,7 +29,7 @@ from bitsea.commons.utils import writetable
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N = MassimiliReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 OUTDIR = addsep(args.outdir)
 
@@ -65,9 +65,3 @@ for modelvarname in ["N1p","N3n","P_l"]:
     writetable(fname + ".rmse.txt", STAT[:,:,1], rows_names, column_names, fmt='%5.3f\t')
     writetable(fname + ".corr.txt", STAT[:,:,2], rows_names, column_names, fmt='%5.3f\t')
     writetable(fname + ".numb.txt", NUMB       , rows_names, column_names, fmt='%1.0f\t')
-
-
-
-
-
-        

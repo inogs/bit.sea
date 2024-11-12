@@ -66,7 +66,7 @@ fid.close()
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
     
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi=TheMask.shape
 
 fid = open(args.coast_file)

@@ -51,6 +51,7 @@ from bitsea.commons.Timelist import TimeList
 from bitsea.timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.submask import SubMask
 import matplotlib.pyplot as pl
 from bitsea.commons.utils import addsep
@@ -62,12 +63,12 @@ MODDIR2=addsep(args.inputdir2)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-Mask8 = Mask(maskfile8)
-TheMask= Mask(args.maskfile1, loadtmask=False)
+Mask8 = Mask.from_file(maskfile8)
+TheMask = Mesh.from_file(args.maskfile1, read_e3t=True)
 jpk_V3,jpj,jpi = TheMask.shape
 
 
-TheMask_V2= Mask(args.maskfile2, loadtmask=False)
+TheMask_V2 = Mesh(args.maskfile2, read_e3t=True)
 jpk_V2,_,_ = TheMask_V2.shape
 
 

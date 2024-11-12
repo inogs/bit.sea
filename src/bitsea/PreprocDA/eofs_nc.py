@@ -75,7 +75,7 @@ maskfile = args.maskfile
 var3dgridfile = args.grid3dvar
 neof = int(args.neof)
 
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 ind200 = TheMask.getDepthIndex(200)+1
 jpk,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)

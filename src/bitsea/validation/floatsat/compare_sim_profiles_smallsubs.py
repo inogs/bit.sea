@@ -53,7 +53,7 @@ OUTDIR=addsep(args.outdir)
 INDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 #z = -TheMask.zlevels
 

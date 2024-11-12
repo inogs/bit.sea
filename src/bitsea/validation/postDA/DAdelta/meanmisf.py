@@ -47,7 +47,7 @@ RST_DIR = addsep(args.inputdir)
 OUT_DIR = addsep(args.outputdir)
 
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 
 

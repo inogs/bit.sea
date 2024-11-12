@@ -345,7 +345,11 @@ class Mask(BooleanArrayWrapper, Mesh):
     def from_file_pointer(
         cls,
         file_pointer: netCDF4.Dataset,
+        *,
         zlevels_var_name: str = "nav_lev",
+        ylevels_var_name: str = "nav_lat",
+        xlevels_var_name: str = "nav_lon",
+        e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         read_e3t: bool = True,
     ):
@@ -357,6 +361,12 @@ class Mask(BooleanArrayWrapper, Mesh):
               data.
             zlevels_var_name (str): The name of the variable representing
               depth levels (zlevels) in the file.
+            ylevels_var_name (str): The name of the variable representing
+              latitude coordinates (ylevels) in the file.
+            xlevels_var_name (str): The name of the variable representing
+              longitude coordinates (xlevels) in the file.
+            e3t_var_name (Optional[str]): The name of the variable representing
+              the vertical size of the levels in the file.
             mask_var_name (str): The name of the variable representing the
               mask in the file.
             read_e3t (bool): If `True`, reads the `e3t` variable from the
@@ -365,7 +375,14 @@ class Mask(BooleanArrayWrapper, Mesh):
         Returns:
             Mask: A new `Mask` object created from the specified netCDF data.
         """
-        mesh = Mesh.from_file_pointer(file_pointer, zlevels_var_name, read_e3t)
+        mesh = Mesh.from_file_pointer(
+            file_pointer,
+            zlevels_var_name=zlevels_var_name,
+            ylevels_var_name=ylevels_var_name,
+            xlevels_var_name=xlevels_var_name,
+            e3t_var_name=e3t_var_name,
+            read_e3t=read_e3t,
+        )
 
         mask_array = np.asarray(
             file_pointer.variables[mask_var_name][:], dtype=bool
@@ -385,7 +402,11 @@ class Mask(BooleanArrayWrapper, Mesh):
     def from_file(
         cls,
         file_path: PathLike,
+        *,
         zlevels_var_name: str = "nav_lev",
+        ylevels_var_name: str = "nav_lat",
+        xlevels_var_name: str = "nav_lon",
+        e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         read_e3t: bool = True,
     ):
@@ -400,6 +421,12 @@ class Mask(BooleanArrayWrapper, Mesh):
               the mask.
             zlevels_var_name (str): The name of the variable representing
               depth levels (zlevels) in the file.
+            ylevels_var_name (str): The name of the variable representing
+              latitude coordinates (ylevels) in the file.
+            xlevels_var_name (str): The name of the variable representing
+              longitude coordinates (xlevels) in the file.
+            e3t_var_name (Optional[str]): The name of the variable representing
+              the vertical size of the levels in the file.
             mask_var_name (str): The name of the variable representing the
               mask in the file.
             read_e3t (bool): If `True`, reads the `e3t` variable from the
@@ -410,7 +437,13 @@ class Mask(BooleanArrayWrapper, Mesh):
         """
         with netCDF4.Dataset(file_path, "r") as f:
             return cls.from_file_pointer(
-                f, zlevels_var_name, mask_var_name, read_e3t
+                f,
+                zlevels_var_name=zlevels_var_name,
+                ylevels_var_name=ylevels_var_name,
+                xlevels_var_name=xlevels_var_name,
+                e3t_var_name=e3t_var_name,
+                mask_var_name=mask_var_name,
+                read_e3t=read_e3t,
             )
 
     def _add_attributes_on_file(self, file_pointer):

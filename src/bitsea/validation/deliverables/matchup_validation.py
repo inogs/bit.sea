@@ -46,7 +46,7 @@ M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N=NutrientsReader()
 C=CarbonReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 OUTDIR = addsep(args.outdir)
 area = args.area

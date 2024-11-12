@@ -4,13 +4,13 @@
 # Generates images (in parallel) to compare different runs,
 # using STAT_PROFILES directories
 
-# Edit the USER SETTINS section below before launch.
+# Edit the USER SETTINGS section below before launch.
 
 
 import numpy as np
 import matplotlib.pyplot as pl
 from bitsea.basins import V2
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.timeseries.plot import read_pickle_file
 import os
 
@@ -159,11 +159,11 @@ PATH2 = LOC + "4H/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
 PATH3 = LOC + "4H/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
 PATH4 = LOC + "24H_orig/wrkdir/POSTPROC/output/AVE_FREQ_1/STAT_PROFILES/"
 
-#Mask_4=Mask(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc",loadtmask=False)
-#Mask16=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc",loadtmask=False)
-#Mask24=Mask(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc",loadtmask=False)
+#Mask_4=Mesh.from_file(LOC + "DEGRADATION_4_70/PREPROC/preproc_meshgen_forcings/mesh_gen/meshmask_470.nc", read_e3t=True)
+#Mask16=Mesh.from_file(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask16.nc", read_e3t=True)
+#Mask24=Mesh.from_file(LOC + "DEGRADATION_4_70/POSTPROC/MASKS/meshmask24.nc", read_e3t=True)
 
-Mask24=Mask(LOC + "2H/wrkdir/MODEL/meshmask.nc",loadtmask=False)
+Mask24 = Mesh.from_file(LOC + "2H/wrkdir/MODEL/meshmask.nc", read_e3t=True)
 OUTDIR= LOC + "multirun/spaghetti/offshore/"
 
 LEVELS=[0,50,100,150] #m

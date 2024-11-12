@@ -73,7 +73,7 @@ ModDir = addsep(args.inmod)
 SatDir = addsep(args.insat)
 OUTDIR = addsep(args.outdir)
 MyMesh = getattr(masks,args.mesh)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 TLModel = TimeList.fromfilenames(None, ModDir,"*Chla.nc",prefix='ave.')

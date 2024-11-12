@@ -159,7 +159,7 @@ class DataExtractor(object):
         return output
 
 if __name__ == "__main__":
-    TheMask= Mask('/g100_work/OGS_devC/Benchmark/SETUP/PREPROC/MASK/meshmask.nc')
+    TheMask = Mask.from_file('/g100_work/OGS_devC/Benchmark/SETUP/PREPROC/MASK/meshmask.nc')
     filename="/g100_work/OGS_prodC/OPA/V10C-prod/wrkdir/forecast/0/MODEL/AVE_FREQ_1/ave.20240229-12:00:00.N1p.nc"
     De = DataExtractor(TheMask,filename=filename,varname='N1p')
     M3d = De.values*3

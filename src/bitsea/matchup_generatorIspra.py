@@ -19,7 +19,7 @@ M = Matchup_Manager(ISPRA_PROFILES,TL,BASEDIR)
 
 OUTDIR = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_' + RUN + '/'
 MASKFILE = '/pico/scratch/userexternal/ateruzzi/DA_COAST_18/wrkdir/MODEL/meshmask.nc'
-TheMask = Mask(MASKFILE)
+TheMask = Mask.from_file(MASKFILE)
 nav_lev = TheMask.zlevels
 LIMFILE = '/pico/scratch/userexternal/ateruzzi/ELAB_DA_COAST/DATI_ISPRA/SKILL_DIAG/OUT_MATCHUP_18/limits18.npy'
 LIMITS = np.load(LIMFILE)

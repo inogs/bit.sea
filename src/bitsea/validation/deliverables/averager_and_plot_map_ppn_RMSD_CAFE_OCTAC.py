@@ -110,7 +110,7 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 CAFE_DIR="/g100_scratch/userexternal/lfeudale/NPP/bit.sea/validation/deliverables/"
 OCTAC_DIR="/g100_scratch/userexternal/lfeudale/NPP/bit.sea/validation/deliverables/"

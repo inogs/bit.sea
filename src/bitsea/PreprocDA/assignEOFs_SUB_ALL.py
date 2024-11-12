@@ -58,7 +58,7 @@ OUTDIR = addsep(args.outdir)
 BFMgrid = args.grid3dvar
 
 meshmask = args.maskfile
-TheMask = Mask(meshmask)
+TheMask = Mask.from_file(meshmask)
 
 MM = NC.netcdf_file(BFMgrid,'r')
 nregs = np.int(np.max(MM.variables['regs'].data))

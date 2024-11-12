@@ -1,3 +1,4 @@
+
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -52,7 +53,7 @@ from bitsea.mhelpers.pgmean import PLGaussianMean
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 OUTDIR = addsep(args.outdir)
 

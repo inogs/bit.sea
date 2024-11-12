@@ -266,20 +266,39 @@ class Mesh:
     def from_file(
         cls,
         file_path: PathLike,
+        *,
         zlevels_var_name: str = "nav_lev",
+        ylevels_var_name: str = "nav_lat",
+        xlevels_var_name: str = "nav_lon",
+        e3t_var_name: Optional[str] = None,
         read_e3t: bool = False,
     ):
         with netCDF4.Dataset(file_path, "r") as f:
-            return cls.from_file_pointer(f, zlevels_var_name, read_e3t)
+            return cls.from_file_pointer(
+                f,
+                zlevels_var_name=zlevels_var_name,
+                ylevels_var_name=ylevels_var_name,
+                xlevels_var_name=xlevels_var_name,
+                e3t_var_name=e3t_var_name,
+                read_e3t=read_e3t,
+            )
 
     @classmethod
     def from_file_pointer(
         cls,
         file_pointer: netCDF4.Dataset,
+        *,
         zlevels_var_name: str = "nav_lev",
+        ylevels_var_name: str = "nav_lat",
+        xlevels_var_name: str = "nav_lon",
+        e3t_var_name: Optional[str] = None,
         read_e3t: bool = False,
     ):
-        grid = Grid.from_file_pointer(file_pointer)
+        grid = Grid.from_file_pointer(
+            file_pointer,
+            ylevels_var_name=ylevels_var_name,
+            xlevels_var_name=xlevels_var_name,
+        )
 
         zlevels = np.array(
             file_pointer.variables[zlevels_var_name][:], dtype=np.float32
@@ -301,7 +320,10 @@ class Mesh:
             zlevels = zlevels[tuple(zlevels_slice)]
 
         if read_e3t:
-            e3t_names = ("e3t", "e3t_0")
+            if e3t_var_name is None:
+                e3t_names = ("e3t", "e3t_0")
+            else:
+                e3t_names = (e3t_var_name,)
             for e3t_name in e3t_names:
                 if e3t_name in file_pointer.variables:
                     e3t = np.ma.getdata(
@@ -309,7 +331,10 @@ class Mesh:
                     )
                     break
             else:
-                raise KeyError("No e3t variable found inside netCDF file.")
+                raise KeyError(
+                    "No e3t variable found inside netCDF file; "
+                    f"tried the following names: {e3t_names}"
+                )
         else:
             e3t = None
 

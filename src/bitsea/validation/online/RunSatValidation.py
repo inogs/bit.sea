@@ -68,7 +68,7 @@ ARCHIVEDIR    = addsep(args.inputdir)
 OPA_RUNDATE   = args.rundate
 
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 #basins
 nSUB = len(OGS.P.basin_list)

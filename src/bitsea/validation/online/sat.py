@@ -19,7 +19,7 @@ maskfile='/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MAS
 
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 archive_dir='/pico/home/usera07ogs/a07ogs00/OPA/V4/archive'
-TheMask=Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 
 TS = TimeSeries(TI, archive_dir,postfix_dir='POSTPROC/AVE_FREQ_1/',glob_pattern="ave*gz")
 forecasts        =TS.get_forecast_days(rundays=[2])

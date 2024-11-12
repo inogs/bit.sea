@@ -47,7 +47,7 @@ from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons.Timelist import TimeList
 from bitsea.timeseries.plot import Hovmoeller_matrix
 from bitsea.timeseries.plot import read_pickle_file
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.layer import Layer
 from bitsea.basins import V2 as basV2
 from bitsea.static import climatology
@@ -61,7 +61,7 @@ INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
-TheMask= Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh(args.maskfile, read_e3t=True)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 

@@ -46,10 +46,10 @@ from bitsea.timeseries.plot import *
 
 #meanObj11 = PLGaussianMean(5,1.0)
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
-font_s =  15 
+font_s =  15
 label_s = 15
 
 # def my_Hovmoeller_diagram(plotmat, xs,ys, fig=None, ax=None):

@@ -64,7 +64,7 @@ IDrun='floatcfr'
 OUTDIR=addsep(args.outdir)
 # MODDIR=addsep(args.inmodel)
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 def readModelProfile(filename,var, wmo):
     ncIN = NC.netcdf_file(filename,'r')
@@ -77,9 +77,9 @@ def readModelProfile(filename,var, wmo):
 
 # TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 # maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-# Mask8 = Mask(maskfile8)
+# Mask8 = Mask.from_File(maskfile8)
 # jpk8,jpj8,jpi8 = Mask8.shape
-# TheMask= Mask(args.maskfile, loadtmask=False)
+# TheMask = Mesh.from_file(args.maskfile)
 # jpk,jpj,jpi = TheMask.shape
 # z = -TheMask.zlevels
 

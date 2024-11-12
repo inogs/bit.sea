@@ -63,7 +63,7 @@ MONTHLY_DIR=addsep(args.monthlydir)
 CLIMA_DIR=addsep(args.climadir)
 OUTDIR = addsep(args.outdir)
 OUTIND = addsep(args.outind)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 _,jpj,jpi = TheMask.shape
 

@@ -118,7 +118,7 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 CONVERSION_DICT={
      'netPPYc' : 365./1000,

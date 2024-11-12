@@ -56,7 +56,7 @@ INPDIR = addsep(args.indir)
 DIRIND = addsep(args.dirind)
 OUTDIR = addsep(args.outdir)
 perc = np.float(args.perc)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 Lon = TheMask.xlevels
 Lat = TheMask.ylevels
 

@@ -41,7 +41,7 @@ from bitsea.basins import OGS
 
 
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 tk_m     = TheMask.getDepthIndex(200)
 mask200   = TheMask.mask_at_level(200)
 

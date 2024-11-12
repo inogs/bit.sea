@@ -239,7 +239,7 @@ PATH_2020=INPUTDIR + '/' + np.str(2020) +'/'
 PATH_2021=INPUTDIR + '/' + np.str(2021) +'/'
 PATH_2022=INPUTDIR + '/' + np.str(2022) +'/'
 PATH_2023=INPUTDIR + '/' + np.str(2023) +'/'
-Mask24=Mask('Maskfile')
+Mask24 = Mask.from_file('Maskfile')
 
 LEVELS=[0,50,100,150] #m
 ncolors=19

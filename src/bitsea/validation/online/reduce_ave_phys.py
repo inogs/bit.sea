@@ -41,7 +41,7 @@ except:
 
 INPUTDIR  = addsep(args.inputdir)
 OUTPUTDIR = addsep(args.outdir)
-TheMask    = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 TI = TimeInterval("1950","2050",'%Y')
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*phys.nc")

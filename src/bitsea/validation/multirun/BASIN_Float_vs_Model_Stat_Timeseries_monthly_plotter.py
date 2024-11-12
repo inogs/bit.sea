@@ -82,7 +82,7 @@ def fig_setup(S,subbasin_name):
     fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
 
-#    TheMask= Mask(maskfile)
+#    TheMask = Mask.from_file(maskfile)
 #    S = SubMask(basV2.lev1, maskobject=TheMask)
     bool2d=S.mask_at_level(0)
     smaskplot = np.ones_like(bool2d,dtype=np.float32)
@@ -110,7 +110,7 @@ def fig_setup(S,subbasin_name):
 
     return fig, axs
 
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 #S = SubMask(basV2.lev1, maskobject=TheMask)

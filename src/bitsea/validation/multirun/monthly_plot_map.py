@@ -59,7 +59,7 @@ import bitsea.commons.timerequestors as requestors
 clon,clat = coastline.get()
 
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 
 Timestart=os.getenv("START_DATE")
 Time__end=os.getenv("END_DATE")

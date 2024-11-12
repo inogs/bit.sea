@@ -44,7 +44,7 @@ args = argument()
 
 import matplotlib
 matplotlib.use('Agg')
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.instruments import superfloat as bio_float
@@ -104,7 +104,7 @@ def multicolor_ylabel(ax,list_of_strings,list_of_colors,axis='x',anchorpad=0,**k
 INDIR = addsep(args.indir)
 OUTDIR = addsep(args.outdir)
 BASEDIR = addsep(args.basedir)
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh(args.maskfile, read_e3t=True)
 
 Graphic_DeltaT = relativedelta(months=18)
 datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT

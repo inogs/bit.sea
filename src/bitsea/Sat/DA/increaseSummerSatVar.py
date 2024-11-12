@@ -3,8 +3,8 @@ from bitsea.Sat import SatManager
 from bitsea.postproc import masks
 maskSat = getattr(masks,"Mesh24")
 
-TheMask=Mask('/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/eas/eas_v12/ogstm/meshmask.nc')
-mask_200= TheMask.mask_at_level(200)
+TheMask = Mask.from_file('/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/eas/eas_v12/ogstm/meshmask.nc')
+mask_200 = TheMask.mask_at_level(200)
 
 INPUTDIR="/pico/scratch/userexternal/gbolzon0/EOF-python/VARSAT/"
 OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/EOF-python/SUMMER_INCREASED50_100/"

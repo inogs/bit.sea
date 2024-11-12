@@ -110,7 +110,7 @@ if __name__== "__main__":
 
     from bitsea.commons.mask import Mask
     from bitsea.Sat import SatManager as Sat
-    TheMask=Mask('/leonardo_scratch/large/userexternal/gbolzon0/MIT/V1/devel/wrkdir/BC_IC/mask.nc')
+    TheMask=Mask.from_file('/leonardo_scratch/large/userexternal/gbolzon0/MIT/V1/devel/wrkdir/BC_IC/mask.nc')
 
     jpk,jpj,jpi = TheMask.shape
     x = TheMask.lon

@@ -12,7 +12,7 @@ TI = TimeInterval("20190201","20190501"); season='winter'
 #TI = TimeInterval("20190701","20191001"); season='summer'
 
 
-TheMask = Mask('/g100_work/OGS_devC/gbolzon/BI-HOURLY/SETUP/meshmask.nc')
+TheMask = Mask.from_file('/g100_work/OGS_devC/gbolzon/BI-HOURLY/SETUP/meshmask.nc')
 mask2d=TheMask.mask_at_level(0)
 jpk,jpj,jpi = TheMask.shape
 MODEL_24="/g100_scratch/userexternal/gbolzon0/BI-HOURLY/24H_orig/wrkdir/POSTPROC/output/AVE_FREQ_1/CHL_SUP/"

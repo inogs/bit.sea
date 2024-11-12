@@ -109,7 +109,7 @@ if not submask_on_the_fly:
     for sub in SUBlist:
         index= SUBlist.index(sub)
         basin = L[index]
-        s=SubMask(basin,maskobject = TheMask)
+        s = SubMask(basin, TheMask)
         SUBM[sub] = s.mask
  
 
@@ -118,7 +118,7 @@ def SUB(sub):
     if submask_on_the_fly:
         index= SUBlist.index(sub)
         basin = L[index]
-        s=SubMask(basin,maskobject = TheMask)
+        s = SubMask(basin, TheMask)
         return s.mask
     else:
         return SUBM[sub]

@@ -213,8 +213,8 @@ pl.savefig('excluded_profiles_2015.png')
 #     #     [sub for sub in subfloatlist],'subfloat for ' + wmo)
 
 # # for iSub, sub in enumerate(basV2.P):
-#     # submask = SubMask(subfloat,maskobject=Mask8)
-#         submask = SubMask(subf,maskobject=Mask8)
+#     # submask = SubMask(subfloat, Mask8)
+#         submask = SubMask(subf, Mask8)
 #         F = figure_generator.figure_generator(submask)
 #         fig, axes = F.gen_structure_1(IDrun,'annual',subf.name)
 #         outfile = OUTDIR + "Fig_float_clim." + wmo + '_' + subf.name + ".png"

@@ -83,7 +83,7 @@ subm_open = {}
 subnames = ''
 for sub in V2.Pred:
     print sub.name
-    submask[sub.name] = SubMask(sub,maskobject=TheMask).mask[0,:,:]
+    submask[sub.name] = SubMask(sub, TheMask).mask[0,:,:]
     subm_open[sub.name] = submask[sub.name] | (mask200==True)
     subnames += sub.name + ', '
 

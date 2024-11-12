@@ -195,7 +195,7 @@ if __name__=="__main__":
     maskfile="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
     #maskfile="/Users/gbolzon/Documents/workspace/ogs_bounday_conditions/masks/meshmask_872.nc"
     TheMask = Mask.from_file(maskfile)
-    S = SubMask(basV2.lev1, maskobject=TheMask)
+    S = SubMask(basV2.lev1, TheMask)
     
     pl.close('all')
     F = figure_generator(S)

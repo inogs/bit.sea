@@ -56,7 +56,7 @@ SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 0
 for sub in OGS.Pred:
     print sub
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     Nsub += 1

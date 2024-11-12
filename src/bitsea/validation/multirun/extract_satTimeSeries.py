@@ -49,7 +49,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 SUB_LIST = ['alb', 'sww', 'swe', 'nwm', 'tyr', 'adn', 'ads', 'aeg', 'ion', 'lev', 'med']

@@ -89,7 +89,7 @@ for i in range(jpk):
 nSub    = len(V2.P.basin_list)
 LAYER_VOLUME = np.ones((jpk,nSub), np.float32)
 for iSub, sub in enumerate(V2.P.basin_list):
-    submask=SubMask(sub,maskobject = TheMask).mask
+    submask = SubMask(sub, TheMask).mask
     for k in range(jpk):
         V=Volume[k,:,:]
         m=submask[k,:,:]

@@ -127,7 +127,7 @@ SUBareas = np.zeros((jpj,jpi),dtype=dtype)
 SUBtot = np.zeros((jpj,jpi),np.int)
 for isub,sub in enumerate(OGS.Pred):
     print sub.name
-    SUBareas[sub.name] = SubMask(sub,maskobject=TheMask).mask_at_level(0)
+    SUBareas[sub.name] = SubMask(sub, TheMask).mask_at_level(0)
     SUBtot[SUBareas[sub.name]] = isub
 SUBtot[tgr==0] = -1000
 

@@ -243,7 +243,7 @@ for il, layer in enumerate(PLOT.layerlist):
  
 #        for isub, sub in enumerate(OGSred):
         for isub, sub in enumerate(OGS.P):
-            S = SubMask(sub, maskobject=TheMask)
+            S = SubMask(sub, TheMask)
             mask2d=S.mask[0,:,:]
             ppn_submean[isub] = integrated_masked[mask2d].mean()
                 

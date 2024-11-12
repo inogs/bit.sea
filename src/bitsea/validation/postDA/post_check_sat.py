@@ -61,7 +61,7 @@ for sub in V2.Pred:
     if 'atl' in sub.name: continue
     Nsub += 1
     #print sub.name
-    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
+    sbmask = SubMask(sub, Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     npSub[sub.name] = np.sum(SUB[sub.name])

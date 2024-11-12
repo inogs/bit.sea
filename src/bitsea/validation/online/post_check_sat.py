@@ -54,7 +54,7 @@ SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 1
 for sub in V2.Pred:
     Nsub += 1
-    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
+    sbmask = SubMask(sub, Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     npSub[sub.name] = np.sum(SUB[sub.name])

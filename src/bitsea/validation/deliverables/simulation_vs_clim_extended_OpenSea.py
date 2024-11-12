@@ -99,7 +99,7 @@ for var in VARLIST:
 #-------------------------------------------------
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=TheMask)
+    submask = SubMask(sub, TheMask)
     F = fg2.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_Appendix_nut_open_annual." + sub.name + ".png"
@@ -177,7 +177,7 @@ for var in VARLIST:
     timeseries_DICT[var]=TIMESERIES
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=TheMask)
+    submask = SubMask(sub, TheMask)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_Appendix_carb_open_annual." + sub.name + ".png"

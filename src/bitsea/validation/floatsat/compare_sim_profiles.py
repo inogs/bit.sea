@@ -84,7 +84,7 @@ for run in runList:
     TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")    
     for iSub, sub in enumerate(OGS.Pred):
         print(sub.name)
-        submask = SubMask(sub,maskobject=TheMask)
+        submask = SubMask(sub, TheMask)
         for ivar,var in enumerate(VARLIST):
             #F = figure_generator.figure_generator(submask)
             #fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)

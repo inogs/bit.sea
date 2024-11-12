@@ -95,7 +95,7 @@ dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.Pred:
     print sub.name
-    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
+    sbmask = SubMask(sub, Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 for sub in OGS.Pred:

@@ -151,7 +151,7 @@ class PlotDrawer:
                             "Average weights for level slice {} have not been "
                             "precomputed".format(requested_slice)
                         )
-                        submask = SubMask(basin, maskobject=plot_meshmask)
+                        submask = SubMask(basin, plot_meshmask)
                         average_weights = compute_slice_volume(
                             level_slice, plot_meshmask, submask
                         )
@@ -781,7 +781,7 @@ def draw_profile_plots(config: Config, basins, output_dir=None):
     if averages_in_levels:
         for meshmask_path, meshmask_object in meshmask_objects.items():
             for basin_index, basin in enumerate(basins):
-                submask = SubMask(basin, maskobject=meshmask_object)
+                submask = SubMask(basin, meshmask_object)
                 for level in config.time_series_options.levels:
                     if not isinstance(level, tuple):
                         continue

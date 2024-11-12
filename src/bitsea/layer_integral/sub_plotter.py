@@ -24,7 +24,7 @@ colortext=['w','w','w','w','w','k','k','k','k','k','k','k','k','k','w','w']
 cmap=pl.get_cmap('jet',nSub)
 
 for isub, sub in enumerate(SUBLIST):
-    m = SubMask(sub,maskobject=TheMask)
+    m = SubMask(sub, TheMask)
     submask = m.mask[0,:,:]
     SUB_matrix[submask] =isub
     xC[isub]=TheMask.xlevels[submask].mean()

@@ -89,7 +89,7 @@ for var in VARLIST:
 #-------------------------------------------------
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.11_annual." + sub.name + ".png"
@@ -157,7 +157,7 @@ for var in VARLIST:
 
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.17_annual." + sub.name + ".png"

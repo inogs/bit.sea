@@ -130,7 +130,7 @@ SUB = np.zeros((jpj,jpi),dtype=dtype)
 #for sub in OGS.Pred:
 for sub in BASINS:
     print (sub.name)
-    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
+    sbmask = SubMask(sub, Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 

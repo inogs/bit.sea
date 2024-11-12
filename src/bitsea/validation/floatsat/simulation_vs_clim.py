@@ -78,7 +78,7 @@ nVar = len(VARLIST)
 
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.11_annual." + sub.name + ".png"
@@ -133,7 +133,7 @@ DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 VARLIST=['pCO2','DIC','Ac','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.19_annual." + sub.name + ".png"

@@ -40,7 +40,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 mask200_2D = TheMask.mask_at_level(200.0)

@@ -28,7 +28,7 @@ npointSub['everywhere'] = np.zeros(Nsub)
 npointSub['open'] = np.zeros(Nsub)
 for isub,sub in enumerate(OGS.Pred):
     print sub.name
-    sbmask = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name] = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     npointSub['everywhere'][isub] = np.sum(SUB[sub.name]==True)

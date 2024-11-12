@@ -95,7 +95,7 @@ def SUB(sub):
     ''' sub is a string'''
     index= SUBlist.index(sub)
     basin = OGS.P.basin_list[index]
-    s=SubMask(basin,maskobject = TheMask)
+    s = SubMask(basin, TheMask)
     return s.mask
 
 

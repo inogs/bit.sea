@@ -130,6 +130,12 @@ class Mesh:
         return self._e3t
 
     @property
+    def area(self):
+        """A 2D numpy array such that area[i, j] is the area of the cell `(i,
+        j)` (in square meters)."""
+        return self.e1t * self.e2t
+
+    @property
     def lon(self):
         try:
             # noinspection PyUnresolvedReferences
@@ -178,6 +184,11 @@ class Mesh:
         self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
     ) -> Tuple:
         return self._grid.convert_lat_lon_to_indices(lon=lon, lat=lat)
+
+    def convert_lon_lat_to_indices(
+        self, *, lon: Union[float, np.ndarray], lat: Union[float, np.ndarray]
+    ) -> Tuple:
+        return self._grid.convert_lon_lat_to_indices(lon=lon, lat=lat)
 
     def convert_i_j_to_lon_lat(
         self, i: Union[int, np.ndarray], j: Union[int, np.ndarray]

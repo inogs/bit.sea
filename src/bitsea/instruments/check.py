@@ -182,20 +182,24 @@ class check():
         DEPTH= depth[~bad]
         nP = len(DEPTH)
 
-        REF_sat = oxy_sat(p)
- 
-        mydiff = np.abs(REF[0]-REF_sat)
-        flag1 = (mydiff > 20)
         nexcl = 0
+        mydiff = np.abs(MODEL-REF)
+        flag2_array = (mydiff > 30)  & (DEPTH<=150)
+        flag3_array = (mydiff > 50)  & (DEPTH>150) & (DEPTH<=600)
+        flag2 = flag2_array.sum() > 5
+        flag3 = flag3_array.sum() > 5
 
         line=""
         flag=np.nan
-        if ( flag1) :
-            if flag1: flag=1
-            line="%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , flag)
-            nexcl=nP
+        if  (flag2 | flag3): #( flag1  |  flag2 | flag3 ):
+            nexcl = nP
+            if flag2: flag=2
+            if flag3: flag=-1
+            if (flag2  & flag3) : flag=4
+            line="%s\t%s\t%s\t%s\t%s\t%s\t%s\n" %( p._my_float.wmo, p.time.strftime("%Y%m%d"), p.lon, p.lat , nP, nexcl, flag)
             FLAG = np.zeros((nP), int)
-            FLAG[0] =1
+            FLAG[flag2_array] = 2
+            FLAG[flag3_array] = -1
             if self.verboselevel ==1 :
                 outncfile="%s%s_%s.nc"  %(self.outdir + 'O2o.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
                 ncOUT = netCDF4.Dataset(outncfile,'w')

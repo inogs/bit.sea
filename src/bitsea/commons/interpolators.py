@@ -276,8 +276,8 @@ if __name__ == "__main__":
     from bitsea.commons.mask import Mask
     from bitsea.commons.dataextractor import DataExtractor
 
-    Mask1 = Mask("/Users/gbolzon/Downloads/test_interp/mask_006_014_reduced.nc")
-    Mask2 = Mask("/Users/gbolzon/Downloads/test_interp/mask.nc")
+    Mask1 = Mask.from_file("/Users/gbolzon/Downloads/test_interp/mask_006_014_reduced.nc")
+    Mask2 = Mask.from_file("/Users/gbolzon/Downloads/test_interp/mask.nc")
 
     filename = (
         "/Users/gbolzon/Downloads/test_interp/ave.20241027-12:00:00.N1p.nc"

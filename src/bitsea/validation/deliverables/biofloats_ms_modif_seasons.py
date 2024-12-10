@@ -48,7 +48,7 @@ from bitsea.basins.region import Rectangle
 from profilerDAf import ALL_PROFILES, TL, BASEDIR
 
 
-TheMask  = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 season = args.season
 

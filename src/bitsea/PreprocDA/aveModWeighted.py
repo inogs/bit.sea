@@ -67,7 +67,7 @@ except:
 INDIR = addsep(args.indir)
 OUTDIR   = addsep(args.outdir)
 std = float(args.stdweight)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 reset = True

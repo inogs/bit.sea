@@ -74,7 +74,7 @@ OUTDIR  =addsep(args.outdir)
 varname = args.varname
 starttime=args.starttime
 end__time=args.endtime
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")

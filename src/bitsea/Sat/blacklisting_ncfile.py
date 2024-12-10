@@ -77,7 +77,7 @@ AVESATDIR  = addsep(args.avesatdir)
 OUTDIR     = addsep(args.outdir)
 
 maskSat = getattr(masks,args.satmesh)
-maskMod = Mask(args.modmesh)
+maskMod = Mask.from_file(args.modmesh)
 
 reset = True #False
 

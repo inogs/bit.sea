@@ -59,7 +59,7 @@ from bitsea.layer_integral import coastline
 import bitsea.commons.timerequestors as requestors
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 INPUTDIR  = args.inputdir

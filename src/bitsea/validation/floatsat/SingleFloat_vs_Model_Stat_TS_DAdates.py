@@ -24,7 +24,7 @@ def argument():
 args = argument()
 
 import numpy as np
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.instruments import lovbio_float as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import LOVFLOATVARS
@@ -36,7 +36,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 import bitsea.basins.V2 as OGS
 
 OUTDIR = addsep(args.outdir)
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh(args.maskfile, read_e3t=True)
 layer=Layer(0,200)
 layer150=Layer(0,150)
 

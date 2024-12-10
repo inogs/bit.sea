@@ -11,8 +11,8 @@ from bitsea.commons.mask import Mask
 
 @pytest.mark.uses_test_data
 def test_interpolator(tmp_path: Path, test_data_dir: Path):
-    Mask1 = Mask(test_data_dir / "mask_006_014_reduced.nc")
-    Mask2 = Mask(test_data_dir / "mask.nc")
+    Mask1 = Mask.from_file(test_data_dir / "mask_006_014_reduced.nc")
+    Mask2 = Mask.from_file(test_data_dir / "mask.nc")
 
     filename = test_data_dir / "ave.20241027-12:00:00.N1p.nc"
 

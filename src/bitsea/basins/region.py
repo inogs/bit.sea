@@ -50,6 +50,10 @@ class Polygon(Region):
         self.__lon_list = lon_list
         self.__lat_list = lat_list
 
+        # Compute the min and the max of each variable
+        self.__lon_range = (min(lon_list), max(lon_list))
+        self.__lat_range = (min(lat_list), max(lat_list))
+
         # Ensure that the input is close
         if lon_list[-1] != lon_list[0] or lat_list[-1] != lat_list[0]:
             lon_list.append(lon_list[0])
@@ -88,7 +92,27 @@ class Polygon(Region):
             def undo_reshaping(x):
                 return x.reshape(current_shape[:-1])
 
-        inside = self.path.contains_points(points_coord)
+        lon_in_range = np.logical_and(
+            points_coord[:, 0] >= self.__lon_range[0],
+            points_coord[:, 0] <= self.__lon_range[1]
+        )
+        lat_in_range = np.logical_and(
+            points_coord[:, 1] >= self.__lat_range[0],
+            points_coord[:, 1] <= self.__lat_range[1],
+        )
+
+        inside_rectangle = np.logical_and(
+            lon_in_range,
+            lat_in_range
+        )
+
+        if np.any(inside_rectangle):
+            inside = np.zeros_like(inside_rectangle)
+            inside[inside_rectangle] = self.path.contains_points(
+                points_coord[inside_rectangle, :]
+            )
+        else:
+            inside = inside_rectangle
 
         if reshaped:
             return undo_reshaping(inside)
@@ -105,12 +129,7 @@ class Polygon(Region):
 
     @property
     def borders(self):
-        output = []
-        for i in range(len(self.__lon_list)):
-            lon = self.border_longitudes[i]
-            lat = self.border_latitudes[i]
-            output.append((lon, lat))
-        return tuple(output)
+        return tuple(p for p in zip(self.__lon_list, self.__lat_list))
 
     def cross(self, another_region):
         # The following lines are useful if another_region is a basin

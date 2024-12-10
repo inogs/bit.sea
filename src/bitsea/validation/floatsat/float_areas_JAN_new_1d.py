@@ -23,7 +23,7 @@ SCRATCHDIR = '/pico/scratch/userexternal/ateruzzi/'
 RUN = 'SAT_01'
 maskfile = SCRATCHDIR + '/DA_FLOAT_SAT/Winter/RUN_' + \
              RUN +'/wrkdir/MODEL/meshmask.nc'
-TheMask=Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 PUNTIFILE='punti_20150106_20150113_20150120_20150127.dat'
 
 

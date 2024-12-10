@@ -84,8 +84,8 @@ def fig_setup(S,subbasin_name):
     fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
 
-#    TheMask= Mask(maskfile)
-#    S = SubMask(basV2.lev1, maskobject=TheMask)
+#    TheMask = Mask.from_file(maskfile)
+#    S = SubMask(basV2.lev1, TheMask)
     bool2d=S.mask_at_level(0)
     smaskplot = np.ones_like(bool2d,dtype=np.float32)
     smaskplot[~bool2d] = np.nan
@@ -112,10 +112,10 @@ def fig_setup(S,subbasin_name):
 
     return fig, axs
 
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-#S = SubMask(basV2.lev1, maskobject=TheMask)
+#S = SubMask(basV2.lev1, TheMask)
 
 VARLIST      = ['P_l','N3n','O2o','P_c']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen','PhytoC']
@@ -154,7 +154,7 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
         OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
-        S = SubMask(SubBasin, maskobject=TheMask)
+        S = SubMask(SubBasin, TheMask)
         fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
             Int_Ref = A_float[ivar,:,iSub,0]

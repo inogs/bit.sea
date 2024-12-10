@@ -47,7 +47,7 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()
 C=CarbonReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 OUTPUTDIR=args.outdir
 modelvarname = args.varname

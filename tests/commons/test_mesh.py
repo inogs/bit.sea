@@ -1,11 +1,12 @@
+from itertools import product as cart_prod
+
 import netCDF4
-import pytest
 import numpy as np
+import pytest
 
 from bitsea.commons.grid import Grid
-from bitsea.commons.grid import GridDescriptor
+from bitsea.commons.grid import IrregularGrid
 from bitsea.commons.mesh import Mesh
-from bitsea.commons.mesh import RegularMesh
 
 
 @pytest.fixture
@@ -18,24 +19,24 @@ def grid():
     y_levels = np.linspace(20, 30, grid_shape[0])
     ylevels = np.broadcast_to(y_levels[:, np.newaxis], grid_shape)
 
-    return Grid(xlevels=xlevels, ylevels=ylevels)
+    return IrregularGrid(xlevels=xlevels, ylevels=ylevels)
 
 
 @pytest.fixture
 def mesh(grid):
-    return Mesh(grid, 5. + np.arange(10) * 10.)
+    return Mesh(grid, 5.0 + np.arange(10) * 10.0)
 
 
 def test_mesh_grid_descriptor_interface(mesh):
     grid = mesh.grid
 
-    for m in GridDescriptor.__abstractmethods__:
-        m_method = getattr(GridDescriptor, m)
+    for m in Grid.__abstractmethods__:
+        m_method = getattr(Grid, m)
         if isinstance(m_method, property):
-            if m == 'shape':
+            if m == "shape":
                 assert grid.shape == mesh.shape[1:]
                 continue
-            if m == 'coordinate_dtype':
+            if m == "coordinate_dtype":
                 assert grid.coordinate_dtype == mesh.coordinate_dtype
                 continue
             assert np.allclose(getattr(grid, m), getattr(mesh, m))
@@ -70,7 +71,7 @@ def test_mesh_computes_e3t_correctly(mesh):
     )
     cell_heights[1:] = np.cumsum(mesh.e3t[:, 0, 0])
 
-    expected_zlevels = (cell_heights[1:] + cell_heights[:-1]) / 2.
+    expected_zlevels = (cell_heights[1:] + cell_heights[:-1]) / 2.0
 
     assert np.allclose(mesh.zlevels, expected_zlevels)
 
@@ -86,7 +87,7 @@ def test_mesh_can_handle_1d_e3t_arrays(grid):
 
 
 def test_mesh_checks_if_e3t_has_the_right_shape(grid):
-    e3t = np.ones((10, ) + grid.shape, dtype=np.float32)
+    e3t = np.ones((10,) + grid.shape, dtype=np.float32)
     zlevels = np.arange(9) + 0.5
 
     with pytest.raises(ValueError):
@@ -105,7 +106,7 @@ def test_mesh_get_depth_index(mesh):
     min_depth = mesh.zlevels[0]
     max_depth = mesh.zlevels[-1]
 
-    for depth in np.linspace(min_depth, max_depth + 10., 50):
+    for depth in np.linspace(min_depth, max_depth + 10.0, 50):
         depth_index = mesh.get_depth_index(depth)
 
         assert depth >= mesh.zlevels[depth_index]
@@ -123,7 +124,7 @@ def test_mesh_get_depth_index_vectorize(mesh):
     min_depth = mesh.zlevels[0]
     max_depth = mesh.zlevels[-1]
 
-    d = np.linspace(min_depth, max_depth + 10., 50)
+    d = np.linspace(min_depth, max_depth + 10.0, 50)
 
     d_indices = mesh.get_depth_index(d)
 
@@ -146,7 +147,7 @@ def test_mesh_from_file(test_data_dir):
     mask_file = mask_dir / "nonregular_mask.nc"
 
     file_mesh = Mesh.from_file(mask_file)
-    file_grid = Grid.from_file(mask_file)
+    file_grid = IrregularGrid.from_file(mask_file)
 
     assert np.allclose(file_mesh.xlevels, file_grid.xlevels)
     assert np.allclose(file_mesh.ylevels, file_grid.ylevels)
@@ -162,15 +163,6 @@ def test_mesh_from_file_regular(test_data_dir):
     file_mesh = Mesh.from_file(mask_file)
 
     assert file_mesh.is_regular()
-
-
-@pytest.mark.uses_test_data
-def test_regular_mesh_checks_if_file_is_regular(test_data_dir):
-    mask_dir = test_data_dir / "masks"
-    mask_file = mask_dir / "nonregular_mask.nc"
-
-    with pytest.raises(ValueError):
-        RegularMesh.from_file(mask_file)
 
 
 @pytest.mark.uses_test_data
@@ -192,10 +184,41 @@ def test_regular_mesh_from_coordinates():
 
     zlevels = np.geomspace(1, 200, 50)
 
-    regular_mesh = RegularMesh.from_coordinates(
-        lon=lon, lat=lat, zlevels=zlevels
-    )
+    regular_mesh = Mesh.from_coordinates(lon=lon, lat=lat, zlevels=zlevels)
+
+    assert regular_mesh.is_regular()
 
     assert np.allclose(regular_mesh.lon, lon)
     assert np.allclose(regular_mesh.lat, lat)
     assert np.allclose(regular_mesh.zlevels, zlevels)
+
+
+def test_mesh_column_side_area(mesh):
+    for i, j in cart_prod((0, 5, 10, 23), (3, 9, 21, 12)):
+        assert (
+            mesh.column_side_area(i, j, "N", 1)
+            == mesh.e3t[0, j, i] * mesh.grid.e1t[j, i]
+        )
+        assert (
+            mesh.column_side_area(i, j, "W", 1)
+            == mesh.e3t[0, j, i] * mesh.grid.e2t[j, i]
+        )
+
+        assert mesh.column_side_area(i, j, "N", 0) == 0
+
+        assert (
+            mesh.column_side_area(i, j, "N", 5)
+            == np.sum(mesh.e3t[:5, j, i]) * mesh.grid.e1t[j, i]
+        )
+        assert (
+            mesh.column_side_area(i, j, "W", 5)
+            == np.sum(mesh.e3t[:5, j, i]) * mesh.grid.e2t[j, i]
+        )
+
+
+def test_mesh_column_side_area_sanitize_input(mesh):
+    with pytest.raises(ValueError):
+        mesh.column_side_area(0, 0, "N", None)
+
+    with pytest.raises(ValueError):
+        mesh.column_side_area(0, 0, "Q", 3)

@@ -41,7 +41,7 @@ from bitsea.basins import OGS
 
 
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 tk_m     = TheMask.getDepthIndex(200)
 mask200   = TheMask.mask_at_level(200)
 
@@ -49,7 +49,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 SUB_LIST = ['alb', 'sww', 'swe', 'nwm', 'tyr', 'adn', 'ads', 'aeg', 'ion', 'lev', 'med']

@@ -668,7 +668,7 @@ if __name__ == "__main__":
 	from bitsea.commons.mask import Mask
 	from bitsea.commons.dataextractor import DataExtractor
 
-	TheMask = Mask(maskfile)
+	TheMask = Mask.from_file(maskfile)
 	data = DataExtractor(TheMask,fname, varname).values
 	data[~TheMask.mask] = np.nan
 

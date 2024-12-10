@@ -32,7 +32,7 @@ def argument():
 args = argument()
 
 import numpy as np
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
@@ -59,7 +59,7 @@ Check_obj_phytoC = check.check(OUTDIR + "phytoC_check/")
 Check_obj_oxygen = check.check(OUTDIR + "oxygen_check/")
 
 
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh(args.maskfile, read_e3t=True)
 
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)

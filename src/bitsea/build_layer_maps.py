@@ -102,7 +102,7 @@ mapobj = Basemap(projection='merc',lat_0=xC,lon_0=yC,\
 
 TI = TimeInterval("1950","2050","%Y")
 TL = TimeList.fromfilenames(TI, inputdir, file_pattern )
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 mb = MapBuilder(plotlistfile, TL, TheMask, outputdir)
 
 logo=mb.read_background(args.logo)

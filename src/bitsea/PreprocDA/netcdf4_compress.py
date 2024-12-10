@@ -24,13 +24,13 @@ args = argument()
 
 from bitsea.commons import netcdf4
 import netCDF4 as NC
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 import glob,os
 from bitsea.commons.utils import addsep
 
 INPUTDIR = addsep(args.inputdir)
 OUTDIR   = addsep(args.outdir)
-TheMask = Mask(args.maskfile,loadtmask=False)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 jk = TheMask.getDepthIndex(300.0)
 filelist=glob.glob(INPUTDIR + "eof*nc")
 filelist.sort()

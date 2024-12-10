@@ -46,7 +46,7 @@ from bitsea.commons.utils import addsep
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 N=MassimiliReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 
 OUTPUTDIR=addsep(args.outdir)

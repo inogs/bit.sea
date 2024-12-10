@@ -51,7 +51,7 @@ import scipy.io as NC
 from bitsea.commons.utils import addsep
 from bitsea.basins.region import Rectangle
 
-TheMask  = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 BASEDIR =  addsep(args.basedir)
 outfile  = args.outfile
 datestr  = args.date

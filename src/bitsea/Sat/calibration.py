@@ -18,7 +18,7 @@ from bitsea.commons.submask import SubMask
 from bitsea.basins import OGS
 from bitsea.commons.layer import Layer
 
-TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask = Mask.from_file('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 MODEL_DIR="/pico/scratch/userexternal/gbolzon0/Carbonatic-17/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
 REF_DIR  = "/pico/scratch/userexternal/gbolzon0/Carbonatic-01/SAT16/"
 
@@ -40,7 +40,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 mask200_2D = TheMask.mask_at_level(200.0)

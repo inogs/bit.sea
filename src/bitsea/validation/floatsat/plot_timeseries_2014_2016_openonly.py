@@ -62,7 +62,7 @@ fid.close()
 TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_ = LIST
     
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi=TheMask.shape
 
 #TI = TimeInterval("201403","201501","%Y%m")

@@ -12,7 +12,7 @@ OUTPUTDIR="/pico/scratch/userexternal/gbolzon0/EOF-python/VarMod/"
 
 maskfile="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/eas/eas_v12/ogstm/meshmask.nc"
 
-TheMask=Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 
 minMod=0.5
 minModC=0.75
@@ -37,7 +37,7 @@ for month in range(1,13):
 
     minMask_Open = ( varMod < VE*minMod ) & mask_200
     varMod[minMask_Open] = VE[minMask_Open]*minMod
-    
+
     minMask_Coast = ( varMod < VE*minModC) & (~mask_200)
     varMod[minMask_Coast] = VE[minMask_Coast] * minModC
 
@@ -48,4 +48,4 @@ for month in range(1,13):
         jj = JN[ip]
         ji = IN[ip]
         varMod[jj, ji ] = np.nanmean(varMod[jj-1:jj+2, ji-1:ji+2] )
-            
+

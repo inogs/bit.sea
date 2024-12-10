@@ -51,7 +51,7 @@ def argument():
 args = argument()
 
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 OUTDIR = addsep(args.outdir)
 
 plotlines = False

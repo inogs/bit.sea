@@ -127,7 +127,7 @@ def interpolator(
     rank = comm.Get_rank()
     nranks = comm.size
 
-    TheMask = Mask(maskfile)
+    TheMask = Mask.from_file(maskfile)
 
     if method == "FineToCoarse":
         x = TheMask.lon

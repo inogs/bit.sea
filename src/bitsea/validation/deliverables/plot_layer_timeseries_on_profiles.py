@@ -77,7 +77,7 @@ LAYERLIST = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150
 nLayers = len(LAYERLIST)
 
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi=TheMask.shape
 area = TheMask.area
 e3t = TheMask.dz
@@ -89,7 +89,7 @@ for i in range(jpk):
 nSub    = len(V2.P.basin_list)
 LAYER_VOLUME = np.ones((jpk,nSub), np.float32)
 for iSub, sub in enumerate(V2.P.basin_list):
-    submask=SubMask(sub,maskobject = TheMask).mask
+    submask = SubMask(sub, TheMask).mask
     for k in range(jpk):
         V=Volume[k,:,:]
         m=submask[k,:,:]

@@ -33,8 +33,8 @@ import numpy as np
 import netCDF4
 import scipy.interpolate
 
-#TheMask=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-TheMask = Mask(args.maskfile)
+#TheMask = Mask.from_file('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask = Mask.from_file(args.maskfile)
 #CLIM_FILE="Climatology_KD490.nc"
 CLIM_FILE = args.inputclima
 OUTDIR = addsep(args.outdir)

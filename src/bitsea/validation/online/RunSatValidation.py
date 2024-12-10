@@ -68,7 +68,7 @@ ARCHIVEDIR    = addsep(args.inputdir)
 OPA_RUNDATE   = args.rundate
 
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 #basins
 nSUB = len(OGS.P.basin_list)
@@ -78,7 +78,7 @@ dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 
 for sub in OGS.Pred:
-    SUB[sub.name]  = SubMask(sub,maskobject=TheMask).mask_at_level(0)
+    SUB[sub.name] = SubMask(sub, TheMask).mask_at_level(0)
     if 'atl' in sub.name: continue
     SUB['med'] = SUB['med'] | SUB[sub.name]
 

@@ -17,7 +17,7 @@ if annaCoast:
         print "Error: Environment variable KCOASTFILE must be defined "
         sys.exit(1)
 
-TheMask=Mask(maskfile,ylevelsmatvar="gphit", xlevelsmatvar="glamt")
+TheMask = Mask.from_file(maskfile, ylevels_var_name="gphit", xlevels_var_name="glamt")
 jpk,jpj,jpi = TheMask.shape
 
 
@@ -109,7 +109,7 @@ if not submask_on_the_fly:
     for sub in SUBlist:
         index= SUBlist.index(sub)
         basin = L[index]
-        s=SubMask(basin,maskobject = TheMask)
+        s = SubMask(basin, TheMask)
         SUBM[sub] = s.mask
  
 
@@ -118,7 +118,7 @@ def SUB(sub):
     if submask_on_the_fly:
         index= SUBlist.index(sub)
         basin = L[index]
-        s=SubMask(basin,maskobject = TheMask)
+        s = SubMask(basin, TheMask)
         return s.mask
     else:
         return SUBM[sub]

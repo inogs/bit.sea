@@ -14,7 +14,7 @@ if not os.path.exists(WOA_DIR):
 
 maskfile = WOA_DIR + "meshmask.nc"
 
-Mask_WOA = Mask(maskfile)
+Mask_WOA = Mask.from_file(maskfile)
 levwoa = Mask_WOA.zlevels
 nwoa1000   = (levwoa<=1000).sum()
 ind_woa600 = (levwoa<= 600).sum()

@@ -40,7 +40,7 @@ from bitsea.layer_integral import coastline
 
 clon,clat = coastline.get()
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 _,jpj,jpi = TheMask.shape
 
 Timestart=os.getenv("START_DATE")

@@ -105,7 +105,7 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
@@ -224,7 +224,7 @@ for il, layer in enumerate(PLOT.layerlist):
         rows_names=[sub.name for sub in SUBlist]
         ppn_submean = np.zeros((nSub,2),np.float32)*np.nan # FIRST COL: mean; SECOND COL: std
         for isub, sub in enumerate(OGSred):
-            S = SubMask(sub, maskobject=TheMask)
+            S = SubMask(sub, TheMask)
             mask2d=S.mask[0,:,:]
             ppn_submean[isub,0] = integrated_masked[mask2d].mean()
             ppn_submean[isub,1] = integrated_masked[mask2d].std()
@@ -248,7 +248,7 @@ for il, layer in enumerate(PLOT.layerlist):
 #column_names=['bias','rmse','corr']
 #        ppn_submean = np.zeros((nSub,1),np.float32)*np.nan
 #        for isub, sub in enumerate(OGSred):
-#            S = SubMask(sub, maskobject=TheMask)
+#            S = SubMask(sub, TheMask)
 #            mask2d=S.mask[0,:,:]
 #            ppn_submean[isub,0] = integrated_masked[mask2d].mean()
 #

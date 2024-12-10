@@ -220,7 +220,7 @@ for yy in LISTyear:
     PATH[yy] =  INPUTDIR  + '/PKL' + str(yy) + '/'
 
 
-Mask24=Mask(args.maskfile)
+Mask24 = Mask.from_file(args.maskfile)
 
 LEVELS=[0,50,100,150] #m
 

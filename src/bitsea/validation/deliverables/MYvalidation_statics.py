@@ -39,7 +39,7 @@ from bitsea.commons.layer import Layer
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 
 SUBlist = [sub for sub in OGS.P]

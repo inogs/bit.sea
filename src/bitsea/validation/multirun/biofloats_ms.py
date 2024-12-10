@@ -42,7 +42,7 @@ from bitsea.basins.region import Rectangle
 from profiler_2015 import ALL_PROFILES, TL, BASEDIR
 
 
-TheMask  = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 

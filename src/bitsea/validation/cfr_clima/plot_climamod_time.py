@@ -74,7 +74,7 @@ OUTDIR  = addsep(args.outdir)
 if args.timeperiod is not None:
     monthWindow = args.timeperiod
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 mask200 = TheMask.mask_at_level(200)
 
 print 'Subbasin masks'
@@ -83,7 +83,7 @@ subm_open = {}
 subnames = ''
 for sub in V2.Pred:
     print sub.name
-    submask[sub.name] = SubMask(sub,maskobject=TheMask).mask[0,:,:]
+    submask[sub.name] = SubMask(sub, TheMask).mask[0,:,:]
     subm_open[sub.name] = submask[sub.name] | (mask200==True)
     subnames += sub.name + ', '
 

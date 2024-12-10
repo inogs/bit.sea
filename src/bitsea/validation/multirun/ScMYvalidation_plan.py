@@ -75,7 +75,7 @@ def weighted_mean(Conc, Weight):
     return Weighted_Mean
 
 maskfile = os.getenv('MASKFILE')
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 
 Timestart=os.getenv("START_DATE")
 Time__end=os.getenv("END_DATE")
@@ -99,7 +99,7 @@ jpk,jpj,jpi =TheMask.shape
 dtype = [(sub.name, bool) for sub in OGS.P]
 SUB = np.zeros((jpj,jpi),dtype=dtype)
 for sub in OGS.P:
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
 
 masksel_2D = TheMask.mask_at_level(args.levsel)

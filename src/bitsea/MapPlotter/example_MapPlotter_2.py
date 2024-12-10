@@ -22,7 +22,7 @@ outdpi   = 300
 
 
 # Load data
-mask     = Mask(maskfile,zlevelsvar="nav_lev",ylevelsmatvar="gphit", xlevelsmatvar="glamt")
+mask = Mask.from_file(maskfile, zlevels_var_name="nav_lev", ylevels_var_name="gphit", xlevels_var_name="glamt")
 print(mask.xlevels.shape,mask.ylevels.shape)
 data     = nc4.readfile(fname,varname)[0,:,:]
 data[data > 1e10] = np.nan # Handle the mask

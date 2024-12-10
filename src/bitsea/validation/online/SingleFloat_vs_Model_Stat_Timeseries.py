@@ -36,7 +36,7 @@ def argument():
 args = argument()
 
 import numpy as np
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
@@ -60,7 +60,7 @@ Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 
 
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh(args.maskfile, read_e3t=True)
 
 Graphic_DeltaT = relativedelta(months=18)
 datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT

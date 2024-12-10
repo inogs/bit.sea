@@ -48,7 +48,7 @@ RST_DIR = addsep(args.inputdir)
 OUT_DIR = addsep(args.outputdir)
 
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 
 dtype = [(sub.name, bool) for sub in OGS.P]
@@ -56,7 +56,7 @@ SUB = np.zeros((jpj,jpi),dtype=dtype)
 Nsub = 0 
 for sub in OGS.Pred:
     print sub
-    sbmask         = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name]  = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     Nsub += 1

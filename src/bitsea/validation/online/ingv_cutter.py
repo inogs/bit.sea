@@ -55,8 +55,8 @@ from bitsea.commons import netcdf4
 INPUTDIR  = addsep(args.inputdir)
 OUTPUTDIR = addsep(args.outdir)
 
-MaskINGV   = Mask(args.ingvmask)
-TheMask    = Mask(args.maskfile)
+MaskINGV = Mask.from_file(args.ingvmask)
+TheMask = Mask.from_file(args.maskfile)
 
 JPK, JPJ, JPI = MaskINGV.shape
 jpk, jpj, jpi = TheMask.shape

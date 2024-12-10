@@ -58,7 +58,7 @@ def argument():
 
 args = argument()
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 indz200 = TheMask.getDepthIndex(200) + 1
 
 MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)

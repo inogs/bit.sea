@@ -54,7 +54,7 @@ PFT_NAME=['Diatoms','Nanophytoplankton','Picophytoplankton','Dinoflagellates']
 COLOR  = ['tab:blue','tab:orange','tab:green','tab:purple']
 LIGHTCOLOR  = ['lightsteelblue','moccasin','palegreen','plum']
 
-MATRIX_LIST=[filereader(INPUTDIR + var  +'_open_sea.pkl') for var in VARLIST]
+MATRIX_LIST=[filereader(INPUTDIR + '2021_' + var  +'_open_sea.pkl') for var in VARLIST]
 
 #P1l = filereader(INPUTDIR + 'P1l_open_sea.pkl')
 #P2l = filereader(INPUTDIR + 'P2l_open_sea.pkl')

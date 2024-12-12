@@ -3,27 +3,24 @@
 # Script to generate profiles of model files in
 # the same time and locations where instruments
 # such as bioFloats, mooring or vessels have been found.
-
 # When imported, this scripts only defines settings for matchup generation.
-#from bitsea.instruments.lovbio_float import FloatSelector
+
 from bitsea.instruments.superfloat import FloatSelector
 
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons.Timelist import TimeList
 from bitsea.basins.region import Rectangle
-# location of input big ave files, usually the TMP directory.
-# ave files are supposed to have N3n, O2o and chl
 
-INPUTDIR='/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_04/wrkdir/MODEL/AVE_FREQ_1/'
+INPUTDIR='/g100_scratch/userexternal/gbolzon0/V11C/TRANSITION/wrkdir/MODEL/AVE_FREQ_1/'
 
 # output directory, where aveScan.py will be run.
 
-BASEDIR='/gpfs/scratch/userexternal/lfeudale/validation/DARDANELLI/TEST_04/PROFILATORE/'
+BASEDIR='/g100_scratch/userexternal/gbolzon0/V11C/TRANSITION/wrkdir/POSTPROC/output/PROFILATORE/'
 
 
-DATESTART = '20170101'
-DATE__END = '20171231'
+DATESTART = '20220101'
+DATE__END = '20230101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
@@ -31,7 +28,7 @@ TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")
 ALL_PROFILES = FloatSelector(None,T_INT, Rectangle(-6,36,30,46))
 
 
-vardescriptorfile="/gpfs/scratch/userexternal/lfeudale/validation/DARDANELLI/TEST_04/bit.sea/validation/deliverables/VarDescriptorB.xml"
+vardescriptorfile="VarDescriptorB.xml"
 
 #This previous part will be imported in matchups setup.
 
@@ -41,9 +38,6 @@ if __name__ == '__main__':
     # Here instruments time and positions are read as well as model times
     M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
-
     profilerscript = BASEDIR + 'jobProfiler.sh'
-    aggregatedir="/gpfs/scratch/userexternal/gbolzon0/OPEN_BOUNDARY/TEST_04/wrkdir/POSTPROC/output/AVE_FREQ_1/TMP/"
-    M.writefiles_for_profiling(vardescriptorfile, profilerscript, aggregatedir=aggregatedir) # preparation of data for aveScan
+    M.writefiles_for_profiling(vardescriptorfile, profilerscript, aggregatedir=INPUTDIR) # preparation of data for aveScan
 
-    M.dumpModelProfiles(profilerscript) # sequential launch of aveScan

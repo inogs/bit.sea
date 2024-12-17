@@ -2,6 +2,7 @@ import argparse
 from bitsea.utilities.argparse_types import some_among, date_from_str
 from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 
+
 def argument():
     parser = argparse.ArgumentParser(description = """
     Calculates Chl of Kd statistics on matchups of Model and Sat.
@@ -82,6 +83,12 @@ from bitsea.commons.mask import Mask
 from bitsea.commons.submask import SubMask
 from bitsea.commons.layer import Layer
 from bitsea.instruments.var_conversions import SAT_VARS
+from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
+import mpi4py.MPI
+
+comm = get_mpi_communicator()
+rank = comm.Get_rank()
+nranks = comm.size
 
 def weighted_mean_std(Conc, Weight):
 
@@ -156,10 +163,12 @@ if "everywhere" in COASTNESS_LIST:
 # This is the surface layer choosen to match satellite chl data
 surf_layer = Layer(0,args.layer)
 
-for itime, modeltime in enumerate(model_TL.Timelist):
+modeltimes=model_TL.Timelist[rank::nranks]
+filelist=model_TL.filelist[rank::nranks]
+for itime, modeltime in enumerate(modeltime):
     outfile = args.outdir / f"valid.{modeltime.strftime(dateformat)}.{modvarname}.nc"
     print (outfile,flush=True)
-    modfile = model_TL.filelist[itime]
+    modfile = filelist[itime]
     try:
         CoupledList = sat_TL.couple_with([modeltime])
         sattime = CoupledList[0][0]
@@ -213,43 +222,5 @@ for itime, modeltime in enumerate(model_TL.Timelist):
     netcdf_validation_file.write(outfile, D)
 
 
-
-
-
-    # selection = ~nodata & coastmask
-    # M = matchup.matchup(Model[selection], Sat[selection])
-    #
-    # for isub, sub in enumerate(OGS.P):
-    #     selection = SUB[sub.name] & (~nodata) & coastmask
-    #     BGC_CLASS4_CHL_POINTS_SURF_BASIN[itime,isub]  = M.number()
-    #     if selection.sum() == 0: continue
-    #     M = matchup.matchup(Model[selection], Sat[selection])
-    #     BGC_CLASS4_CHL_RMS_SURF_BASIN[itime,isub]  = M.RMSE()
-    #     BGC_CLASS4_CHL_BIAS_SURF_BASIN[itime,isub] = M.bias()
-    #     BGC_CLASS4_CHL_CORR_SURF_BASIN[itime,isub] = M.correlation()
-    #     weight = TheMask.area[selection]
-    #     MODEL_MEAN[itime,isub] , MODEL__STD[itime,isub] = weighted_mean( M.Model,weight)
-    #     SAT___MEAN[itime,isub] , SAT____STD[itime,isub] = weighted_mean( M.Ref,  weight)
-    #
-    #     Mlog = matchup.matchup(np.log10(Model[selection]), np.log10(Sat[selection])) #add matchup based on logarithm
-    #     BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[itime,isub]  = Mlog.RMSE()
-    #     BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[itime,isub] = Mlog.bias()
-# BGC_CLASS4_CHL_EAN_RMS_SURF_BASIN  = BGC_CLASS4_CHL_RMS_SURF_BASIN.mean(axis=0)
-# BGC_CLASS4_CHL_EAN_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN.mean(axis=0)
-#
-#
-# LIST   =[i for i in range(11)]
-#
-# LIST[0]=model_TL.Timelist
-# LIST[1]=BGC_CLASS4_CHL_RMS_SURF_BASIN
-# LIST[2]=BGC_CLASS4_CHL_BIAS_SURF_BASIN
-# LIST[3]=MODEL_MEAN
-# LIST[4]=SAT___MEAN
-# LIST[5]=BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG
-# LIST[6]=BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
-# LIST[7]=MODEL__STD
-# LIST[8]=SAT____STD
-# LIST[9]=BGC_CLASS4_CHL_CORR_SURF_BASIN
-# LIST[10]=BGC_CLASS4_CHL_POINTS_SURF_BASIN
 
 

@@ -1,5 +1,6 @@
 import netCDF4 as NC
 from pathlib import Path
+import xarray as xr
 
 def write(outfile:Path,
           kwargs) -> Path:
@@ -39,3 +40,9 @@ def write(outfile:Path,
             ncvar[:] = kwargs[metric]
     return outfile
 
+def read(inputfile:Path)-> xr.Dataset:
+    return xr.open_dataset(inputfile)
+
+if __name__ == "__main__":
+    A = read("~/Downloads/valid.20220106.P4l.nc")
+    B = read("~/Downloads/valid.20220113.P4l.nc")

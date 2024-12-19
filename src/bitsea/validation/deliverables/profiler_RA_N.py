@@ -19,8 +19,8 @@ INPUTDIR='/g100_scratch/userexternal/gbolzon0/V11C/TRANSITION/wrkdir/MODEL/AVE_F
 BASEDIR='/g100_scratch/userexternal/gbolzon0/V11C/TRANSITION/wrkdir/POSTPROC/output/PROFILATORE_EMODNET/'
 
 
-DATESTART = '20220101'
-DATE__END = '20230101'
+DATESTART = '20240101'
+DATE__END = '20250101'
 
 T_INT = TimeInterval(DATESTART,DATE__END, '%Y%m%d')
 TL = TimeList.fromfilenames(T_INT, INPUTDIR,"ave*.nc",filtervar="N1p")

@@ -165,7 +165,7 @@ surf_layer = Layer(0,args.layer)
 
 modeltimes=model_TL.Timelist[rank::nranks]
 filelist=model_TL.filelist[rank::nranks]
-for itime, modeltime in enumerate(modeltime):
+for itime, modeltime in enumerate(modeltimes):
     outfile = args.outdir / f"valid.{modeltime.strftime(dateformat)}.{modvarname}.nc"
     print (outfile,flush=True)
     modfile = filelist[itime]

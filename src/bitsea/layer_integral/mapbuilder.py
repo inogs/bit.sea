@@ -150,7 +150,7 @@ class MapBuilder(object):
             de = DataExtractor(self._mask, filename=file_path, varname=p.varname)
 
             for i,l in enumerate(p.layerlist):
-                outfile_name = "ave.{}.{}.png".format(shortdate, p.varname, l)
+                outfile_name = "ave.{}.{}.{}.png".format(shortdate, p.varname, l)
                 outfile = self.__outputdir / outfile_name
                 mapdata = MapBuilder.get_layer_average(de, l)
                 try:

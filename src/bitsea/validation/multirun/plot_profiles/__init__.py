@@ -1,7 +1,9 @@
 from collections import namedtuple
 from itertools import compress
 from itertools import product as cart_product
+from math import gcd
 from os import path
+from pathlib import Path
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -13,7 +15,6 @@ from .tools.depth_profile_algorithms import get_depth_profile_plot_grid
 from .tools.read_config import Config
 from .tools.read_config import DataDirSource
 from .tools.read_config import DepthProfilesOptions
-from .tools.read_config import InvalidConfigFile
 from .tools.read_config import OutputOptions
 from .tools.read_config import PlotConfig
 from .tools.read_config import TimeSeriesOptions
@@ -24,10 +25,10 @@ from bitsea.commons.submask import SubMask
 from bitsea.commons.Timelist import TimeList
 from bitsea.utilities.mpi_serial_interface import get_mpi_communicator
 
+# lcm has been implemented only in Python >= 3.9
 try:
-    from math import gcd, lcm
+    from math import lcm
 except ImportError:
-    from math import gcd
 
     def lcm(a, b):
         return abs(a * b) // gcd(a, b)
@@ -169,7 +170,7 @@ class PlotDrawer:
                         y_data_domain, axis=-1, weights=average_weights
                     )
                 else:
-                    level_index = plot_meshmask.getDepthIndex(level)
+                    level_index = plot_meshmask.get_depth_index(level)
                     with plot_data:
                         plot_y_data = plot_data.get_values(
                             time_steps=slice(None),
@@ -690,11 +691,11 @@ def from_interval_to_slice(level_interval: tuple, meshmask: Mask):
     if level_interval[0] is None:
         start_level_index = None
     else:
-        start_level_index = meshmask.getDepthIndex(level_interval[0])
+        start_level_index = meshmask.get_depth_index(level_interval[0])
     if level_interval[-1] is None:
         end_level_index = None
     else:
-        end_level_index = meshmask.getDepthIndex(level_interval[-1])
+        end_level_index = meshmask.get_depth_index(level_interval[-1])
         # This is because we want to include the last level
         # inside the average
         end_level_index += 1
@@ -722,32 +723,20 @@ def compute_slice_volume(
     e2t = meshmask.e2t
     e3t = meshmask.e3t[level_slice, :]
 
-    n_cells = int(np.sum(basin_submask.mask[level_slice, :]))
+    n_cells = int(np.sum(basin_submask[level_slice, :]))
     # If there are no cells inside this basin for the current slice, then there
     # is no need to compute its size
     if n_cells == 0:
         return np.zeros((e3t.shape[0],), dtype=np.float32)
 
     slice_volume = np.sum(
-        e1t * e2t * e3t, axis=(1, 2), where=basin_submask.mask[level_slice, :]
+        e1t * e2t * e3t, axis=(1, 2), where=basin_submask[level_slice, :]
     )
 
     return slice_volume
 
 
-def draw_profile_plots(config: Config, basins, output_dir=None):
-    # If no output_dir has been received, we use the output_dir that is saved
-    # inside the config object
-    if output_dir is None:
-        output_dir = config.output_options.output_dir
-
-    if output_dir is None:
-        raise InvalidConfigFile(
-            "output_dir has not been specified in the output section of the "
-            "config file. Specify an output directory in the config file or "
-            "submit the output_dir argument to this function."
-        )
-
+def draw_profile_plots(config: Config, basins):
     # Check if at least one of the specified levels requires to compute an
     # average
     averages_in_levels = False
@@ -772,7 +761,7 @@ def draw_profile_plots(config: Config, basins, output_dir=None):
         # the t-mask
         if meshmask_path not in meshmask_objects:
             meshmask_objects[meshmask_path] = Mask.from_file(
-                meshmask_path,
+                Path(meshmask_path),
                 mask_var_name=plot.source.mask_var_name,
             )
 
@@ -809,11 +798,9 @@ def draw_profile_plots(config: Config, basins, output_dir=None):
         plot_drawer.load_data()
 
         for basin_index, basin in enumerate(basins):
-            outfile_name = config.output_options.output_name.replace(
-                "${VAR}", var_name
+            outfile_path = config.output_options.output_paths(
+                var_name, basin.name
             )
-            outfile_name = outfile_name.replace("${BASIN}", basin.name)
-            outfile_path = output_dir / outfile_name
 
             fig = plot_drawer.plot(
                 basin_index=basin_index,

@@ -5,6 +5,7 @@ from typing import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from warnings import warn
 
 import netCDF4
 import numpy as np
@@ -194,6 +195,13 @@ class Mesh:
         self, i: Union[int, np.ndarray], j: Union[int, np.ndarray]
     ) -> Tuple:
         return self._grid.convert_i_j_to_lon_lat(i=i, j=j)
+
+    def getDepthIndex(self, z: Real) -> int:
+        warn(
+            'This method is deprecated. Use "get_depth_index" instead.',
+            DeprecationWarning,
+        )
+        return self.get_depth_index(z)
 
     def get_depth_index(self, z: Real) -> int:
         """Converts a depth expressed in meters to the corresponding index

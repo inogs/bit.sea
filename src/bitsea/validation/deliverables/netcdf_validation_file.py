@@ -1,6 +1,8 @@
 import netCDF4 as NC
 from pathlib import Path
 import xarray as xr
+from bitsea.commons.Timelist import TimeList, TimeInterval
+import numpy as np
 
 def write(outfile:Path,
           kwargs) -> Path:
@@ -42,6 +44,33 @@ def write(outfile:Path,
 
 def read(inputfile:Path)-> xr.Dataset:
     return xr.open_dataset(inputfile)
+
+class dir_reader():
+    def __init__(self, TI: TimeInterval, dirname:Path, var:str, coastness:str):
+        print(f"reading {var}")
+        TL = TimeList.fromfilenames(TI, dirname, "valid.*", filtervar=var, prefix="valid.", dateformat="%Y%m%d")
+        TIMES=TL.Timelist
+        nFrames = TL.nTimes
+        First = read(TL.filelist[0])
+        nSub, nCoast=First.VALID_POINTS.shape
+        iCoast=First.coastlist.rsplit(",").index(coastness)
+        MODEL_MEAN = np.zeros((nFrames,nSub), np.float32)
+        SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
+        MODEL__STD = np.zeros((nFrames,nSub), np.float32)
+        SAT____STD = np.zeros((nFrames,nSub), np.float32)
+
+        for iFrame, filename in enumerate(TL.filelist):
+            H=read(filename)
+            MODEL_MEAN[iFrame,:] = H.MODEL_MEAN[:,iCoast]
+            SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
+            MODEL__STD[iFrame,:] = H.MODEL__STD[:,iCoast]
+            SAT____STD[iFrame,:] = H.SAT____STD[:,iCoast]
+
+        self.TIMES = TIMES
+        self.MODEL_MEAN = MODEL_MEAN
+        self.SAT___MEAN  = SAT___MEAN
+        self.MODEL__STD  = MODEL__STD
+        self.SAT____STD  = SAT____STD
 
 if __name__ == "__main__":
     A = read("~/Downloads/valid.20220106.P4l.nc")

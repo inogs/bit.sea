@@ -1,4 +1,6 @@
 import argparse
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Similar to plot_timeseries_STD.py,
@@ -10,56 +12,53 @@ def argument():
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(   '--inputdir', '-i',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
-                                help = ''' input dir with 4 pkl files'''
+                                help = ''' input dir with '''
                                 )
 
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
                                 help = ''' Output dir of png files'''
                                 )
-
+    parser.add_argument(   '--datestart', '-s',
+                                type = date_from_str,
+                                required =True,
+                                help = ''' Date start for time interval to consider for validation, format %Y%m%d'''
+                                )
+    parser.add_argument(   '--dateend', '-e',
+                                type = date_from_str,
+                                required =True,
+                                help = ''' Date end for time interval to consider for validation,format %Y%m%d'''
+                                )
     return parser.parse_args()
 
 args = argument()
-import pickle
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 from bitsea.basins import V2 as OGS
-from bitsea.commons.utils import addsep
+from bitsea.validation.deliverables import netcdf_validation_file
+from bitsea.commons.Timelist import TimeInterval
 
-class filereader():
-    def __init__(self, filename):
-        
-        fid = open(filename,'rb')
-        LIST = pickle.load(fid)
-        fid.close()
-        TIMES,_,_,MODEL_MEAN,SAT___MEAN,_,_,MODEL__STD,SAT____STD,CORR, NUMB = LIST
-        self.TIMES = TIMES
-        self.MODEL_MEAN = MODEL_MEAN
-        self.SAT___MEAN  = SAT___MEAN
-        self.MODEL__STD  = MODEL__STD
-        self.SAT____STD  = SAT____STD
-        
+TI = TimeInterval.fromdatetimes(args.datestart, args.dateend)
 
-
-INPUTDIR=addsep(args.inputdir)
-OUTDIR=addsep(args.outdir)
+INPUTDIR=args.inputdir
+OUTDIR=args.outdir
 
 VARLIST= ["P1l","P2l","P3l","P4l"]
 PFT_NAME=['Diatoms','Nanophytoplankton','Picophytoplankton','Dinoflagellates']
 COLOR  = ['tab:blue','tab:orange','tab:green','tab:purple']
 LIGHTCOLOR  = ['lightsteelblue','moccasin','palegreen','plum']
 
-MATRIX_LIST=[filereader(INPUTDIR + '2021_' + var  +'_open_sea.pkl') for var in VARLIST]
 
-#P1l = filereader(INPUTDIR + 'P1l_open_sea.pkl')
-#P2l = filereader(INPUTDIR + 'P2l_open_sea.pkl')
-#P3l = filereader(INPUTDIR + 'P3l_open_sea.pkl')
-#P4l = filereader(INPUTDIR + 'P4l_open_sea.pkl')
+
+MATRIX_LIST=[netcdf_validation_file.dir_reader(TI, INPUTDIR,var,"open_sea") for var in VARLIST]
+
+#P1l = dir_reader(INPUTDIR,"P1l","open_sea")
+#P2l = dir_reader(INPUTDIR,"P2l","open_sea")
 
 
 
@@ -80,7 +79,7 @@ for isub,sub in enumerate(OGS.P):
 
 
     for ivar,var in enumerate(VARLIST):
-        outfile="%spfts_separated_%s.png" %(OUTDIR,sub.name)
+        outfile = OUTDIR / f"pfts_separated_{sub.name}.png"
         color = COLOR[ivar]
         ax = AXES_LIST[ivar]
         Pl = MATRIX_LIST[ivar]
@@ -102,7 +101,7 @@ for isub,sub in enumerate(OGS.P):
     fig.savefig(outfile)
 
     # plot with all pfts together
-    outfile="%spfts_%s.png" %(OUTDIR,sub.name)
+    outfile = OUTDIR / f"pfts_{sub.name}.png"
 
     fig = pl.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)

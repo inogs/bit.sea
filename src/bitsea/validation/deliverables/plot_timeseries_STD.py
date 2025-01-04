@@ -59,35 +59,36 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import matplotlib.dates as mdates
 from bitsea.validation.deliverables import netcdf_validation_file
-import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 from bitsea.instruments.var_conversions import SAT_VARS
-from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.commons.Timelist import TimeInterval
 
 TI = TimeInterval.fromdatetimes(args.datestart, args.dateend)
-TL = TimeList.fromfilenames(TI, args.inputdir, "valid.*", filtervar=args.var, prefix="valid.", dateformat="%Y%m%d")
+Pl=netcdf_validation_file.dir_reader(TI,args.inputdir,args.var,args.coastness)
+
+#TL = TimeList.fromfilenames(TI, args.inputdir, "valid.*", filtervar=args.var, prefix="valid.", dateformat="%Y%m%d")
 
 if (args.zone == "Med"):
     from bitsea.basins import V2 as OGS
 if (args.zone == "rivers"):
     from bitsea.basins import RiverBoxes as OGS
 
-TIMES=TL.Timelist
-nFrames = TL.nTimes
-First = netcdf_validation_file.read(TL.filelist[0])
-nSub, nCoast=First.VALID_POINTS.shape
-iCoast=First.coastlist.rsplit(",").index(args.coastness)
-MODEL_MEAN = np.zeros((nFrames,nSub), np.float32)
-SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
-MODEL__STD = np.zeros((nFrames,nSub), np.float32)
-SAT____STD = np.zeros((nFrames,nSub), np.float32)
-
-for iFrame, filename in enumerate(TL.filelist):
-    H=netcdf_validation_file.read(filename)
-    MODEL_MEAN[iFrame,:] = H.MODEL_MEAN[:,iCoast]
-    SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
-    MODEL__STD[iFrame,:] = H.MODEL__STD[:,iCoast]
-    SAT____STD[iFrame,:] = H.SAT____STD[:,iCoast]
+# TIMES=TL.Timelist
+# nFrames = TL.nTimes
+# First = netcdf_validation_file.read(TL.filelist[0])
+# nSub, nCoast=First.VALID_POINTS.shape
+# iCoast=First.coastlist.rsplit(",").index(args.coastness)
+# MODEL_MEAN = np.zeros((nFrames,nSub), np.float32)
+# SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
+# MODEL__STD = np.zeros((nFrames,nSub), np.float32)
+# SAT____STD = np.zeros((nFrames,nSub), np.float32)
+#
+# for iFrame, filename in enumerate(TL.filelist):
+#     H=netcdf_validation_file.read(filename)
+#     MODEL_MEAN[iFrame,:] = H.MODEL_MEAN[:,iCoast]
+#     SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
+#     MODEL__STD[iFrame,:] = H.MODEL__STD[:,iCoast]
+#     SAT____STD[iFrame,:] = H.SAT____STD[:,iCoast]
 
 
 model_label=' MODEL'

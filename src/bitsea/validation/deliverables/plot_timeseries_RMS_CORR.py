@@ -154,8 +154,8 @@ BIASLwin = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 MEAN_MOD_win = np.nanmean(dr.MODEL_MEAN[ii,:],axis=0)
 MEAN_REF_win = np.nanmean(dr.SAT___MEAN[ii,:],axis=0)
 
-STD_MOD_win = np.nanmean(dr.MODEL_STD[ii,:],axis=0)
-STD_REF_win = np.nanmean(dr.SAT___STD[ii,:],axis=0)
+STD_MOD_win = np.nanmean(dr.MODEL__STD[ii,:],axis=0)
+STD_REF_win = np.nanmean(dr.SAT____STD[ii,:],axis=0)
 CORR_win    = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
 
 iSeas=2 # JUN-SEP
@@ -169,8 +169,8 @@ BIASLsum = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 MEAN_MOD_sum = np.nanmean(dr.MODEL_MEAN[ii,:],axis=0)
 MEAN_REF_sum = np.nanmean(dr.SAT___MEAN[ii,:],axis=0)
 
-STD_MOD_sum = np.nanmean(dr.MODEL_STD[ii,:],axis=0)
-STD_REF_sum = np.nanmean(dr.SAT___STD[ii,:],axis=0)
+STD_MOD_sum = np.nanmean(dr.MODEL__STD[ii,:],axis=0)
+STD_REF_sum = np.nanmean(dr.SAT____STD[ii,:],axis=0)
 CORR_sum    = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
 
 mat = np.zeros((nSUB,18),np.float32)

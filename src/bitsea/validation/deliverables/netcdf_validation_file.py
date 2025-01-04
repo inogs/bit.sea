@@ -58,6 +58,11 @@ class dir_reader():
         SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
         MODEL__STD = np.zeros((nFrames,nSub), np.float32)
         SAT____STD = np.zeros((nFrames,nSub), np.float32)
+        BGC_CLASS4_CHL_RMS_SURF_BASIN   = np.zeros((nFrames,nSub), np.float32)
+        BGC_CLASS4_CHL_BIAS_SURF_BASIN  = np.zeros((nFrames,nSub), np.float32)
+        BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = np.zeros((nFrames,nSub), np.float32)
+        BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= np.zeros((nFrames,nSub), np.float32)
+        BGC_CLASS4_CHL_CORR_SURF_BASIN = np.zeros((nFrames,nSub), np.float32)
 
         for iFrame, filename in enumerate(TL.filelist):
             H=read(filename)
@@ -65,12 +70,22 @@ class dir_reader():
             SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
             MODEL__STD[iFrame,:] = H.MODEL__STD[:,iCoast]
             SAT____STD[iFrame,:] = H.SAT____STD[:,iCoast]
+            BGC_CLASS4_CHL_RMS_SURF_BASIN[iFrame,:] = H.BGC_CLASS4_CHL_RMS_SURF_BASIN[:,iCoast]
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN[iFrame,:] = H.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,iCoast]
+            BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[iFrame,:] = H.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[:,iCoast]
+            BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[iFrame,:] = H.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[:,iCoast]
+            BGC_CLASS4_CHL_CORR_SURF_BASIN[iFrame,:]  = H.BGC_CLASS4_CHL_CORR_SURF_BASIN[:,iCoast]
 
         self.TIMES = TIMES
         self.MODEL_MEAN = MODEL_MEAN
         self.SAT___MEAN  = SAT___MEAN
         self.MODEL__STD  = MODEL__STD
         self.SAT____STD  = SAT____STD
+        self.BGC_CLASS4_CHL_RMS_SURF_BASIN = BGC_CLASS4_CHL_RMS_SURF_BASIN
+        self.BGC_CLASS4_CHL_BIAS_SURF_BASIN = BGC_CLASS4_CHL_BIAS_SURF_BASIN
+        self.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG
+        self.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG = BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG
+        self.BGC_CLASS4_CHL_CORR_SURF_BASIN = BGC_CLASS4_CHL_CORR_SURF_BASIN
 
 if __name__ == "__main__":
     A = read("~/Downloads/valid.20220106.P4l.nc")

@@ -19,10 +19,8 @@ def argument():
     parser.add_argument(   '--outdir', '-o',
                             type = existing_dir_path,
                             required =True,
-                            default = "./",
                             help = ''' Output image dir'''
                             )
-
     parser.add_argument(   '--inputdir', '-i',
                             type = existing_dir_path,
                             required = True,
@@ -99,34 +97,7 @@ else:
 var_label = SAT_VARS[args.var] + " " + units
 
 TI = TimeInterval.fromdatetimes(args.datestart, args.dateend)
-TL = TimeList.fromfilenames(TI, args.inputdir, "valid.*", filtervar=args.var, prefix="valid.", dateformat="%Y%m%d")
-
-TIMES=TL.Timelist
-nFrames = TL.nTimes
-First = netcdf_validation_file.read(TL.filelist[0])
-nSub, nCoast=First.VALID_POINTS.shape
-iCoast=First.coastlist.rsplit(",").index(args.coastness)
-MODEL_MEAN = np.zeros((nFrames,nSub), np.float32)
-SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
-MODEL_STD  = np.zeros((nFrames,nSub), np.float32)
-SAT___STD  = np.zeros((nFrames,nSub), np.float32)
-BGC_CLASS4_CHL_RMS_SURF_BASIN   = np.zeros((nFrames,nSub), np.float32)
-BGC_CLASS4_CHL_BIAS_SURF_BASIN  = np.zeros((nFrames,nSub), np.float32)
-BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG = np.zeros((nFrames,nSub), np.float32)
-BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG= np.zeros((nFrames,nSub), np.float32)
-BGC_CLASS4_CHL_CORR_SURF_BASIN = np.zeros((nFrames,nSub), np.float32)
-
-for iFrame, filename in enumerate(TL.filelist):
-    H=netcdf_validation_file.read(filename)
-    MODEL_MEAN[iFrame,:] = H.MODEL_MEAN[:,iCoast]
-    SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
-    MODEL_STD[iFrame,:] = H.MODEL__STD[:,iCoast]
-    SAT___STD[iFrame,:] = H.SAT____STD[:,iCoast]
-    BGC_CLASS4_CHL_RMS_SURF_BASIN[iFrame,:] = H.BGC_CLASS4_CHL_RMS_SURF_BASIN[:,iCoast]
-    BGC_CLASS4_CHL_BIAS_SURF_BASIN[iFrame,:] = H.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,iCoast]
-    BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[iFrame,:] = H.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[:,iCoast]
-    BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[iFrame,:] = H.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[:,iCoast]
-    BGC_CLASS4_CHL_CORR_SURF_BASIN[iFrame,:]  = H.BGC_CLASS4_CHL_CORR_SURF_BASIN[:,iCoast]
+dr=netcdf_validation_file.dir_reader(TI,args.inputdir,args.var,args.coastness)
 
 
 
@@ -142,8 +113,8 @@ for isub,sub in enumerate(OGS.P):
 
     fig, ax = pl.subplots()
     fig.set_size_inches(12,4)
-    ax.plot(TIMES,BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
-    ax.plot(TIMES,BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
+    ax.plot(dr.TIMES,dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[:,isub],'-k',label='RMS')
+    ax.plot(dr.TIMES,dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:,isub],'-b',label='Bias')
     ax.set_ylabel(sub.name.upper() + ' - ' + var_label).set_fontsize(14)
     ax.legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
     leg = pl.gca().get_legend()
@@ -169,38 +140,38 @@ from bitsea.commons.season import season
 S=season()
 S.setseasons(["0101", "0501", "0601", "1001"], ["winter","spring","summer","fall"])
 from bitsea.commons import timerequestors
-TL=TimeList(TIMES)
+TL=TimeList(dr.TIMES)
 from bitsea.commons.utils import writetable
 
 iSeas=0 # JAN-APR
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)
 ii,w=TL.select(CLIM_REQ)
-RMS__win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
-BIAS_win = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
-RMSL_win = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
-BIASLwin = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
+RMS__win = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+BIAS_win = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+RMSL_win = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+BIASLwin = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 
-MEAN_MOD_win = np.nanmean(MODEL_MEAN[ii,:],axis=0)
-MEAN_REF_win = np.nanmean(SAT___MEAN[ii,:],axis=0)
+MEAN_MOD_win = np.nanmean(dr.MODEL_MEAN[ii,:],axis=0)
+MEAN_REF_win = np.nanmean(dr.SAT___MEAN[ii,:],axis=0)
 
-STD_MOD_win = np.nanmean(MODEL_STD[ii,:],axis=0)
-STD_REF_win = np.nanmean(SAT___STD[ii,:],axis=0)
-CORR_win    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
+STD_MOD_win = np.nanmean(dr.MODEL_STD[ii,:],axis=0)
+STD_REF_win = np.nanmean(dr.SAT___STD[ii,:],axis=0)
+CORR_win    = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
 
 iSeas=2 # JUN-SEP
 CLIM_REQ=timerequestors.Clim_season(iSeas,S)
 ii,w=TL.select(CLIM_REQ)
-RMS__sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
-BIAS_sum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
-RMSL_sum = np.nanmean(BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
-BIASLsum = np.nanmean(BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
+RMS__sum = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
+BIAS_sum = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
+RMSL_sum = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
+BIASLsum = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
 
-MEAN_MOD_sum = np.nanmean(MODEL_MEAN[ii,:],axis=0)
-MEAN_REF_sum = np.nanmean(SAT___MEAN[ii,:],axis=0)
+MEAN_MOD_sum = np.nanmean(dr.MODEL_MEAN[ii,:],axis=0)
+MEAN_REF_sum = np.nanmean(dr.SAT___MEAN[ii,:],axis=0)
 
-STD_MOD_sum = np.nanmean(MODEL_STD[ii,:],axis=0)
-STD_REF_sum = np.nanmean(SAT___STD[ii,:],axis=0)
-CORR_sum    = np.nanmean(BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
+STD_MOD_sum = np.nanmean(dr.MODEL_STD[ii,:],axis=0)
+STD_REF_sum = np.nanmean(dr.SAT___STD[ii,:],axis=0)
+CORR_sum    = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
 
 mat = np.zeros((nSUB,18),np.float32)
 

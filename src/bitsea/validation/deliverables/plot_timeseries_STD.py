@@ -64,31 +64,13 @@ from bitsea.instruments.var_conversions import SAT_VARS
 from bitsea.commons.Timelist import TimeInterval
 
 TI = TimeInterval.fromdatetimes(args.datestart, args.dateend)
-Pl=netcdf_validation_file.dir_reader(TI,args.inputdir,args.var,args.coastness)
-
-#TL = TimeList.fromfilenames(TI, args.inputdir, "valid.*", filtervar=args.var, prefix="valid.", dateformat="%Y%m%d")
+dr=netcdf_validation_file.dir_reader(TI,args.inputdir,args.var,args.coastness)
 
 if (args.zone == "Med"):
     from bitsea.basins import V2 as OGS
 if (args.zone == "rivers"):
     from bitsea.basins import RiverBoxes as OGS
 
-# TIMES=TL.Timelist
-# nFrames = TL.nTimes
-# First = netcdf_validation_file.read(TL.filelist[0])
-# nSub, nCoast=First.VALID_POINTS.shape
-# iCoast=First.coastlist.rsplit(",").index(args.coastness)
-# MODEL_MEAN = np.zeros((nFrames,nSub), np.float32)
-# SAT___MEAN = np.zeros((nFrames,nSub), np.float32)
-# MODEL__STD = np.zeros((nFrames,nSub), np.float32)
-# SAT____STD = np.zeros((nFrames,nSub), np.float32)
-#
-# for iFrame, filename in enumerate(TL.filelist):
-#     H=netcdf_validation_file.read(filename)
-#     MODEL_MEAN[iFrame,:] = H.MODEL_MEAN[:,iCoast]
-#     SAT___MEAN[iFrame,:] = H.SAT___MEAN[:,iCoast]
-#     MODEL__STD[iFrame,:] = H.MODEL__STD[:,iCoast]
-#     SAT____STD[iFrame,:] = H.SAT____STD[:,iCoast]
 
 
 model_label=' MODEL'
@@ -133,11 +115,13 @@ for isub,sub in enumerate(OGS.P):
     print (outfilename)
     fig, ax = pl.subplots()
     fig.set_size_inches(12,4)
-    ax.plot(TIMES,SAT___MEAN[:,isub],'o',label=' SAT',color=color)
-    ax.fill_between(TIMES,SAT___MEAN[:,isub]-SAT____STD[:,isub],SAT___MEAN[:,isub]+SAT____STD[:,isub],color=lightcolor)
-    ax.plot(TIMES,MODEL_MEAN[:,isub],'-k',label=model_label)
-    ax.plot(TIMES,MODEL_MEAN[:,isub]-MODEL__STD[:,isub],':k')
-    ax.plot(TIMES,MODEL_MEAN[:,isub]+MODEL__STD[:,isub],':k')
+    ax.plot(dr.TIMES,dr.SAT___MEAN[:,isub],'o',label=' SAT',color=color)
+    yfillbottom=dr.SAT___MEAN[:,isub]-dr.SAT____STD[:,isub]
+    yfilltop=dr.SAT___MEAN[:,isub]+dr.SAT____STD[:,isub]
+    ax.fill_between(dr.TIMES,yfillbottom,yfilltop,color=lightcolor)
+    ax.plot(dr.TIMES,dr.MODEL_MEAN[:,isub],'-k',label=model_label)
+    ax.plot(dr.TIMES,dr.MODEL_MEAN[:,isub]-dr.MODEL__STD[:,isub],':k')
+    ax.plot(dr.TIMES,dr.MODEL_MEAN[:,isub]+dr.MODEL__STD[:,isub],':k')
 
     ax.set_ylabel("%s - %s" %(sub.name.upper(), var_label  ) ).set_fontsize(14)
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))

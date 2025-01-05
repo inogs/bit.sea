@@ -1,5 +1,6 @@
 import argparse
-# python sat_model_RMSD_and_plot.py -s $SAT_WEEKLY_DIR -i $INPUT_AGGR_DIR -m $MASKFILE  -o Fig4.1/ -st 20170101 -et 20180101
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 
 def argument():
     parser = argparse.ArgumentParser(description = '''
@@ -9,34 +10,31 @@ def argument():
     )
 
     parser.add_argument(   '--outdir', '-o',
-                            type = str,
+                            type = existing_dir_path,
                             required =True,
-                            default = "./",
                             help = ''' Output dir'''
                             )
 
     parser.add_argument(   '--satdir', '-s',
-                            type = str,
+                            type = existing_dir_path,
                             required = True,
-                            default = './',
                             help = 'Satellite dir')
 
     parser.add_argument(   '--inputdir', '-i',
-                            type = str,
+                            type = existing_dir_path,
                             required = True,
-                            default = './',
                             help = 'Input dir')
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
+                                type = existing_file_path,
                                 required = True,
                                 help = 'Path of the mask file')
  
     parser.add_argument(   '--starttime','-st',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
     parser.add_argument(   '--endtime','-et',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
 
@@ -71,27 +69,24 @@ MODEL_DIR  = args.inputdir
 SATDIR    = args.satdir
 OUTPUTDIR = args.outdir
 
-START_TIME=args.starttime
-END___TIME=args.endtime
-
 surf_layer = Layer(0,10)
 mask0_2D = TheMask.mask_at_level(0.0)
 coastmask = mask0_2D
 
 dateformat ="%Y%m%d"
-#TI = TimeInterval('20170101','20180101',"%Y%m%d") 
-TI = TimeInterval(START_TIME,END___TIME,"%Y%m%d")
+
+TI = TimeInterval.fromdatetimes(args.starttime,args.endtime)
 sat_TL = TimeList.fromfilenames(TI, SATDIR,"*.nc", prefix="", dateformat="%Y%m%d")
-print (sat_TL)
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR,"*P_l.nc")
 
 suffix = os.path.basename(sat_TL.filelist[0])[8:]
+if args.endtime.year > args.starttime.year:
+    req_label=f"{args.starttime.year}_{args.endtime.year}"
+else:
+    req_label=f"{args.starttime.year}"
 
-#MY_YEAR = TimeInterval('20170101','20180101',"%Y%m%d")
-MY_YEAR = TimeInterval(START_TIME,END___TIME,"%Y%m%d")
-req_label='RMSD:2019'
 
-req = requestors.Generic_req(MY_YEAR)
+req = requestors.Generic_req(TI)
 indexes,weights = model_TL.select(req)
 nFrames = len(indexes)
 SD=np.zeros((nFrames,jpj,jpi), np.float32)
@@ -103,7 +98,7 @@ for iFrame, k in enumerate(indexes):
 
     CoupledList = sat_TL.couple_with([modeltime])
     sattime = CoupledList[0][0]
-    satfile = SATDIR + "/" + sattime.strftime(dateformat) + suffix
+    satfile = SATDIR /  (sattime.strftime(dateformat) + suffix)
     modfile = model_TL.filelist[k]
     print (modfile)
 
@@ -128,49 +123,47 @@ COUNTS=np.sum(tmp_COUNTS,axis=0)
 Sat2d=np.sqrt(np.nanmean(SD,axis=0))
 
 mask=TheMask.mask_at_level(0)
+COUNTS[~mask] = np.nan
 Sat2d[Sat2d<0] = np.nan
 Sat2d[~mask] = np.NaN
 var = 'SATchl'
 
+outfile    = OUTPUTDIR / f"Map_{var}_RMSD_{req_label}.png"
 fig,ax     = mapplot({'clim':[0.001,0.07],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-#ax.ticklabel_format(fontsize=10)
 ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-#ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label +  ".png"
 ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
-ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
+#ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
-title = "%s %s" % ('annual RMSD', var)
+title = f"RMSD {var} {req_label}"
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)
 
 
+outfile    = OUTPUTDIR / f"Maplog_{var}_RMSD_{req_label}.png"
 fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
 ax.set_ylabel('Lat').set_fontsize(12)
-#ax.ticklabel_format(fontsize=10)
 ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ' [mg /m^3]',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-#ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-outfile    = OUTPUTDIR + "Maplog_" + var + "_" + req_label +  ".png"
 ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
-ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
-title = "%s %s" % ('annual', var)
+title = f"{var} {req_label}"
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)
 
+
+outfile    = OUTPUTDIR / f"Map_COUNTS_{var}_RMSD_{req_label}.png"
 fig,ax     = mapplot({'clim':[40,55],  'data':COUNTS},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
@@ -179,13 +172,10 @@ ax.set_ylabel('Lat').set_fontsize(12)
 #ax.ticklabel_format(fontsize=10)
 ax.tick_params(axis='x', labelsize=10)
 ax.text(-4,44.5,var + ': # POINTS ',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-#ax.text(-4,32,'Ave:' + layer.string() ,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
-outfile    = OUTPUTDIR + "Map_COUNTS_" + var + "_" + req_label +  ".png"
 ax.xaxis.set_ticks(np.arange(-6,36,6))
 ax.yaxis.set_ticks(np.arange(30,46,4))
-ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
 ax.grid()
-title = "%s %s" % ('Number of records ', var)
+title = f"Number of records {var} {req_label}"
 fig.suptitle(title)
 fig.savefig(outfile)
 pl.close(fig)

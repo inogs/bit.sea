@@ -71,7 +71,7 @@ class check():
 
             outncfile=self.outdir / f"N3n.{p.time.strftime('%Y%m%d')}_{p._my_float.wmo}.nc"
             if self.verboselevel==1:
-                print("check dumps "  + outncfile)
+                print("check dumps "  + str(outncfile))
                 ncOUT = netCDF4.Dataset(outncfile,'w')
                 ncOUT.createDimension('depth',nP)
                 ncvar = ncOUT.createVariable('model','f',('depth', ))

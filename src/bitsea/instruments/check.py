@@ -1,8 +1,6 @@
 import numpy as np
 import netCDF4
-import os
-from bitsea.commons.utils import addsep
-from bitsea.Float.oxygen_saturation import oxy_sat
+from pathlib import Path
 
 class checkreport():
     def __init__(self, linestr, nObs,nExcl,reason, depthexc):
@@ -17,16 +15,13 @@ class checkreport():
 
 
 class check():
-    def __init__(self,OUTDIR, verboselevel=1, threshold_nitrate=1):
+    def __init__(self,OUTDIR:Path, verboselevel=1, threshold_nitrate=1):
         '''
         if verboselevel = 1, a NetCDF will be printed out
         else, no files will be dumped
         '''
-        if OUTDIR=="":
-            self.outdir=""
-        else:
-            self.outdir=addsep(OUTDIR)
-            os.system("mkdir -p " + OUTDIR)
+        self.outdir = OUTDIR
+        OUTDIR.mkdir(parents=True, exist_ok=True)
         self.verboselevel=verboselevel
         self.threshold_nitrate = threshold_nitrate
 
@@ -73,8 +68,8 @@ class check():
             FLAG[flag1_array] =1
             FLAG[flag2_array] =2
             FLAG[flag3_array] =-1
-        
-            outncfile="%s%s_%s.nc"  %(self.outdir + 'N3n.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+
+            outncfile=self.outdir / f"N3n.{p.time.strftime('%Y%m%d')}_{p._my_float.wmo}.nc"
             if self.verboselevel==1:
                 print("check dumps "  + outncfile)
                 ncOUT = netCDF4.Dataset(outncfile,'w')
@@ -117,7 +112,7 @@ class check():
             FLAG[flag1_array] =1
             # FLAG[flag2_array] =2
             if self.verboselevel ==1 :
-                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_l.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                outncfile=self.outdir / f"P_l.{p.time.strftime('%Y%m%d')}_{p._my_float.wmo}.nc"
                 ncOUT = netCDF4.Dataset(outncfile,'w')
                 ncOUT.createDimension('depth',nP)
 
@@ -157,7 +152,7 @@ class check():
             FLAG = np.zeros((nP), int)
             FLAG[flag1_array] =1
             if self.verboselevel ==1 :
-                outncfile="%s%s_%s.nc"  %(self.outdir + 'P_c.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                outncfile=self.outdir / f"P_c.{p.time.strftime('%Y%m%d')}_{p._my_float.wmo}.nc"
                 ncOUT = netCDF4.Dataset(outncfile,'w')
                 ncOUT.createDimension('depth',nP)
 
@@ -201,7 +196,7 @@ class check():
             FLAG[flag2_array] = 2
             FLAG[flag3_array] = -1
             if self.verboselevel ==1 :
-                outncfile="%s%s_%s.nc"  %(self.outdir + 'O2o.', p.time.strftime("%Y%m%d"), p._my_float.wmo )
+                outncfile=self.outdir / f"O2o.{p.time.strftime('%Y%m%d')}_{p._my_float.wmo}.nc"
                 ncOUT = netCDF4.Dataset(outncfile,'w')
                 ncOUT.createDimension('depth',nP)
 
@@ -269,7 +264,7 @@ class check():
 
 
 if __name__=="__main__":
-    import superfloat
+    from bitsea.instruments import superfloat
     OUTDIR="/gpfs/scratch/userexternal/gbolzon0/ateruzzi/NITRATE_CHECK/nitrate_profiles/"
     A = check(OUTDIR,verboselevel=1)
     BF=superfloat.BioFloat.from_file('/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/ONLINE_V5C/SUPERFLOAT/6901764/MR6901764_114.nc')

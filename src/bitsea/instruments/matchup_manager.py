@@ -329,7 +329,7 @@ class Matchup_Manager():
                 print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
 
-            Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
+            Modelfile = self.profilingDir / ("PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc"))
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 

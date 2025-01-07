@@ -127,7 +127,7 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
         
     ax.legend(loc=2)
     for tick in ax.xaxis.get_major_ticks():
-        tick.label1.set_fontsize(16) 
+        tick.label1.set_fontsize(16)
     for tick in ax.yaxis.get_major_ticks():
         tick.label1.set_fontsize(16)
     for tick in ax2.yaxis.get_major_ticks():

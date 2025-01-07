@@ -1,29 +1,24 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Needs a profiler.py, already executed.
     Produces a file, containing timeseries for some statistics, for each wmo.
-    In the outputdir, two new directories will be created, in order to store the output of check.
+    In the outputdir, 4 new directories will be created, in order to store the output of check.
     - nitrate_check/
     - chla_check/
+    - phytoC_check/
+    - oxygen_check/
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
-    
+                                type = existing_file_path)
     parser.add_argument(   '--basedir', '-b',
-                                type = str,
-                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
+                                type = existing_dir_path,
                                 required = True,
-                                help = ''' Path of maskfile''')    
-
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
                                 required = True,
                                 help = "")
 
@@ -37,31 +32,30 @@ from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
-from bitsea.commons.utils import addsep
 from bitsea.commons.layer import Layer
 from bitsea.basins.region import Rectangle
-#from bitsea.validation.online.metrics import *
-from metrics2 import *
+from bitsea.validation.deliverables.metrics2 import find_DCM, find_WBL,find_NITRICL
+from bitsea.validation.deliverables.metrics2 import find_OMZ, find_maxO2
+from bitsea.validation.deliverables.metrics2 import find_NITRICL_dz_max
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
-from bitsea.Float.oxygen_saturation import *
-from bitsea.basins import V2 as OGS
+from bitsea.Float.oxygen_saturation import oxy_sat
 import datetime
 from bitsea.instruments import check
 
 
 
 
-BASEDIR = addsep(args.basedir)
-OUTDIR = addsep(args.outdir)
-Check_obj_nitrate = check.check(OUTDIR + "nitrate_check/")
-Check_obj_chl     = check.check(OUTDIR + "chla_check/")
-Check_obj_phytoC = check.check(OUTDIR + "phytoC_check/")
-Check_obj_oxygen = check.check(OUTDIR + "oxygen_check/")
+BASEDIR = args.basedir
+OUTDIR = args.outdir
+Check_obj_nitrate = check.check(OUTDIR / "nitrate_check/")
+Check_obj_chl     = check.check(OUTDIR / "chla_check/")
+Check_obj_phytoC = check.check(OUTDIR / "phytoC_check/")
+Check_obj_oxygen = check.check(OUTDIR / "oxygen_check/")
 
 
 TheMask=Mask(args.maskfile, loadtmask=False)
 
-TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)
 TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
@@ -109,7 +103,7 @@ for V in VARLIST:
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
     wmo_list=bio_float.get_wmo_list(Profilelist)
     for iwmo, wmo in enumerate(wmo_list):
-        OUTFILE = "%s%s_%s.nc" %(OUTDIR, var_mod, wmo )
+        OUTFILE = OUTDIR / f"{var_mod}_{wmo}.nc"
         print (OUTFILE, flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         nTime = len(list_float_track)
@@ -121,8 +115,7 @@ for V in VARLIST:
             if "gm300" in locals(): del gm300
             p=list_float_track[itime]
             if p.available_params.find(var)<0 : continue
-
-          # Pres,Profile,Qc=p.read(var,var_mod=var_model) # IT IS NOT USED; LEFT JUST FOR CHECK
+            # Pres,Profile,Qc=p.read(var,var_mod=var_model) # IT IS NOT USED; LEFT JUST FOR CHECK
 
             GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=V.check_obj, extrapolation=V.extrap)
 
@@ -152,7 +145,7 @@ for V in VARLIST:
             A_float[itime,5] = gm200.Ref[0] # Surf Value
             A_model[itime,5] = gm200.Model[0] # Surf Value
 
-           # DCM/MWB
+            # DCM/MWB
             if (var_mod == "P_l"):
                 if ( ( p.time.month >= 4. )  & ( p.time.month <= 10 )):
                     A_float[itime,7], A_float[itime,2] = find_DCM(gm200.Ref  ,gm200.Depth) # CM, DCM
@@ -162,7 +155,7 @@ for V in VARLIST:
                     A_float[itime,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
                     A_model[itime,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
-           # NITRACL1/NITRACL2 
+            # NITRACL1/NITRACL2
             if (var_mod == "N3n"):
                 # NOTA: level 350
                 A_float[itime,4] = find_NITRICL(gm300.Ref  ,gm300.Depth) # Nitricline

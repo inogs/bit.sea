@@ -1,4 +1,5 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Produces Hovmoeller png files.
@@ -11,25 +12,19 @@ def argument():
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
+                                type = existing_file_path,
+                                required = True)
     parser.add_argument(   '--basedir', '-b',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
-                                help = ''' Path of the PROFILATORE dir''')
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--indir', '-i',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
                                 required = True,
                                 help = "Inputdir, the directory of the outputs of SingleFloat_vs_Model_Stat_Timeseries.py")
-
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
-                                required = True,
-                                help = "path of the output dir")
+                                type = existing_dir_path,
+                                required = True)
 
     return parser.parse_args()
 
@@ -38,7 +33,6 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.ticker as mticker
-import os,sys
 from bitsea.commons.mask import Mask
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.basins.region import Rectangle
@@ -46,16 +40,16 @@ from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.var_conversions import FLOATVARS
 import numpy as np
 import numpy.ma as ma
-from bitsea.commons.utils import addsep
 import matplotlib.pyplot as pl
 from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 import datetime
-import plotter
-import plotter_oxy
+from bitsea.validation.deliverables import plotter
+from bitsea.validation.deliverables import plotter_oxy
 from bitsea.instruments import check
-Check_obj = check.check("", verboselevel=0)
+from pathlib import Path
+Check_obj = check.check(Path(""), verboselevel=0)
 
 
 
@@ -69,16 +63,16 @@ def get_level_depth(TheMask,lev):
     return ix
 
 
-INDIR = addsep(args.indir)
-OUTDIR = addsep(args.outdir)
-BASEDIR = addsep(args.basedir)
+INDIR = args.indir
+OUTDIR = args.outdir
+BASEDIR = args.basedir
 TheMask=Mask(args.maskfile, loadtmask=False)
 
 font_s =  13
 font_s2 = 3
 label_s = 15
 
-TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)
 TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
@@ -104,7 +98,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
     wmo_list=bio_float.get_wmo_list(Profilelist)
     
     for wmo in wmo_list:
-        OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
+        OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
         print (OUTFILE,flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         if ( var_mod == 'P_c'):
@@ -148,7 +142,6 @@ for ivar_m, var_mod in enumerate(VARLIST):
                 plotmat_model[:,ip] = GM.Model
                 plotmat[      :,ip] = GM.Ref
 
-        #print (var_mod + " " + np.str(len(timelabel_list)) +  p.available_params)
 
         title="FLOAT %s %s" %(p.name(), var)
         ax1.set_title(title, fontsize=18, pad=30)
@@ -168,7 +161,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=4) #,cmap="jet")# default is 'flat'
         if (var_mod == 'P_c'):
-           # plotmat_m = 12128 * (plotmat_m * ( 470.0/ 700)**0.78 ) + 0.59
+            # plotmat_m = 12128 * (plotmat_m * ( 470.0/ 700)**0.78 ) + 0.59
             quadmesh = ax3.pcolormesh(xs, ys, plotmat_m,shading='nearest',vmin=0.00,vmax=20) #,cmap="jet")# default is 'flat'
             quadmesh = ax4.pcolormesh(xs, ys, plotmat_model,shading='nearest',vmin=0.00,vmax=20)
 
@@ -183,7 +176,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
 # SECOND FIGURE ON STATISTICS:
 
         # READ STATISTICS FILE *.nc
-        INPUT_FILE = "%s%s_%s.nc" %(INDIR, var_mod, wmo )
+        INPUT_FILE = INDIR / f"{var_mod}_{wmo}.nc"
         A = ncreader(INPUT_FILE)
         times = timelabel_list
 
@@ -310,10 +303,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
         else:
             cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs], fontsize=font_s)
-        
 
-#        if var_mod == 'O2o': 
-#        if var_mod == 'OXY':
         if var_mod == 'P_c':
             xlabels=ax7.get_xticklabels()
 #            ax8.plot(times,  np.ones_like(times))

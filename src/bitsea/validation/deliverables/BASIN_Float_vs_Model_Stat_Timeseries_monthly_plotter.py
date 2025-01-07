@@ -1,9 +1,8 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Needs a profiler.py, already executed.
-
-    It reads in the input directory two files ( model and ref) 
+    Reads in the input directory two files ( model and ref)
     containing [(nVar, nTime, nSub, nStat)] arrays to generate
     the following metrics:
 
@@ -22,21 +21,20 @@ def argument():
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
+                                type = existing_file_path,
+                                required = True)
     parser.add_argument(   '--inputdir', '-i',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
                                 required = True,
                                 help = "")
-
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--basedir', '-b',
+                                type = existing_dir_path,
+                                required = True,
+                                help = """ PROFILATORE dir, already generated""")
 
     return parser.parse_args()
 
@@ -52,24 +50,30 @@ from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from bitsea.commons.utils import addsep
-#from profiler import ALL_PROFILES,TL,BASEDIR
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from bitsea.basins.V2 import NRT3 as OGS
 from bitsea.commons.time_interval import TimeInterval
-from bitsea.matchup.statistics import *
+from bitsea.matchup.statistics import matchup
 from bitsea.commons.utils import writetable
-from datetime import datetime
 from datetime import timedelta
-from profiler import *
+from bitsea.commons.Timelist import TimeList
+from bitsea.basins.region import Rectangle
+
+OUTDIR = args.outdir
+BASEDIR = args.basedir
+TheMask= Mask(args.maskfile)
+INDIR = args.inputdir
+
+
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+deltaT= timedelta(hours=12)
+TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 def fig_setup(S,subbasin_name):
-# ,Lon,Lat):
     from bitsea.layer_integral import coastline
 
     fig = plt.figure()
-#    ax0 = plt.subplot2grid((4, 3), (0, 0), colspan=2)
-#    ax1 = plt.subplot2grid((4, 3), (0, 2))
     ax1 = plt.subplot2grid((4, 3), (0, 0), colspan=3)
     ax2 = plt.subplot2grid((4, 3), (1, 0), colspan=3)
     ax3 = plt.subplot2grid((4, 3), (2, 0), colspan=3)
@@ -77,15 +81,14 @@ def fig_setup(S,subbasin_name):
     axs = [ax1, ax2, ax3, ax4]
     for ax in [ax2, ax3, ax4]:
         ax.xaxis.grid(True)
-#        ax.set_xlim([datetime(2015,1,1),datetime(2017,1,1)])
-        ax.set_xlim([datetime(int(DATESTART[0:4]),int(DATESTART[4:6]),int(DATESTART[6:9])),datetime(int(DATE__END[0:4]),int(DATE__END[4:6]),int(DATE__END[6:9]))+timedelta(days=1)])
+        ax.set_xlim([ TI.start_time, TI.end_time +timedelta(days=1)])
+
 
     fig.set_size_inches(10,15)
     fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
 
-#    TheMask= Mask(maskfile)
-#    S = SubMask(basV2.lev1, maskobject=TheMask)
+
     bool2d=S.mask_at_level(0)
     smaskplot = np.ones_like(bool2d,dtype=np.float32)
     smaskplot[~bool2d] = np.nan
@@ -97,7 +100,6 @@ def fig_setup(S,subbasin_name):
     ax1.invert_yaxis()
 
     ax1.plot(c_lon,c_lat,'k')
-#    ax1.plot(Lon,Lat,'r.')
     ax1.set_title(subbasin_name , color = 'r', fontsize = 18)
     ax1.set_xlim([-10,36])
     ax1.set_ylabel("LAT",color = 'k', fontsize = 15)
@@ -112,10 +114,7 @@ def fig_setup(S,subbasin_name):
 
     return fig, axs
 
-TheMask= Mask(args.maskfile)
-INDIR = addsep(args.inputdir)
-OUTDIR = addsep(args.outdir)
-#S = SubMask(basV2.lev1, maskobject=TheMask)
+
 
 VARLIST      = ['P_l','N3n','O2o','P_c']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen','PhytoC']
@@ -126,18 +125,14 @@ METRICS      = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 METRICS_ALL=['CORR','INTmeanRef','INTmeanMod','INTstdRef','INTstdMod','INT_0-200_BIAS','INT_0-200_RMSD','DCMmeanRef','DCMmeanMod','DCMstdRef','DCMstdMod','DCM_BIAS','DCM_RMSD','WBLmeanRef','WBLmeanMod','WBLstdRef','WBLstdMod','WBL_BIAS','WBL_RMSD','NITmeanRef','NITmeanMod','NITstdRef','NITstdMod','NIT_BIAS','NIT_RMSD','OMZmeanRef','OMZmeanMod','OMZstdRef','OMZstdMod','OMZ_BIAS','OMZ_RMSD','O2oMaxRef','O2oMaxMod','O2oMaxRef_std','O2oMaxMod_std','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 
 nm=len(METRICS_ALL)
-print (nm)
 METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','WBL_BIAS','WBL_RMSD','NIT_BIAS','NIT_RMSD','OMZ_BIAS','OMZ_RMSD','O2oMax_BIAS','O2oMax_RMSD','N_POINTS']
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
-#MED_PROFILES = bio_float.FloatSelector(None,TL.timeinterval,OGS.med)
-#wmo_list=bio_float.get_wmo_list(MED_PROFILES)
-#MonthlyRequestors=M.TL.getMonthlist()
 
 times = [req.time_interval.start_time for req in M.TL.getMonthlist()  ]
-ti_restrict = TimeInterval(DATESTART,DATE__END,"%Y%m%d")
+ti_restrict = TI
 ii = np.zeros((len(times),) , bool)
 for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 
@@ -145,15 +140,15 @@ for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 izmax = TheMask.getDepthIndex(200) 
  
 #A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
-A_float = np.load(INDIR + 'Basin_Statistics_FLOAT.npy')
-A_model = np.load(INDIR + 'Basin_Statistics_MODEL.npy')
+A_float = np.load(INDIR / 'Basin_Statistics_FLOAT.npy')
+A_model = np.load(INDIR / 'Basin_Statistics_MODEL.npy')
 
 for ivar, var in enumerate(VARLIST):
-# if ( var == "P_c"):
     TABLE_METRICS = np.zeros((nSub,nm),np.float32)*np.nan #before 18 metrics
     TABLE_METRICS_SHORT = np.zeros((nSub,14),np.float32)*np.nan #before 10 metrics
     for iSub, SubBasin in enumerate(OGS.basin_list):
-        OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
+        outfile = OUTDIR / (var + "_" + SubBasin.name + ".png")
+        print(outfile)
         S = SubMask(SubBasin, maskobject=TheMask)
         fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
@@ -214,7 +209,7 @@ for ivar, var in enumerate(VARLIST):
             WBL_Mod = A_model[ivar,:,iSub,3]
             axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
-	    # FILTER OUT MAY TO NOV INCLUDED:
+            # FILTER OUT MAY TO NOV INCLUDED:
             WBL_Ref[4:11] = np.nan
             WBL_Mod[4:11] = np.nan
             WBL_Ref[16:23] = np.nan
@@ -317,13 +312,11 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,36] = m.RMSE()
 
         if ( (np.isnan(corr)).all() == True ) : continue
-        fig.savefig(OUTFILE)
+        fig.savefig(outfile)
         plt.close(fig)
 
     row_names   =[sub.name for sub in OGS.basin_list]
-    print (row_names)
-#    import sys
-#    sys.exit()
+
 
     TABLE_METRICS_SHORT[:,0] = TABLE_METRICS[:,0]
     TABLE_METRICS_SHORT[:,1] = TABLE_METRICS[:,5]
@@ -342,7 +335,7 @@ for ivar, var in enumerate(VARLIST):
     TABLE_METRICS_SHORT[:,13] = TABLE_METRICS[:,37]
 
 
-    writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t%.0f\t %.0f\t %.0f\t %.0f\t")
+    writetable(OUTDIR / (var + '_tab_statistics_ALL.txt'),TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t%.0f\t %.0f\t %.0f\t %.0f\t")
 
-    writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
+    writetable(OUTDIR / (var + '_tab_statistics_SHORT.txt'),TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
 

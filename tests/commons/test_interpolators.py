@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from bitsea.commons import netcdf4
 from bitsea.commons.dataextractor import DataExtractor
 from bitsea.commons.interpolators import compose_methods
@@ -11,8 +12,9 @@ from bitsea.commons.mask import Mask
 
 @pytest.mark.uses_test_data
 def test_interpolator(tmp_path: Path, test_data_dir: Path):
-    Mask1 = Mask.from_file(test_data_dir / "mask_006_014_reduced.nc")
-    Mask2 = Mask.from_file(test_data_dir / "mask.nc")
+    masks_dir = test_data_dir / "masks"
+    Mask1 = Mask.from_file(masks_dir / "mask_006_014_reduced.nc")
+    Mask2 = Mask.from_file(masks_dir / "interpolator_mask.nc")
 
     filename = test_data_dir / "ave.20241027-12:00:00.N1p.nc"
 

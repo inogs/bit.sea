@@ -115,6 +115,18 @@ class Mesh:
         return (self._zlevels.shape[0],) + self._grid.shape
 
     @property
+    def jpk(self) -> int:
+        return self._zlevels.shape[0]
+
+    @property
+    def jpj(self) -> int:
+        return self._grid.shape[0]
+
+    @property
+    def jpi(self) -> int:
+        return self._grid.shape[1]
+
+    @property
     def coordinate_dtype(self) -> np.dtype:
         return self._grid.coordinate_dtype
 

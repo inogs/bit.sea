@@ -1,8 +1,9 @@
 import numpy as np
-from bitsea.commons.utils import data_for_linear_interp
 from scipy import interpolate
 from scipy.interpolate import griddata
 from scipy.interpolate import RegularGridInterpolator
+
+from bitsea.commons.utils import data_for_linear_interp
 
 
 def shift(M2d, pos, verso):
@@ -228,8 +229,8 @@ def regular(Mask1, Mask2, VAR, method="linear", rescale=False):
         y2 = np.interp(Mask2.lat, Mask1.lat, y1)
         z2 = np.interp(Mask2.zlevels, Mask1.zlevels, z1)
     else:
-        x1, y1, z1 = Mask1.lon, Mask1.lat, Mask1.zlevels
-        x2, y2, z2 = Mask2.lon, Mask2.lat, Mask2.zlevels
+        x1, y1, z1 = Mask1.lon.copy(), Mask1.lat.copy(), Mask1.zlevels.copy()
+        x2, y2, z2 = Mask2.lon.copy(), Mask2.lat.copy(), Mask2.zlevels.copy()
 
     def bound_check(arr1, arr2):
         """Extent arr1 to arr2 limits
@@ -276,7 +277,9 @@ if __name__ == "__main__":
     from bitsea.commons.mask import Mask
     from bitsea.commons.dataextractor import DataExtractor
 
-    Mask1 = Mask.from_file("/Users/gbolzon/Downloads/test_interp/mask_006_014_reduced.nc")
+    Mask1 = Mask.from_file(
+        "/Users/gbolzon/Downloads/test_interp/mask_006_014_reduced.nc"
+    )
     Mask2 = Mask.from_file("/Users/gbolzon/Downloads/test_interp/mask.nc")
 
     filename = (

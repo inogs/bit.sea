@@ -1,8 +1,7 @@
 import argparse
-import datetime
 
+import netCDF4 as NC
 import numpy as np
-import scipy.io as NC
 
 from bitsea.basins import V2 as OGS
 from bitsea.basins.region import Rectangle
@@ -10,12 +9,15 @@ from bitsea.commons import timerequestors
 from bitsea.commons.layer import Layer
 from bitsea.commons.mask import Mask
 from bitsea.commons.Timelist import TimeList
-from bitsea.commons.utils import addsep
 from bitsea.instruments import check
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.matchup.statistics import matchup
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path
+from bitsea.utilities.argparse_types import existing_file_path
+from bitsea.utilities.argparse_types import generic_path
 
 
 def argument():
@@ -33,7 +35,7 @@ def argument():
     parser.add_argument(
         "--date",
         "-d",
-        type=str,
+        type=date_from_str,
         required=True,
         help="Date in yyyymmdd format, corresponding to the tuesday = rundate - 7 days",
     )
@@ -41,26 +43,29 @@ def argument():
     parser.add_argument(
         "--basedir",
         "-b",
-        type=str,
+        type=existing_dir_path,
         required=True,
         help="dir containing PROFILES/",
     )
 
     parser.add_argument(
-        "--maskfile",
-        "-m",
-        type=str,
-        default="/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
+        "--maskfile", "-m", type=existing_file_path, required=True
+    )
+
+    parser.add_argument(
+        "--outfile",
+        "-o",
+        type=generic_path,
+        default=None,
+        required=True,
+    )
+
+    parser.add_argument(
+        "--basedir_clim",
+        "-c",
+        type=existing_dir_path,
+        default=None,
         required=False,
-        help=""" Path of maskfile""",
-    )
-
-    parser.add_argument(
-        "--outfile", "-o", type=str, default=None, required=True, help=""
-    )
-
-    parser.add_argument(
-        "--basedir_clim", "-c", type=str, default=None, required=False, help=""
     )
 
     return parser.parse_args()
@@ -70,12 +75,11 @@ args = argument()
 
 
 TheMask = Mask(args.maskfile)
-BASEDIR = addsep(args.basedir)
+BASEDIR = args.basedir
 if args.basedir_clim is not None:
-    BASEDIR_CLIM = addsep(args.basedir_clim)
+    BASEDIR_CLIM = args.basedir_clim
 outfile = args.outfile
-datestr = args.date
-d = datetime.datetime.strptime(datestr, "%Y%m%d")
+d = args.date
 R = timerequestors.Weekly_req(d.year, d.month, d.day)
 
 Check_Obj = check.check("", verboselevel=0)
@@ -118,13 +122,13 @@ CORR[:] = np.nan
 ANOMALY_CORR[:] = np.nan
 
 TI = R.time_interval
-TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
+TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6, 36, 30, 46))
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 
 if args.basedir_clim is not None:
-    TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM + "/PROFILES", "ave*nc")
+    TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM / "PROFILES", "ave*nc")
     TLclim.inputFrequency = "monthly"
     Mclim = Matchup_Manager(ALL_PROFILES, TLclim, BASEDIR_CLIM)
 
@@ -205,7 +209,7 @@ for ivar, var in enumerate(VARLIST):
                         M_LAYER_ANOMALY.correlation()
                     )
 
-ncOUT = NC.netcdf_file(outfile, "w")
+ncOUT = NC.Dataset(outfile, "w")
 
 ncOUT.createDimension("var", nVar)
 ncOUT.createDimension("sub", nSub)

@@ -1,5 +1,6 @@
 import argparse
-
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
+from bitsea.utilities.argparse_types import date_from_str, generic_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates float validation data on a single week, from one single chain run.
@@ -11,24 +12,21 @@ def argument():
 
 
     parser.add_argument(   '--date','-d',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'Date in yyyymmdd format, corresponding to the tuesday = rundate - 7 days')
 
     parser.add_argument(   '--basedir','-b',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
-                                help = 'dir containing PROFILES/')
+                                help = """ PROFILATORE dir, already generated""")
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
+                                type = existing_file_path,
+                                required = True)
 
     parser.add_argument(   '--outfile', '-o',
-                                type = str,
-                                default = None,
+                                type = generic_path,
                                 required = True,
                                 help = "")
 
@@ -47,15 +45,13 @@ from bitsea.commons.layer import Layer
 import numpy as np
 from bitsea.matchup.statistics import matchup
 import datetime
-import scipy.io as NC
-from bitsea.commons.utils import addsep
+import netCDF4 as NC
+
 from bitsea.basins.region import Rectangle
 
 TheMask  = Mask(args.maskfile)
-BASEDIR =  addsep(args.basedir)
-outfile  = args.outfile
-datestr  = args.date
-d = datetime.datetime.strptime(datestr,'%Y%m%d')
+BASEDIR =  args.basedir
+d  = args.date
 R=timerequestors.Weekly_req(d.year,d.month,d.day)
 
 LAYERLIST=[Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
@@ -68,10 +64,10 @@ BIAS    = np.zeros((nVar,nSub,nDepth), np.float32)
 RMSE    = np.zeros((nVar,nSub,nDepth), np.float32)
 NPOINTS = np.zeros((nVar,nSub,nDepth), np.int32)
 
-Init_time=datetime.datetime(2019,1,1)
+Init_time=datetime.datetime(2021,1,1)
 TI =R.time_interval
 if TI.start_time < Init_time : TI.start_time = Init_time
-TL = TimeList.fromfilenames(TI, BASEDIR + "/PROFILES", "ave*nc")
+TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
 ALL_PROFILES = bio_float.FloatSelector(None,TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
@@ -107,7 +103,7 @@ for ivar, var in enumerate(VARLIST):
 
 
 
-ncOUT = NC.netcdf_file(outfile,'w')
+ncOUT = NC.Dataset(args.outfile,'w')
 
 ncOUT.createDimension('var', nVar)
 ncOUT.createDimension('sub', nSub)

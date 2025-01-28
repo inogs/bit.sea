@@ -73,6 +73,7 @@ def argument():
         "--coastness",
         "-c",
         type=str,
+        required=True,
         choices=["coast", "open_sea", "everywhere"],
     )
     parser.add_argument(

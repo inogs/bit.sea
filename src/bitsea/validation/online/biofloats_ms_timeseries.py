@@ -1,8 +1,8 @@
 import datetime
 import glob
 
+import netCDF4 as NC
 import numpy as np
-import scipy.io.netcdf as NC
 
 from bitsea.commons.Timelist import TimeList
 from bitsea.commons.timeseries import TimeSeries
@@ -48,21 +48,19 @@ class timelistcontainer:
         self.readfiles()
 
     def read_basic_info(self, filename):
-        ncIN = NC.netcdf_file(filename, "r")
-        self.nVAR = ncIN.dimensions["var"]
-        self.nSUB = ncIN.dimensions["sub"]
-        self.nDEPTH = ncIN.dimensions["depth"]
-        self.SUBLIST = ncIN.sublist.decode().split(",")
-        self.LAYERLIST = ncIN.layerlist.decode().split(",")
-        self.VARLIST = ncIN.varlist.decode().split(",")
-
-        ncIN.close()
+        with NC.Dataset(filename, "r") as ncIN:
+            self.nVAR = ncIN.dimensions["var"]
+            self.nSUB = ncIN.dimensions["sub"]
+            self.nDEPTH = ncIN.dimensions["depth"]
+            self.SUBLIST = ncIN.sublist.split(",")
+            self.LAYERLIST = ncIN.layerlist.split(",")
+            self.VARLIST = ncIN.varlist.split(",")
 
     def read_validation_file(self, filename):
-        ncIN = NC.netcdf_file(filename, "r")
-        NPOINTS = ncIN.variables["npoints"].data.copy()
-        BIAS = ncIN.variables["bias"].data.copy()
-        RMSE = ncIN.variables["rmse"].data.copy()
+        with NC.Dataset(filename, "r") as ncIN:
+            NPOINTS = ncIN.variables["npoints"].data.copy()
+            BIAS = ncIN.variables["bias"].data.copy()
+            RMSE = ncIN.variables["rmse"].data.copy()
         return NPOINTS, BIAS, RMSE
 
     def readfiles(self):

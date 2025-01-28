@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 import netCDF4 as NC
 import numpy as np
@@ -82,7 +83,7 @@ outfile = args.outfile
 d = args.date
 R = timerequestors.Weekly_req(d.year, d.month, d.day)
 
-Check_Obj = check.check("", verboselevel=0)
+Check_Obj = check.check(Path(""), verboselevel=0)
 
 LAYERLIST = [
     Layer(0, 10),

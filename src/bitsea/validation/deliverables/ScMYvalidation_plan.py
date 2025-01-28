@@ -159,7 +159,7 @@ TI = TimeInterval.fromdatetimes(args.datestart, args.dateend)
 dateformat = "%Y%m%d"
 
 sat_TL = TimeList.fromfilenames(
-    TI, REF_DIR, "*.nc", prefix="", dateformat=dateformat
+    None, REF_DIR, "*.nc", prefix="", dateformat=dateformat
 )
 model_TL = TimeList.fromfilenames(TI, MODEL_DIR, "*.nc", filtervar=modvarname)
 

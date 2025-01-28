@@ -9,10 +9,11 @@ import matplotlib.pyplot as pl
 import numpy as np
 from bitsea.commons.layer import Layer
 from bitsea.basins import V2 as OGS
-from bitsea.commons.utils import addsep
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from matplotlib.ticker import MaxNLocator
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path
 
 
 def argument():
@@ -28,7 +29,7 @@ def argument():
     parser.add_argument(
         "--date",
         "-d",
-        type=str,
+        type=date_from_str,
         required=True,
         help="start date in yyyymmdd format",
     )
@@ -36,13 +37,18 @@ def argument():
     parser.add_argument(
         "--archivedir",
         "-a",
-        type=str,
+        type=existing_dir_path,
         required=True,
         help="chain archive directory",
     )
 
     parser.add_argument(
-        "--outdir", "-o", type=str, default=None, required=True, help=""
+        "--outdir",
+        "-o",
+        type=existing_dir_path,
+        default=None,
+        required=True,
+        help="",
     )
 
     return parser.parse_args()
@@ -51,15 +57,14 @@ def argument():
 args = argument()
 
 
-ARCHIVEDIR = addsep(args.archivedir)
-OUTFIG_DIR = addsep(args.outdir)
+ARCHIVEDIR = args.archivedir
+OUTFIG_DIR = args.outdir
 
 Graphic_DeltaT = relativedelta(months=18)
-datestart = datetime.strptime(args.date, "%Y%m%d") - Graphic_DeltaT
-timestart = datestart.strftime("%Y%m%d")
+datestart = args.date - Graphic_DeltaT
 
 
-TI = TimeInterval("20171114", args.date, "%Y%m%d")
+TI = TimeInterval.fromdatetimes(datetime(2017, 11, 14), args.date)
 
 prefix = "BioFloat_Weekly_validation_"
 data = timelistcontainer(

@@ -49,18 +49,18 @@ class timelistcontainer:
 
     def read_basic_info(self, filename):
         with NC.Dataset(filename, "r") as ncIN:
-            self.nVAR = int(ncIN.dimensions["var"])
-            self.nSUB = int(ncIN.dimensions["sub"])
-            self.nDEPTH = int(ncIN.dimensions["depth"])
+            self.nVAR = ncIN.dimensions["var"].size
+            self.nSUB = ncIN.dimensions["sub"].size
+            self.nDEPTH = ncIN.dimensions["depth"].size
             self.SUBLIST = ncIN.sublist.split(",")
             self.LAYERLIST = ncIN.layerlist.split(",")
             self.VARLIST = ncIN.varlist.split(",")
 
     def read_validation_file(self, filename):
         with NC.Dataset(filename, "r") as ncIN:
-            NPOINTS = ncIN.variables["npoints"].data.copy()
-            BIAS = ncIN.variables["bias"].data.copy()
-            RMSE = ncIN.variables["rmse"].data.copy()
+            NPOINTS = np.array(ncIN.variables["npoints"])
+            BIAS = np.array(ncIN.variables["bias"])
+            RMSE = np.array(ncIN.variables["rmse"])
         return NPOINTS, BIAS, RMSE
 
     def readfiles(self):

@@ -49,9 +49,9 @@ class timelistcontainer:
 
     def read_basic_info(self, filename):
         with NC.Dataset(filename, "r") as ncIN:
-            self.nVAR = ncIN.dimensions["var"]
-            self.nSUB = ncIN.dimensions["sub"]
-            self.nDEPTH = ncIN.dimensions["depth"]
+            self.nVAR = int(ncIN.dimensions["var"])
+            self.nSUB = int(ncIN.dimensions["sub"])
+            self.nDEPTH = int(ncIN.dimensions["depth"])
             self.SUBLIST = ncIN.sublist.split(",")
             self.LAYERLIST = ncIN.layerlist.split(",")
             self.VARLIST = ncIN.varlist.split(",")

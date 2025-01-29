@@ -12,7 +12,8 @@ def argument():
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = existing_file_path)
+                                type = existing_file_path,
+                                required = True)
     parser.add_argument(   '--basedir', '-b',
                                 type = existing_dir_path,
                                 required = True,
@@ -39,7 +40,7 @@ from bitsea.validation.deliverables.metrics2 import find_OMZ, find_maxO2
 from bitsea.validation.deliverables.metrics2 import find_NITRICL_dz_max
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.Float.oxygen_saturation import oxy_sat
-import datetime
+from datetime import datetime, timedelta
 from bitsea.instruments import check
 
 
@@ -56,7 +57,7 @@ Check_obj_oxygen = check.check(OUTDIR / "oxygen_check/")
 TheMask=Mask(args.maskfile, loadtmask=False)
 
 TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
-deltaT= datetime.timedelta(hours=12)
+deltaT= timedelta(hours=12)
 TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 

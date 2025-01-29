@@ -43,7 +43,7 @@ from bitsea.commons.layer import Layer
 from bitsea.basins.region import Rectangle
 from bitsea.validation.deliverables.metrics2 import find_DCM, find_WBL,find_NITRICL
 from bitsea.validation.deliverables.metrics2 import find_OMZ, find_maxO2
-from bitsea.validation.deliverables.metrics2 import find_NITRICL_dz_max
+from bitsea.validation.deliverables.metrics import find_NITRICL_dz_max
 from bitsea.validation.online.metrics import find_WLB
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.basins import V2 as OGS

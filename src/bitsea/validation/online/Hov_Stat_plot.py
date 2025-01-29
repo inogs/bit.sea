@@ -52,7 +52,6 @@ from bitsea.instruments.var_conversions import FLOATVARS
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as pl
-from matplotlib import cm
 from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
@@ -131,7 +130,7 @@ nVar = len(VARLIST)
 bt=300
 depths=np.linspace(0,300,121)
 
-my_cmap=cm.get_cmap('viridis',24)
+my_cmap=matplotlib.colormaps['viridis'].resampled(24)
 
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]

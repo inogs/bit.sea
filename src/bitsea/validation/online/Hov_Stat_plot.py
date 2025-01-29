@@ -59,7 +59,8 @@ from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import n
 from dateutil.relativedelta import relativedelta
 from bitsea.validation.deliverables import plotter
 from bitsea.instruments import check
-Check_obj = check.check("", verboselevel=0)
+from pathlib import Path
+Check_obj = check.check(Path(""), verboselevel=0)
 
 
 
@@ -138,7 +139,7 @@ for ivar, var_mod in enumerate(VARLIST):
     wmo_list=bio_float.get_wmo_list(Profilelist) 
     
     for wmo in wmo_list:
-        OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
+        OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
         print(OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
@@ -206,7 +207,7 @@ for ivar, var_mod in enumerate(VARLIST):
 # SECOND FIGURE ON STATISTICS:
 
         # READ STATISTICS FILE *.nc
-        INPUT_FILE = "%s%s_%s.nc" %(INDIR, var_mod, wmo )
+        INPUT_FILE = INDIR / f"{var_mod}_{wmo}.nc"
         A = ncreader(INPUT_FILE)
         times = timelabel_list
 

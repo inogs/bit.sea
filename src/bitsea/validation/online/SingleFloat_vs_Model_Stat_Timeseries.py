@@ -119,7 +119,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 
             except:
-                print (p.ID()  + " not found in " + BASEDIR)
+                print (p.ID()  + " not found in " + str(BASEDIR))
                 continue
 
 

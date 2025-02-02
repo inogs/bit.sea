@@ -1,19 +1,73 @@
 from abc import ABC
 from abc import abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from itertools import product as cart_prod
 from typing import Optional
 from typing import Tuple
 
 import numpy as np
-from geopy import distance
-from numpy._typing import ArrayLike
+from geographiclib.geodesic import Geodesic
+from numpy.typing import ArrayLike
 
 
 class GridSidesAlgorithm(Enum):
     NEMO = 1
     GREAT_CIRCLE = 2
     GEODESIC = 3
+
+
+@dataclass
+class Ellipsoid:
+    """
+    An Ellipsoid defines the shape of the Earth; if `a` is the major axis and
+    `b` is the minor axis of the ellipsoid, the flattening is defined as
+    `(a - b) / a`
+    """
+
+    name: str
+    major_axis: float
+    flattening: float
+
+    @property
+    def minor_axis(self):
+        return (1 - self.flattening) * self.major_axis
+
+
+# This is the standard WGS84 ellipsoid (cfr.
+# https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84)
+WGS84 = Ellipsoid("WGS84", 6378137, 1 / 298.257223563)
+
+# Define an object from the geographiclib library that can solve
+# the geodesic problem on our ellipsoid
+GEODESIC = Geodesic(WGS84.major_axis, WGS84.flattening)
+
+
+def _geodetic_distance(p1, p2):
+    lat1, lon1 = p1
+    lat2, lon2 = p2
+    return GEODESIC.Inverse(lat1, lon1, lat2, lon2, Geodesic.DISTANCE)["s12"]
+
+
+def _great_circle_distance(p1, p2):
+    lat1, lon1 = np.radians(p1[0]), np.radians(p1[1])
+    lat2, lon2 = np.radians(p2[0]), np.radians(p2[1])
+
+    sin_lat1, cos_lat1 = np.sin(lat1), np.cos(lat1)
+    sin_lat2, cos_lat2 = np.sin(lat2), np.cos(lat2)
+
+    delta_lon = lon2 - lon1
+    cos_delta_lon, sin_delta_lon = np.cos(delta_lon), np.sin(delta_lon)
+
+    d = np.atan2(
+        np.sqrt(
+            (cos_lat2 * sin_delta_lon) ** 2
+            + (cos_lat1 * sin_lat2 - sin_lat1 * cos_lat2 * cos_delta_lon) ** 2
+        ),
+        sin_lat1 * sin_lat2 + cos_lat1 * cos_lat2 * cos_delta_lon,
+    )
+
+    return 6371009 * d
 
 
 def extend_from_average(
@@ -177,9 +231,9 @@ class GeoPySidesCalculator:
         # v_faces_lat_coords = gphiv
 
         if self._geodesic:
-            distance_function = distance.geodesic
+            distance_function = _geodetic_distance
         else:
-            distance_function = distance.great_circle
+            distance_function = _great_circle_distance
 
         e1t = np.empty_like(xlevels, dtype=np.float32)
         e2t = np.empty_like(xlevels, dtype=np.float32)
@@ -187,10 +241,10 @@ class GeoPySidesCalculator:
             e1t[i, j] = distance_function(
                 (u_faces_lat_coords[i, j], u_faces_lon_coords[i, j]),
                 (u_faces_lat_coords[i, j + 1], u_faces_lon_coords[i, j + 1]),
-            ).m
+            )
             e2t[i, j] = distance_function(
                 (v_faces_lat_coords[i, j], v_faces_lon_coords[i, j]),
                 (v_faces_lat_coords[i + 1, j], v_faces_lon_coords[i + 1, j]),
-            ).m
+            )
 
         return e1t, e2t

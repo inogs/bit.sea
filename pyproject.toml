@@ -16,10 +16,10 @@ scikit-learn = "^1.4.2"
 matplotlib = ">3.7.5"
 netcdf4 = "^1.6.5"
 cartopy = "^0.23.0"
-geopy = "^1.4.0"
-coverage = "^7.6.4"
+geographiclib = "^2.0"
 
 [tool.poetry.group.dev.dependencies]
+coverage = "^7.6.4"
 pytest = "^8.3.2"
 pre-commit = "^3.8.0"
 requests = "^2.32.3"

@@ -1,4 +1,5 @@
 import numpy as np
+import seawater as sw
 
 def find_DCM(Chl_profile,zlev):
 
@@ -9,45 +10,60 @@ def find_DCM(Chl_profile,zlev):
         A_fil_rev = A_filtered[::-1]
         D_fil_rev = D_filtered[::-1]
 
-        if (len(A_fil_rev) == 0):
-            return np.nan , np.nan
+       	if (len(A_fil_rev) == 0): 
+       	   return np.nan , np.nan
 
-        CM  = A_fil_rev[0]
-        DCM = D_fil_rev[0]
+       	CM  = A_fil_rev[0]
+       	DCM = D_fil_rev[0]
         for ip, chl in enumerate(A_fil_rev):
             if (chl > CM): 
                 CM  = chl
                 DCM = D_fil_rev[ip]
 
-        if (DCM < 40): DCM = np.nan
-        if (CM/CHL_surf < 1.5): DCM = np.nan
+       	if (DCM < 40): DCM = np.nan
+       	if (CM/CHL_surf < 1.5): DCM = np.nan
 
         return CM, DCM
 
 
-def MLD(Temperature,Pres):
+def MLD(Temperature,Salinity,Pres):
         ''' Calculation of Mixed Layer Depth based on temperature difference of 0.2
-        mld is defined as 
+        mld is defined as the level where the difference of temperature with respect the reference level of 10m
+        is of 0.2C
+        It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
         '''
+        th=10 #threshold of depth minimum
+        i_less_than_10=Pres<th
+        i_10=i_less_than_10[-1] + 1 #(this is the index corresponding approx ~10m of the zlevel array) 
+        i_10=i_less_than_10[-1] + 1 # (this is the index corresponding approx ~10m of the zlevel array)
         MLD = np.nan
         T = Temperature
-        D1000=Pres[Pres<1000]
-        T1000=T[Pres<1000]
+        S = Salinity
+        D1000=Pres[(Pres<1000) & (Pres>th)] # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
+        T1000=T[(Pres<1000) & (Pres>th)]
+        S1000=S[(Pres<1000) & (Pres>th)]
+        Dens1000=sw.dens(S1000,T1000,D1000)-1000 # DENSITY # SIGMA
+        PDens1000=sw.pden(S1000,T1000,D1000)-1000 # POTENTIAL DENSITY # SIGMA THETA
         for ip,p in enumerate(T1000):
-            abs_diff=abs(p-T1000[0])
+#            abs_diff=abs(p-T1000[0])
+#            if abs_diff > 0.2:
+#            abs_diff=abs(p-np.mean(T[Pres<th]))
+            abs_diff=abs(p-T[i_10])
             if abs_diff > 0.2:
                         break
         MixedLayerDepth=D1000[ip]
-        return MixedLayerDepth
+        d_atMLD=Dens1000[ip]
+        pd_atMLD=PDens1000[ip]
+        return MixedLayerDepth, d_atMLD, pd_atMLD
 
 def t_p_cline(Profile,Pres):  # calculation of thermocline (Temp) - pycnocline (Dens)
         T = Profile
-        dT = np.diff(T)/np.diff(Pres)
+        dT = abs(np.diff(T))/np.diff(Pres)
         ip = dT.argmax()
         return Pres[ip] 
 
-def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
-        iz1000 = TheMask.getDepthIndex(1000)+1
+def StratIndex(BVF,TheMask,zdepth=1000): # BruntVaisalaFrequency is a 1D array
+        iz1000 = TheMask.getDepthIndex(zdepth)+1
         max_zindex=len(BVF)
         izmax = min(max_zindex,iz1000)
         SI = np.nan
@@ -55,22 +71,22 @@ def StratIndex(BVF,TheMask): # BruntVaisalaFrequency is a 1D array
         SI = np.nansum(BVF[:izmax,0]   * TheMask.zlevels[:izmax] * TheMask.dz[:izmax])
         return SI
 
-def find_WLB(Profile,Pres):  # Winter Layer Bloom (WLB)
-        WLB = np.nan
+def find_WBL(Profile,Pres):  # Winter Bloom Layer (WBL)
+        WBL = np.nan
         A = Profile
-        A_filtered=A[Pres<200]
-        D_filtered=Pres[Pres<200]
+       	A_filtered=A[Pres<200]
+       	D_filtered=Pres[Pres<200]
         for ip, p in enumerate(A_filtered):
             if (p <= A[0]*0.1): 
-                WLB = D_filtered[ip]
+                WBL = D_filtered[ip]
                 Chl_min = A_filtered[ip]
-                break
-        return WLB
+       	        break
+        return WBL
 
 def find_NITRICL(Profile,Pres):
         for ip, p in enumerate(Profile):
             if (p >= 2):
-                 return Pres[ip]
+               	return Pres[ip]
 
 def find_NITRICL_dz(Profile,Pres):
          dN = np.diff(Profile)/np.diff(Pres)
@@ -80,16 +96,20 @@ def find_NITRICL_dz(Profile,Pres):
                 return Pres[ip]
 
 def find_NITRICL_dz_max(Profile,Pres):
+         ''' This is the Nitrcl2 used for the calcuation in the QUID.
+             It can be used for nitracline and also pycnocline. Include 
+             also the variable value at that depth. ''' 
+ 
          dN = np.diff(Profile)/np.diff(Pres)
          ip = dN.argmax()
-         return Pres[ip]    
-
+         return Pres[ip], Profile[ip]    
+ 
 def find_OMZ(Profile,Pres):
          ii = (Pres>200) & (Pres<=1000)
          Pred=Profile[ii]
          j_minO2=np.argmin(Pred)
-         OMZ=Pres[j_minO2]
-         return OMZ
+         OMZ=Pres[j_minO2] 
+         return(OMZ)
 
 def find_maxO2(Profile,Pres):
          Pred=Profile[Pres<=200]
@@ -97,3 +117,8 @@ def find_maxO2(Profile,Pres):
          MaxO2=Pres[j_maxO2]
          return MaxO2
 
+def find_bot_Nit(Profile,Pres):
+# Find the bottom value of Nitrate 
+         P600_800=Profile[(Pres>600) & (Pres<=800)]
+         Nit_bot=np.nanmean(P600_800)
+         return Nit_bot

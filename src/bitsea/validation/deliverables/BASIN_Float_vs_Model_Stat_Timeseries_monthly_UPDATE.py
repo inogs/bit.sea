@@ -46,7 +46,7 @@ from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.commons.utils import addsep
 from bitsea.commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
-from metrics2 import *
+from metrics import *
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.basins.V2 import NRT3 as OGS
 import bitsea.commons.timerequestors as requestors

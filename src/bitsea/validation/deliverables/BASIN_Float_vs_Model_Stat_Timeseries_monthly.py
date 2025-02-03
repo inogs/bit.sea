@@ -46,7 +46,7 @@ from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.commons.utils import addsep, nanmean_without_warnings
 from bitsea.commons.layer import Layer
 from profiler import ALL_PROFILES,TL,BASEDIR
-from metrics2 import *
+from metrics import *
 from bitsea.basins.V2 import NRT3 as OGS
 import bitsea.commons.timerequestors as requestors
 from bitsea.instruments import check

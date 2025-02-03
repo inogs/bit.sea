@@ -41,7 +41,7 @@ from bitsea.commons.utils import addsep
 from bitsea.commons.layer import Layer
 from bitsea.basins.region import Rectangle
 #from bitsea.validation.online.metrics import *
-from metrics2 import *
+from metrics import *
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.Float.oxygen_saturation import *
 from bitsea.basins import V2 as OGS

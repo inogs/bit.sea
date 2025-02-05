@@ -68,6 +68,22 @@ from bitsea.instruments.var_conversions import SAT_VARS
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.validation.deliverables import netcdf_validation_file
 
+def get_vmax(var:str,sub:str,zone:str):
+    if var=="kd490":
+        vmax = 0.1
+    if var.startswith("RRS"):
+        vmax=0.0025
+    if var in ["P1l","P2l","P3l","P4l","P_l"]:
+        if zone == "rivers":
+            vmax = 1.0
+            if sub=="Po":
+                vmax=4.0
+        else:
+            if sub in ["alb", "swm1", "swm2", "nwm", "tyr1", "tyr2"]:
+                vmax=0.4
+            else:
+                vmax=0.1
+    return vmax
 
 
 if (args.zone == "Med"):
@@ -80,19 +96,10 @@ model_label=' MODEL'
 
 if (args.var =="kd490"):
     units="[m$^{-1}$]"
-    vmin=-0.1
-    vmax=0.1
 elif (args.var.startswith('RRS')):
     units="[st$^{-1}$]"
-    vmin=-0.01 
-    vmax=0.01 
 else:
     units="[mg/m$^3$]"
-    vmin=-0.3
-    vmax=0.3
-    if (args.zone == "rivers"):
-        vmin=-1.0
-        vmax=1.0
     
 var_label = SAT_VARS[args.var] + " " + units
 
@@ -107,9 +114,6 @@ for isub,sub in enumerate(OGS.P):
     if (sub.name == 'atl') : continue
     outfilename=args.outdir / f"{args.var}-RMS-BIAS_{sub.name}.png"
     print (outfilename)
-    if ((args.var =="P_l") & (sub.name=="Po")):
-        vmin=-4.0
-        vmax=4.0
 
     fig, ax = pl.subplots()
     fig.set_size_inches(12,4)
@@ -122,6 +126,8 @@ for isub,sub in enumerate(OGS.P):
     pl.setp(ltext,fontsize=12)
     pl.rc('xtick', labelsize=12)
     pl.rc('ytick', labelsize=12)
+    vmax = get_vmax(args.var, sub.name, args.zone)
+    vmin = -vmax
     pl.ylim(vmin,vmax)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
@@ -196,7 +202,6 @@ mat[:,16] = MEAN_MOD_sum
 mat[:,17] = MEAN_REF_sum
 
 outfiletable = args.outdir / ("table4.1_" + args.var + ".txt")
-print (outfiletable)
 rows_names=[sub.name for sub in OGS.P.basin_list]
 column_names=['RMSwin','RMSsum','BIASwin','BIASsum', 'RMSLwin','RMSLsum','BIASLwin','BIASLsum','STD_MODwin','STD_SATwin','STD_MODsum','STD_SATsum','CORRwin','CORRsum','MEAN_MODwin','MEAN_SATwin','MEAN_MODsum','MEAN_SATsum']
 writetable(outfiletable, mat, rows_names, column_names, fmt='%5.3f\t')

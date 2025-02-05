@@ -125,7 +125,7 @@ def argument():
 
 args = argument()
 
-
+import mpi4py.MPI
 comm = get_mpi_communicator()
 rank = comm.Get_rank()
 nranks = comm.size

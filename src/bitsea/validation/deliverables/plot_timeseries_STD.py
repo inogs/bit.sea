@@ -115,27 +115,42 @@ else:
 
 var_label = SAT_VARS[args.var] + " " + units
 
-vmin = 0.0
-vmax = 0.25
+
+def get_vmin(var: str) -> float:
+    if var == "kd490":
+        vmin = 0.02
+    else:
+        vmin = 0.0
+    return vmin
+
+
+def get_vmax(var: str, sub: str, zone: str) -> float:
+    if var.startswith("RRS"):
+        vmax = 0.0025
+    if var == "kd490":
+        vmax = 0.09
+    if var in ["P1l", "P2l", "P3l", "P4l", "P_l"]:
+        if zone == "rivers":
+            vmax = 1.0
+            if sub == "Po":
+                vmax = 4.0
+        else:
+            if sub in ["alb", "swm1", "swm2", "nwm", "tyr1", "tyr2"]:
+                vmax = 0.9
+            else:
+                vmax = 0.3
+    return vmax
+
+
+vmin = get_vmin(args.var)
+
 color = "tab:green"
 lightcolor = "palegreen"
 
-if args.var == "P_l":
-    vmin = 0.0
-    if args.zone == "Med":
-        vmax = 0.6
-    if args.zone == "rivers":
-        vmax = 1.0
 
 if args.var == "kd490":
-    vmin = 0.02
-    vmax = 0.09
     color = "tab:blue"
     lightcolor = "lightsteelblue"
-
-if args.var.startswith("RRS"):
-    vmin = 0.0
-    vmax = 0.025
 
 
 for isub, sub in enumerate(OGS.P):
@@ -163,10 +178,7 @@ for isub, sub in enumerate(OGS.P):
     pl.rc("ytick", labelsize=12)
     ax.tick_params(axis="both", labelsize=12)
     #    pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
-    if sub.name == "Po":
-        vmax = 4.0
-    else:
-        vmax = 1.0
+    vmax = get_vmax(args.var, sub.name, args.zone)
     pl.ylim(vmin, vmax)
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))

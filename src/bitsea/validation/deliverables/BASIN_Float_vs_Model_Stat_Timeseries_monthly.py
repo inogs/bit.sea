@@ -50,8 +50,8 @@ from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.commons.utils import nanmean_without_warnings
 from bitsea.commons.layer import Layer
-from bitsea.validation.deliverables.metrics2 import find_DCM, find_WBL,find_NITRICL
-from bitsea.validation.deliverables.metrics2 import find_OMZ, find_maxO2
+from bitsea.validation.deliverables.metrics import find_DCM, find_WBL,find_NITRICL
+from bitsea.validation.deliverables.metrics import find_OMZ, find_maxO2
 from bitsea.basins.V2 import NRT3 as OGS
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import check

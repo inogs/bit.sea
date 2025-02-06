@@ -41,10 +41,9 @@ from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.commons.layer import Layer
 from bitsea.basins.region import Rectangle
-from bitsea.validation.deliverables.metrics2 import find_DCM, find_WBL,find_NITRICL
-from bitsea.validation.deliverables.metrics2 import find_OMZ, find_maxO2
+from bitsea.validation.deliverables.metrics import find_DCM, find_WBL,find_NITRICL
+from bitsea.validation.deliverables.metrics import find_OMZ, find_maxO2
 from bitsea.validation.deliverables.metrics import find_NITRICL_dz_max
-from bitsea.validation.online.metrics import find_WLB
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.basins import V2 as OGS
 from datetime import datetime
@@ -155,8 +154,8 @@ for ivar, var_mod in enumerate(VARLIST):
                     A_model[itime,7], A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth) # CM, DCM
             
                 if (p.time.month in [1,2,3] ):
-                    A_float[itime,3] = find_WLB(gm200.Ref  ,gm200.Depth) # WLB
-                    A_model[itime,3] = find_WLB(gm200.Model,gm200.Depth) # WLB
+                    A_float[itime,3] = find_WBL(gm200.Ref  ,gm200.Depth)
+                    A_model[itime,3] = find_WBL(gm200.Model,gm200.Depth)
 
            # NITRACL1/NITRACL2 
             if (var_mod == "N3n"):

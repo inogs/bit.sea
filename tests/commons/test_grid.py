@@ -126,6 +126,19 @@ def test_convert_lon_lat_to_indices(grid):
             current_lon = float(grid.xlevels[i, j]) + 0.0002
             current_lat = float(grid.ylevels[i, j]) - 0.0002
 
+            p_coords = grid.convert_lon_lat_to_indices(
+                lon=current_lon, lat=current_lat
+            )
+
+            assert p_coords == (j, i)
+
+
+def test_convert_lat_lon_to_indices(grid):
+    for i in (0, 10, 42, 74):
+        for j in (0, 10, 25, 99, 129):
+            current_lon = float(grid.xlevels[i, j]) + 0.0002
+            current_lat = float(grid.ylevels[i, j]) - 0.0002
+
             p_coords = grid.convert_lat_lon_to_indices(
                 lon=current_lon, lat=current_lat
             )

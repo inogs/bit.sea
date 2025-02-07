@@ -170,7 +170,7 @@ class Grid(ABC):
         Be aware that this is the opposite order respect to the structure of
         the 2d arrays stored in this object (for example, xlevels)
         """
-        return self.convert_lat_lon_to_indices(lat=lat, lon=lon)
+        return self.convert_lat_lon_to_indices(lat=lat, lon=lon)[::-1]
 
     @abstractmethod
     def convert_i_j_to_lon_lat(

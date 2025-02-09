@@ -68,10 +68,11 @@ def non_existing_path_inside_an_existing_dir(arg_path: str) -> Path:
     return arg_path
 
 
-def dir_inside_an_existing_path(arg_path: str) -> Path:
+def dir_to_be_created_if_not_exists(arg_path: str) -> Path:
     """
     This function should be used as a type in argparse when the argument being
-    parsed might be an existing directory or a directory that has yet to be created.
+    parsed might be an existing directory or a directory that has yet to be
+    created.
     If the directory does not already exist, this function will create it before
     returning a Path object that refers to it.
 

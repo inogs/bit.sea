@@ -212,8 +212,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM FLO')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='MWB FLO') # vertically Mixed Winter Bloom depth | WLB WINTER LAYER BLOOM
-            ax8.plot(times,model_mld,'r',label='MWB MOD')
+            ax8.plot(times, ref_mld,'.r',label='WBL FLO') # vertically Mixed Winter Bloom depth | WBL WINTER BLOOM LAYER
+            ax8.plot(times,model_mld,'r',label='WBL MOD')
             ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]

@@ -57,6 +57,7 @@ from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import check
 import datetime
 from bitsea.basins.region import Rectangle
+from bitsea.commons import timerequestors
 
 OUTDIR = args.outdir
 BASEDIR = args.basedir

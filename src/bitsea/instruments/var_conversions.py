@@ -46,21 +46,18 @@ VESSELVARS={'O2o':'DOX1', \
              'N5s':'SLCA', \
              'pH_':'PHPH'}
 
-CARBONVARS={'O2o':'oxygen', \
-            'N3n':'nitrate',  \
-            'N1p':'phosphate', \
-            'N5s':'silicate', \
-            'ALK':'ALK', \
-            'DIC':'DICric', \
-            'pH' :'PHt_{T-Press-ins}', \
-           'pCO2':'pCO2'}
+CARBONVARS={'ALK':'ALK', \
+            'DIC':'DIC_merged', \
+            'pH' :'pH_ins_merged', \
+            'pCO2':'pCO2_rec'}
 
 NUTRVARS={'O2o':'oxygen', \
              'N3n':'nitrate',  \
              'N1p':'phosphate', \
              'N4n':'ammonium', \
              'P_l': 'chlorophyll',\
-             'N5s':'silicate'}
+             'N5s':'silicate',\
+             'N2n': 'nitrite'} 
 
 
 ISPRAVARS = {'N1p': 'orthophosphates', \

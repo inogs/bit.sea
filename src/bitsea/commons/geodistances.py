@@ -43,13 +43,60 @@ WGS84 = Ellipsoid("WGS84", 6378137, 1 / 298.257223563)
 GEODESIC = Geodesic(WGS84.major_axis, WGS84.flattening)
 
 
-def _geodetic_distance(p1, p2):
+def _geodetic_distance(
+    p1: Tuple[float, float], p2: Tuple[float, float]
+) -> float:
+    """
+    Calculate the geodetic distance between two points on Earth.
+
+    This function computes the geodetic distance between two geographical
+    points, specified by their latitude and longitude, using the Geodesic
+    Inverse method.
+    It accurately calculates the shortest distance over the Earth's
+    ellipsoidal surface.
+
+    This function returns the distance in meters.
+
+    This function is not intended to be called directly. Instead, it is
+    used by the `GeoPySidesCalculator` class.
+
+    Args:
+        p1: The latitude and longitude of the first point in degrees.
+        p2: The latitude and longitude of the second point in degrees.
+
+    Returns:
+        float: The geodetic distance between the two specified points,
+            in meters.
+    """
     lat1, lon1 = p1
     lat2, lon2 = p2
     return GEODESIC.Inverse(lat1, lon1, lat2, lon2, Geodesic.DISTANCE)["s12"]
 
 
-def _great_circle_distance(p1, p2):
+def _great_circle_distance(
+    p1: Tuple[float, float], p2: Tuple[float, float]
+) -> float:
+    """
+    Calculate the great-circle distance between two points on the Earth's
+    surface.
+
+    This function computes the great-circle distance, which is the shortest
+    distance between two points on the surface of a sphere, in this case,
+    the Earth. The calculation is performed using the haversine formula.
+    The Earth is approximated as a sphere of radius 6,371,009 meters.
+
+    This function returns the distance in meters.
+
+    This function is not intended to be called directly. Instead, it is
+    used by the `GeoPySidesCalculator` class.
+
+    Args:
+        p1: The latitude and longitude of the first point in degrees.
+        p2: The latitude and longitude of the second point in degrees.
+
+    Returns:
+        float: The great-circle distance between the two points, in meters.
+    """
     lat1, lon1 = np.radians(p1[0]), np.radians(p1[1])
     lat2, lon2 = np.radians(p2[0]), np.radians(p2[1])
 
@@ -59,7 +106,7 @@ def _great_circle_distance(p1, p2):
     delta_lon = lon2 - lon1
     cos_delta_lon, sin_delta_lon = np.cos(delta_lon), np.sin(delta_lon)
 
-    d = np.atan2(
+    d = np.arctan2(
         np.sqrt(
             (cos_lat2 * sin_delta_lon) ** 2
             + (cos_lat1 * sin_lat2 - sin_lat1 * cos_lat2 * cos_delta_lon) ** 2

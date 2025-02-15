@@ -61,7 +61,7 @@ from bitsea.commons import timerequestors
 
 OUTDIR = args.outdir
 BASEDIR = args.basedir
-TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+TL = TimeList.fromfilenames(None, BASEDIR + "/PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)
 TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
@@ -116,6 +116,10 @@ for ivar, V in enumerate(VARLIST):
     var_mod = V.name
     var = FLOATVARS[var_mod]
 
+    if var_mod == "N3n": Check_obj = Check_obj_nitrate
+    if var_mod == "P_l": Check_obj = Check_obj_chl
+    if var_mod == "O2o": Check_obj = None
+    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
 
     for itime, Req in enumerate(MonthlyRequestors):
         if Req.time_interval.end_time > TL.timeinterval.end_time :
@@ -141,6 +145,7 @@ for ivar, V in enumerate(VARLIST):
 
                 if len(Pres) < 10 : continue
                 GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=V.check_obj, extrapolation=V.extrap)
+                GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 
                 if GM.number() == 0 :
                     print (p.ID() + " excluded")
@@ -166,10 +171,12 @@ for ivar, V in enumerate(VARLIST):
 
 
                 if (var_mod == "P_l"):
-                    Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
-                    Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
-                    Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
-                    Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
+                    if ( ( Req.month >= 4. )  & ( Req.month <= 10 )):
+                        Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
+                        Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
+                    if (Req.month in [1,2,3] ):
+                        Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
+                        Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
 
                 if (var_mod == "N3n"):

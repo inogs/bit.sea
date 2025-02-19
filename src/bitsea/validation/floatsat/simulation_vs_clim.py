@@ -53,7 +53,7 @@ MODDIR=addsep(args.inputdir)
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
 Mask8 = Mask.from_file(maskfile8)
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
@@ -122,7 +122,7 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.clim_profile_plotter(z_clim,O2o_clim_mean,O2o_clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
 
 
@@ -174,6 +174,5 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.clim_profile_plotter(z_clim,Ac__clim_mean,Ac__clim_std, axes[2], axes[6])
 
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
-

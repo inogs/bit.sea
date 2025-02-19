@@ -1,4 +1,5 @@
 import argparse
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Needs a profiler.py, already executed.
@@ -23,7 +24,6 @@ def argument():
 
 args = argument()
 
-import numpy as np
 from bitsea.commons.mesh import Mesh
 from bitsea.instruments import lovbio_float as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
@@ -36,7 +36,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 import bitsea.basins.V2 as OGS
 
 OUTDIR = addsep(args.outdir)
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 layer=Layer(0,200)
 layer150=Layer(0,150)
 
@@ -106,7 +106,7 @@ for itime,couple in enumerate(M.Coupled_List):
                 if p.available_params.find(var)<0 : continue
                 Pres,Profile,Qc=p.read(var,read_adjusted=adj)
                 if len(Pres) < 10 : continue
-                GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, \
+                GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj,
                         interpolation_on_Float=False)
                 gm200 = GM.subset(layer)
                 gm150 = GM.subset(layer150)
@@ -126,7 +126,7 @@ for itime,couple in enumerate(M.Coupled_List):
                 ref[floatname].append(gm200.Ref[0])# Surf Value
                 mod[floatname].append(gm200.Model[0])# Surf Value
 
-                if (VARLIST[ivar] == "P_l"):
+                if VARLIST[ivar] == "P_l":
                     DCMref[floatname].append(find_DCM(gm200.Ref  ,gm200.Depth)[1]) # DCM
                     DCMmod[floatname].append(find_DCM(gm200.Model,gm200.Depth)[1])# DCM
                     DCM2r[floatname].append(find_DCM2(gm200.Ref  ,gm200.Depth)[1]) # DCM
@@ -152,7 +152,7 @@ for itime,couple in enumerate(M.Coupled_List):
             A_model[wmo][ivar,itime,5] = np.nanmean(mod[wmo]) # Surf Value
 
 
-            if (VARLIST[ivar] == "P_l"):
+            if VARLIST[ivar] == "P_l":
                 A_float[wmo][ivar,itime,2] = np.nanmean(DCMref[wmo]) # DCM
                 A_model[wmo][ivar,itime,2] = np.nanmean(DCMmod[wmo]) # DCM
 
@@ -164,5 +164,5 @@ for itime,couple in enumerate(M.Coupled_List):
 
 for wmo in wmo_list:
     OUTFILE = OUTDIR + wmo + ".nc"
-    print OUTFILE
+    print(OUTFILE)
     dumpfile(OUTFILE,A_float[wmo],A_model[wmo],VARLIST,METRICS)

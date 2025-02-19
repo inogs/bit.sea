@@ -31,20 +31,17 @@ def argument():
 
 args = argument()
 
-import numpy as np
 from bitsea.commons.mesh import Mesh
-from bitsea.commons.Timelist import TimeList, TimeInterval
-from bitsea.instruments import superfloat as bio_float
+from bitsea.commons.Timelist import TimeList
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
 from bitsea.commons.utils import addsep
 from bitsea.commons.layer import Layer
 from bitsea.basins.region import Rectangle
-#from bitsea.validation.online.metrics import *
+# from bitsea.validation.online.metrics import *
 from metrics2 import *
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 from bitsea.Float.oxygen_saturation import *
-from bitsea.basins import V2 as OGS
 import datetime
 from bitsea.instruments import check
 
@@ -59,7 +56,7 @@ Check_obj_phytoC = check.check(OUTDIR + "phytoC_check/")
 Check_obj_oxygen = check.check(OUTDIR + "oxygen_check/")
 
 
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 
 TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)
@@ -67,13 +64,13 @@ TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + delta
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 
 
-class variable():
+class variable:
     def __init__(self, name, extrap, check_obj):
-        ''' Arguments:
+        """ Arguments:
         * name *  string, like N3n
         * extrap * logical
         * check_obj * a check object defined in instruments.check
-        '''
+        """
         self.name = name
         self.extrap = extrap
         self.check_obj = check_obj
@@ -153,17 +150,17 @@ for V in VARLIST:
             A_model[itime,5] = gm200.Model[0] # Surf Value
 
            # DCM/MWB
-            if (var_mod == "P_l"):
-                if ( ( p.time.month >= 4. )  & ( p.time.month <= 10 )):
+            if var_mod == "P_l":
+                if 4. <= p.time.month <= 10:
                     A_float[itime,7], A_float[itime,2] = find_DCM(gm200.Ref  ,gm200.Depth) # CM, DCM
                     A_model[itime,7], A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth) # CM, DCM
             
-                if (p.time.month in [1,2,3] ):
+                if p.time.month in [1,2,3]:
                     A_float[itime,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
                     A_model[itime,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
            # NITRACL1/NITRACL2 
-            if (var_mod == "N3n"):
+            if var_mod == "N3n":
                 # NOTA: level 350
                 A_float[itime,4] = find_NITRICL(gm300.Ref  ,gm300.Depth) # Nitricline
                 A_model[itime,4] = find_NITRICL(gm300.Model,gm300.Depth) # Nitricline
@@ -171,7 +168,7 @@ for V in VARLIST:
                 A_float[itime,6],_ = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
                 A_model[itime,6],_ = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
 
-            if (var_mod == "O2o"):
+            if var_mod == "O2o":
                 A_float[itime,8] = oxy_sat(p)
 
                 if len(gm1000.Ref) > 1:
@@ -186,5 +183,3 @@ for V in VARLIST:
             A_model[itime,1] = gm200.correlation() # Correlation
 
         dumpfile(OUTFILE,A_float,A_model,METRICS)
-
-    

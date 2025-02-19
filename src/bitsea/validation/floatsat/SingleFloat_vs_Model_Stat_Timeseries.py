@@ -1,4 +1,5 @@
 import argparse
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Needs a profiler.py, already executed.
@@ -23,7 +24,6 @@ def argument():
 
 args = argument()
 
-import numpy as np
 from bitsea.commons.mesh import Mesh
 from bitsea.instruments import lovbio_float as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
@@ -36,7 +36,7 @@ from SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
 import bitsea.basins.V2 as OGS
 
 OUTDIR = addsep(args.outdir)
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 layer=Layer(0,200)
 
 VARLIST = ['P_l']
@@ -55,7 +55,7 @@ iz200 = TheMask.getDepthIndex(200)+1 # Max Index for depth 200m
 
 for wmo in wmo_list:
     OUTFILE = OUTDIR + wmo + ".nc"
-    print OUTFILE
+    print(OUTFILE)
     list_float_track=bio_float.filter_by_wmo(ALL_PROFILES,wmo)
     nTime = len(list_float_track)
     A_float = np.zeros((nVar, nTime, nStat), np.float32 ) * np.nan
@@ -70,7 +70,7 @@ for wmo in wmo_list:
             if p.available_params.find(var)<0 : continue
             Pres,Profile,Qc=p.read(var,read_adjusted=adj)
             if len(Pres) < 10 : continue
-            GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj, \
+            GM = M.getMatchups([p], TheMask.zlevels, var_mod, read_adjusted=adj,
                                interpolation_on_Float=False)
             gm200 = GM.subset(layer)
             nLevels = gm200.number()
@@ -82,11 +82,11 @@ for wmo in wmo_list:
             A_float[ivar,itime,1] = gm200.correlation() # Correlation
             A_model[ivar,itime,1] = gm200.correlation() # Correlation
 
-	    A_float[ivar,itime,5] = gm200.Ref[0] # Surf Value
+            A_float[ivar,itime,5] = gm200.Ref[0] # Surf Value
             A_model[ivar,itime,5] = gm200.Model[0] # Surf Value
 
 
-            if (VARLIST[ivar] == "P_l"):
+            if VARLIST[ivar] == "P_l":
                 A_float[ivar,itime,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
                 A_model[ivar,itime,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
                 DCM2_float = find_DCM2(gm200.Ref  ,gm200.Depth)[1] # DCM
@@ -97,7 +97,7 @@ for wmo in wmo_list:
                 A_float[ivar,itime,3] = find_MLD(gm200.Ref  ,gm200.Depth) # MLD
                 A_model[ivar,itime,3] = find_MLD(gm200.Model,gm200.Depth) # MLD
 
-            if (VARLIST[ivar] == "N3n"):
+            if VARLIST[ivar] == "N3n":
                 A_float[ivar,itime,4] = find_NITRICL(gm200.Ref  ,gm200.Depth) # Nitricline
                 A_model[ivar,itime,4] = find_NITRICL(gm200.Model,gm200.Depth) # Nitricline
 #	    import sys

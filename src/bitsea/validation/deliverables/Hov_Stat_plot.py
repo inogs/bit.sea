@@ -38,7 +38,6 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.ticker as mticker
-import os,sys
 from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.basins.region import Rectangle
@@ -72,7 +71,7 @@ def get_level_depth(TheMask,lev):
 INDIR = addsep(args.indir)
 OUTDIR = addsep(args.outdir)
 BASEDIR = addsep(args.basedir)
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 
 font_s =  13
 font_s2 = 3

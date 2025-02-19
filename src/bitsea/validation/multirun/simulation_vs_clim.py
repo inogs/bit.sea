@@ -41,7 +41,7 @@ def argument():
 args = argument()
 
 
-
+from pathlib import Path
 from bitsea.commons.layer import Layer
 import bitsea.basins.V2 as basV2
 from bitsea.static.climatology import get_climatology
@@ -62,13 +62,13 @@ MODDIR2=addsep(args.inputdir2)
 
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
+maskfile8=Path("/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc")
 Mask8 = Mask.from_file(maskfile8)
 TheMask = Mesh.from_file(args.maskfile1, read_e3t=True)
 jpk_V3,jpj,jpi = TheMask.shape
 
 
-TheMask_V2 = Mesh(args.maskfile2, read_e3t=True)
+TheMask_V2 = Mesh.from_file(args.maskfile2, read_e3t=True)
 jpk_V2,_,_ = TheMask_V2.shape
 
 
@@ -146,7 +146,7 @@ for iSub, sub in enumerate(basV2.P):
 
     figure_generator.add_legend(axes[3])
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
 
 
@@ -204,6 +204,5 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.add_legend(axes[3])
     
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
-

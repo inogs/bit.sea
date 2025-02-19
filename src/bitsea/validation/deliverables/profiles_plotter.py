@@ -164,7 +164,7 @@ class figure_generator():
                     
 ##### USER SETTINGS #######################################
 
-Mask24 = Mesh(args.maskfile, read_e3t=True)
+Mask24 = Mesh.from_file(args.maskfile, read_e3t=True)
 OUTDIR= addsep(args.outdir)
 
 mydtype=np.dtype([ ('label','U20'), ('linestyle','U5'), ('PATH','U1024')  ])
@@ -205,4 +205,3 @@ for var in VARLIST:
 
         fig.savefig(outfile)
         pl.close(fig)
-

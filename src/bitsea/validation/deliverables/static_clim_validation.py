@@ -61,7 +61,7 @@ INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
-TheMask = Mesh(args.maskfile, read_e3t=True)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
@@ -70,7 +70,7 @@ z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 
 def Layers_Mean(Pres,Values,LayerList):
-    '''
+    """
     Performs mean of profile along layers.
 
     Arguments:
@@ -79,12 +79,12 @@ def Layers_Mean(Pres,Values,LayerList):
     * LayerList * list of layer objects
     Returns :
     * MEAN_LAY * [nLayers] numpy array, mean of each layer
-    '''
+    """
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
 
     for ilayer, layer in enumerate(LayerList):
         ii = (Pres>=layer.top) & (Pres<=layer.bottom)
-        if (ii.sum()> 1 ) :
+        if ii.sum()> 1:
             local_profile = Values[ii]
             MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
@@ -119,7 +119,7 @@ for ivar, var in enumerate(VARLIST):
 #  if (ivar == 4) : #3 7 
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
-    print METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD"
+    print(METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
 #    CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList, basin_expand=True)
 #    else:
@@ -134,17 +134,17 @@ for ivar, var in enumerate(VARLIST):
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        print sub.name
+        print(sub.name)
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
-    print "CLIM_REF_static"
-    print CLIM_REF_static
-    print "CLIM_MODEL"
-    print CLIM_MODEL
+    print("CLIM_REF_static")
+    print(CLIM_REF_static)
+    print("CLIM_MODEL")
+    print(CLIM_MODEL)
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
@@ -183,7 +183,7 @@ for bottom in PresDOWN:
     top = bottom
 nLayers = len(LayerList_2)
 LayerList_3=LayerList_2[:7]
-print "LayerList_3 = ", LayerList_3
+print("LayerList_3 = ", LayerList_3)
 nLayers3 = len(LayerList_3)
 
 
@@ -191,13 +191,13 @@ rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
 
 for var in VARLIST:
-    if ( var == "pCO2" ): # Integral only up to 200m. It works because pCO2 is the last var of the VARLIST 
+    if var == "pCO2": # Integral only up to 200m. It works because pCO2 is the last var of the VARLIST
        LayerList_2 = LayerList_3
        nLayers = nLayers3
 
     filename = INPUTDIR + var + ".pkl"
     TIMESERIES,TL=read_pickle_file(filename)
-    print METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN"
+    print(METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN")
 #    if ( var in ["N1p","N3n","N5s","O2o","O3c","O3h"] ):
     CLIM_REF_static,_ = climatology.get_climatology(var,SUBlist, LayerList_2, basin_expand=True,QC=True)
 #    else:
@@ -219,13 +219,13 @@ for var in VARLIST:
         bad = np.isnan(refsubs) | np.isnan(modsubs)
         good = ~bad
         ngoodlayers=good.sum()
-        if ngoodlayers>0:
+        if ngoodlayers > 0:
             m = matchup(modsubs[good], refsubs[good])
-#            CORR[iSub,0] = m.correlation()
+            # CORR[iSub,0] = m.correlation()
 	    STATS[iSub,0] = m.bias()
-	    STATS[iSub,1] = m.RMSE()
-	    STATS[iSub,2] = m.correlation()
-#    writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
+        STATS[iSub,1] = m.RMSE()
+        STATS[iSub,2] = m.correlation()
+    # writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", CORR, rows_names,column_names)
     writetable(OUTDIR + var + "-PROF-Y-CLASS4-CLIM-CORR-BASIN.txt", STATS, rows_names, ['bias','rmse','corr'])
 
 # Table 4.7 Correlazione N1p, N3n per certi subbasins

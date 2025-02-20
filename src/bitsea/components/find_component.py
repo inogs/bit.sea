@@ -12,7 +12,7 @@ from bitsea.components.neighbour_schemes import NeighbourScheme
 
 def find_component(
     mask: Union[Mask, np.ndarray],
-    starting_point: Iterable[int, ...],
+    starting_point: Iterable,
     neighbour_scheme: NeighbourScheme = CrossNeighbours(),
 ):
     """

@@ -173,7 +173,7 @@ class SimpleBasin(Basin):
         return [self].__iter__()
 
     def is_inside(self, lon, lat):
-        return self.region.is_inside(lon, lat)
+        return self.region.is_inside(lon=lon, lat=lat)
 
 
 class SimplePolygonalBasin(SimpleBasin):

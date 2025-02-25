@@ -1,5 +1,128 @@
+from __future__ import annotations
+
 import re
+from collections.abc import Iterable
 from typing import List
+from typing import Union
+
+
+class ComposedString:
+    """
+    A `ComposedString` represents a string constructed from multiple substrings,
+    including both plain strings and other `ComposedString` objects.
+
+    This class simplifies the manipulation of strings containing parentheses.
+    For example, the string:
+        `((x + 1) * (y + 2)) + 3`
+    can be represented as a `ComposedString` object made up of two substrings:
+        `(x + 1) * (y + 2)` and ` + 3`.
+    Furthermore, the first substring can itself be split further into three
+    substrings:
+        `x + 1`, ` * `, and `y + 2`.
+
+    The `split_on_parenthesis` method can be used to convert a regular Python
+    string into a hierarchical tree structure of `ComposedString` objects.
+    Alternatively, you can directly create a `ComposedString` by providing a
+    list of substrings, which are stored in the `elements` attribute.
+
+    When a `ComposedString` is printed, it is converted into a regular string
+    by concatenating its elements. Plain strings within the `ComposedString`
+    are concatenated as is, while nested `ComposedString` objects are enclosed
+    in parentheses.
+    """
+
+    def __init__(self, elements: Iterable[Union[str, ComposedString]]):
+        self.elements = tuple(elements)
+
+    def __str__(self) -> str:
+        output = ""
+        for element in self.elements:
+            if isinstance(element, ComposedString):
+                output += "(" + str(element) + ")"
+            else:
+                output += element
+        return output
+
+    def __repr__(self) -> str:
+        return f"ComposedString({repr(self.elements)})"
+
+    def __eq__(self, other):
+        if not hasattr(other, "elements"):
+            return NotImplemented
+        return self.elements == other.elements
+
+    @staticmethod
+    def split_on_parenthesis(txt_str: str) -> ComposedString:
+        """
+        Given a common string, returns a new ComposedString that recursively
+        splits it into a sequence of ComposedString objects around the
+        parenthesis.
+        """
+        # A list to store the elements of the resulting ComposedString object
+        pieces = []
+
+        # A buffer to accumulate characters for the current substring being processed
+        current_piece = ""
+
+        # Tracks the number of currently open parentheses to determine nesting level
+        current_level = 0
+
+        open_parenthesis = "("
+        close_parenthesis = ")"
+
+        for char in txt_str:
+            # Handle the occurrence of an open parenthesis
+            if char == open_parenthesis:
+                # If not already inside parentheses, save the current substring
+                # as an independent piece and begin a new substring for the content inside
+                # the parentheses.
+                if current_level == 0:
+                    if len(current_piece) > 0:
+                        pieces.append(current_piece)
+                        current_piece = ""
+                # Otherwise, append the character to the current substring being processed
+                else:
+                    current_piece += char
+
+                # Increase the nesting level to account for this new open parenthesis
+                current_level += 1
+                continue
+
+            if char == close_parenthesis:
+                # Decrease the nesting level to account for this closed parenthesis
+                current_level -= 1
+
+                # If the nesting level becomes negative, it means there are more
+                # closing parentheses than opening ones, indicating an unbalanced string
+                if current_level < 0:
+                    raise ValueError(
+                        f"Unbalanced parenthesis in string {txt_str}"
+                    )
+
+                # If exiting the outermost set of parentheses, convert the
+                # accumulated substring into a new ComposedString and reset
+                # the buffer
+                if current_level == 0:
+                    pieces.append(
+                        ComposedString.split_on_parenthesis(current_piece)
+                    )
+                    current_piece = ""
+                else:
+                    current_piece += char
+                continue
+
+            current_piece += char
+
+        # If the loop ends with unmatched open parentheses, the string is unbalanced
+        if current_level != 0:
+            raise ValueError("Unbalanced parenthesis in string: " + txt_str)
+
+        # Append any remaining substring as the final piece if the string
+        # did not end with a closing parenthesis
+        if len(current_piece) > 0:
+            pieces.append(current_piece)
+
+        return ComposedString(pieces)
 
 
 def _dequote(txt: str):

@@ -1,6 +1,8 @@
-import pytest
+from pathlib import Path
 
 import numpy as np
+import pytest
+
 from bitsea.basins.region import Polygon
 
 
@@ -43,13 +45,12 @@ def test_polygon_matrix(quadrilateral):
     test_values = quadrilateral.is_inside(lon=lon, lat=lat)
 
     inside_square = np.logical_and(
-        np.logical_and(lon >= 0, lon <= 1),
-        np.logical_and(lat >= -1, lat <= 0)
+        np.logical_and(lon >= 0, lon <= 1), np.logical_and(lat >= -1, lat <= 0)
     )
 
     inside_triangle = np.logical_and(
         np.logical_and(lon >= 0, lon <= 1),
-        np.logical_and(lon - lat >= 0, lat >= 0)
+        np.logical_and(lon - lat >= 0, lat >= 0),
     )
     expected_values = np.logical_or(inside_square, inside_triangle)
 
@@ -67,3 +68,12 @@ def test_polygon_boundary():
 
     assert [p[0] for p in test_poly.borders] == lon
     assert [p[1] for p in test_poly.borders] == lat
+
+
+def test_read_wkt_file(test_data_dir: Path):
+    wkt_file_path = test_data_dir / "wkt_polys.csv"
+    with open(wkt_file_path, "r") as f:
+        poly_dict = Polygon.read_WKT_file(f)
+    assert len(poly_dict) == 2
+    assert "Mambo" in poly_dict
+    assert len(poly_dict["Mambo"].borders) == 8

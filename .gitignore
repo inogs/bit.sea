@@ -11,7 +11,5 @@ makefile
 *.nc
 *.hdf5
 *.grib
-tests/*.tar.xz
 /.pytest_cache/
-tests/.hypothesis
 .hypothesis/*

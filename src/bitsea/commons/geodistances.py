@@ -117,6 +117,82 @@ def _great_circle_distance(
     return 6371009 * d
 
 
+def compute_geodesic_distance(
+    *,
+    lat1: np.typing.ArrayLike,
+    lon1: np.typing.ArrayLike,
+    lat2: np.typing.ArrayLike,
+    lon2: np.typing.ArrayLike,
+    dtype: np.typing.DTypeLike = None,
+):
+    """
+    Compute the geodesic distance between two points on Earth (approximated
+    using the WSG84 ellipsoid).
+
+    This function returns the distance in meters, and it supports Numpy
+    vectorization.
+
+    The algorithm used by this function is extremely accurate but way more
+    computationally expensive than the `compute_great_circle_distance`; if
+    you may tolerate an error of a few metres, and you have to compute several
+    millions of distances, you may consider to use the other method.
+    """
+    use_scalars = True
+    for v in lat1, lon1, lat2, lon2:
+        if not np.isscalar(v):
+            use_scalars = False
+
+    if use_scalars:
+        return GEODESIC.Inverse(lat1, lon1, lat2, lon2, Geodesic.DISTANCE)[
+            "s12"
+        ]
+
+    lat1, lon1, lat2, lon2 = np.broadcast_arrays(lat1, lon1, lat2, lon2)
+    if dtype is None:
+        # We add float32 to ensure that, if all the arrays are made of integers,
+        # the result is a floating point number anyway
+        dtype = np.result_type(
+            lat1.dtype, lon1.dtype, lat2.dtype, lon2.dtype, np.float32
+        )
+    distances = np.empty(lat1.shape, dtype=dtype)
+    it = np.nditer(lat1, flags=["multi_index"])
+    for _ in it:
+        current_lat1 = lat1[it.multi_index]
+        current_lon1 = lon1[it.multi_index]
+        current_lat2 = lat2[it.multi_index]
+        current_lon2 = lon2[it.multi_index]
+        distances[it.multi_index] = GEODESIC.Inverse(
+            current_lat1,
+            current_lon1,
+            current_lat2,
+            current_lon2,
+            Geodesic.DISTANCE,
+        )["s12"]
+    return distances
+
+
+def compute_great_circle_distance(
+    *,
+    lat1: np.typing.ArrayLike,
+    lon1: np.typing.ArrayLike,
+    lat2: np.typing.ArrayLike,
+    lon2: np.typing.ArrayLike,
+):
+    """
+    Calculate the great-circle distance between two points on the Earth's
+    surface.
+
+    This function computes the great-circle distance, which is the shortest
+    distance between two points on the surface of a sphere, in this case,
+    the Earth. The calculation is performed using the haversine formula.
+    The Earth is approximated as a sphere of radius 6,371,009 meters.
+
+    This function returns the distance in meters, and it supports Numpy
+    vectorization.
+    """
+    return _great_circle_distance((lat1, lon1), (lat2, lon2))
+
+
 def extend_from_average(
     v: np.ndarray, axis: int = 0, first_value: Optional[ArrayLike] = None
 ) -> np.ndarray:

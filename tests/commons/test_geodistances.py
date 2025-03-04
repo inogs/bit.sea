@@ -1,5 +1,6 @@
 import numpy as np
 
+from bitsea.commons.geodistances import compute_geodesic_distance
 from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.geodistances import GeoPySidesCalculator
 from bitsea.commons.geodistances import NemoGridSidesCalculator
@@ -37,3 +38,24 @@ def test_extend_from_average():
     v_mean = (v_array[1:] + v_array[:-1]) / 2
 
     assert np.allclose(v_mean, t_array)
+
+
+def test_compute_geodesic_distance():
+    lat1 = [42, 43, 44]
+    lon1 = 10
+    lat2 = np.array([[41, 41, 42], [42, 42, 43]])
+    lon2 = 14
+
+    distances = compute_geodesic_distance(
+        lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+    )
+
+    for i in range(2):
+        for j in range(3):
+            d = compute_geodesic_distance(
+                lat1=lat1[j],
+                lon1=lon1,
+                lat2=lat2[i, j],
+                lon2=lon2,
+            )
+            assert abs(distances[i, j] - d) < 1e-10

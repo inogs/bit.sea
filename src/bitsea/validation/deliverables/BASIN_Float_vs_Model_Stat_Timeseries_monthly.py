@@ -57,9 +57,11 @@ from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import check
 import datetime
 from bitsea.basins.region import Rectangle
+from bitsea.commons import timerequestors
 
 OUTDIR = args.outdir
 BASEDIR = args.basedir
+
 TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
 deltaT= datetime.timedelta(hours=12)
 TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
@@ -115,6 +117,10 @@ for ivar, V in enumerate(VARLIST):
     var_mod = V.name
     var = FLOATVARS[var_mod]
 
+    if var_mod == "N3n": Check_obj = Check_obj_nitrate
+    if var_mod == "P_l": Check_obj = Check_obj_chl
+    if var_mod == "O2o": Check_obj = None
+    if var_mod == "P_c": Check_obj = Check_obj_PhytoC
 
     for itime, Req in enumerate(MonthlyRequestors):
         if Req.time_interval.end_time > TL.timeinterval.end_time :
@@ -165,10 +171,12 @@ for ivar, V in enumerate(VARLIST):
 
 
                 if (var_mod == "P_l"):
-                    Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
-                    Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
-                    Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
-                    Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
+                    if ( ( Req.month >= 4. )  & ( Req.month <= 10 )):
+                        Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
+                        Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
+                    if (Req.month in [1,2,3] ):
+                        Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
+                        Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
 
                 if (var_mod == "N3n"):

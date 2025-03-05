@@ -177,7 +177,7 @@ for ivar, var in enumerate(VARLIST):
             axes[1].set_ylabel('Oxygen 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
         if (var == "N3n"):
             axes[1].set_ylabel('Nitrate 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
-        legend = axes[1].legend(loc='upper left', shadow=True, fontsize=12)
+        legend = axes[1].legend(loc='upper left', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
 
         corr = A_float[ivar,:,iSub,1]
 #        ref_corr = np.zeros(len(corr), np.float32 ) * np.nan
@@ -207,14 +207,14 @@ for ivar, var in enumerate(VARLIST):
             DCM_Mod = A_model[ivar,:,iSub,2]
             WBL_Ref = A_float[ivar,:,iSub,3]
             WBL_Mod = A_model[ivar,:,iSub,3]
-            axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
+            axes[3].plot(times,DCM_Ref,'-rD',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
             # FILTER OUT MAY TO NOV INCLUDED:
-            WBL_Ref[4:11] = np.nan
-            WBL_Mod[4:11] = np.nan
-            WBL_Ref[16:23] = np.nan
-            WBL_Mod[16:23] = np.nan
-            axes[3].plot(times,WBL_Ref,'--r',label='WBL REF')
+#            WBL_Ref[4:11] = np.nan
+#            WBL_Mod[4:11] = np.nan
+#            WBL_Ref[16:23] = np.nan
+#            WBL_Mod[16:23] = np.nan
+            axes[3].plot(times,WBL_Ref,'--rD',label='WBL REF')
             axes[3].plot(times,WBL_Mod,'--b',label='WBL MOD')
 
             axes[3].invert_yaxis()
@@ -226,7 +226,7 @@ for ivar, var in enumerate(VARLIST):
 
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='best', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
 
             TABLE_METRICS[iSub,7] = np.nanmean(DCM_Ref[ii])
             TABLE_METRICS[iSub,8] = np.nanmean(DCM_Mod[ii])
@@ -271,7 +271,7 @@ for ivar, var in enumerate(VARLIST):
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
             axes[1].set_ylim([0,6])
             ax2.set_ylim([0,45])
             axes[3].set_ylim([200,0])
@@ -287,7 +287,7 @@ for ivar, var in enumerate(VARLIST):
             axes[3].invert_yaxis()
             axes[3].set_ylabel('MAX OXY depth $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
 

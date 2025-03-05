@@ -1,5 +1,4 @@
 import argparse
-from numpy import dtype
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates png maps, based on matplotlib.imshow(), of time averaged fields
@@ -217,8 +216,7 @@ for il, layer in enumerate(PLOT.layerlist):
     pl.close(fig)
     if (var == "ppn"): 
         # READ OBS DATASETS:
-#        DIR_OBS="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/PPN/"
-        DIR_OBS="/g100_scratch/userexternal/lfeudale/NPP_OBS/datasets_cafe_octac/"
+        DIR_OBS="/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/Cafe_Octac/"
         filename_CAFE="ppn_CAFE_mean_16basins_" + str(yy) + "_annual.txt"
         filename_OCTAC="ppn_OCTAC_mean_16basins_" + str(yy) + "_annual.txt"
 #       RMSE = np.loadtxt(INDIR + '/' + var + '.rmse.txt', skiprows=1,usecols=[ii for ii in range(1,8)])

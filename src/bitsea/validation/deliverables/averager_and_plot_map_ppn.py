@@ -12,11 +12,13 @@ def argument():
     (3d_field, Layer list )                  ----> vertical mean/integral ---> 2d map
     
     
-    Example of output file: 
-    Map_pCO2_Ave.2016-2015_Ave0060-0100m-0060m.png
+    Example of output files:
+    - ppn_2021_Int0000-0200m-0000m.png
+    - ppn_ean_2021.txt
+    - ppn_mean_basin_2021.txt
     
     Caveats:
-    A unit conversion is performed, about ppn.
+    A unit conversion is performed.
     ''',
     formatter_class=argparse.RawTextHelpFormatter
     )
@@ -36,7 +38,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','DIC'] )
+                                choices = ['ppn'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -117,17 +119,6 @@ TheMask=Mask(args.maskfile)
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
-         'O2o' : 1,
-         'N1p' : 1,
-         'N3n' : 1,
-         'PH'  : 1,
-         'pH'  : 1, 
-         'pCO2': 1,
-         'P_l' : 1,
-         'P_c' : 1,
-         'P_i' : 1,
-         'Ac'  : 1,
-         'DIC' : 1
          }
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -208,9 +199,8 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.set_ylabel('Lat').set_fontsize(12)
     ax.tick_params(axis='x', labelsize=10)
 # CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
-    if (var=="ppn"):
-        ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-        title = "%s %s %s" % (req_label, 'npp', layer.__repr__())
+    ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+    title = "%s %s %s" % (req_label, 'npp', layer.__repr__())
 
 
     ax.xaxis.set_ticks(np.arange(-2,36,6))
@@ -225,36 +215,34 @@ for il, layer in enumerate(PLOT.layerlist):
     pl.suptitle(title)
     pl.savefig(outfile)
     pl.close(fig)
-    if (var == "ppn"): 
 
-# 
-        ncfile = OUTPUTDIR / f"{filename}.nc"
-        netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
+    ncfile = OUTPUTDIR / f"{filename}.nc"
+    netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
 
-        from bitsea.basins import V2 as OGS
-        from bitsea.commons.submask import SubMask
-        from bitsea.commons.utils import writetable
-        tablefile = OUTPUTDIR / f"{var}_mean_basin_{yy}.txt"
-        tablefile_PPN_EAN =  OUTPUTDIR / f"{var}_ean_{yy}.txt"
+    from bitsea.basins import V2 as OGS
+    from bitsea.commons.submask import SubMask
+    from bitsea.commons.utils import writetable
+    tablefile = OUTPUTDIR / f"{var}_mean_basin_{yy}.txt"
+    tablefile_PPN_EAN =  OUTPUTDIR / f"{var}_ean_{yy}.txt"
 
-        SUBlist = OGS.P.basin_list
-        nSub   = len(SUBlist)
-        rows_names=[sub.name for sub in SUBlist]
-        ppn_submean = np.zeros((nSub,3),np.float32)*np.nan
-        ppn_ean = np.zeros((2,2),np.float32)*np.nan
-        for isub, sub in enumerate(OGS.P):
-            S = SubMask(sub, maskobject=TheMask)
-            mask2d=S.mask[0,:,:]
-            ppn_submean[isub,0] = integrated_masked[mask2d].mean()
-            ppn_submean[isub,1] = CAFE[isub]
-            ppn_submean[isub,2] = OCTAC[isub]
-        
-        ppn_ean[0,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,1]) # BIAS CAFE
-        ppn_ean[0,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,1])**2)) #RMSD CAFE
-        ppn_ean[1,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,2]) # BIAS OCTAC
-        ppn_ean[1,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,2])**2)) # RMSD OCTAC
-  
-        writetable(tablefile,ppn_submean,rows_names,['mean Mod', 'CAFE mean','OCTAC mean'])
-        writetable(tablefile_PPN_EAN,ppn_ean,["Mod_vs_CAFE","Mod_vs_OCTAC"],["BIAS","RMSD"])
+    SUBlist = OGS.P.basin_list
+    nSub   = len(SUBlist)
+    rows_names=[sub.name for sub in SUBlist]
+    ppn_submean = np.zeros((nSub,3),np.float32)*np.nan
+    ppn_ean = np.zeros((2,2),np.float32)*np.nan
+    for isub, sub in enumerate(OGS.P):
+        S = SubMask(sub, maskobject=TheMask)
+        mask2d=S.mask[0,:,:]
+        ppn_submean[isub,0] = integrated_masked[mask2d].mean()
+        ppn_submean[isub,1] = CAFE[isub]
+        ppn_submean[isub,2] = OCTAC[isub]
+
+    ppn_ean[0,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,1]) # BIAS CAFE
+    ppn_ean[0,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,1])**2)) #RMSD CAFE
+    ppn_ean[1,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,2]) # BIAS OCTAC
+    ppn_ean[1,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,2])**2)) # RMSD OCTAC
+
+    writetable(tablefile,ppn_submean,rows_names,['mean Mod', 'CAFE mean','OCTAC mean'])
+    writetable(tablefile_PPN_EAN,ppn_ean,["Mod_vs_CAFE","Mod_vs_OCTAC"],["BIAS","RMSD"])
 
 

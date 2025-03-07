@@ -206,16 +206,12 @@ def read_csv_txt(txt: str) -> List[List[str]]:
     # field contains either characters other than quotes or pairs of quotes.
     # It expects the quoted field to end with a single quote followed by a
     # comma, newline, or the end of the file.
-    quoted_field = re.compile(
-        r'^"(?P<field>([^"]|(""))*)"(?P<end>([,\n$]))', re.MULTILINE
-    )
+    quoted_field = re.compile(r'^"(?P<field>([^"]|(""))*)"(?P<end>([,\n]|$))')
 
     # For unquoted fields, identify the end of the field by finding the first
     # comma or newline. If neither is found, the field ends at the end of the
     # file.
-    unquoted_field = re.compile(
-        r'^(?P<field>[^",\n]*?)(?P<end>([,\n$]))', re.MULTILINE
-    )
+    unquoted_field = re.compile(r'^(?P<field>[^",\n]*?)(?P<end>([,\n]|$))')
 
     # The file_end pattern checks if we have reached the end of the file,
     # accommodating possible empty lines at the end.
@@ -234,7 +230,7 @@ def read_csv_txt(txt: str) -> List[List[str]]:
         # and apply it on the field
         field_match = field_re.match(txt)
         if field_match is None:
-            raise ValueError("Invalid CSV file")
+            raise ValueError(f'Invalid CSV file; error while reading "{txt}"')
 
         # This is the content of the field (beside the quotes)
         field_content = field_match.group("field")
@@ -250,9 +246,14 @@ def read_csv_txt(txt: str) -> List[List[str]]:
             field_content = _dequote(field_content)
         current_line.append(field_content)
 
-        # If we reach the end of the file, we stop the loop
         field_end = field_match.group("end")
+
+        # If we reach the end of the file, we stop the loop
         if file_end.match(txt):
+            # If we reached the end of the file but the last char was a comma,
+            # there is a last empty field we have to save
+            if field_end == ",":
+                current_line.append("")
             break
 
         # If the field_end was a newline, we need to prepare a new line

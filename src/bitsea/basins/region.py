@@ -200,7 +200,7 @@ class Polygon(Region):
             )
         parenthesis_start = polygon_description.find("(")
         polygon_class = polygon_description[:parenthesis_start].strip()
-        if polygon_class.lower() != (c.lower() for c in allowed_classes):
+        if polygon_class.lower() not in (c.lower() for c in allowed_classes):
             raise ValueError(
                 "The polygon description must start with the name of the "
                 f"polygon class, which may be one of {allowed_classes}; "

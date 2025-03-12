@@ -8,6 +8,19 @@ def argument():
     Basin_Statistics_MODEL.npy
     containing [(nVar, nTime, nSub, nStat)] arrays.
     The metrics are:
+    'Int_0-200': Integral in the first 200m layer
+METRICS = ['Int_0-200',
+    'Corr'i; correlation between the Model and Reference profile
+    'DCM': the depth of Clorophyll Maximum
+    'z_01'; the depth of the layer of homogeneous Chla concentration (it is the WBL)
+    'Nit_1'; the depth of the nitracline calculated with respect the threshold of 2mmol/m3
+    'SurfVal': the value at surface,
+    'nProf' the number of profiles in each month
+    'dNit_dz': the nitracline calculated basing on the maxium change of nitrate concentration,
+    'CM': the value of Chlorophyll concentration at DCM (Max of Chla)
+    'O2o_sat': value of Oxygen concentration at saturation
+    'OMZ': the depth of minimum of Oxygen in the 200-1000m layer 
+    'max_O2': depth of maximum concentration in the first 200m
     These arrays will be used in the next step to generate the following metrics:
 
     CHL-PROF-D-CLASS4-PROF-CORR-BASIN
@@ -172,9 +185,11 @@ for ivar, V in enumerate(VARLIST):
 
                 if (var_mod == "P_l"):
                     if ( ( Req.month >= 4. )  & ( Req.month <= 10 )):
+                        print (str(Req.month) + " DCM")
                         Flo[ip,2] = find_DCM(gm200.Ref  ,gm200.Depth)[1] # DCM
                         Mod[ip,2] = find_DCM(gm200.Model,gm200.Depth)[1] # DCM
                     if (Req.month in [1,2,3] ):
+                        print (str(Req.month) + " WBL")
                         Flo[ip,3] = find_WBL(gm200.Ref  ,gm200.Depth) # WBL
                         Mod[ip,3] = find_WBL(gm200.Model,gm200.Depth) # WBL
 
@@ -197,11 +212,8 @@ for ivar, V in enumerate(VARLIST):
 
             for iStat, sStat in enumerate(METRICS):
                 if (iStat == 6): continue
-#                A_float[ivar,itime,iSub,iStat] = np.nanmean(Flo[ip,iStat])
-#                A_model[ivar,itime,iSub,iStat] = np.nanmean(Mod[ip,iStat])
                 A_float[ivar,itime,iSub,iStat] = nanmean_without_warnings(Flo[:,iStat])
                 A_model[ivar,itime,iSub,iStat] = nanmean_without_warnings(Mod[:,iStat])
-#                print (A_float[3,:,6,6])
 
 outfile=OUTDIR / "Basin_Statistics_FLOAT.npy"
 print(outfile)

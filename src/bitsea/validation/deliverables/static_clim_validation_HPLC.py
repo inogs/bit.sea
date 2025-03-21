@@ -24,32 +24,32 @@ def argument():
     P4l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
-#    parser.add_argument(   '--inputdir','-i',
-#                                type = str,
-#                                required = True,
-#                                help = 'Directory of StatProfiles of P1l, P2l, P3l, P4l in *.pkl')
-#
-#    parser.add_argument(   '--outdir', '-o',
-#                                type = str,
-#                                default = None,
-#                                required = True,
-#                                help = "")
-#    parser.add_argument(   '--maskfile', '-m',
-#                                type = str,
-#                                default = None,
-#                                required = True,
-#                                help = "")
-#    parser.add_argument(   '--starttime','-s',
-#                                type = str,
-#                                required = True,
-#                                help = 'start date in yyyymmdd format')
-#    parser.add_argument(   '--endtime','-e',
-#                                type = str,
-#                                required = True,
-#                                help = 'start date in yyyymmdd format')   
-#    return parser.parse_args()
-#
-#args = argument()
+    parser.add_argument(   '--inputdir','-i',
+                                type = str,
+                                required = True,
+                                help = 'Directory of StatProfiles of P1l, P2l, P3l, P4l in *.pkl')
+
+    parser.add_argument(   '--outdir', '-o',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+    parser.add_argument(   '--maskfile', '-m',
+                                type = str,
+                                default = None,
+                                required = True,
+                                help = "")
+    parser.add_argument(   '--starttime','-s',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')
+    parser.add_argument(   '--endtime','-e',
+                                type = str,
+                                required = True,
+                                help = 'start date in yyyymmdd format')   
+    return parser.parse_args()
+
+args = argument()
 
 import numpy as np
 import netCDF4 as nc
@@ -88,8 +88,8 @@ TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 #TI = TimeInterval(starttime,endtime,"%Y%m%d")
 
 
-TheMask= Mask.from_file(args.maskfile, loadtmask=False)
-#TheMask= Mask.from_file(MASKFILE) #, loadtmask=False)
+#TheMask= Mask.from_file(args.maskfile, loadtmask=False)
+TheMask= Mask.from_file(args.maskfile) #, loadtmask=False)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 

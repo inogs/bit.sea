@@ -96,7 +96,7 @@ z = -TheMask.zlevels
 z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 # DATASET of PFTS "CLIMATOLOGY" from HPLC
-HPLC_CLIM_path="/g100_scratch/userexternal/lfeudale/HPLC/guido_analisi_file_eva/"
+HPLC_CLIM_path="/g100_scratch/userexternal/lfeudale/HPLC/HPLC_pfts_CLIMATOLOGY/"
 #HPLC_CLIM_path="/g100_scratch/userexternal/gocchipi/analisi_file_eva/"
 
 def Layers_Mean(Pres,Values,LayerList):

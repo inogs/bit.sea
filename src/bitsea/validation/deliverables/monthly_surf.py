@@ -39,17 +39,25 @@ VARLIST=[ 'N1p', 'N5s', 'N3n', 'pH', 'ALK', 'DIC','pCO2' ]
 for var in VARLIST:
     filename=INPUTDIR + var + ".pkl"
 
+# TL is determined by the filelists of STAT PROFILES in that directory (therefore on "file".pkl)
     data, TL = read_pickle_file(filename)
     nSUB = len(OGS.P.basin_list)
 
     MONTHLY = np.zeros((nSUB, 12),np.float32)*np.nan
 
     for imonth in range(12):
-        req=timerequestors.Monthly_req(int(args.year),imonth+1)
+#        req=timerequestors.Monthly_req(int(args.year),imonth+1)
+# Consider the month climatology:
+        req=timerequestors.Clim_month(imonth+1)
         ii, w = TL.select(req)
+        print (ii)
+        print (w)
+        for kk in ii: print (TL.Timelist[kk])
         for isub, sub in enumerate(OGS.P):
             V=data[ii,isub,1,0,0]
-            MONTHLY[isub,imonth] = V.mean()
+# They are weekly values, therefore we include the weight in the mean
+#            MONTHLY[isub,imonth] = V.mean()
+            MONTHLY[isub,imonth] = np.sum(w*V)/np.sum(w)
 
     rows_names_list=[sub.name for sub in OGS.P]
     column_names_list=[str(i) for i in range(1,13)]

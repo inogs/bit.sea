@@ -66,7 +66,7 @@ class ComponentMask:
         mask: np.ndarray, closed_boundary: bool = False
     ) -> np.ndarray:
         """Given a boolean mask, returns the cells that are inside the mask
-        (i.e. that are `True`) and that are on the boundary of the mask.
+        (i.e., that are `True`) and that are on the boundary of the mask.
 
         In other words, it returns the cells whose value is `True` but that
         have a neighbour that is `False`. With the word "neighbour", in this

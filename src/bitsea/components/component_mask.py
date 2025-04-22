@@ -1,9 +1,7 @@
 from itertools import product as cart_prod
-from typing import Union
 
 import numpy as np
 
-from bitsea.commons.mask import Mask
 from bitsea.components.find_component import find_component
 
 
@@ -110,7 +108,7 @@ class ComponentMask:
 
         return np.logical_and(mask, neighbour_outside)
 
-    def __init__(self, mask: Union[Mask, np.ndarray]):
+    def __init__(self, mask: np.ndarray):
         """
         Initializes the ComponentMask object by identifying connected
         components in the input mask.
@@ -171,7 +169,7 @@ class ComponentMask:
                 f"between 0 and {self._n_components - 1}; unable to get "
                 f"{component_id}"
             )
-        return self._components == component_id
+        return np.equal(self._components, component_id)
 
     @property
     def components(self):

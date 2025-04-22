@@ -1,17 +1,15 @@
 from collections.abc import Iterable
 from typing import Tuple
-from typing import Union
 
 import numpy as np
 from numba import jit
 
-from bitsea.commons.mask import Mask
 from bitsea.components.neighbour_schemes import CrossNeighbours
 from bitsea.components.neighbour_schemes import NeighbourScheme
 
 
 def find_component(
-    mask: Union[Mask, np.ndarray],
+    mask: np.ndarray,
     starting_point: Iterable,
     neighbour_scheme: NeighbourScheme = CrossNeighbours(),
 ):

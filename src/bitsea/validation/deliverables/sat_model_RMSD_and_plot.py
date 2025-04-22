@@ -62,7 +62,7 @@ from bitsea.layer_integral.mapbuilder import MapBuilder
 import bitsea.matchup.matchup as matchup
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 _,jpj,jpi = TheMask.shape
 
 MODEL_DIR  = args.inputdir

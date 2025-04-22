@@ -61,7 +61,7 @@ masktype = args.masktype
 Maskfile = args.modelmeshfile
 
 maskSat = getattr(masks,args.mesh)
-maskMod = Mask(Maskfile)
+maskMod = Mask.from_file(Maskfile)
 
 
 readClimatology = True

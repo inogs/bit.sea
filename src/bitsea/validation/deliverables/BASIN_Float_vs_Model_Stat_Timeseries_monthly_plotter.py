@@ -60,7 +60,7 @@ from bitsea.basins.region import Rectangle
 
 OUTDIR = args.outdir
 BASEDIR = args.basedir
-TheMask= Mask(args.maskfile)
+TheMask= Mask.from_file(args.maskfile)
 INDIR = args.inputdir
 
 
@@ -87,7 +87,6 @@ def fig_setup(S,subbasin_name):
     fig.set_size_inches(10,15)
     fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
-
 
     bool2d=S.mask_at_level(0)
     smaskplot = np.ones_like(bool2d,dtype=np.float32)
@@ -137,7 +136,7 @@ ii = np.zeros((len(times),) , bool)
 for k,t in enumerate(times) : ii[k] = ti_restrict.contains(t)
 
 
-izmax = TheMask.getDepthIndex(200) 
+izmax = TheMask.get_depth_index(200)
  
 #A_float = np.zeros((nVar, nTime, nSub, nStat), np.float32 ) * np.nan
 A_float = np.load(INDIR / 'Basin_Statistics_FLOAT.npy')
@@ -149,7 +148,7 @@ for ivar, var in enumerate(VARLIST):
     for iSub, SubBasin in enumerate(OGS.basin_list):
         outfile = OUTDIR / (var + "_" + SubBasin.name + ".png")
         print(outfile)
-        S = SubMask(SubBasin, maskobject=TheMask)
+        S = SubMask(SubBasin, TheMask)
         fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
             Int_Ref = A_float[ivar,:,iSub,0]
@@ -338,4 +337,3 @@ for ivar, var in enumerate(VARLIST):
     writetable(OUTDIR / (var + '_tab_statistics_ALL.txt'),TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t%.0f\t %.0f\t %.0f\t %.0f\t")
 
     writetable(OUTDIR / (var + '_tab_statistics_SHORT.txt'),TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
-

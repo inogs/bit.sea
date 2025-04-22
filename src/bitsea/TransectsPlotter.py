@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     #Open mask file
     try:
-        mask = Mask(MESHMASK)
+        mask = Mask.from_file(MESHMASK)
     except Exception as e:
         msg = "Unable to open mask file %s:\n%s" % (meshmask, e)
         raise Exception(msg)

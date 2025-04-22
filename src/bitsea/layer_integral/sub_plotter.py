@@ -8,7 +8,7 @@ import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties
 
 
-TheMask_all=Mask('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
+TheMask_all = Mask.from_file('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
 TheMask = TheMask_all.cut_at_level(0)
 mask = TheMask.mask_at_level(0)
 jpk,jpj,jpi = TheMask.shape
@@ -24,7 +24,7 @@ colortext=['w','w','w','w','w','k','k','k','k','k','k','k','k','k','w','w']
 cmap=pl.get_cmap('jet',nSub)
 
 for isub, sub in enumerate(SUBLIST):
-    m = SubMask(sub,maskobject=TheMask)
+    m = SubMask(sub, TheMask)
     submask = m.mask[0,:,:]
     SUB_matrix[submask] =isub
     xC[isub]=TheMask.xlevels[submask].mean()

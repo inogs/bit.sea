@@ -75,8 +75,8 @@ def argument():
 args = argument()
 
 
-TheMask = Mask(args.maskfile)
-BASEDIR = args.basedir
+TheMask  = Mask.from_file(args.maskfile)
+BASEDIR =  addsep(args.basedir)
 if args.basedir_clim is not None:
     BASEDIR_CLIM = args.basedir_clim
 outfile = args.outfile

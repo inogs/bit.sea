@@ -110,7 +110,7 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 CAFE_DIR="/g100_scratch/userexternal/lfeudale/NPP/bit.sea/validation/deliverables/"
 OCTAC_DIR="/g100_scratch/userexternal/lfeudale/NPP/bit.sea/validation/deliverables/"
@@ -243,7 +243,7 @@ for il, layer in enumerate(PLOT.layerlist):
  
 #        for isub, sub in enumerate(OGSred):
         for isub, sub in enumerate(OGS.P):
-            S = SubMask(sub, maskobject=TheMask)
+            S = SubMask(sub, TheMask)
             mask2d=S.mask[0,:,:]
             ppn_submean[isub] = integrated_masked[mask2d].mean()
                 

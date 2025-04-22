@@ -75,7 +75,7 @@ maskfile = args.maskfile
 var3dgridfile = args.grid3dvar
 neof = int(args.neof)
 
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 ind200 = TheMask.getDepthIndex(200)+1
 jpk,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)
@@ -127,7 +127,7 @@ SUBareas = np.zeros((jpj,jpi),dtype=dtype)
 SUBtot = np.zeros((jpj,jpi),np.int)
 for isub,sub in enumerate(OGS.Pred):
     print sub.name
-    SUBareas[sub.name] = SubMask(sub,maskobject=TheMask).mask_at_level(0)
+    SUBareas[sub.name] = SubMask(sub, TheMask).mask_at_level(0)
     SUBtot[SUBareas[sub.name]] = isub
 SUBtot[tgr==0] = -1000
 

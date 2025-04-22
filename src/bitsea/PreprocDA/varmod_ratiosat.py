@@ -84,7 +84,7 @@ fillValue = -999
 INSAT = addsep(args.insat)
 INMOD = addsep(args.inmod)
 OUTDIR = addsep(args.outdir)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 minvmodLIST = args.minvmod
 maxvmodLIST = args.maxvmod
 

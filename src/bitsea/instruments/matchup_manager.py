@@ -1,10 +1,10 @@
-import os,sys
+import os
 from bitsea.instruments.instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
 from bitsea.matchup import matchup
 import matplotlib.pyplot as pl
-from bitsea import postproc
+import bitsea.postproc as postproc
 
 
 
@@ -149,7 +149,6 @@ class Matchup_Manager():
                 break
         else:
             raise ValueError("No model profile corresponds to %s. Please check time interval in your profiler." % ( profile.ID(), ) )
-            return None
         return Model_time
 
 
@@ -179,14 +178,19 @@ class Matchup_Manager():
 
         Group_Matchup = matchup.ProfilesMatchup()
 
-        THRESHOLDS={'O2o': 40.0, \
-                'N1p': 0.3, \
-                'N3n': 4.0,  \
-                'N4n': 1.0,  \
-                'ALK': 200,  \
-                'DIC': 200,  \
-                 'pH': 0.25,  \
-               'pCO2': 200 }  # pCO2 up to 200m depth
+        THRESHOLDS={
+            'O2o': 40.0,
+            'N1p': 0.3,
+            'N3n': 4.0,
+            'N4n': 1.0,
+            'N5s': 5.0,
+            'P_l': 1.0,
+            'ALK': 200,
+            'DIC': 200,
+            'pH': 0.25,
+            'pCO2': 200  # pCO2 up to 200m depth
+        }
+        # Added a large number for N5s and P_l to consider almost all values
 
         for p in Profilelist:
             assert p in self.PROFILE_LIST

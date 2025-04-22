@@ -62,7 +62,7 @@ def argument():
 args = argument()
 
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 BASEDIR = args.basedir
 d = args.date
 R = timerequestors.Weekly_req(d.year, d.month, d.day)

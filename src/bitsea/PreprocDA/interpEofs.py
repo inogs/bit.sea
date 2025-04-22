@@ -10,11 +10,11 @@ from writeEOF import write_eof
 maskfile24 = 'meshmask24.nc'
 maskfile16 = 'meshmask16.nc'
 
-Mask24 = Mask(maskfile24)
+Mask24 = Mask.from_file(maskfile24)
 nav_lev24 = Mask24.zlevels
 jpk24 = nav_lev24.shape[0]
 
-Mask16 = Mask(maskfile16)
+Mask16 = Mask.from_file(maskfile16)
 nav_lev16 = Mask16.zlevels
 jpk16 = nav_lev16.shape[0]
 

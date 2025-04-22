@@ -29,6 +29,7 @@ args = argument()
 
 
 
+from pathlib import Path
 import numpy as np
 import pylab as pl
 import bitsea.basins.V2 as basV2
@@ -39,19 +40,17 @@ from bitsea.commons.layer import Layer
 from bitsea.commons.mask import Mask
 from bitsea.commons.submask import SubMask
 from bitsea.commons.time_interval import TimeInterval
-from bitsea.commons.Timelist import TimeList
 from bitsea.commons.utils import addsep
 from bitsea.instruments.var_conversions import LOVFLOATVARS
-from bitsea.timeseries.plot import Hovmoeller_matrix
-from bitsea.timeseries.plot import read_pickle_file, read_basic_info
+
 IDrun='floatcfr'
 OUTDIR=addsep(args.outdir)
 # MODDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-Mask8 = Mask(maskfile8)
-# TheMask= Mask(args.maskfile, loadtmask=False)
+maskfile8 = Path("/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc")
+Mask8 = Mask.from_file(maskfile8)
+# TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 # jpk,jpj,jpi = TheMask.shape
 # z = -TheMask.zlevels
 
@@ -113,9 +112,9 @@ for var_mod in VARLIST:
 
 iip = 0
 for wmo in wmo_list:
-    print np.str(iip) + ' of ' + np.str(np_tot)
+    print(str(iip) + ' of ' + str(np_tot))
     list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
-    print wmo
+    print(wmo)
   
     for p in list_float_track:
         for indSub, sub in enumerate(basV2.Pred):
@@ -135,7 +134,7 @@ for wmo in wmo_list:
         iip += 1    
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_float_clim." + sub.name + ".png"
@@ -181,6 +180,5 @@ for iSub, sub in enumerate(basV2.P):
     # figure_generator.clim_profile_plotter(z_clim,O2o_clim_mean,O2o_clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
-

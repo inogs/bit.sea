@@ -59,7 +59,7 @@ varname = args.varname
 maskfile = args.maskfile
 eofdepth = args.eofdepth
 
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 zlevs = TheMask.zlevels
 kdep = TheMask.getDepthIndex(eofdepth)+1
 

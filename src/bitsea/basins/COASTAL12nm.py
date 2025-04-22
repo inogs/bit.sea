@@ -51,4 +51,5 @@ ven = ComposedBasin('ven', [vne, lve, poa], 'Veneto 12 nm')
 
 NAd = ComposedBasin('NAd', [got, lgm, vne, lve, poa, emr, mar], 'NAdri 12 nm')
 
-NAd_coastal_basins = (got, lgm, vne, lve, poa, emr, mar, fvg, ven, NAd)
+NAd_coastal_basins = ComposedBasin('NAd_coastal_basins',[got, lgm, vne, lve, poa, emr, mar, fvg, ven, NAd])
+P = NAd_coastal_basins

@@ -51,7 +51,7 @@ Check_obj_nitrate = check.check(Path(""), verboselevel=0)
 Check_obj_chl     = check.check(Path(""), verboselevel=0)
 Check_obj_PhytoC  = check.check(Path(""), verboselevel=0)
 
-TheMask  = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 
 

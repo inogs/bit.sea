@@ -46,15 +46,9 @@ import numpy as np
 from bitsea.commons.mask import Mask
 from bitsea.commons.submask import SubMask
 
-from bitsea.instruments import superfloat as bio_float
-from bitsea.instruments.matchup_manager import Matchup_Manager
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from bitsea.commons.utils import addsep
-#from profiler import ALL_PROFILES,TL,BASEDIR
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from bitsea.basins.V2 import NRT3 as OGS
-from bitsea.commons.time_interval import TimeInterval
 from bitsea.matchup.statistics import *
 from bitsea.commons.utils import writetable
 from datetime import datetime
@@ -82,8 +76,8 @@ def fig_setup(S,subbasin_name):
     fig.set_dpi(150)
     c_lon,c_lat=coastline.get()
 
-#    TheMask= Mask(maskfile)
-#    S = SubMask(basV2.lev1, maskobject=TheMask)
+#    TheMask = Mask.from_file(maskfile)
+#    S = SubMask(basV2.lev1, TheMask)
     bool2d=S.mask_at_level(0)
     smaskplot = np.ones_like(bool2d,dtype=np.float32)
     smaskplot[~bool2d] = np.nan
@@ -110,10 +104,10 @@ def fig_setup(S,subbasin_name):
 
     return fig, axs
 
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-#S = SubMask(basV2.lev1, maskobject=TheMask)
+#S = SubMask(basV2.lev1, TheMask)
 
 VARLIST      = ['P_l','N3n','O2o','P_c']
 VARLIST_NAME = ['Chlorophyll','Nitrate','Oxygen','PhytoC']
@@ -156,7 +150,7 @@ for ivar, var in enumerate(VARLIST):
     for iSub, SubBasin in enumerate(OGS.basin_list):
 #     if (SubBasin.name == 'lev'):
         OUTFILE = OUTDIR + var + "_" + SubBasin.name + ".png"
-        S = SubMask(SubBasin, maskobject=TheMask)
+        S = SubMask(SubBasin, TheMask)
         fig, axes = fig_setup(S,SubBasin.name)
         if (~np.isnan(A_float[ivar,:,iSub,0]).all() == True) or (~np.isnan(A_model[ivar,:,iSub,0]).all() == True):
             Int_Ref = A_float[ivar,:,iSub,0]
@@ -204,7 +198,7 @@ for ivar, var in enumerate(VARLIST):
             axes[2].set_ylim([0.2,1])
             TABLE_METRICS[iSub,0] = np.nanmean(corr[ii])
 #            TABLE_METRICS[iSub,0] = np.nanmean(CORR_matrix[ivar,:,iSub,1])
-            print "CORRELATION is " + str((TABLE_METRICS[iSub,0]))
+            print( "CORRELATION is " + str((TABLE_METRICS[iSub,0])))
 
         ax2 = axes[2].twinx()
         numP = A_float[ivar,:,iSub,6]
@@ -371,4 +365,3 @@ for ivar, var in enumerate(VARLIST):
     writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t%.0f\t %.0f\t %.0f\t %.0f\t")
 
     writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
-

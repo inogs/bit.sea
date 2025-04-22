@@ -38,7 +38,7 @@ DICTfilename = {
     }
 
 maskfile = '/gpfs/scratch/userexternal/ateruzzi/TEST_2017aprjun/wrkdir/MODEL/meshmask.nc'
-TheMask = Mask(maskfile)
+TheMask = Mask.from_file(maskfile)
 _,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)
 
@@ -47,7 +47,7 @@ SUB = {}
 SUB['med'] = np.zeros((jpj,jpi),bool)
 for sub in OGS.Pred:
     print sub.name
-    sbmask = SubMask(sub,maskobject=TheMask).mask
+    sbmask = SubMask(sub, TheMask).mask
     SUB[sub.name] = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
 

@@ -6,11 +6,13 @@
 # When imported, this scripts only defines settings for matchup generation.
 
 from bitsea.static.Nutrients_reader import NutrientsReader
-
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons.Timelist import TimeList
 from bitsea.basins.region import Rectangle
+
+# location of input big ave files, usually the TMP directory.
+# ave files are supposed to have N3n, O2o and chl
 
 INPUTDIR='/g100_scratch/userexternal/gbolzon0/V11C/TRANSITION/wrkdir/MODEL/AVE_FREQ_1/'
 

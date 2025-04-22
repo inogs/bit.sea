@@ -61,7 +61,7 @@ meanObj11 = PLGaussianMean(5,1.0)
 import matplotlib.pyplot as plt
 import numpy.ma as ma
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 OUTDIR = addsep(args.outdir)
 if not args.statsdir is None:
     DIRSTATS = addsep(args.statsdir)

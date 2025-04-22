@@ -58,7 +58,7 @@ OUTDIR = addsep(args.outdir)
 BFMgrid = args.grid3dvar
 
 meshmask = args.maskfile
-TheMask = Mask(meshmask)
+TheMask = Mask.from_file(meshmask)
 
 MM = NC.netcdf_file(BFMgrid,'r')
 nregs = np.int(np.max(MM.variables['regs'].data))
@@ -112,7 +112,7 @@ for isub,sub in enumerate(V2.Pred):
 subindexes = np.zeros_like(tgr,dtype=int)
 for isub,sub in enumerate(V2.Pred):
     print (sub.name)
-    submask = SubMask(sub,maskobject=TheMask).mask[0,:,:]
+    submask = SubMask(sub, TheMask).mask[0,:,:]
     subindexes[submask] = LISTsubind[isub]
     
 def write_eof(outfile,eofp,eofa):

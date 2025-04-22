@@ -1,4 +1,5 @@
 import argparse
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates png files for fig4.11 and fig4.17
@@ -34,6 +35,7 @@ args = argument()
 import matplotlib
 matplotlib.use('Agg')
 
+from pathlib import Path
 from bitsea.commons.layer import Layer
 import bitsea.basins.V2 as basV2
 from bitsea.static.climatology import get_climatology
@@ -41,10 +43,10 @@ import figure_generator
 import figure_generator_extended as fg2
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons.Timelist import TimeList
-from bitsea.timeseries.plot import Hovmoeller_matrix
 from bitsea.timeseries.plot import read_pickle_file, read_basic_info
 import numpy as np
 from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.submask import SubMask
 import matplotlib.pyplot as pl
 from bitsea.commons.utils import addsep
@@ -53,9 +55,9 @@ OUTDIR=addsep(args.outdir)
 MODDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-Mask8 = Mask(maskfile8)
-TheMask= Mask(args.maskfile, loadtmask=False)
+maskfile8=Path("/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc")
+Mask8 = Mask.from_file(maskfile8)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
@@ -93,7 +95,7 @@ for var in VARLIST:
 #-------------------------------------------------
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = fg2.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.11_annual." + sub.name + ".png"
@@ -160,7 +162,7 @@ DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 pCO2clim, pCO2std = get_climatology('pCO2',SUBLIST, LayerList)
 PH__clim, PH__std = get_climatology('pH' , SUBLIST, LayerList)
 
-VARLIST=['pCO2','DIC','Ac','pH']
+# VARLIST=['pCO2','DIC','Ac','pH']
 VARLIST=['pCO2','DIC','ALK','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
 timeseries_DICT={}
@@ -171,7 +173,7 @@ for var in VARLIST:
 
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.17_annual." + sub.name + ".png"
@@ -222,4 +224,3 @@ for iSub, sub in enumerate(basV2.P):
     fig.savefig(outfile)
     print (outfile,flush=True)
     pl.close(fig)
-

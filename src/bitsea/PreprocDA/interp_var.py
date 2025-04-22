@@ -59,8 +59,8 @@ PREFIX = args.prefix
 
 
 
-MaskOrig = Mask(args.maskfileorig)
-MaskNew = Mask(args.maskfilenew)
+MaskOrig = Mask.from_file(args.maskfileorig)
+MaskNew = Mask.from_file(args.maskfilenew)
 
 
 TL = TimeList.fromfilenames(None, INDIR, "*nc", prefix=PREFIX,  \

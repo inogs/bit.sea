@@ -6,10 +6,12 @@ infile = 'mapser.19771215.16.npy'
 outfile = 'mapser.19771215.4.npy'
 
 # Loading masks
-Mask16 = Mask('/pico/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc')
-Mask4 = Mask('/pico/scratch/userexternal/ateruzzi/MASKS4/meshmask.nc')
-#Mask24 = Mask('/pico/scratch/userexternal/ateruzzi/MASKS24/meshmask.nc', \
-#              dzvarname='e3t_0')
+Mask16 = Mask.from_file('/pico/scratch/userexternal/ateruzzi/MASKS16/meshmask.nc')
+Mask4 = Mask.from_file('/pico/scratch/userexternal/ateruzzi/MASKS4/meshmask.nc')
+# Mask24 = Mask.from_file(
+#     '/pico/scratch/userexternal/ateruzzi/MASKS24/meshmask.nc',
+#     e3t_var_name='e3t_0'
+# )
 maskcoast4 = (~Mask4.mask_at_level(200)) & Mask4.mask[0,:,:]
 
 

@@ -42,6 +42,7 @@ from bitsea.commons.Timelist import TimeList
 from bitsea.timeseries.plot import Hovmoeller_matrix
 import numpy as np
 from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.submask import SubMask
 import matplotlib.pyplot as pl
 from bitsea.commons.utils import addsep
@@ -51,8 +52,8 @@ MODDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-Mask8 = Mask(maskfile8)
-TheMask= Mask(args.maskfile, loadtmask=False)
+Mask8 = Mask.from_file(maskfile8)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
@@ -77,7 +78,7 @@ nVar = len(VARLIST)
 
 
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.11_annual." + sub.name + ".png"
@@ -121,7 +122,7 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.clim_profile_plotter(z_clim,O2o_clim_mean,O2o_clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
 
 
@@ -132,7 +133,7 @@ DIC_clim, DIC_std = get_climatology('DIC', SUBLIST, LayerList)
 VARLIST=['pCO2','DIC','Ac','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
 for iSub, sub in enumerate(basV2.P):
-    submask = SubMask(sub,maskobject=Mask8)
+    submask = SubMask(sub, Mask8)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
     outfile = OUTDIR + "Fig_4.19_annual." + sub.name + ".png"
@@ -173,6 +174,5 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.clim_profile_plotter(z_clim,Ac__clim_mean,Ac__clim_std, axes[2], axes[6])
 
     fig.savefig(outfile)
-    print outfile
+    print(outfile)
     pl.close(fig)
-

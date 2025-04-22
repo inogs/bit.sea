@@ -32,7 +32,7 @@ matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as pl
 from bitsea.basins import V2
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.timeseries.plot import read_pickle_file
 import os
 from bitsea.commons.utils import addsep
@@ -164,7 +164,7 @@ class figure_generator():
                     
 ##### USER SETTINGS #######################################
 
-Mask24=Mask(args.maskfile,loadtmask=False)
+Mask24 = Mesh.from_file(args.maskfile, read_e3t=True)
 OUTDIR= addsep(args.outdir)
 
 mydtype=np.dtype([ ('label','U20'), ('linestyle','U5'), ('PATH','U1024')  ])
@@ -205,4 +205,3 @@ for var in VARLIST:
 
         fig.savefig(outfile)
         pl.close(fig)
-

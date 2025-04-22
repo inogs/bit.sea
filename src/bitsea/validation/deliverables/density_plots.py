@@ -69,7 +69,7 @@ N=NutrientsReader()
 C=CarbonReader()
 #S=SocatReader()
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
 
 # Define coastal area:

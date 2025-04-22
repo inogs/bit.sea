@@ -61,9 +61,9 @@ DIRWOA=addsep(args.inwoa)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 maskfile8="/gss/gss_work/DRES_OGS_BiGe/gbolzon/masks/V1/meshmask_872.nc"
-Mask8 = Mask(maskfile8)
+Mask8 = Mask.from_file(maskfile8)
 jpk8,jpj8,jpi8 = Mask8.shape
-# TheMask= Mask(args.maskfile, loadtmask=False)
+# TheMask= Mesh.from_file(args.maskfile)
 # jpk,jpj,jpi = TheMask.shape
 # z = -TheMask.zlevels
 
@@ -210,8 +210,8 @@ for wmo in wmo_list:
     #     [sub for sub in subfloatlist],'subfloat for ' + wmo)
 
 # for iSub, sub in enumerate(basV2.P):
-    # submask = SubMask(subfloat,maskobject=Mask8)
-        submask = SubMask(subf,maskobject=Mask8)
+    # submask = SubMask(subfloat, Mask8)
+        submask = SubMask(subf, Mask8)
         F = figure_generator.figure_generator(submask)
         fig, axes = F.gen_structure_1(IDrun,'annual',subf.name)
         outfile = OUTDIR + "Fig_float_clim." + wmo + '_' + subf.name + "_nwoa.png"

@@ -62,7 +62,7 @@ import numpy.ma as ma
 
 from metrics import find_SLOPE_dz_max,find_NITRICL_dz_max
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 OUTDIR = addsep(args.outdir)
 DIRSTATS = None
 if not args.statsdir is None:

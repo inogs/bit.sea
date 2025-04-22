@@ -53,7 +53,7 @@ OUTDIR=addsep(args.outdir)
 INDIR=addsep(args.inputdir)
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-TheMask= Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 #z = -TheMask.zlevels
 
@@ -84,7 +84,7 @@ for run in runList:
     TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")    
     for iSub, sub in enumerate(OGS.Pred):
         print(sub.name)
-        submask = SubMask(sub,maskobject=TheMask)
+        submask = SubMask(sub, TheMask)
         for ivar,var in enumerate(VARLIST):
             #F = figure_generator.figure_generator(submask)
             #fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)

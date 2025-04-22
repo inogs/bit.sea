@@ -6,9 +6,10 @@ import warnings
 import numpy as np
 from xml.dom import minidom
 from ast import literal_eval
+from numbers import Real
 
 from bitsea.commons.layer import Layer, LayerMap
-from bitsea.commons.utils import is_number, get_date_string
+from bitsea.commons.utils import get_date_string
 from bitsea.commons.xml_module import *
 from bitsea.commons.dataextractor import DataExtractor
 from bitsea.layer_integral.mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
@@ -28,7 +29,8 @@ class Plot(object):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
         if not (clim is None):
-            if not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not (is_number(clim[0]) and is_number(clim[1])):
+            if (not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not
+            (isinstance(clim[0], Real) and isinstance(clim[1], Real))):
                 raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
         self.__climslist = list()

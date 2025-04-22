@@ -96,7 +96,7 @@ def fig_setup(wmo,Lon,Lat):
     return fig, axs
 
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 

@@ -115,7 +115,7 @@ for lm in xmldoc.getElementsByTagName("LayersMaps"):
 
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
@@ -216,6 +216,35 @@ for il, layer in enumerate(PLOT.layerlist):
     pl.savefig(outfile)
     pl.close(fig)
 
+    # The following code requires a variable (z_mask_string) that is not
+    # defined anywhere. So it has been commented
+    # if var == "ppn":
+    #     ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + ".nc"
+    #     netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,mask)
+    #     netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
+        
+    if (var == "ppn"or var == "Z_c" or var == "P_c"):
+        from bitsea.basins import V2 as OGS
+        from bitsea.commons.submask import SubMask
+        from bitsea.basins.basin import ComposedBasin
+        from bitsea.commons.utils import writetable
+        tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
+        OGSred = ComposedBasin('OGSred',[OGS.alb,
+                    #  OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr,
+                    OGS.swm, OGS.nwm, OGS.tyr,
+                    OGS.adr, OGS.aeg, OGS.ion, OGS.lev , OGS.med],
+                    # 'Gruped Subbasin for ppn analysis')
+                    'Gruped Subbasin for integral variable analysis')
+        SUBlist = OGSred.basin_list
+        nSub   = len(OGSred.basin_list)
+        rows_names=[sub.name for sub in SUBlist]
+        ppn_submean = np.zeros((nSub,2),np.float32)*np.nan # FIRST COL: mean; SECOND COL: std
+        for isub, sub in enumerate(OGSred):
+            S = SubMask(sub, TheMask)
+            mask2d = S[0,:,:]
+            ppn_submean[isub,0] = integrated_masked[mask2d].mean()
+            ppn_submean[isub,1] = integrated_masked[mask2d].std()
+
     ncfile = OUTPUTDIR / f"{filename}.nc"
     netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
 
@@ -231,8 +260,8 @@ for il, layer in enumerate(PLOT.layerlist):
     ppn_submean = np.zeros((nSub,3),np.float32)*np.nan
     ppn_ean = np.zeros((2,2),np.float32)*np.nan
     for isub, sub in enumerate(OGS.P):
-        S = SubMask(sub, maskobject=TheMask)
-        mask2d=S.mask[0,:,:]
+        S = SubMask(sub, TheMask)
+        mask2d=S[0,:,:]
         ppn_submean[isub,0] = integrated_masked[mask2d].mean()
         ppn_submean[isub,1] = CAFE[isub]
         ppn_submean[isub,2] = OCTAC[isub]
@@ -244,5 +273,3 @@ for il, layer in enumerate(PLOT.layerlist):
 
     writetable(tablefile,ppn_submean,rows_names,['mean Mod', 'CAFE mean','OCTAC mean'])
     writetable(tablefile_PPN_EAN,ppn_ean,["Mod_vs_CAFE","Mod_vs_OCTAC"],["BIAS","RMSD"])
-
-

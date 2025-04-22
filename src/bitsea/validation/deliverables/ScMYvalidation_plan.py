@@ -147,7 +147,7 @@ def weighted_mean_std(Conc, Weight):
 #     Mass = ((Conc - ConcMean) ** 2 * Weight).sum()
 #     return Mass / Weight_sum
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 Sup_mask = TheMask.cut_at_level(0)
 MODEL_DIR = args.inputmodeldir
 REF_DIR = args.satdir
@@ -183,9 +183,9 @@ SUB = np.zeros((jpj, jpi), dtype=dtype)
 
 
 for sub in BASINS:
-    print(sub.name)
-    sbmask = SubMask(sub, maskobject=Sup_mask).mask
-    SUB[sub.name] = sbmask[0, :, :]
+    print (sub.name)
+    sbmask = SubMask(sub, Sup_mask).mask
+    SUB[sub.name]  = sbmask[0,:,:]
 
 
 mask200_2D = TheMask.mask_at_level(200.0)

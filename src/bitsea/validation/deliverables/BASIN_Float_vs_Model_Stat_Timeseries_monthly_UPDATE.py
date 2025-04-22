@@ -39,7 +39,7 @@ def argument():
 args = argument()
 
 import numpy as np
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
@@ -58,7 +58,7 @@ OUTDIR = addsep(args.outdir)
 Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR + "chla_check/")
 Check_obj_PhytoC  = check.check(OUTDIR + "/Phyto_C/")
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh.read_from_file(args.maskfile, read_e3t=True)
 layer=Layer(0,200)
 layer300=Layer(0,350)
 layer1000=Layer(200,1000)

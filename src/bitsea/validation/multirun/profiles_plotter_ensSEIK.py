@@ -239,7 +239,7 @@ LISTens= [f'{ii:03d}' for ii in range(24)]
 PATH = {}
 for iens in LISTens :
     PATH[iens] =  INPUTDIR  + '/' + np.str(iens) +'/STAT_PROFILES/'
-Mask24=Mask(Maskfile)
+Mask24 = Mask.from_file(Maskfile)
 
 PATH_MEAN = INPUTDIR  + '/MEAN/STAT_PROFILES/'
 

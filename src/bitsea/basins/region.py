@@ -1,18 +1,24 @@
-# Copyright (c) 2015 eXact Lab srl
-# Author: Stefano Piani <stefano.piani@exact-lab.it>
-import numpy as np
-from matplotlib.path import Path
-from os import PathLike
-import pathlib
-from typing import Union
-
 import csv
+import pathlib
 import re
 import sys
+from abc import ABC
+from abc import abstractmethod
+from os import PathLike
+from typing import Dict
+from typing import TextIO
+from typing import Union
+
+import numpy as np
+from matplotlib.path import Path
+
+from bitsea.utilities.string_manipulation import ComposedString
+from bitsea.utilities.string_manipulation import read_csv_txt
 
 
-class Region(object):
-    def is_inside(self, lon, lat):
+class Region(ABC):
+    @abstractmethod
+    def is_inside(self, *, lon, lat):
         raise NotImplementedError
 
     def __add__(self, r):
@@ -23,12 +29,9 @@ class Region(object):
 
 
 class EmptyRegion(Region):
-    def is_inside(self, lon, lat):
+    def is_inside(self, *, lon, lat):
         if hasattr(lon, "__len__") or hasattr(lat, "__len__"):
-            lon, lat = np.broadcast_arrays(
-                np.asarray(lon),
-                np.asarray(lat)
-            )
+            lon, lat = np.broadcast_arrays(np.asarray(lon), np.asarray(lat))
             return np.zeros_like(lon, dtype=bool)
         else:
             return False
@@ -49,6 +52,10 @@ class Polygon(Region):
         # Save the longitude and the latitude lists
         self.__lon_list = lon_list
         self.__lat_list = lat_list
+
+        # Compute the min and the max of each variable
+        self.__lon_range = (min(lon_list), max(lon_list))
+        self.__lat_range = (min(lat_list), max(lat_list))
 
         # Ensure that the input is close
         if lon_list[-1] != lon_list[0] or lat_list[-1] != lat_list[0]:
@@ -88,7 +95,24 @@ class Polygon(Region):
             def undo_reshaping(x):
                 return x.reshape(current_shape[:-1])
 
-        inside = self.path.contains_points(points_coord)
+        lon_in_range = np.logical_and(
+            points_coord[:, 0] >= self.__lon_range[0],
+            points_coord[:, 0] <= self.__lon_range[1],
+        )
+        lat_in_range = np.logical_and(
+            points_coord[:, 1] >= self.__lat_range[0],
+            points_coord[:, 1] <= self.__lat_range[1],
+        )
+
+        inside_rectangle = np.logical_and(lon_in_range, lat_in_range)
+
+        if np.any(inside_rectangle):
+            inside = np.zeros_like(inside_rectangle)
+            inside[inside_rectangle] = self.path.contains_points(
+                points_coord[inside_rectangle, :]
+            )
+        else:
+            inside = inside_rectangle
 
         if reshaped:
             return undo_reshaping(inside)
@@ -105,12 +129,7 @@ class Polygon(Region):
 
     @property
     def borders(self):
-        output = []
-        for i in range(len(self.__lon_list)):
-            lon = self.border_longitudes[i]
-            lat = self.border_latitudes[i]
-            output.append((lon, lat))
-        return tuple(output)
+        return tuple(p for p in zip(self.__lon_list, self.__lat_list))
 
     def cross(self, another_region):
         # The following lines are useful if another_region is a basin
@@ -134,29 +153,25 @@ class Polygon(Region):
         poly_list = []
         csv.field_size_limit(sys.maxsize)
 
-        with filepath.open('r') as f:
+        with filepath.open("r") as f:
             reader = csv.reader(f, delimiter="\t")
             for line in reader:
                 poly_list.append(line[0])
 
-        string_poly = ' '.join(poly_list)
+        string_poly = " ".join(poly_list)
         string_poly_sel = string_poly[15:]
 
         single_polygons = re.findall(r"\((.*?)\)", string_poly_sel)
         n_poly = len(single_polygons)
         if n_poly > 1:
             # case to be implemented
-            raise ValueError(
-                "filename containing more than one polygon"
-            )
+            raise ValueError("filename containing more than one polygon")
 
-        pat = re.compile(r'(-*\d+\.\d+ -*\d+\.\d+),*')
+        pat = re.compile(r"(-*\d+\.\d+ -*\d+\.\d+),*")
         matches = pat.findall(single_polygons[0])
 
         if matches is None:
-            raise ValueError(
-                'Invalid string inside the polygon file'
-            )
+            raise ValueError("Invalid string inside the polygon file")
 
         lst = [tuple(map(float, m.split())) for m in matches]
         n_coords = len(lst)
@@ -167,6 +182,98 @@ class Polygon(Region):
             lon.append(lst[ii][0])
             lat.append(lst[ii][1])
         return Polygon(lon, lat)
+
+    @staticmethod
+    def read_WKT_polygon(
+        polygon_description: str, allowed_classes=("POLYGON", "LINESTRING")
+    ):
+        """
+        Converts a polygon description string (which starts with "POLYGON" and
+        contains the coordinates of the polygon) into an instance of this
+        class.
+        """
+        if "(" not in polygon_description:
+            raise ValueError(
+                'The polygon description must start with "POLYGON" (or with '
+                "the name of the shape class) and contain the coordinates of "
+                "the polygon starting with a ("
+            )
+        parenthesis_start = polygon_description.find("(")
+        polygon_class = polygon_description[:parenthesis_start].strip()
+        if polygon_class.lower() not in (c.lower() for c in allowed_classes):
+            raise ValueError(
+                "The polygon description must start with the name of the "
+                f"polygon class, which may be one of {allowed_classes}; "
+                f"received {polygon_class}"
+            )
+        point_str = ComposedString.split_on_parenthesis(
+            polygon_description[parenthesis_start:].strip()
+        )
+        # Possible errors to handle:
+        # Additional text exists after the first POLYGON(...) definition.
+        if len(point_str.elements) > 1:
+            raise ValueError(
+                "Invalid string after the first parenthesis: "
+                f"{polygon_description}"
+            )
+        # The content inside POLYGON( ) does not contain additional parentheses.
+        if not isinstance(point_str.elements[0], ComposedString):
+            raise ValueError(
+                "The first argument of the polygon description must be a "
+                f"tuple of points; received {polygon_description}"
+            )
+        # The content inside POLYGON() contains multiple nested parentheses.
+        if len(point_str.elements[0].elements) != 1:
+            raise ValueError(
+                "The arguments list of the polygon description must be "
+                f"one single tuple of points; received {polygon_description}"
+            )
+
+        # Extract a list of points from the parentheses.
+        # Each point is in the format: "lon1 lat1, lon2 lat2, lon3 lat3, ..."
+        point_list = str(point_str.elements[0].elements[0])
+        points = point_list.split(",")
+        lon = []
+        lat = []
+        for point in points:
+            point_split = point.split()
+            lon.append(float(point_split[0]))
+            lat.append(float(point_split[1]))
+        return Polygon(lon, lat)
+
+    @staticmethod
+    def read_WKT_file(file_pointer: TextIO) -> Dict:
+        """
+        This method reads a WKT file (like the ones that can be downloaded from
+        Google My Maps) and returns a dictionary that associates to each
+        polygon name its corresponding polygon.
+
+        This function is really similar to the `from_WKT_file method`, but it
+        can read more than one polygon. On the other hand, the polygon that
+        this function reads are simple polygons and not Multipolygons.
+        """
+        csv_data = read_csv_txt(file_pointer.read())
+
+        if len(csv_data) == 0:
+            return {}
+
+        if len(csv_data[0]) != 3:
+            raise ValueError(
+                "The WKT file must contain three columns: "
+                "polygon coordinates, polygon name and polygon description"
+            )
+
+        polys = {}
+        for i, line in enumerate(csv_data):
+            # Skip the first line if contains the header
+            if i == 0 and line[0].lower() == "wkt":
+                continue
+            poly_name = line[1]
+            poly_raw = line[0]
+            poly = Polygon.read_WKT_polygon(poly_raw)
+            polys[poly_name] = poly
+
+        return polys
 
 
 class Rectangle(Polygon):
@@ -200,16 +307,23 @@ class BathymetricPolygon(Region):
     intersections between basins when using the same pivot numbers (for example,
     a basin with lower_than=100 and another with upper_than=100).
     """
-    def __init__(self, lon_list, lat_list, bathymetry, deeper_than=None,
-                 shallower_than=None):
+
+    def __init__(
+        self,
+        lon_list,
+        lat_list,
+        bathymetry,
+        deeper_than=None,
+        shallower_than=None,
+    ):
         self.polygon = Polygon(lon_list, lat_list)
 
         self.bathymetry = bathymetry
 
         if deeper_than is None and shallower_than is None:
             raise ValueError(
-                'At least one between bathymetric_min and bathymetric_max'
-                'must be different from None. Otherwise, simply use a Polygon'
+                "At least one between bathymetric_min and bathymetric_max"
+                "must be different from None. Otherwise, simply use a Polygon"
             )
 
         self.deeper_than = deeper_than
@@ -232,14 +346,8 @@ class BathymetricPolygon(Region):
         else:
             bathymetric_ok_max = True
 
-        bathymetric_ok = np.logical_and(
-            bathymetric_ok_min,
-            bathymetric_ok_max
-        )
-        bathymetric_ok = np.logical_and(
-            bathymetric_ok,
-            bathymetry_domain
-        )
+        bathymetric_ok = np.logical_and(bathymetric_ok_min, bathymetric_ok_max)
+        bathymetric_ok = np.logical_and(bathymetric_ok, bathymetry_domain)
 
         return np.logical_and(inside_poly, bathymetric_ok)
 
@@ -250,8 +358,8 @@ class RegionUnion(Region):
         self._r2 = r2
 
     def is_inside(self, lon, lat):
-        ins1 = self._r1.is_inside(lon,lat)
-        ins2 = self._r2.is_inside(lon,lat)
+        ins1 = self._r1.is_inside(lon, lat)
+        ins2 = self._r2.is_inside(lon, lat)
         return np.logical_or(ins1, ins2)
 
     def cross(self, another_region):
@@ -282,7 +390,6 @@ class RegionIntersection(Region):
         out_values = self._regions[0].is_inside(lon, lat)
         for r in self._regions[1:]:
             out_values[out_values] = r.is_inside(
-                lon[out_values],
-                lat[out_values]
+                lon[out_values], lat[out_values]
             )
         return out_values

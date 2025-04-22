@@ -53,7 +53,7 @@ OUT_DIR = addsep(args.outputdir)
 vargroup = args.variable
 
 
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 
 DA_layer = Layer(0,200)

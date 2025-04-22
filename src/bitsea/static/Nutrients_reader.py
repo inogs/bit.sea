@@ -5,21 +5,19 @@ from typing import Union
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.basins.region import Rectangle
 from bitsea.static.DatasetExtractor import DatasetExtractor
+from bitsea.commons.utils import find_index_s
 import numpy as np
-from bitsea.commons.utils import find_index
-
 
 DEFAULT_FILENAME = Path(
-    "/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/"
-    "Nutrients/Dataset_Med_Nutrients.nc"
+    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/publication/Zenodo/DEFINITIVO/MedBGCins_nut.nc"
 )
 
 
-class NutrientsReader():
+class NutrientsReader:
 
     DATA_VARS = (
         'nitrate', 'phosphate', 'silicate', 'oxygen', 'nitrite', 'ammonium',
-        'chlorophyll', 'total_chlorophyll'
+        'chlorophyll'
     )
 
     def __init__(self, filename: Union[str, PathLike] = DEFAULT_FILENAME):
@@ -35,32 +33,22 @@ class NutrientsReader():
         selected = np.ones((nData,),bool)
 
         dataset = self.DataExtractor.DATA[-1,:]
-        id_dataset= find_index('Barney',self.DataExtractor.CRUISES)
-        bad = dataset==(id_dataset+1)
-        selected[bad] = False
-        id_dataset= find_index('BIOPT06',self.DataExtractor.CRUISES)
-        bad = dataset==(id_dataset+1)
-        selected[bad] = False
-        id_dataset= find_index('BOUSSOLE',self.DataExtractor.CRUISES)
-        bad = dataset==(id_dataset+1)
-        selected[bad] = False
 
-        M.DATA = M.DATA[:,selected]
-
-        iphos  = find_index('phosphate' , M.VARIABLES)
-        phos   = M.DATA[iphos,:]
-        depth  = M.DATA[ 5,:]
-        bad =  (phos > 0.4) & (depth < 400. )
-        M.DATA[iphos, bad] = 1.e+20
+        #Example of possible hard-coded exclusion
+        #LIST_CHECK=['Boussole']
+        #for inameCruise in LIST_CHECK:
+        #  id_dataset,namesC= find_index_s(inameCruise,self.DataExtractor.CRUISES)
+        #  for i in id_dataset:
+        #    bad = dataset==(i+1)
+        #    selected[bad] = False
+        #M.DATA = M.DATA[:,selected]
 
         self.DataExtractor.DATA = M.DATA
 
 
-
-
     def CruiseSelector(self, var,Cruisename):
         '''
-        Returns a profile list  by selecting for
+        Returns a profile list by selecting for
         variable (string) and
         Cruisename (string)
 
@@ -72,35 +60,6 @@ class NutrientsReader():
          - silicate
          - oxygen
          - chlorophyll
-         - total_chlorophyll
-
-         Cruisename can be one of these
-            06MT51/2
-            CANARI
-            DYFAMED
-            DYFAMED/PAPADOC - 99
-            MEDCIESM
-            MEDGOOS2  MEDGOOS3  MEDGOOS4  MEDGOOS5
-            MELISSA 2004
-            MT84_3
-            NORBAL  NORBAL2 NORBAL3  NORBAL4
-            POSEIDONE1M3A
-            PROSOPE
-            RHOFI 1   RHOFI 2   RHOFI 3
-            SINAPSI-3   SINAPSI-4
-            AIRWIN BARMED BEHEMOTH
-            BIOPRHOFI BOUSSOLE CASCADE CHACCRA
-            COSIMO15 CYBO DEEP DYFAMED ECOLOPHY
-            EMTEC ESTIME EUROSITES FLIPER GEOTETHYS
-            GOLTS GYROSCOP HaiSec HERMES HIVERN
-            HYGAM05 INTERREG ISOFLORE JELLYWATCH
-            JUVALION LATEX MATER METROMED MINERCOT
-            MODELFOS MOLA MOOGLI MOOSE MTPII-MATER
-            NICOP OMER OPERA PRIMI PROPECHE SESAME
-            SESIL SOFI STRATA.PRODELTA UNIMED
-            WB13 WB14 Yoyo
-
-
 
          Returns a profile list
          
@@ -122,7 +81,6 @@ class NutrientsReader():
          - silicate
          - oxygen
          - chlorophyll
-         - total_chlorophyll
          if var is None, no selection is done about variable
          '''
         if var is None:
@@ -142,9 +100,8 @@ class NutrientsReader():
 
 if __name__ == '__main__':
     from bitsea.basins import V2 as OGS
-    import numpy as np
-    var= 'nitrate';
-    TI = TimeInterval('1998','2018','%Y')
+    var= 'nitrate'
+    TI = TimeInterval('1995','2024','%Y')
     Reg= Rectangle(0,20,30,46)
     N = NutrientsReader()
 
@@ -168,7 +125,7 @@ if __name__ == '__main__':
 
     from bitsea.layer_integral import coastline
     c_lon,c_lat=coastline.get()
-    Cruisename='BIOPT06'
+    Cruisename='Boussole'
 
 
     ProfileLIST2 = N.CruiseSelector('nitrate', Cruisename)
@@ -193,5 +150,4 @@ if __name__ == '__main__':
     ax.set_ylabel('depth')
     if not ax.yaxis_inverted(): ax.invert_yaxis()
     fig.show()
-
 

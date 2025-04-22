@@ -49,11 +49,15 @@ def read_basic_info(stat_profile_file):
     ncIN.close()
     return SUBLIST, COASTLIST, STAT_LIST
 
-
 def read_pickle_file(filename):
     LOGGER.info('Reading file %s', filename)
     with open(filename, 'rb') as fid:
-        [TIMESERIES, TL] = pickle.load(fid)
+        try:
+            [TIMESERIES,TL] = pickle.load(fid)
+        except UnicodeDecodeError:
+            fid.seek(0)
+            # the old pickle are saved as text and requires a proper encoding 
+            [TIMESERIES,TL] = pickle.load(fid, encoding='latin1')
     return TIMESERIES, TL
 
 
@@ -263,7 +267,7 @@ if __name__ == "__main__":
 
     from glob import glob
     from bitsea.commons.mask import Mask
-    m = Mask('./layer_integral/meshmask.nc')
+    m = Mask.from_file('./layer_integral/meshmask.nc')
     fl = sorted(glob('timeseries/*nc'))
     #fig,ax = plot_from_files(fl, 'O2o', SubBasinEnum.med)
     #plt.show()

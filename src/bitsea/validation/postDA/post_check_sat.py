@@ -46,7 +46,7 @@ from bitsea.basins import V2
 
 INDADIR = addsep(args.indadir)
 OUTDIR = addsep(args.outdir)
-TheMask = Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 _,jpj,jpi = TheMask.shape
 mask200 = TheMask.mask_at_level(200)
@@ -61,7 +61,7 @@ for sub in V2.Pred:
     if 'atl' in sub.name: continue
     Nsub += 1
     #print sub.name
-    sbmask         = SubMask(sub,maskobject=Sup_mask).mask
+    sbmask = SubMask(sub, Sup_mask).mask
     SUB[sub.name]  = sbmask[0,:,:]
     SUB['med'] = SUB['med'] | SUB[sub.name]
     npSub[sub.name] = np.sum(SUB[sub.name])

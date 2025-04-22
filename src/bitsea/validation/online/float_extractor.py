@@ -65,7 +65,7 @@ BASEDIR=addsep(args.basedir)
 TI=TimeInterval(starttime,end__time,'%Y%m%d')
 TI.end_time = TI.end_time + timedelta(1)
 
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 
 Profilelist=bio_float.FloatSelector(None,TI,OGS.med)
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar="P_l")

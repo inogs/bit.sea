@@ -52,7 +52,7 @@ import matplotlib.pyplot as pl
 from bitsea.layer_integral import coastline
 
 clon,clat = coastline.get()
-TheMask=Mask(args.maskfile)
+TheMask = Mask.from_file(args.maskfile)
 _,jpj,jpi = TheMask.shape
 
 INPUTDIR  = args.inputdir

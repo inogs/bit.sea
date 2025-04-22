@@ -34,7 +34,7 @@ def argument():
 args = argument()
 
 import numpy as np
-from bitsea.commons.mask import Mask
+from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
@@ -45,8 +45,6 @@ from bitsea.validation.deliverables.metrics import find_DCM, find_WBL,find_NITRI
 from bitsea.validation.deliverables.metrics import find_OMZ, find_maxO2
 from bitsea.validation.deliverables.metrics import find_NITRICL_dz_max
 from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import dumpfile
-from bitsea.basins import V2 as OGS
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from bitsea.instruments import check
 from bitsea.Float.oxygen_saturation import oxy_sat
@@ -59,7 +57,7 @@ Check_obj_nitrate = check.check(OUTDIR / "nitrate_check/")
 Check_obj_chl     = check.check(OUTDIR / "chla_check/")
 
 
-TheMask=Mask(args.maskfile, loadtmask=False)
+TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 
 Graphic_DeltaT = relativedelta(months=18)
 datestart = args.date -Graphic_DeltaT
@@ -148,17 +146,17 @@ for ivar, var_mod in enumerate(VARLIST):
             A_model[itime,5] = gm200.Model[0] # Surf Value
 
            # DCM/MWB
-            if (var_mod == "P_l"):
-                if ( ( p.time.month >= 4. )  & ( p.time.month <= 10 )):
+            if var_mod == "P_l":
+                if 4. <= p.time.month <= 10:
                     A_float[itime,7], A_float[itime,2] = find_DCM(gm200.Ref  ,gm200.Depth) # CM, DCM
                     A_model[itime,7], A_model[itime,2] = find_DCM(gm200.Model,gm200.Depth) # CM, DCM
             
-                if (p.time.month in [1,2,3] ):
+                if p.time.month in [1,2,3]:
                     A_float[itime,3] = find_WBL(gm200.Ref  ,gm200.Depth)
                     A_model[itime,3] = find_WBL(gm200.Model,gm200.Depth)
 
            # NITRACL1/NITRACL2 
-            if (var_mod == "N3n"):
+            if var_mod == "N3n":
                 # NOTA: level 350
                 A_float[itime,4] = find_NITRICL(gm300.Ref  ,gm300.Depth) # Nitricline
                 A_model[itime,4] = find_NITRICL(gm300.Model,gm300.Depth) # Nitricline
@@ -166,7 +164,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
                 A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
 
-            if (var_mod == "O2o"):
+            if var_mod == "O2o":
                 A_float[itime,8] = oxy_sat(p)
 
                 if len(gm1000.Ref) > 1:
@@ -181,5 +179,3 @@ for ivar, var_mod in enumerate(VARLIST):
             A_model[itime,1] = gm200.correlation() # Correlation
 
         dumpfile(OUTFILE,A_float,A_model,METRICS)
-
-    

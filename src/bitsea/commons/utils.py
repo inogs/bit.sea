@@ -1,35 +1,11 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-from __future__ import print_function
-import os, sys
+
+import os
 import numpy as np
 import re
 """Helper functions"""
 
-def deblank(str):
-    l =len(str)
-    for i in range(l):
-        if not str[i]==' ':
-            break
-    junk=str[i:]
-    l=len(junk)
-    for i in range(l):
-        if not junk[l-i-1]==' ':
-            break
-    return junk[:l-i]
-
-
-def is_number(val):
-    """Tells if a value is a number type
-
-    Args:
-        - *val*: the value to test
-
-    Returns:
-        - True if val is a number type.
-        - False if val is not a number type.
-    """
-    return isinstance(val, (int, float, complex, np.float32))
 
 def get_date_string(s):
     """Finds a date in YYYYMMDD format into a bigger string.
@@ -76,41 +52,26 @@ def find_index(thestring, STRINGLIST):
     The string list is supposed be like in NetCDF files, where a list of variable names is
     written in an only 2D character array. 
     '''
-    nStrings = STRINGLIST.shape[0]
-    for istring in range(nStrings):
-        strippedstring=STRINGLIST[istring,:].tobytes().strip()
-        if strippedstring.decode() == thestring: break
-    else:
+    try:
+        return STRINGLIST.index(thestring)
+    except IndexError:
         print(thestring + " Not Found")
-        raise NameError('Variable should be one of the following: ' + str([STRINGLIST[istring,:].tobytes().strip().decode() for istring in range(nStrings)]))
-    return istring
+        raise NameError('Variable should be one of the following: {}'.format(STRINGLIST))
 
-def die(why, exit_code=1, print_usage=True):
-    print("FATAL ERROR: " +  str(why), file=sys.stderr)
-    sys.exit(exit_code)
-
-def is_valid_path(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return path
-            else:
-                die("'%s' is not a directory." % (path,))
-        else:
-            return path
-    else:
-        die("'%s' is not a valid path." % (path,))
-def isvalidpath(path, is_dir_check=False):
-    if os.path.exists(path):
-        if is_dir_check:
-            if os.path.isdir(path):
-                return True
-            else:
-                return False
-        else:
-            return True
-    else:
-        return False
+def find_index_s(substring, STRINGLIST):
+    '''
+    Searches a substring in a list of strings.
+    It returns the array of indexes.
+    '''
+    subst=substring.lower()
+    idx=[]
+    namesC=[]
+    for istring, current_str in enumerate(STRINGLIST):
+        if subst in current_str.lower(): 
+            # print(current_str.lower())
+            idx.append(istring)
+            namesC.append(current_str)
+    return np.array(idx),namesC
 
 
 def ticklabels_degree(ax,fsize=7,intdeg=True):

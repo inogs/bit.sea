@@ -1,16 +1,23 @@
+import sys
 from itertools import product as cart_prod
 from typing import Dict
 from typing import List
 from typing import Set
 from typing import Tuple
-from typing import TypeAlias
 
 import numpy as np
 
 from bitsea.components.component_mask import ComponentMask
 
 
-Point: TypeAlias = Tuple[int, int]
+# All this code is just to define the class Point as a tuple of two integers;
+# we need the "if" because TypeAlias exists only in Python 3.9
+if sys.version_info >= (3, 9):
+    from typing import TypeAlias
+
+    Point: TypeAlias = Tuple[int, int]
+else:
+    Point = Tuple[int, int]
 
 
 class NonEulerianPathError(ValueError):

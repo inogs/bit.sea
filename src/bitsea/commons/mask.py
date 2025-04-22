@@ -6,15 +6,16 @@ from typing import Tuple
 from typing import Union
 from warnings import warn
 
-import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
 from numpy.typing import ArrayLike
 
 from bitsea.commons.bathymetry import Bathymetry
+from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import MaskLayer
 from bitsea.commons.mesh import Mesh
+from bitsea.components.component_mask_2d import ComponentMask2D
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
@@ -269,24 +270,96 @@ class Mask(BooleanArrayWrapper, Mesh):
           (x,y): A tuple with two numpy 1d arrays, containing NaNs to separate
             the lines, in order to be easily plotted.
         """
-        level_mask = self.mask_at_level(depth).astype(np.float64)
+        level_mask = self.mask_at_level(depth)
 
-        mask_contour = plt.contour(
-            self.xlevels, self.ylevels, level_mask, levels=[float(0.5)]
+        # This is the value that we will return if there are no water cell
+        # at the requested depth
+        zero_array = np.zeros((0,), dtype=self.xlevels.dtype)
+
+        # Ensure that there is at least one water cell
+        if np.all(~level_mask):
+            warn(
+                f"At depth {depth}, there are no water points in the "
+                "current mask"
+            )
+            return zero_array, zero_array.copy()
+
+        # Find all the connected components of the sea
+        component_mask = ComponentMask2D(level_mask)
+        n_components = component_mask.n_components
+
+        # Now we concatenate all the boundaries of each component. The output
+        # will be a list of indices; we will later transform them into WSG84
+        # coordinates
+        boundary_vertex_indices = []
+        for component in range(n_components):
+            boundary_vertex_indices.extend(
+                component_mask.get_component_boundary_curves(component)
+            )
+
+        # We must compute the position of the vertices of the cells; we do that
+        # by imposing that the coordinates of the center of the cells are the
+        # middle points of the coordinates of the vertices
+        vertex_lat_coordinates = extend_from_average(
+            extend_from_average(self.ylevels, axis=0), axis=1
+        )
+        vertex_lon_coordinates = extend_from_average(
+            extend_from_average(self.xlevels, axis=0), axis=1
         )
 
-        path_list = mask_contour.collections[0].get_paths()
+        # Now we transform the paths that we have compute previously into
+        # paths of coordinates. We also discard the paths that are shorter
+        # than `min_line_length` and we save the length of the longest path
+        longest_path = 0
+        coord_paths = []
+        for path in boundary_vertex_indices:
+            longest_path = max(longest_path, len(path))
+            if len(path) < min_line_length:
+                continue
+            lat_indices = tuple(p[0] for p in path)
+            lon_indices = tuple(p[1] for p in path)
+            path_lats = vertex_lat_coordinates[lat_indices, lon_indices]
+            path_lons = vertex_lon_coordinates[lat_indices, lon_indices]
 
-        point_coords = np.zeros((0, 2))
-        nan = np.full((1, 2), np.nan, dtype=np.float32)
+            coord_paths.append((path_lats, path_lons))
 
-        for p in path_list:
-            v = p.vertices
-            n_points, _ = v.shape
-            if n_points > min_line_length:
-                point_coords = np.concatenate((point_coords, v, nan), axis=0)
+        if len(coord_paths) == 0:
+            # The filter on the min_line_length has removed all the points
+            # We return two empty arrays
+            warn(
+                f"min_line_length is set to {min_line_length}, but at depth "
+                f"{depth}m the longest boundary path is {longest_path}; "
+                f"the output of the method `coastline` will be empty"
+            )
+            return zero_array, zero_array.copy()
 
-        return point_coords[:-1, 0], point_coords[:-1, 1]
+        # Now we have the paths; we want to concatenate them inserting a NaN
+        # between two different paths. In this way, it will be easy to plot
+        # the results (because the NaN will split the line of matplotlib).
+        lat_values = (p[0] for p in coord_paths)
+        lon_values = (p[1] for p in coord_paths)
+
+        # We prepare the array that will be used to split: it contains just
+        # one NaN
+        nan_split = np.full((1,), fill_value=np.nan)
+
+        lat_separated_values = []
+        for lat_path in lat_values:
+            lat_separated_values.append(lat_path)
+            lat_separated_values.append(nan_split)
+        lat_separated_values = tuple(lat_separated_values[:-1])
+
+        lon_separated_values = []
+        for lon_path in lon_values:
+            lon_separated_values.append(lon_path)
+            lon_separated_values.append(nan_split)
+        lon_separated_values = tuple(lon_separated_values[:-1])
+
+        # Finally, we can concatenate our results
+        lat_values = np.concatenate(lat_separated_values)
+        lon_values = np.concatenate(lon_separated_values)
+
+        return lon_values, lat_values
 
     def cut_at_level(self, index: int):
         """

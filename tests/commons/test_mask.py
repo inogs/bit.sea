@@ -269,8 +269,19 @@ def test_cut_at_level(mask):
 
 
 def test_mask_coastline(mask):
-    coastline = mask.coastline(depth=0)
-    assert len(coastline) > 0
+    coastline = mask.coastline(depth=0, min_line_length=0)
+    assert len(coastline) == 2
+    assert coastline[0].shape[0] > 0
+
+
+def test_mask_coastline_empty(mask):
+    with pytest.warns(UserWarning):
+        coastline = mask.coastline(depth=0, min_line_length=50)
+    assert len(coastline) == 2
+    assert len(coastline[0].shape) == 1
+    assert len(coastline[1].shape) == 1
+    assert coastline[0].shape[0] == 0
+    assert coastline[1].shape[0] == 0
 
 
 def test_bathymetry_from_mask(mask):

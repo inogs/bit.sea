@@ -23,7 +23,7 @@ def test_interpolator(tmp_path: Path, test_data_dir: Path):
     A = space_interpolator_griddata(Mask2, Mask1, VAR)
     B = regular(Mask1, Mask2, VAR, method="nearest")
     C = compose_methods(Mask1, Mask2, VAR)
-    A[~Mask2.mask] = 1.0e20
+    A[~Mask2] = 1.0e20
 
     netcdf4.write_3d_file(
         A, "N1p", tmp_path / "griddata.nc", Mask2, fillValue=1e20

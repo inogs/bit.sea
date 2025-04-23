@@ -3,6 +3,8 @@ from scipy import interpolate
 from scipy.interpolate import griddata
 from scipy.interpolate import RegularGridInterpolator
 
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.mask import Mask
 from bitsea.commons.utils import data_for_linear_interp
 
 
@@ -104,7 +106,7 @@ def interp_same_resolution(input_data_mask, output_mask, M3d):
     output = M3d.copy()
     for k in interpolation_depth_levels:
         M2d = M3d[k, :, :]
-        goods = input_data_mask.mask[k, :, :]
+        goods = input_data_mask[k, :, :]
         Jgoods, Igoods = np.nonzero(goods)
         nP = len(Jgoods)
         points = np.zeros((nP, 2), dtype=np.float32)
@@ -123,7 +125,7 @@ def interp_same_resolution(input_data_mask, output_mask, M3d):
     return output
 
 
-def space_interpolator_griddata(mask2, mask1, M3d):
+def space_interpolator_griddata(mask2: Mask, mask1: Mask, M3d: DataExtractor):
     """Interpolates a 3d matrix using horizontal slices"""
     X1, Y1 = np.meshgrid(mask1.lon, mask1.lat)
     X2, Y2 = np.meshgrid(mask2.lon, mask2.lat)
@@ -155,14 +157,14 @@ def space_interpolator_griddata(mask2, mask1, M3d):
 
     # M3d_out[~mask2.tmask] = np.nan # in order to avoid problems
 
-    if np.isnan(M3d_out[mask2.mask]).any():
+    if np.isnan(M3d_out[mask2]).any():
         print(
             "nans in space_interpolator_griddata:",
-            np.isnan(M3d_out[mask2.mask]).sum(),
+            np.isnan(M3d_out[mask2]).sum(),
         )
         for k in range(mask2.jpk):
             a = M3d_out[k, :, :]
-            lev_mask = mask2.mask[k, :, :]
+            lev_mask = mask2[k, :, :]
             print(k, np.isnan(a[lev_mask]).sum())
 
     return M3d_out
@@ -213,7 +215,9 @@ def vertical_plane_interpolator(mask2, mask1, M2d, side):
     return M
 
 
-def regular(Mask1, Mask2, VAR, method="linear", rescale=False):
+def regular(
+    Mask1: Mask, Mask2: Mask, VAR: DataExtractor, method="linear", rescale=False
+):
     """
     rescale works on a box cube
     With rescale = False and method = 'nearest'
@@ -246,7 +250,7 @@ def regular(Mask1, Mask2, VAR, method="linear", rescale=False):
     bound_check(x1, x2)
 
     Values = VAR.copy()
-    Values[~Mask1.mask] = np.nan
+    Values[~Mask1] = np.nan
     f = RegularGridInterpolator((z1, y1, x1), Values, method=method)
     X2, Y2, Z2 = np.meshgrid(x2, y2, z2, indexing="ij")
     nPoints = X2.size
@@ -260,14 +264,14 @@ def regular(Mask1, Mask2, VAR, method="linear", rescale=False):
     return M2
 
 
-def compose_methods(Mask1, Mask2, VAR):
+def compose_methods(Mask1: Mask, Mask2: Mask, VAR: DataExtractor):
     L = regular(Mask1, Mask2, VAR, method="linear")
     N = regular(Mask1, Mask2, VAR, method="nearest")
     G = space_interpolator_griddata(Mask2, Mask1, VAR)
     OUT = L.copy()
     toFill = np.isnan(L) & (~np.isnan(N))
     OUT[toFill] = N[toFill]
-    toFill = np.isnan(OUT) & Mask2.mask
+    toFill = np.isnan(OUT) & Mask2
     OUT[toFill] = G[toFill]
     return OUT
 

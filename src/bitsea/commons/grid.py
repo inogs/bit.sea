@@ -108,6 +108,11 @@ class Grid(ABC):
         return self.e1t * self.e2t
 
     @abstractmethod
+    def copy(self) -> "Grid":
+        """Returns a copy of the grid."""
+        raise NotImplementedError
+
+    @abstractmethod
     def is_inside_domain(
         self,
         *,
@@ -483,6 +488,16 @@ class IrregularGrid(BaseGrid):
             self._build_and_store_e_t_arrays()
         return self._e2t
 
+    def copy(self):
+        e1t = self.e1t.copy() if self.e1t is not None else None
+        e2t = self.e2t.copy() if self.e2t is not None else None
+        return self.__class__(
+            xlevels=self._xlevels.copy(),
+            ylevels=self._ylevels.copy(),
+            e1t=e1t,
+            e2t=e2t,
+        )
+
     def _initialize_balltree(self):
         """Initializes the ball tree for this object, enabling efficient
         nearest-neighbor searches."""
@@ -504,7 +519,7 @@ class IrregularGrid(BaseGrid):
         v_faces_lat_coords = extend_from_average(self.ylevels, axis=0)
 
         # The points of the boundary of the polygon that are on the right
-        # The first and last vertices are choosen accordingly to the lower and
+        # The first and last vertices are chosen accordingly to the lower and
         # upper value of the faces on the top and bottom
         right_boundary_lon = np.concatenate(
             (
@@ -713,6 +728,13 @@ class RegularGrid(BaseGrid, Regular):
         if self._e2t is None:
             self._build_and_store_e_t_arrays()
         return self._e2t
+
+    def copy(self):
+        e1t = self.e1t.copy() if self.e1t is not None else None
+        e2t = self.e2t.copy() if self.e2t is not None else None
+        lat = self.lat.copy()
+        lon = self.lon.copy()
+        return self.__class__(lat=lat, lon=lon, e1t=e1t, e2t=e2t)
 
     def is_regular(self):
         return True

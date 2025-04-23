@@ -73,6 +73,18 @@ class Mask(BooleanArrayWrapper, Mesh):
         )
         return self
 
+    def copy(self):
+        """
+        Returns a copy of the current object
+        """
+        return self.__class__(
+            grid=self._grid.copy(),
+            zlevels=self._zlevels.copy(),
+            mask_array=self.as_array().copy(),
+            allow_broadcast=False,
+            e3t=self._e3t.copy(),
+        )
+
     def get_sea_cells(self) -> np.ndarray:
         """
         Generates a 3D boolean array marking each water cell within the sea.

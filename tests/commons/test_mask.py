@@ -273,6 +273,11 @@ def test_mask_coastline(mask):
     assert len(coastline) > 0
 
 
+def test_mask_copy(mask):
+    new_mask = mask.copy()
+    assert np.all(np.equal(mask, new_mask))
+
+
 def test_bathymetry_from_mask(mask):
     bathymetry = MaskBathymetry(mask)
 

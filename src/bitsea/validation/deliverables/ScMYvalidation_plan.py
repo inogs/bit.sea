@@ -1,5 +1,6 @@
 import argparse
 
+import mpi4py.MPI
 import numpy as np
 
 import bitsea.matchup.matchup as matchup
@@ -125,7 +126,6 @@ def argument():
 
 args = argument()
 
-import mpi4py.MPI
 comm = get_mpi_communicator()
 rank = comm.Get_rank()
 nranks = comm.size
@@ -183,9 +183,9 @@ SUB = np.zeros((jpj, jpi), dtype=dtype)
 
 
 for sub in BASINS:
-    print (sub.name)
-    sbmask = SubMask(sub, Sup_mask).mask
-    SUB[sub.name]  = sbmask[0,:,:]
+    print(sub.name)
+    sbmask = SubMask(sub, TheMask)
+    SUB[sub.name] = sbmask[0, :, :]
 
 
 mask200_2D = TheMask.mask_at_level(200.0)

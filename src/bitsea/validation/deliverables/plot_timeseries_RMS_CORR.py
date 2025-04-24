@@ -191,7 +191,7 @@ TL = TimeList(dr.TIMES)
 
 iSeas = 0  # JAN-APR
 CLIM_REQ = timerequestors.Clim_season(iSeas, S)
-ii, w = TL.select(CLIM_REQ)
+ii, _ = TL.select(CLIM_REQ)
 RMS__win = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[ii, :], axis=0)
 BIAS_win = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[ii, :], axis=0)
 RMSL_win = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ii, :], axis=0)
@@ -206,7 +206,7 @@ CORR_win = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii, :], axis=0)
 
 iSeas = 2  # JUN-SEP
 CLIM_REQ = timerequestors.Clim_season(iSeas, S)
-ii, w = TL.select(CLIM_REQ)
+ii, _ = TL.select(CLIM_REQ)
 RMS__sum = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[ii, :], axis=0)
 BIAS_sum = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[ii, :], axis=0)
 RMSL_sum = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ii, :], axis=0)

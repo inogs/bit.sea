@@ -161,8 +161,8 @@ for ivar, var_mod in enumerate(VARLIST):
                 A_float[itime,4] = find_NITRICL(gm300.Ref  ,gm300.Depth) # Nitricline
                 A_model[itime,4] = find_NITRICL(gm300.Model,gm300.Depth) # Nitricline
 
-                A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth) # dNit/dz
-                A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth) # Nitricline
+                A_float[itime,6] = find_NITRICL_dz_max(gm300.Ref  ,gm300.Depth)[0] # dNit/dz
+                A_model[itime,6] = find_NITRICL_dz_max(gm300.Model,gm300.Depth)[0] # Nitricline
 
             if var_mod == "O2o":
                 A_float[itime,8] = oxy_sat(p)

@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 import seawater as sw
 
@@ -115,7 +117,7 @@ def find_NITRICL_dz(Profile, Pres):
                 return Pres[ip]
 
 
-def find_NITRICL_dz_max(Profile, Pres):
+def find_NITRICL_dz_max(Profile, Pres) -> Tuple[float, float]:
     """This is the Nitrcl2 used for the calcuation in the QUID.
     It can be used for nitracline and also pycnocline. Include
     also the variable value at that depth."""
@@ -125,7 +127,7 @@ def find_NITRICL_dz_max(Profile, Pres):
     return Pres[ip], Profile[ip]
 
 
-def find_OMZ(Profile, Pres):
+def find_OMZ(Profile, Pres) -> float:
     ii = (Pres > 200) & (Pres <= 1000)
     Pred = Profile[ii]
     j_minO2 = np.argmin(Pred)
@@ -133,14 +135,14 @@ def find_OMZ(Profile, Pres):
     return OMZ
 
 
-def find_maxO2(Profile, Pres):
+def find_maxO2(Profile, Pres) -> float:
     Pred = Profile[Pres <= 200]
     j_maxO2 = np.argmax(Pred)
     MaxO2 = Pres[j_maxO2]
     return MaxO2
 
 
-def find_bot_Nit(Profile, Pres):
+def find_bot_Nit(Profile, Pres) -> float:
     # Find the bottom value of Nitrate
     P600_800 = Profile[(Pres > 600) & (Pres <= 800)]
     Nit_bot = np.nanmean(P600_800)

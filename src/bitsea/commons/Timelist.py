@@ -92,6 +92,10 @@ class TimeList:
             )
         return self._timeinterval
 
+    @timeinterval.setter
+    def timeinterval(self, value):
+        self._timeinterval = value
+
     @staticmethod
     def fromfilenames(
         timeinterval,

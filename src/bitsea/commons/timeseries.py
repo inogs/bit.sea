@@ -1,20 +1,27 @@
 # Copyright (c) 2016 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-
 import subprocess
-
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from pathlib import Path
-from warnings import warn
 from string import Template
+from warnings import warn
 
 from bitsea.commons.time_interval import TimeInterval
+
 
 class TimeSeries:
     """
     Time series handling class.
     """
-    def __init__(self, time_interval, archive_dir="/", postfix_dir="", glob_pattern="ave*gz"):
+
+    def __init__(
+        self,
+        time_interval,
+        archive_dir="/",
+        postfix_dir="",
+        glob_pattern="ave*gz",
+    ):
         """
         TimeSeries constructor.
 
@@ -29,14 +36,19 @@ class TimeSeries:
             - *glob_pattern* (optional): glob-style pattern for the files
               (default: "ave*gz").
         """
-        #Input validation
+        # Input validation
         if isinstance(time_interval, TimeInterval):
             self._time_interval = time_interval
         else:
-            raise ValueError("time_interval must be an instance of TimeInterval")
+            raise ValueError(
+                "time_interval must be an instance of TimeInterval"
+            )
 
-        self._postfix_dir = str(postfix_dir)
+        self._postfix_dir = Path(postfix_dir)
         self._glob_pattern = str(glob_pattern)
+
+        if self._postfix_dir.is_absolute():
+            raise ValueError("postfix_dir must be a relative path")
 
         archive_dir = Path(archive_dir)
         if archive_dir.exists():
@@ -47,7 +59,7 @@ class TimeSeries:
             warn("%s doesn't exists" % archive_dir)
             self._archive_dir = archive_dir
 
-    def get_runs(self, rundays=(2,5), fudge=7):
+    def get_runs(self, rundays=(2, 5), fudge=7):
         """
         Args:
             - *rundays* (optional): a list of integers mapping the weekdays in
@@ -63,7 +75,7 @@ class TimeSeries:
         Returns: a list of tuples (datetime, path) within the time_interval for
         which there's a run.
         """
-        #Input validation
+        # Input validation
         if not isinstance(rundays, (list, tuple)):
             raise ValueError("rundays must be a list or a tuple")
 
@@ -72,7 +84,7 @@ class TimeSeries:
                 raise ValueError(
                     "all the elements of rundays must be integers between 1"
                     "and 7."
-            )
+                )
 
         output = list()
 
@@ -88,13 +100,12 @@ class TimeSeries:
             if t.isoweekday() not in rundays:
                 continue
 
-            file_name = f"{t.strftime('%Y%m%d')}{self._postfix_dir}"
+            file_name = Path(t.strftime("%Y%m%d")) / self._postfix_dir
             run_path = self._archive_dir / file_name
             if run_path.is_dir():
                 output.append((t, run_path))
 
         return output
-
 
     def get_analysis_days(self, rundays=(2,)):
         """
@@ -107,7 +118,7 @@ class TimeSeries:
         # Build the list of paths where we have to search for the files
         search_paths = self.get_runs(rundays)
         output = list()
-        #For each directory
+        # For each directory
         for time_obj, directory in search_paths:
             # Get the files list
             file_list = sorted(directory.glob(self._glob_pattern))
@@ -119,14 +130,16 @@ class TimeSeries:
             )
 
             for t in candidate_dates:
-                #For each filename
+                # For each filename
                 for file_path in file_list:
                     # Get the basename
                     bn = file_path.name
-                    #If there's a filename with that date and within the time interval
-                    if bn.find(t.strftime("%Y%m%d")) != -1 and self._time_interval.contains(t):
-                        #Build the tuple and append the tuple to the output
-                        output.append((t,file_path))
+                    # If there's a filename with that date and within the time interval
+                    if bn.find(
+                        t.strftime("%Y%m%d")
+                    ) != -1 and self._time_interval.contains(t):
+                        # Build the tuple and append the tuple to the output
+                        output.append((t, file_path))
 
         # Sort the output by date and return it to the caller
         output = sorted(output, key=lambda x: x[0])
@@ -140,30 +153,34 @@ class TimeSeries:
         Returns: a list of tuples (datetime, filename) of assimilation/hindcast
         computations.
         """
-        #Build the list of paths where we have to search for the files
+        # Build the list of paths where we have to search for the files
         search_paths = self.get_runs(rundays)
         output = list()
-        assert self._postfix_dir != "OPAOPER_F/"
-        is_phys = self._postfix_dir == 'OPAOPER_A/'
+        assert self._postfix_dir != Path("OPAOPER_F")
+        is_phys = self._postfix_dir == Path("OPAOPER_A")
         for t, directory in search_paths:
-            #Get the files list
+            # Get the files list
             file_list = directory.glob(self._glob_pattern)
-            #For each day
-            
-            for file_path in file_list:
-                #Get the basename
-                bn = file_path.name
-                #If there's a filename with that date and within the time interval
-                if is_phys:
-                    if (bn.find(t.strftime("%Y%m%d_s_")) != -1) and self._time_interval.contains(t):
-                        #Build the tuple and append the tuple to the output
-                        output.append((t,file_path))
-                else:
-                    if (bn.find(t.strftime("ave.%Y%m%d")) != -1) and self._time_interval.contains(t):
-                        #Build the tuple and append the tuple to the output
-                        output.append((t,file_path))
+            # For each day
 
-        #Sort the output by date and return it to the caller
+            for file_path in file_list:
+                # Get the basename
+                bn = file_path.name
+                # If there's a filename with that date and within the time interval
+                if is_phys:
+                    if (
+                        bn.find(t.strftime("%Y%m%d_s_")) != -1
+                    ) and self._time_interval.contains(t):
+                        # Build the tuple and append the tuple to the output
+                        output.append((t, file_path))
+                else:
+                    if (
+                        bn.find(t.strftime("ave.%Y%m%d")) != -1
+                    ) and self._time_interval.contains(t):
+                        # Build the tuple and append the tuple to the output
+                        output.append((t, file_path))
+
+        # Sort the output by date and return it to the caller
         output = sorted(output, key=lambda x: x[0])
         return output
 
@@ -174,8 +191,8 @@ class TimeSeries:
 
         Returns: a list of tuples (datetime, filename) of forecast computations.
         """
-        is_phys = self._postfix_dir =="OPAOPER_A/" or self._postfix_dir=='OPAOPER_F/'
-        #Build the list of paths where we have to search for the files
+        is_phys = self._postfix_dir in (Path("OPAOPER_A"), Path("OPAOPER_F"))
+        # Build the list of paths where we have to search for the files
         search_paths = self.get_runs(rundays, fudge=0)
 
         # Create the working dictionary
@@ -184,48 +201,55 @@ class TimeSeries:
         # For each directory
         for start_time, directory in search_paths:
             local_dict = dict()
-            #Get the files list
+            # Get the files list
             file_list = sorted(directory.glob(self._glob_pattern))
 
             dates = tuple(start_time + timedelta(days=i) for i in range(10))
 
             for t in dates:
                 for file_path in file_list:
-                    #Get the base name
+                    # Get the base name
                     bn = file_path.name
                     date_string = t.strftime("%Y%m%d")
                     if is_phys:
-                        if (bn.find(t.strftime("%Y%m%d_f_")) != -1) and self._time_interval.contains(t):
-                            #Build the tuple and append the tuple to the outputs
+                        if (
+                            bn.find(t.strftime("%Y%m%d_f_")) != -1
+                        ) and self._time_interval.contains(t):
+                            # Build the tuple and append the tuple to the outputs
                             if date_string in local_dict:
                                 local_dict[date_string].append(file_path)
                             else:
-                                local_dict[date_string]=[file_path]
+                                local_dict[date_string] = [file_path]
                     else:
-                        if (bn.find(t.strftime("%Y%m%d")) != -1) and self._time_interval.contains(t):
+                        if (
+                            bn.find(t.strftime("%Y%m%d")) != -1
+                        ) and self._time_interval.contains(t):
                             local_dict[date_string] = [file_path]
 
             wdict[directory] = local_dict
 
         unique_dict = dict()
         for t, directory in search_paths:
-            local_dict=wdict[directory]
+            local_dict = wdict[directory]
             for key in local_dict.keys():
-                unique_dict[key] = local_dict[key] # this can overwrite
+                unique_dict[key] = local_dict[key]  # this can overwrite
 
         output = list()
         key_list = sorted(unique_dict.keys())
         for t in key_list:
-            filelist=unique_dict[t]
+            filelist = unique_dict[t]
             for file_path in filelist:
-                output.append((t,file_path))
+                output.append((t, file_path))
 
         return output
 
-
-
-    def extract_analysis(self, outputdir, rundays=(2,),
-                         command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+    def extract_analysis(
+        self,
+        outputdir,
+        rundays=(2,),
+        command="gzip -cd $INFILE > $OUTFILE",
+        remove_ext=True,
+    ):
         """
         Extracts analysis files to outputdir.
 
@@ -255,8 +279,13 @@ class TimeSeries:
         outputdir = Path(outputdir).absolute()
         return self._extract(file_list, outputdir, str(command), remove_ext)
 
-    def extract_forecast(self, outputdir, rundays=(2,5),
-                         command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+    def extract_forecast(
+        self,
+        outputdir,
+        rundays=(2, 5),
+        command="gzip -cd $INFILE > $OUTFILE",
+        remove_ext=True,
+    ):
         """
         Extracts forecast files to outputdir.
 
@@ -267,9 +296,14 @@ class TimeSeries:
         file_list = self.get_forecast_days(rundays)
         outputdir = Path(outputdir).absolute()
         return self._extract(file_list, outputdir, str(command), remove_ext)
-    
-    def extract_simulation(self, outputdir, rundays=(2,),
-                           command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+
+    def extract_simulation(
+        self,
+        outputdir,
+        rundays=(2,),
+        command="gzip -cd $INFILE > $OUTFILE",
+        remove_ext=True,
+    ):
         """
         Extracts forecast files to outputdir.
 
@@ -281,7 +315,13 @@ class TimeSeries:
         outputdir = Path(outputdir).absolute()
         return self._extract(file_list, outputdir, str(command), remove_ext)
 
-    def extract_from_list(self, file_list, outputdir, command="gzip -cd $INFILE > $OUTFILE", remove_ext=True):
+    def extract_from_list(
+        self,
+        file_list,
+        outputdir,
+        command="gzip -cd $INFILE > $OUTFILE",
+        remove_ext=True,
+    ):
         """
         Extract the files from a list into outputdir.
 
@@ -297,45 +337,45 @@ class TimeSeries:
         """
         return self._extract(file_list, outputdir, str(command), remove_ext)
 
-    #Private methods
+    # Private methods
     def _extract(self, file_list, outputdir, command, remove_ext):
         outputdir = Path(outputdir)
 
-        #If outputdir exists make sure it's a directory
+        # If outputdir exists make sure it's a directory
         if outputdir.exists():
             if not outputdir.is_dir():
                 raise ValueError("%s is not a directory" % outputdir)
         else:
-            #Try to create the output directory
+            # Try to create the output directory
             outputdir.mkdir()
 
-        #Build command template
-        if (command.find('$INFILE') != -1) and (command.find('$OUTFILE') != -1):
+        # Build command template
+        if (command.find("$INFILE") != -1) and (command.find("$OUTFILE") != -1):
             template = Template(command)
         else:
             raise ValueError("Invalid command string: " + command)
 
         output = list()
-        #For each input file
+        # For each input file
         for _, ifn in file_list:
-            #Get the path for the output file
+            # Get the path for the output file
             if remove_ext:
                 file_name = ifn.stem
             else:
                 file_name = ifn.name
             ofn = outputdir / file_name
-            #Build the actual command string
+            # Build the actual command string
             comstring = template.substitute(INFILE=ifn, OUTFILE=ofn)
-            #Lauch the command
+            # Lauch the command
             retcode = subprocess.call(comstring, shell=True)
-            #If the subprocess ended normally
+            # If the subprocess ended normally
             if retcode == 0:
                 output.append(ofn)
             else:
                 warn("Extract command exit code: %d" % retcode)
         return output
 
-    #Static Methods
+    # Static Methods
     @staticmethod
     def get_sublist(L, weekdays):
         """
@@ -394,10 +434,10 @@ class TimeSeries:
             raise ValueError("%s doesn't exist" % sat_archive)
         sat_files = sorted(sat_archive.glob(glob_pattern))
         output = list()
-        for dt,p in L:
+        for dt, p in L:
             ds = dt.strftime("%Y%m%d")
             for f in sat_files:
                 bn = f.name
                 if bn.find(ds) != -1:
-                    output.append((dt,p,f))
+                    output.append((dt, p, f))
         return output

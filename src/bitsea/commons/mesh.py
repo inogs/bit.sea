@@ -98,6 +98,16 @@ class Mesh:
     def is_regular(self):
         return self._grid.is_regular()
 
+    def copy(self):
+        """
+        Returns a copy of the current object
+        """
+        return self.__class__(
+            grid=self._grid.copy(),
+            zlevels=self._zlevels.copy(),
+            e3t=self._e3t.copy(),
+        )
+
     @property
     def xlevels(self) -> np.ndarray:
         return self._grid.xlevels

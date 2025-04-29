@@ -1,8 +1,8 @@
-import os,sys
+import os
 from bitsea.instruments.instrument import Profile
 import scipy.io.netcdf as NC
 import numpy as np
-import bitsea.matchup.matchup
+from bitsea.matchup import matchup
 import matplotlib.pyplot as pl
 import bitsea.postproc as postproc
 
@@ -149,7 +149,6 @@ class Matchup_Manager():
                 break
         else:
             raise ValueError("No model profile corresponds to %s. Please check time interval in your profiler." % ( profile.ID(), ) )
-            return None
         return Model_time
 
 
@@ -177,19 +176,21 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
 
-        Group_Matchup = bitsea.matchup.matchup.ProfilesMatchup()
+        Group_Matchup = matchup.ProfilesMatchup()
 
-        THRESHOLDS={'O2o': 40.0, \
-                'N1p': 0.3, \
-                'N3n': 4.0,  \
-                'N4n': 1.0,  \
-                'N5s': 5.0,  \
-                'P_l': 1.0,  \
-                'ALK': 200,  \
-                'DIC': 200,  \
-                 'pH': 0.25,  \
-               'pCO2': 200 }  # pCO2 up to 200m depth
-                              # Added a large number for N5s and P_l to consider almost all values
+        THRESHOLDS={
+            'O2o': 40.0,
+            'N1p': 0.3,
+            'N3n': 4.0,
+            'N4n': 1.0,
+            'N5s': 5.0,
+            'P_l': 1.0,
+            'ALK': 200,
+            'DIC': 200,
+            'pH': 0.25,
+            'pCO2': 200  # pCO2 up to 200m depth
+        }
+        # Added a large number for N5s and P_l to consider almost all values
 
         for p in Profilelist:
             assert p in self.PROFILE_LIST
@@ -218,15 +219,15 @@ class Matchup_Manager():
  
                 ii = (np.abs(MODEL_ON_SPACE_OBS - Profile) <= THRESHOLDS[model_varname])
 
-                # Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
-                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS[ii], Profile[ii], Pres[ii], Qc[ii], p)
+                # Matchup = matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+                Matchup =matchup.ProfileMatchup(MODEL_ON_SPACE_OBS[ii], Profile[ii], Pres[ii], Qc[ii], p)
 
             else:
                 OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
                 QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-                # Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+                # Matchup = matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
                 ii = (np.abs(ModelProfile[seaPoints]-OBS_ON_SPACE_MODEL) <= THRESHOLDS[model_varname])
-                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints][ii], OBS_ON_SPACE_MODEL[ii], nav_lev[seaPoints][ii], QC_ON_SPACE_MODEL[ii], p)
+                Matchup = matchup.ProfileMatchup(ModelProfile[seaPoints][ii], OBS_ON_SPACE_MODEL[ii], nav_lev[seaPoints][ii], QC_ON_SPACE_MODEL[ii], p)
 
             Group_Matchup.extend(Matchup)
 
@@ -256,7 +257,7 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
 
-        Group_Matchup = matchup.matchup.ProfilesMatchup()
+        Group_Matchup = matchup.ProfilesMatchup()
 
 
         for p in Profilelist:
@@ -286,11 +287,11 @@ class Matchup_Manager():
             if interpolation_on_Float:
                 MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
 
-                Matchup = matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
+                Matchup = matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p)
             else:
                 OBS_ON_SPACE_MODEL=np.interp(nav_lev[seaPoints], Pres, Profile)
                 QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
-                Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
+                Matchup = matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p)
 
             Group_Matchup.extend(Matchup)
 
@@ -322,7 +323,7 @@ class Matchup_Manager():
         Returns a FloatMatchup istance.
         '''
 
-        Group_Matchup = bitsea.matchup.matchup.ProfilesMatchup()
+        Group_Matchup = matchup.ProfilesMatchup()
 
 
         for p in Profilelist:
@@ -332,7 +333,7 @@ class Matchup_Manager():
                 print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))
                 continue
 
-            Modelfile = self.profilingDir + "PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc")
+            Modelfile = self.profilingDir / ("PROFILES/" + Model_time.strftime("ave.%Y%m%d-%H:%M:%S.profiles.nc"))
             ModelProfile = self.readModelProfile(Modelfile, model_varname, p.ID())
             seaPoints = ~np.isnan(ModelProfile)
 
@@ -353,13 +354,13 @@ class Matchup_Manager():
 
             if len(Pres)==0:
                 junk=np.array([],np.float32)
-                Matchup = bitsea.matchup.matchup.ProfileMatchup(junk,junk,junk,junk, p, CheckReport)
+                Matchup = matchup.ProfileMatchup(junk,junk,junk,junk, p, CheckReport)
             else:
                 if forced_depth is None:
                     if interpolation_on_Float:
                         MODEL_ON_SPACE_OBS=np.interp(Pres,nav_lev[seaPoints],ModelProfile[seaPoints]).astype(np.float32)
 
-                        Matchup = bitsea.matchup.matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p, CheckReport)
+                        Matchup = matchup.ProfileMatchup(MODEL_ON_SPACE_OBS, Profile, Pres, Qc, p, CheckReport)
 
                     else:
                         if extrapolation is False: # for N3n Statistics
@@ -370,7 +371,7 @@ class Matchup_Manager():
                             QC_ON_SPACE_MODEL = np.interp(nav_lev[seaPoints], Pres, Qc)
 
 
-                        Matchup = matchup.matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p, CheckReport)
+                        Matchup = matchup.ProfileMatchup(ModelProfile[seaPoints], OBS_ON_SPACE_MODEL, nav_lev[seaPoints], QC_ON_SPACE_MODEL, p, CheckReport)
                 else:
                     if extrapolation is False: # for N3n Hovmoeller
 #                        Model_on_forced_depth=np.interp(forced_depth,nav_lev[seaPoints],ModelProfile[seaPoints],right=np.nan, left=np.nan)
@@ -391,7 +392,7 @@ class Matchup_Manager():
                     Model_on_forced_depth[ii] = np.nan
                     Obs_on_forced_depth[ii]   = np.nan
                     Qc_on_forced_depth[ii]    = np.nan
-                    Matchup = bitsea.matchup.matchup.ProfileMatchup(Model_on_forced_depth,Obs_on_forced_depth,forced_depth, Qc_on_forced_depth, p, CheckReport, accept_nans=True) 
+                    Matchup = matchup.ProfileMatchup(Model_on_forced_depth,Obs_on_forced_depth,forced_depth, Qc_on_forced_depth, p, CheckReport, accept_nans=True)
 
             Group_Matchup.extend(Matchup)
 
@@ -500,7 +501,7 @@ class Matchup_Manager():
 
 
 
-                Matchup = matchup.matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
+                Matchup = matchup.ProfileMatchup(model_on_common_grid, float_on_common_grid, zlevels_out, Qc, p)
 
                 model_handlers[i][:] = model_on_common_grid[:] #write on NC file
                 float_handlers[i][:] = float_on_common_grid[:]

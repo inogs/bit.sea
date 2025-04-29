@@ -189,16 +189,16 @@ class Metadata():
 
 def read_float_update(input_file):
     mydtype= np.dtype([
-        ('file_name','S200'),
-        ('date','S200'),
+        ('file_name','U200'),
+        ('date','U200'),
         ('latitude',np.float32),
         ('longitude',np.float32),
-        ('ocean','S10'),
+        ('ocean','U10'),
         ('profiler_type',int),
-        ('institution','S10'),
-        ('parameters','S200'),
-        ('parameter_data_mode','S100'),
-        ('date_update','S200')] )
+        ('institution','U10'),
+        ('parameters','U200'),
+        ('parameter_data_mode','U100'),
+        ('date_update','U200')] )
 
     INDEX_FILE=np.loadtxt(input_file,dtype=mydtype, delimiter=",",ndmin=1,skiprows=0)
 

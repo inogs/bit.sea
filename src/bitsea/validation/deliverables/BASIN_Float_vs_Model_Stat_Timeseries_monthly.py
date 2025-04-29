@@ -1,9 +1,11 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Needs a profiler.py, already executed.
 
-    Generates in output directory two files ( model and ref) 
+    Generates two files ( model and ref)
+    Basin_Statistics_FLOAT.npy
+    Basin_Statistics_MODEL.npy
     containing [(nVar, nTime, nSub, nStat)] arrays.
     The metrics are:
     These arrays will be used in the next step to generate the following metrics:
@@ -13,24 +15,27 @@ def argument():
      DO-PROF-D-CLASS4-PROF-CORR-BASIN 
 
     The following step will be in 
-    BASIN_Float_vs_Model_Stat_Timeseries_monthly.py
+    BASIN_Float_vs_Model_Stat_Timeseries_monthly_plotter.py
     and the results will be displayed in FIG.IV.6 and TABLE IV.3
-    In the outputdir, two new directories will be created, in order to store the output of check.
+
+    In the outputdir, 3 new directories will be created, in order to store the output of check.
     - nitrate_check/
     - chla_check/
+    - Phyto_C/
 
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
-                                required = False,
+                                type = existing_file_path,
+                                required = True,
                                 help = ''' Path of maskfile''')
-
+    parser.add_argument(   '--basedir', '-b',
+                                type = existing_dir_path,
+                                required = True,
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
                                 required = True,
                                 help = "")
 
@@ -43,19 +48,28 @@ from bitsea.commons.mesh import Mesh
 from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.matchup_manager import Matchup_Manager
 from bitsea.instruments.var_conversions import FLOATVARS
-from bitsea.commons.utils import addsep, nanmean_without_warnings
+from bitsea.commons.utils import nanmean_without_warnings
 from bitsea.commons.layer import Layer
-from profiler import ALL_PROFILES,TL,BASEDIR
-from metrics2 import *
+from bitsea.validation.deliverables.metrics import find_DCM, find_WBL,find_NITRICL
+from bitsea.validation.deliverables.metrics import find_OMZ, find_maxO2
 from bitsea.basins.V2 import NRT3 as OGS
-import bitsea.commons.timerequestors as requestors
+from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import check
-from bitsea.Float.oxygen_saturation import *
+import datetime
+from bitsea.basins.region import Rectangle
 
-OUTDIR = addsep(args.outdir)
-Check_obj_nitrate = check.check(OUTDIR + "/nitrate_check/")
-Check_obj_chl     = check.check(OUTDIR + "chla_check/")
-Check_obj_PhytoC  = check.check(OUTDIR + "/Phyto_C/")
+OUTDIR = args.outdir
+BASEDIR = args.basedir
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+deltaT= datetime.timedelta(hours=12)
+TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
+
+
+Check_obj_nitrate = check.check(OUTDIR / "nitrate_check")
+Check_obj_chl     = check.check(OUTDIR / "chla_check")
+Check_obj_PhytoC  = check.check(OUTDIR / "Phyto_C")
 TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 layer=Layer(0,200)
 layer300=Layer(0,350)
@@ -103,8 +117,8 @@ for ivar, V in enumerate(VARLIST):
 
 
     for itime, Req in enumerate(MonthlyRequestors):
-        if Req.time_interval.end_time > TL.timeinterval.end_time : 
-           Req.time_interval.end_time = TL.timeinterval.end_time
+        if Req.time_interval.end_time > TL.timeinterval.end_time :
+            Req.time_interval.end_time = TL.timeinterval.end_time
         print (Req)
         for iSub, Sub in enumerate(OGS.basin_list):
             BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
@@ -181,6 +195,9 @@ for ivar, V in enumerate(VARLIST):
                 A_model[ivar,itime,iSub,iStat] = nanmean_without_warnings(Mod[:,iStat])
 #                print (A_float[3,:,6,6])
 
-
-np.save(OUTDIR + 'Basin_Statistics_FLOAT',A_float)
-np.save(OUTDIR + 'Basin_Statistics_MODEL',A_model)
+outfile=OUTDIR / "Basin_Statistics_FLOAT.npy"
+print(outfile)
+np.save(outfile,A_float)
+outfile=OUTDIR / "Basin_Statistics_MODEL.npy"
+print(outfile)
+np.save(outfile,A_model)

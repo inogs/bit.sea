@@ -1,21 +1,27 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates
-     - in the first output directory time series png files similar to them of mdeeaf web site.
-     - in the 2nd output directory   two tables,  _BIAS.txt and _RMSE.txt for each variable
+     - time series png files similar to them of mdeeaf web site.
+     - 4 tables,for each variable
+       var_BIAS.txt
+       var_RMSE.txt
+       var_REF.txt
+       var_MOD.txt
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--inputfile','-i',
-                                type = str,
-                                required = True,
-                                help = '')
+                                type = existing_file_path,
+                                required = True)
 
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
+                                type = existing_dir_path,
+                                required = True)
+    parser.add_argument(   '--basedir', '-b',
+                                type = existing_dir_path,
                                 required = True,
-                                help = "")
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--var', '-v',
                                 type = str,
                                 choices = ['P_l','N3n','O2o','P_c','POC'],
@@ -27,38 +33,47 @@ def argument():
 args = argument()
 
 
-from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList, TimeInterval
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
 from bitsea.commons.layer import Layer
 from bitsea.basins import V2 as OGS
-from bitsea.commons.utils import addsep
-from profiler import TL
-import scipy.io.netcdf as NC
-from bitsea.commons.utils import writetable, nanmean_without_warnings
-from datetime import datetime
-from profiler import *
+import netCDF4 as NC
 
-OUTDIR        = addsep(args.outdir)
+from bitsea.commons.utils import writetable, nanmean_without_warnings
+from bitsea.instruments import superfloat as bio_float
+from datetime import datetime, timedelta
+from bitsea.basins.region import Rectangle
+from bitsea.instruments.matchup_manager import Matchup_Manager
+
+
 inputfile        = args.inputfile
 var=args.var
+OUTDIR = args.outdir
+BASEDIR = args.basedir
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+deltaT= timedelta(hours=12)
+TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
+
 
 class ncreader():
     def __init__(self, filename):
-        ncIN = NC.netcdf_file(filename,"r")
+        ncIN = NC.Dataset(filename,"r")
         self.nVAR = ncIN.dimensions['var']
         self.nSUB = ncIN.dimensions['sub']
         self.nDEPTH  = ncIN.dimensions['depth']
-        self.SUBLIST = ncIN.sublist.decode().split(",")
-        self.LAYERLIST=ncIN.layerlist.decode().split(",")
-        self.VARLIST = ncIN.varlist.decode().split(",")
-        self.npoints = ncIN.variables['npoints'].data.copy()
-        self.bias    = ncIN.variables['bias'   ].data.copy()
-        self.rmse    = ncIN.variables['rmse'   ].data.copy()
-        self.ref    = ncIN.variables['ref'].data.copy()
-        self.mod    = ncIN.variables['model'].data.copy()
+        self.SUBLIST = ncIN.sublist.split(",")
+        self.LAYERLIST=ncIN.layerlist.split(",")
+        self.VARLIST = ncIN.varlist.split(",")
+        self.npoints = np.array(ncIN.variables['npoints'])
+        self.bias    = np.array(ncIN.variables['bias'   ])
+        self.rmse    = np.array(ncIN.variables['rmse'   ])
+        self.ref    = np.array(ncIN.variables['ref'])
+        self.mod    = np.array(ncIN.variables['model'])
     def plotdata(self,VAR,var,sub,depth):
         ivar = self.VARLIST.index(var)
         isub = self.SUBLIST.index(sub)
@@ -73,8 +88,8 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
         times = TL.Timelist
     else:
         if TL.inputFrequency=='daily':
-             WEEKS=TL.getWeeklyList(5)
-             times = [datetime(w.year,w.month, w.day)  for w in WEEKS]
+            WEEKS=TL.getWeeklyList(5)
+            times = [datetime(w.year,w.month, w.day)  for w in WEEKS]
     bias1 = DATAfile.plotdata(DATAfile.bias   , var, sub, layer)
     rmse1 = DATAfile.plotdata(DATAfile.rmse   , var, sub, layer)
     numb1 = DATAfile.plotdata(DATAfile.npoints, var, sub, layer)
@@ -92,7 +107,6 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     ax2.bar(times,numb1,width=7, color='0.5', alpha=0.3, align='center',edgecolor="black", linewidth=3)
     ax2.set_ylabel(' n. of BGC-Argo floats', fontsize=20)
     ax2.set_ylim([0,numb1.max() +2])
-#    ax2.set_yticklabels(ax2.yaxis.get_major_ticks(),fontsize=16)
 
 
     ax.plot(times,bias1,'m.-', label='bias')
@@ -100,27 +114,24 @@ def single_plot(longvar, var, sub, layer, timeinterval ):
     if longvar == 'Chlorophyll' : 
         ax.set_ylim([-0.4, 0.4])
         ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
-#	ax.ticklabel_format(axis='both', fontsize=20)
     if longvar == 'PhytoC' :
-       ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
     if longvar == 'POC' :
-       ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
+        ax.set_ylabel('bias, rmse mg/m$^3$', fontsize=20)
 
     if longvar == 'Nitrate'     : 
         ax.set_ylim([-5, 5])
         ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
     if longvar == 'Oxygen'      :
         ax.set_ylabel('bias, rmse mmol/m$^3$', fontsize=20)
-    #if longvar == 'Oxygen'      : ax.set_ylim([-40, 40])
         
-#    ax.set_ylabel('bias, rmse mg/m$^3$')
     ax.legend(loc=2)
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label1.set_fontsize(16)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label1.set_fontsize(16)
     for tick in ax2.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label1.set_fontsize(16)
     for l in ax2.get_yticklabels() : l.set_fontsize(16)
 
     ii = np.zeros((len(times),) , bool)
@@ -138,7 +149,7 @@ SUBLIST = OGS.NRT3.basin_list
 nSub = len(SUBLIST)
 nLayers = len(LAYERLIST)
 
-ti_restrict = TimeInterval(DATESTART,DATE__END,"%Y%m%d")
+ti_restrict = TI
 
 column_names=[layer.string() for layer in LAYERLIST]
 row_names   =[sub.name for sub in SUBLIST]
@@ -150,7 +161,7 @@ REF = np.zeros((nSub,nLayers),np.float32)
 MOD = np.zeros((nSub,nLayers),np.float32)
 for isub, sub in enumerate(SUBLIST):
     for ilayer, layer in enumerate(LAYERLIST):
-        outfile = "%s%s.%s.%s.png" % (OUTDIR,var,sub.name,layer.longname())
+        outfile = OUTDIR / f"{var}.{sub.name}.{layer.longname()}.png"
         print (outfile,flush=True)
         fig,bias,rmse,ax,ax2, ref, mod  = single_plot(VARLONGNAMES[var],var,sub.name,layer.string(), ti_restrict)
         BIAS[isub,ilayer] = bias
@@ -162,8 +173,8 @@ for isub, sub in enumerate(SUBLIST):
         fig.savefig(outfile)
         pl.close(fig)
 
-writetable(OUTDIR +  var + '_BIAS.txt',BIAS,row_names, column_names)
-writetable(OUTDIR +  var + '_RMSE.txt',RMSE,row_names, column_names)
-writetable(OUTDIR +  var + '_REF.txt' ,REF,row_names , column_names)
-writetable(OUTDIR +  var + '_MOD.txt' ,MOD,row_names , column_names)
-    
+writetable(OUTDIR /  (var + '_BIAS.txt'),BIAS,row_names, column_names)
+writetable(OUTDIR /  (var + '_RMSE.txt'),RMSE,row_names, column_names)
+writetable(OUTDIR /  (var + '_REF.txt' ),REF,row_names , column_names)
+writetable(OUTDIR /  (var + '_MOD.txt' ),MOD,row_names , column_names)
+

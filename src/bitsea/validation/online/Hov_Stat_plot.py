@@ -1,4 +1,6 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
+from bitsea.utilities.argparse_types import date_from_str
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Produces Hovmoeller png files.
@@ -12,28 +14,26 @@ def argument():
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/marconi_scratch/userexternal/lfeudale/Maskfiles/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
+                                type = existing_file_path,
+                                required = True)
     parser.add_argument(   '--basedir', '-b',
-                                type = str,
+                                type = existing_dir_path,
                                 required = True,
-                                help = ''' Path of the PROFILATORE dir''')
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--indir', '-i',
-                                type = str,
+                                type = existing_dir_path,
                                 default = None,
                                 required = True,
                                 help = "Inputdir, the directory of the outputs of SingleFloat_vs_Model_Stat_Timeseries.py")
 
     parser.add_argument(   '--outdir', '-o',
-                                type = str,
+                                type = existing_dir_path,
                                 default = None,
                                 required = True,
                                 help = "path of the output dir")
 
     parser.add_argument(   '--date','-d',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
 
@@ -51,17 +51,15 @@ from bitsea.instruments import superfloat as bio_float
 from bitsea.instruments.var_conversions import FLOATVARS
 import numpy as np
 import numpy.ma as ma
-from bitsea.commons.utils import addsep
 import matplotlib.pyplot as pl
-from matplotlib import cm
 from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
-from datetime import datetime
+from bitsea.validation.online.SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from dateutil.relativedelta import relativedelta
-import plotter
+from bitsea.validation.deliverables import plotter
 from bitsea.instruments import check
-Check_obj = check.check("", verboselevel=0)
+from pathlib import Path
+Check_obj = check.check(Path(""), verboselevel=0)
 
 
 
@@ -101,21 +99,20 @@ def multicolor_ylabel(ax,list_of_strings,list_of_colors,axis='x',anchorpad=0,**k
         ax.add_artist(anchored_ybox)
 
 
-INDIR = addsep(args.indir)
-OUTDIR = addsep(args.outdir)
-BASEDIR = addsep(args.basedir)
+INDIR = args.indir
+OUTDIR = args.outdir
+BASEDIR = args.basedir
 TheMask = Mesh.from_file(args.maskfile, read_e3t=True)
 
 Graphic_DeltaT = relativedelta(months=18)
-datestart = datetime.strptime(args.date,'%Y%m%d') -Graphic_DeltaT
-timestart = datestart.strftime("%Y%m%d")
+datestart = args.date -Graphic_DeltaT
 
 font_s =  13
 font_s2 = 3
 label_s = 15
 
-TL = TimeList.fromfilenames(None, BASEDIR + "PROFILES/","ave*.nc")
-TI = TimeInterval(timestart, args.date,'%Y%m%d')
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+TI = TimeInterval.fromdatetimes(datestart, args.date)
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
@@ -133,7 +130,7 @@ nVar = len(VARLIST)
 bt=300
 depths=np.linspace(0,300,121)
 
-my_cmap=cm.get_cmap('viridis',24)
+my_cmap=matplotlib.colormaps['viridis'].resampled(24)
 
 for ivar, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
@@ -141,7 +138,7 @@ for ivar, var_mod in enumerate(VARLIST):
     wmo_list=bio_float.get_wmo_list(Profilelist) 
     
     for wmo in wmo_list:
-        OUTFILE = OUTDIR + var_mod + "_" + wmo + ".png"
+        OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
         print(OUTFILE)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
@@ -209,7 +206,7 @@ for ivar, var_mod in enumerate(VARLIST):
 # SECOND FIGURE ON STATISTICS:
 
         # READ STATISTICS FILE *.nc
-        INPUT_FILE = "%s%s_%s.nc" %(INDIR, var_mod, wmo )
+        INPUT_FILE = INDIR / f"{var_mod}_{wmo}.nc"
         A = ncreader(INPUT_FILE)
         times = timelabel_list
 

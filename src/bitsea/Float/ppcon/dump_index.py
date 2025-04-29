@@ -30,9 +30,9 @@ def argument():
     return parser.parse_args()
 
 args = argument()
-import sys
 
-from scipy.io import netcdf_file 
+
+import netCDF4
 
 import datetime
 import os,glob
@@ -77,21 +77,17 @@ def file_header_content(filename,VARLIST, avail_params=None):
     - None in case of error
     '''
     try:
-        ncIN = netcdf_file(filename,'r')
+        ncIN = netCDF4.Dataset(filename,'r')
     except:
         print ("Not valid NetDCF file: " + filename)
         return
 
-    lon=ncIN.variables['LONGITUDE'].data[0]
-    lat=ncIN.variables['LATITUDE'].data[0]
-    BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
-    if BadPosition:
-        print ("Bad position in file : " + filename)
-        ncIN.close()
-        return
+    lon=float(ncIN.variables['LONGITUDE'][0])
+    lat=float(ncIN.variables['LATITUDE'][0])
 
-    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tobytes().decode()
-    juld = ncIN.variables['JULD'].data[0]
+
+    ref  = np.array(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
+    juld = int (ncIN.variables['JULD'][0])
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
     split_path=filename.rsplit(os.sep)

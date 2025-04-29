@@ -1,5 +1,6 @@
 import argparse
-from numpy import dtype
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Generates png maps, based on matplotlib.imshow(), of time averaged fields
@@ -11,7 +12,8 @@ def argument():
     
     
     Example of output file: 
-    Map_pCO2_Ave.2016-2015_Ave0060-0100m-0060m.png
+    ppn_2021_Int0000-0200m-0000m_refScale.png
+    ppn_2021_mean_basin.txt
     
     Caveats:
     A unit conversion is performed, about ppn.
@@ -20,16 +22,14 @@ def argument():
     )
 
     parser.add_argument(   '--outdir', '-o',
-                            type = str,
+                            type = existing_dir_path,
                             required =True,
-                            default = "./",
                             help = ''' Output dir'''
                             )
 
     parser.add_argument(   '--inputdir', '-i',
-                            type = str,
+                            type = existing_dir_path,
                             required = True,
-                            default = './',
                             help = 'Input dir')
 
     parser.add_argument(   '--varname', '-v',
@@ -43,7 +43,7 @@ def argument():
                                 help = '''Plotlist_bio.xml"
                                 ''')
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
+                                type = existing_file_path,
                                 required = True,
                                 help = 'Path of the mask file')
     parser.add_argument(   '--optype', '-t',
@@ -53,11 +53,11 @@ def argument():
                                 choices = ['integral','mean'],
                                 help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
     parser.add_argument(   '--starttime','-s',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')
     parser.add_argument(   '--endtime','-e',
-                                type = str,
+                                type = date_from_str,
                                 required = True,
                                 help = 'start date in yyyymmdd format')      
 
@@ -74,25 +74,25 @@ from bitsea.commons.Timelist import TimeList
 from bitsea.commons.mask import Mask
 from bitsea.commons.layer import Layer
 from bitsea.layer_integral.mapbuilder import MapBuilder, Plot
-#from bitsea.layer_integral.mapplot import mapplot,pl
-# X ppn:
-# from mapplot_ppn import mapplot,pl
 from bitsea.commons.dataextractor import DataExtractor
 from bitsea.commons.time_averagers import TimeAverager3D
 from bitsea.layer_integral import coastline
 import bitsea.commons.timerequestors as requestors
-from bitsea.commons.utils import addsep
-from bitsea.commons.xml_module import *
+from bitsea.commons.xml_module import get_node_attr, get_subelements
 from xml.dom import minidom
 from bitsea.commons import netcdf3
 
 xmldoc = minidom.parse(args.plotlistfile)
 
 
-INPUTDIR  = addsep(args.inputdir)
-OUTPUTDIR = addsep(args.outdir)
+INPUTDIR  = args.inputdir
+OUTPUTDIR = args.outdir
 var       = args.varname
 
+if  args.optype=='integral':
+    maptype="Int"
+else:
+    maptype="Ave"
 
 for lm in xmldoc.getElementsByTagName("LayersMaps"):
     for pdef in get_subelements(lm, "plots"):
@@ -128,8 +128,12 @@ CONVERSION_DICT={
          }
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
+TI = TimeInterval.fromdatetimes(args.starttime,args.endtime)
+if args.endtime.year > args.starttime.year:
+    req_label=f"{args.starttime.year}_{args.endtime.year}"
+else:
+    req_label=f"{args.starttime.year}"
+
 
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 if TL.inputFrequency is None:
@@ -145,7 +149,7 @@ VARCONV=CONVERSION_DICT[var]
 filelist=[]
 for k in indexes:
     t = TL.Timelist[k]
-    filename = INPUTDIR + "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
+    filename = INPUTDIR / ("ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc")
     filelist.append(filename)
 # ----------------------------------------------------------
 print ("time averaging ...")
@@ -153,11 +157,12 @@ M3d     = TimeAverager3D(filelist, weights, var, TheMask)
 print ("... done.")
 for il, layer in enumerate(PLOT.layerlist):
     z_mask = PLOT.depthfilters[il]
-    z_mask_string = "-%04gm" %z_mask
-    if  args.optype=='integral':
-        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + "_refScale.png"
-    else:
-        outfile    = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Ave" + layer.longname() + z_mask_string  + ".png"
+    z_mask_str = "-%04gm" %z_mask
+    Lstr=layer.longname()
+
+    filename = f"{var}_{req_label}_{maptype}{Lstr}{z_mask_str}_refScale"
+    outfile=OUTPUTDIR / f"{filename}.png"
+    print(outfile)
 
     De      = DataExtractor(TheMask,rawdata=M3d)
 
@@ -193,10 +198,10 @@ for il, layer in enumerate(PLOT.layerlist):
 # CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
     if (var=="ppn"):
         ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-        title = "%s %s %s" % ('annual', 'npp', layer.__repr__())
+        title = "%s %s %s" % (req_label, 'npp', layer.__repr__())
     else:
         ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-        title = "%s %s %s" % ('annual', var, layer.__repr__())
+        title = "%s %s %s" % (req_label, var, layer.__repr__())
 
     ax.xaxis.set_ticks(np.arange(-2,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))
@@ -213,14 +218,15 @@ for il, layer in enumerate(PLOT.layerlist):
     pl.savefig(outfile)
     pl.close(fig)
     if (var == "ppn"): 
-        ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + "_refScale.nc"
+        ncfile=OUTPUTDIR / f"{filename}.nc"
         netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
 
         from bitsea.basins import V2 as OGS
         from bitsea.commons.submask import SubMask
         from bitsea.basins.basin import ComposedBasin
         from bitsea.commons.utils import writetable
-        tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
+        tablefile = OUTPUTDIR / f"{var}_{req_label}_mean_basin.txt"
+        print(tablefile)
         OGSred = ComposedBasin('OGSred',[OGS.alb, \
                     OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr, \
                     OGS.adr, OGS.ion, OGS.lev , OGS.med], \

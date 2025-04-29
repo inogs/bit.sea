@@ -25,14 +25,14 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['lov','coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat'])
+                                choices = ['coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat'])
 
     return parser.parse_args()
 
 args = argument()
 
 
-import scipy.io as NC
+import netCDF4 as NC
 import datetime
 import os,glob
 import numpy as np
@@ -62,8 +62,6 @@ if args.input_float_indexer is not None:
 
 if args.type=="coriolis":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
-if args.type=="lov":
-    VARLIST=['DOXY','SR_NO3_ADJUSTED', 'CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR'            ,'CDOM','DOWNWELLING_IRRADIANCE_380','DOWNWELLING_IRRADIANCE_412','DOWNWELLING_IRRADIANCE_490']
 if args.type=='Float_opt':
     VARLIST=['PRES','PSAL','TEMP','PAR','CHLA', 'Ed_380','Ed_412','Ed_490']
 if args.type=='Float_opt_19':
@@ -85,21 +83,21 @@ def file_header_content(filename,VARLIST, avail_params=None):
     - None in case of error
     '''
     try:
-        ncIN = NC.netcdf_file(filename,'r')
+        ncIN = NC.Dataset(filename,'r')
     except:
         print("Not valid NetDCF file: " + filename)
         return
 
-    lon=ncIN.variables['LONGITUDE'].data[0]
-    lat=ncIN.variables['LATITUDE'].data[0]
+    lon=float(ncIN.variables['LONGITUDE'][0])
+    lat=float(ncIN.variables['LATITUDE'][0])
     BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
     if BadPosition:
         print("Bad position in file : " + filename)
         ncIN.close()
         return
 
-    ref  = ncIN.variables['REFERENCE_DATE_TIME'].data.tobytes().decode()
-    juld = ncIN.variables['JULD'].data[0]
+    ref  = np.array(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
+    juld = int (ncIN.variables['JULD'][0])
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
     split_path=filename.rsplit(os.sep)
@@ -159,12 +157,10 @@ for DIR in DIRLIST:
                 else:
                     line=file_header_content(filename,VARLIST,avail_params=None)
                     if line is not None:
-                        if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                         LINES.append(line+"\n")
             else:
                 line=file_header_content(filename,VARLIST,avail_params=None)
                 if line is not None:
-                    if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     LINES.append(line+"\n")
                     if is_provided_indexer: print("added " + line)
 

@@ -121,7 +121,7 @@ def getcolor(ntimes,itime, colormap='gist_ncar'):
     rgba = cmap(fact)
     return rgba
 
-def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
+def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t",printname=True):
     '''
     Writes a 2d numpy array into a text file.
     It is a wrapper of np.savetxt
@@ -167,6 +167,8 @@ def writetable(filename, M, rows_names_list,column_names_list,fmt="%5.3f\t"):
         myformat = "%s\t" + fmt*ncols
     else:
         myformat = "%s\t" + fmt
+    if printname:
+        print(filename)
     np.savetxt(filename, X, fmt=myformat, header=headerstr)
 
 def data_for_linear_interp(array,value):

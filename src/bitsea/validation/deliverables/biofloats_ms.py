@@ -1,8 +1,7 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path, generic_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Needs a profiler.py, already executed.
-
     Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
     for chlorophyll, nitrate and oxygen.
     In this approach we define the measurement as mean on layer of the float profile values.
@@ -10,14 +9,14 @@ def argument():
 
 
     parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = "/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc",
-                                required = False,
-                                help = ''' Path of maskfile''')
-
+                                type = existing_file_path,
+                                required = False)
+    parser.add_argument(   '--basedir', '-b',
+                                type = existing_dir_path,
+                                required = True,
+                                help = """ PROFILATORE dir, already generated""")
     parser.add_argument(   '--outfile', '-o',
-                                type = str,
-                                default = None,
+                                type = generic_path,
                                 required = True,
                                 help = "")
 
@@ -36,14 +35,21 @@ from bitsea.commons.layer import Layer
 import numpy as np
 from bitsea.matchup.statistics import matchup
 import datetime
-import scipy.io.netcdf as NC
-from bitsea.commons.utils import addsep
+import netCDF4
+from pathlib import Path
+
 from bitsea.basins.region import Rectangle
-from profiler import ALL_PROFILES, TL, BASEDIR
 from bitsea.instruments import check
-Check_obj_nitrate = check.check("", verboselevel=0)
-Check_obj_chl     = check.check("", verboselevel=0)
-Check_obj_PhytoC  = check.check("", verboselevel=0)
+BASEDIR = args.basedir
+TL = TimeList.fromfilenames(None, BASEDIR / "PROFILES/","ave*.nc")
+deltaT= datetime.timedelta(hours=12)
+TI = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
+
+Check_obj_nitrate = check.check(Path(""), verboselevel=0)
+Check_obj_chl     = check.check(Path(""), verboselevel=0)
+Check_obj_PhytoC  = check.check(Path(""), verboselevel=0)
 
 TheMask = Mask.from_file(args.maskfile)
 
@@ -76,30 +82,22 @@ M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 #LISTall = []
 
 for iFrame, req in enumerate(WEEKLY):
-    if req.time_interval.start_time < TL.timeinterval.start_time : req.time_interval.start_time = TL.timeinterval.start_time
-    if req.time_interval.end_time   > TL.timeinterval.end_time   : req.time_interval.end_time   = TL.timeinterval.end_time
-    print (req.time_interval)
+    if req.time_interval.start_time < TI.start_time : req.time_interval.start_time = TI.start_time
+    if req.time_interval.end_time   > TI.end_time   : req.time_interval.end_time   = TI.end_time
+    print (req, flush=True)
     for ivar, var in enumerate(VARLIST):
         if var == "N3n": Check_obj = Check_obj_nitrate
         if var == "P_l": Check_obj = Check_obj_chl
         if var == "O2o": Check_obj = None
         if var == "P_c": Check_obj = Check_obj_PhytoC
         if var == "POC": Check_obj = None
-        print (var,flush=True)
 
         for isub, sub in enumerate(OGS.NRT3):
-#          if (isub == 0):
-            print (sub.name)
             Profilelist_raw = bio_float.FloatSelector(FLOATVARS[var], req.time_interval, sub)
             Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,FLOATVARS[var])
             nProfiles = len(Profilelist)
-#            print "RAW " + np.str(len(Profilelist_raw))
-#            print sub.name, nProfiles
             Matchup_object_list=[]
             for ip in range(nProfiles):
-#                floatmatchup =  M.getMatchups([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar])
-#               Execute the check on FLOATS:
-#                floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, read_adjusted=read_adjusted[ivar],checkobj=Check_obj)
                 floatmatchup =  M.getMatchups2([Profilelist[ip]], TheMask.zlevels, var, interpolation_on_Float=False,checkobj=Check_obj, extrapolation=extrap[ivar])
 #                LISTall.append(req.string + var + sub.name)
 #                if all(floatmatchup.CheckReports)==None:
@@ -112,7 +110,6 @@ for iFrame, req in enumerate(WEEKLY):
                 REF_LAYER_MEAN   = []
                 for floatmatchup in Matchup_object_list:
                     m_layer = floatmatchup.subset(layer)
-                    #print (ilayer, m_layer.number())
                     if m_layer.number() > 0:
                         REF_LAYER_MEAN.append(m_layer.Ref.mean())
                         MODEL_LAYER_MEAN.append(m_layer.Model.mean())
@@ -126,9 +123,8 @@ for iFrame, req in enumerate(WEEKLY):
                     REF[ivar, iFrame, isub, ilayer] = M_LAYER.Ref.mean()
 
 
-#import sys
-#sys.exit()
-ncOUT = NC.netcdf_file(args.outfile,'w') #manca l'array times
+
+ncOUT = netCDF4.Dataset(args.outfile,'w') #manca l'array times
 ncOUT.createDimension('time', nFrames)
 ncOUT.createDimension('var', nVar)
 ncOUT.createDimension('sub', nSub)

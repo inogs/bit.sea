@@ -46,15 +46,9 @@ import numpy as np
 from bitsea.commons.mask import Mask
 from bitsea.commons.submask import SubMask
 
-from bitsea.instruments import superfloat as bio_float
-from bitsea.instruments.matchup_manager import Matchup_Manager
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from bitsea.commons.utils import addsep
-#from profiler import ALL_PROFILES,TL,BASEDIR
-from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 from bitsea.basins.V2 import NRT3 as OGS
-from bitsea.commons.time_interval import TimeInterval
 from bitsea.matchup.statistics import *
 from bitsea.commons.utils import writetable
 from datetime import datetime
@@ -204,7 +198,7 @@ for ivar, var in enumerate(VARLIST):
             axes[2].set_ylim([0.2,1])
             TABLE_METRICS[iSub,0] = np.nanmean(corr[ii])
 #            TABLE_METRICS[iSub,0] = np.nanmean(CORR_matrix[ivar,:,iSub,1])
-            print "CORRELATION is " + str((TABLE_METRICS[iSub,0]))
+            print( "CORRELATION is " + str((TABLE_METRICS[iSub,0])))
 
         ax2 = axes[2].twinx()
         numP = A_float[ivar,:,iSub,6]
@@ -371,4 +365,3 @@ for ivar, var in enumerate(VARLIST):
     writetable(OUTDIR + var + '_tab_statistics_ALL.txt',TABLE_METRICS,row_names,METRICS_ALL,fmt="%3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t%.0f\t %.0f\t %.0f\t %.0f\t")
 
     writetable(OUTDIR + var + '_tab_statistics_SHORT.txt',TABLE_METRICS_SHORT,row_names,METRICS_SHORT,fmt="%3.2f\t %3.2f\t %3.2f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f\t %.0f %.0f\t %.0f\t %.0f\t %.0f\t")
-

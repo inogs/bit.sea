@@ -9,7 +9,7 @@ def mld(temperature,maskobj):
     jpk,jpj,jpi=maskobj.shape
     tmask=maskobj.mask_at_level(0)
     DEPTHS=maskobj.bathymetry_in_cells()
-    matrix_2D = np.ones((jpj,jpi),np.int)*(jpk-1)
+    matrix_2D = np.ones((jpj,jpi),int)*(jpk-1)
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:
@@ -52,7 +52,7 @@ def DCM(chl,maskobj):
     jpk,jpj,jpi=maskobj.shape
     tmask=maskobj.mask_at_level(0)
     DEPTHS=maskobj.bathymetry_in_cells()
-    matrix_2D = np.ones((jpj,jpi),np.int)*(jpk-1)
+    matrix_2D = np.ones((jpj,jpi),int)*(jpk-1)
     for jj in range(jpj):
         for ji in range(jpi):
             if tmask[jj,ji]:

@@ -23,10 +23,22 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'Path of the mask file')
+
+    parser.add_argument(   '--basedir', '-b',
+                                type = str,
+                                required = True,
+                                help = """ PROFILATORE dir, already generated""")
+
     parser.add_argument(   '--coastness', '-c',
                                 type = str,
                                 required = True,
-                                help = 'COASTNESS list: everywhere, open_sea, coast, supercoastal')
+                                help = 'COASTNESS list: everywhere, open_sea, coast')
+    parser.add_argument(   '--zone', '-z',
+                                type = str,
+                                required =False,
+                                default = "Med",
+                                help = ''' Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers''')
+
     return parser.parse_args()
 
 
@@ -36,19 +48,26 @@ import matplotlib.pyplot as pl
 from bitsea.commons.mask import Mask
 import os
 import numpy as np
-from profiler_RA import *
-import bitsea.basins.OGS as OGS
-import bitsea.basins.COASTAL12nm as C12
 from bitsea.static.Nutrients_reader import NutrientsReader
 from bitsea.static.Carbon_reader import CarbonReader
 from bitsea.static.climatology import DatasetInfo
+from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.basins.region import Rectangle
+import datetime
+from bitsea.instruments.matchup_manager import Matchup_Manager
 
-M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 N=NutrientsReader()
 C=CarbonReader()
 
+BASEDIR = args.basedir
+TL = TimeList.fromfilenames(None, BASEDIR +'/'+ "PROFILES/","ave*.nc")
+deltaT= datetime.timedelta(hours=12)
+T_INT = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = N.Selector(None,T_INT, Rectangle(-6,36,30,46))
+M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 TheMask = Mask.from_file(args.maskfile)
 nav_lev = TheMask.zlevels
+
 OUTPUTDIR=args.outdir
 modelvarname = args.varname
 os.system('mkdir -p ' + OUTPUTDIR)
@@ -58,6 +77,7 @@ mask200_2D = TheMask.mask_at_level(200.0)
 mask0_2D = TheMask.mask_at_level(0.0)
 coastmask=mask0_2D & (~mask200_2D)
 coastness = args.coastness
+area     = args.zone
 
 UNITS_DICT={'N1p' : 'mmol P/m$^3$', 
          'N3n' : 'mmol N/m$^3$',
@@ -73,15 +93,19 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 
 var, Dataset = DatasetInfo(modelvarname)
 
-if (coastness == "supercoastal"):
-   SUBBASINS = C12.NAd_coastal_basins
-else:
-   SUBBASINS = OGS.P
+if (area=="Med"):
+    from bitsea.basins import V2 as OGS
+    SUBBASINS=OGS.P
+if (area=="coast12"):
+    import bitsea.basins.COASTAL12nm as OGS
+    SUBBASINS= OGS.P
+if (area=="rivers"):
+    from bitsea.basins import RiverBoxes as OGS
+    SUBBASINS=OGS.P
+
 
 #for sub in OGS.P: # do profiles for the sub-basins (needed also for the table)
 for sub in SUBBASINS:
- # if (sub.name == NAd):
-#    Profilelist_all=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
     Profilelist_all=Dataset.Selector(var,T_INT,sub)
     nProfiles=len(Profilelist_all)
     if nProfiles == 0 :
@@ -97,7 +121,6 @@ for sub in SUBBASINS:
     Lon = np.zeros((nProfiles,), np.float64)*np.nan
     Lat = np.zeros((nProfiles,), np.float64)*np.nan
     for ip, p in enumerate(Profilelist_all):
-#            rec_sum=rec_sum + len(p.profile)
             Lon[ip] = p.lon
             Lat[ip] = p.lat
 
@@ -112,18 +135,9 @@ for sub in SUBBASINS:
     if (coastness == "coast"):    Profilelist=Profilelist_Coast
     if (coastness == "open_sea"): Profilelist=Profilelist_OpenSea
 #    Profilelist=Profilelist_Coast
-    if (coastness == "supercoastal"): Profilelist=Profilelist_all
     if (coastness == "everywhere"):   Profilelist=Profilelist_all
 
-
-#    Profilelist=Profilelist_OpenSea
-#    nProfiles=len(Profilelist)
-
-########################
-
-
     Matchup_basin = M.getMatchups(Profilelist, nav_lev, modelvarname,read_adjusted=True)
-
 
     fig=pl.figure(num=None,dpi=100,facecolor='w',edgecolor='k')
     ax=fig.add_subplot(1,1,1)

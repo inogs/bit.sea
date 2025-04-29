@@ -21,12 +21,6 @@ def argument():
                                 default = '',
                                 help = 'Output Images directory')
 
-#    parser.add_argument(   '--profiler', '-p',
-#                                type = str,
-#                                required = True,
-#                                default = '',
-#                                help = 'Profiler for the realtive Dataset')
-
     parser.add_argument(   '--minvalue', '-m',
                                 type = float,
                                 required = False,
@@ -37,10 +31,22 @@ def argument():
                                 required = True,
                                 help = 'Path of the mask file')
 
+    parser.add_argument(   '--basedir', '-b',
+                                type = str,
+                                required = True,
+                                help = """ PROFILATORE dir, already generated""")
+
     parser.add_argument(   '--coastness', '-c',
                                 type = str,
                                 required = True,
-                                help = 'COASTNESS list: everywhere, open_sea, coast, supercoastal')
+                                help = 'COASTNESS list: everywhere, open_sea, coast')
+
+    parser.add_argument(   '--zone', '-z',
+                                type = str,
+                                required =False,
+                                default = "Med",
+                                help = ''' Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers''')
+
     return parser.parse_args()
 
 
@@ -50,16 +56,18 @@ args = argument()
 import os
 import numpy as np
 #import __init__
-#from profiler_RA_N import *
-#from profiler_N4n import *
-#from profiler_RA_C import *
 from bitsea.static.climatology import DatasetInfo
 from bitsea.commons.mask import Mask
 import bitsea.basins.V2 as OGS
-import bitsea.basins.COASTAL12nm as C12
 from bitsea.commons.utils import addsep
 from bitsea.static.Nutrients_reader import NutrientsReader
 from bitsea.static.Carbon_reader import CarbonReader
+from bitsea.commons.Timelist import TimeList, TimeInterval
+from bitsea.basins.region import Rectangle
+import datetime
+from bitsea.instruments.matchup_manager import Matchup_Manager
+import warnings
+warnings.simplefilter("ignore")
 
 # C12.NAd_coastal_basins
 #from bitsea.instruments.var_conversions import NUTRVARS, CARBONVARS , SOCAT_VARS
@@ -80,11 +88,16 @@ coastmask=mask0_2D & (~mask200_2D)
 OUTPUTDIR=addsep(args.outdir)
 modelvarname = args.varname
 coastness = args.coastness 
-#input_profiler = args.profiler
-#print input_profiler
+area     = args.zone
+
 os.system('mkdir -p ' + OUTPUTDIR)
-#from input_profiler import *
-from profiler_RA import *
+
+BASEDIR = args.basedir
+TL = TimeList.fromfilenames(None, BASEDIR +'/'+ "PROFILES/","ave*.nc")
+
+deltaT= datetime.timedelta(hours=12)
+T_INT = TimeInterval.fromdatetimes(TL.Timelist[0] - deltaT, TL.Timelist[-1] + deltaT)
+ALL_PROFILES = N.Selector(None,T_INT, Rectangle(-6,36,30,46))
 M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 
 UNITS_DICT={'N1p' : 'mmol P/m$^3$', 
@@ -102,16 +115,17 @@ UNITS_DICT={'N1p' : 'mmol P/m$^3$',
 
 var, Dataset = DatasetInfo(modelvarname)
 
-if (coastness == "supercoastal"):
-   SUBBASINS = C12.NAd_coastal_basins
-else:
-   SUBBASINS = OGS.NRT3
+if (area=="Med"):
+    from bitsea.basins import V2 as OGS
+    SUBBASINS=OGS.P
+if (area=="coast12"):
+    import bitsea.basins.COASTAL12nm as OGS
+    SUBBASINS= OGS.P
+if (area=="rivers"):
+    from bitsea.basins import RiverBoxes as OGS
+    SUBBASINS=OGS.P
 
-#for sub in [OGS.alb, OGS.nwm, OGS.lev, OGS.ion]:
-#for sub in OGS.NRT3:
-#for sub in C12.NAd_coastal_basins:
 for sub in SUBBASINS:
-#  if (sub.name =="nwm"):
     print (sub.name)
     Profilelist_OpenSea = [] # LIST of points in OPEN SEA area
     Profilelist_Coast = [] # LIST of points along the coast
@@ -142,7 +156,6 @@ for sub in SUBBASINS:
     if (coastness == "coast"):    Profilelist=Profilelist_Coast
     if (coastness == "open_sea"): Profilelist=Profilelist_OpenSea
 #    Profilelist=Profilelist_Coast
-    if (coastness == "supercoastal"): Profilelist=Profilelist_all
     if (coastness == "everywhere"):   Profilelist=Profilelist_all
 ############
     print ("MODELVARNAME: " + modelvarname) 
@@ -165,3 +178,4 @@ for sub in SUBBASINS:
     ax.set_title(sub.name.upper() + ' - TOT n. matchups= ' + str(Matchup_basin.number()))
     ax.grid(True)
     fig.savefig(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png')
+    print(OUTPUTDIR+'densplot_'+modelvarname+'_'+sub.name+'.png' )

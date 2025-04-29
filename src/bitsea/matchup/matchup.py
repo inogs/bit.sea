@@ -31,6 +31,24 @@ class ProfilesMatchup(matchup):
             self.name  = name
             self.Lengths = [len(Model)]
 
+    def subset_exclude_layerlimits(self,layer):
+        '''
+        Subset using a layer
+        Argument:
+        *  layer * Layer object
+        Returns:
+        * P * ProfilesMatchup object, where is  layer.top <= P.Depth <= layer.bottom
+        
+
+        '''
+        if self.number() ==0:
+            return self
+        ii = (self.Depth < layer.bottom) & (self.Depth >= layer.top)
+        names = []
+        for iin,iname in enumerate(ii):
+            if iname: names.append(self.name[iin])
+        return ProfilesMatchup(self.Model[ii], self.Ref[ii], self.Depth[ii], self.Lon[ii], self.Lat[ii], self.Time[ii], self.Qc[ii], names)
+
     def subset(self,layer):
         '''
         Subset using a layer

@@ -111,7 +111,7 @@ class CarbonReader(DatasetExtractor):
 if __name__ == '__main__':
     
     var= 'phosphate'
-    TI = TimeInterval('19990101','2005101','%Y%m%d')
+    TI = TimeInterval('19950101','20240101','%Y%m%d')
     Reg= Rectangle(-6,36,30,46)
     C = CarbonReader()
     ProfileLIST = C.Selector('xCO2', TI, Reg)

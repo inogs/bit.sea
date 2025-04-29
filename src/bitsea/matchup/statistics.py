@@ -4,6 +4,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from bitsea.matchup.taylorDiagram import TaylorDiagram
 from bitsea.matchup.targetDiagram import TargetDiagram
 from matplotlib.cm import ScalarMappable as ScalarMappable
+from matplotlib.colors import BoundaryNorm
+from matplotlib.ticker import MaxNLocator
+
 
 class matchup(object):
     def __init__(self, Model, Ref):
@@ -186,7 +189,7 @@ class matchup(object):
         cbar = fig.colorbar(im, cax=cax)
         return fig, ax
     
-    def densityplot2(self,modelname='Model',refname='Ref',units = 'mmol m-3',sub = 'med'):
+    def densityplot2(self,modelname='Model',refname='Ref',units = 'mmol m-3',sub = 'med', discrete_cbar=True):
         '''
         opectool like density plot
         
@@ -203,41 +206,43 @@ class matchup(object):
         Returns: a matplotlib Figure object and a matplotlib Axes object
         '''
         
-        fig, ax = plt.subplots()
+        #fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(8, 6)) 
         plt.title('%s Density plot of %s and %s\nNumber of considered matchups: %s' % (sub, modelname, refname, self.number()))
         cmap = 'Spectral_r'
         axis_min = min(self.Ref.min(),self.Model.min())
         axis_max = max(self.Ref.max(),self.Model.max())
         extent = [axis_min, axis_max, axis_min, axis_max]
 
-        hexbin = ax.hexbin(self.Ref, self.Model, bins=None, extent=extent, cmap=cmap, mincnt=1)
+        
+        gridsize = 30  # se abbasso esagoni piu grandi
+        hexbin = ax.hexbin(self.Ref, self.Model, gridsize=gridsize, extent=extent, cmap=cmap, mincnt=1)
         data = hexbin.get_array().astype(np.int32)
         MAX = data.max()
+        if MAX is None:
+            MAX=1
 
-        for nticks in range(10,2,-1):
-            float_array=np.linspace(0,MAX,nticks)
-            int___array = float_array.astype(np.int32)
-            if np.all(float_array == int___array ):
-                break
+        if discrete_cbar: 
+           levels = MaxNLocator(nbins=MAX+1).tick_values(0, MAX+1) 
+           levs = levels[::1] 
 
-        mappable = ScalarMappable(cmap=cmap)
-        mappable.set_array(data)
-        #fig.colorbar(mappable, ticks = int___array, ax=ax)
-        cbar = fig.colorbar(mappable, ax=ax)
-        labels = cbar.ax.get_yticklabels()
-        FloatNumberFlag = False
-        for label in labels:
-            numstr = str(label.get_text())
-            if numstr.find(".") > -1:
-                FloatNumberFlag = True
+           norm = BoundaryNorm(levels, ncolors=plt.get_cmap(cmap).N, clip=True)
+           mappable = ScalarMappable(norm=norm, cmap=cmap)
+           mappable.set_array(data)
+           
+           cbar = fig.colorbar(mappable, ax=ax, ticks=levs)
+           #cbar.ax.set_yticklabels([f"{lvl:.2f}" for lvl in levs])
+           cbar.ax.set_yticklabels([f"{lvl:.0f}" for lvl in levs])  # Mostra due decimali
 
-        if FloatNumberFlag:
-            cbar.remove()
-            cbar = fig.colorbar(mappable, ticks = int___array, ax=ax)
+        else:
+           mappable = ScalarMappable(cmap=cmap)
+           mappable.set_array(data)
+           cbar = fig.colorbar(mappable, ax=ax)
 
-        ax.set_xlabel('%s %s' % (refname,  units))
-        ax.set_ylabel('%s %s' % (modelname,units))
+        ax.set_xlabel(f'{refname} {units}')
+        ax.set_ylabel(f'{modelname} {units}')
         ax.grid()
+
         return fig,ax
 
     def targetplot(self, dpi=72):

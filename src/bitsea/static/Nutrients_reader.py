@@ -9,10 +9,8 @@ from bitsea.commons.utils import find_index_s
 import numpy as np
 
 DEFAULT_FILENAME = Path(
-    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/publication/Zenodo/DEFINITIVO/MedBGCins_nut.nc"
+    "/g100_scratch/userexternal/vdibiagi/EMODnet_2022/NEW_int/fromSC/publication/ZenodoUpdated/toBePublished/MedBGCins_nut_v1.nc"
 )
-
-
 class NutrientsReader:
 
     DATA_VARS = (

@@ -113,7 +113,7 @@ def QualityCheck(var, sub):
 
     if var == "O2o":
         if sub.name == "tyr1":
-            return False
+            return True
 
     if var in ["O3c", "O3h", "DIC", "ALK", "pH", "PH", "PCO2"]:
         if sub.name in ["tyr1", "adr1", "lev3"]:
@@ -147,7 +147,6 @@ def mylogistic4(xdata, *x4):
 
 # FIXME
 TI = TimeInterval("19950101", "20240101", "%Y%m%d")
-# TI = TimeInterval('20060101','20240101',"%Y%m%d")
 
 
 def get_climatology(
@@ -188,7 +187,7 @@ def get_climatology(
     var_exp = Internal_conversion(modelvarname)
     p0_user = startpt
 
-    if useLogistic == True:
+    if useLogistic:
         if p0_user.shape != (4,):
             raise ValueError(
                 "the first guess for parameters is not an array of 4 values, as requested "
@@ -254,8 +253,8 @@ def get_climatology(
         # 1. elimination nans by interpolation
         nLayers = len(LayerList)
         Layer_center = np.zeros((nLayers,), np.float32)
-        for i, l in enumerate(LayerList):
-            Layer_center[i] = (l.top + l.bottom) / 2
+        for i, layer in enumerate(LayerList):
+            Layer_center[i] = (layer.top + layer.bottom) / 2
         for isub, sub in enumerate(subbasinlist):
             y = CLIM[isub, :]
             nans = np.isnan(y)
@@ -333,7 +332,7 @@ def get_climatology_open(
     p0_user = startpt
     # print(p0_user)
 
-    if useLogistic == True:
+    if useLogistic:
         if p0_user.shape != (4,):
             raise ValueError(
                 "the first guess for parameters is not an array of 4 values, as requested "
@@ -365,7 +364,6 @@ def get_climatology_open(
         for p in Profilelist:
             lonp = p.lon
             latp = p.lat
-            timep = p.time
             ilon, ilat = TheMask.convert_lon_lat_to_indices(lon=lonp, lat=latp)
             if mask200[ilat, ilon]:
                 pres, profile, _ = p.read(var)
@@ -409,8 +407,8 @@ def get_climatology_open(
         # 1. elimination nans by interpolation
         nLayers = len(LayerList)
         Layer_center = np.zeros((nLayers,), np.float32)
-        for i, l in enumerate(LayerList):
-            Layer_center[i] = (l.top + l.bottom) / 2
+        for i, l_value in enumerate(LayerList):
+            Layer_center[i] = (l_value.top + l_value.bottom) / 2
         for isub, sub in enumerate(subbasinlist):
             y = CLIM[isub, :]
             nans = np.isnan(y)
@@ -462,7 +460,6 @@ def get_histo_open(
     VALUES = np.zeros((nSub, nLayers, nbins + 1), np.float32) * np.nan
     NUMBER = np.zeros((nSub, nLayers, nbins), np.float32) * np.nan
     var, Dataset = DatasetInfo(modelvarname)
-    var_exp = Internal_conversion(modelvarname)
     mask200 = TheMask.mask_at_level(limdepth)
 
     T_int = climatology_interval
@@ -556,8 +553,8 @@ def get_climatology_coast(
         # 1. elimination nans by interpolation
         nLayers = len(LayerList)
         Layer_center = np.zeros((nLayers,), np.float32)
-        for i, l in enumerate(LayerList):
-            Layer_center[i] = (l.top + l.bottom) / 2
+        for i, layer in enumerate(LayerList):
+            Layer_center[i] = (layer.top + layer.bottom) / 2
         for isub, sub in enumerate(subbasinlist):
             y = CLIM[isub, :]
             nans = np.isnan(y)
@@ -591,7 +588,16 @@ def get_climatology_coast(
 
 if __name__ == "__main__":
     from bitsea.commons.layer import Layer
+    from bitsea.commons.mask import Mask
+    from pathlib import Path
 
+    TI = TimeInterval("19990101", "20240101", "%Y%m%d")
+    MASKFILE = Path(
+        "/g100_work/OGS_devC/Benchmark/SETUP/PREPROC/MASK/meshmask.nc"
+    )
+    TheMask = Mask.from_file(MASKFILE)
+    jpk, jpj, jpi = TheMask.shape
+    nav_lev = TheMask.zlevels
     PresDOWN = np.array(
         [
             0,
@@ -618,12 +624,22 @@ if __name__ == "__main__":
         Layer(PresDOWN[k], PresDOWN[k + 1]) for k in range(len(PresDOWN) - 1)
     ]
     SUBLIST = OGS.P.basin_list
-    N1p_clim, N1p_std, _, _ = get_climatology(
-        "N1p", SUBLIST, LayerList, basin_expand=False, QC=True
-    )
-    N5s_clim, N5s_std, _, _ = get_climatology(
-        "N5s", SUBLIST, LayerList, basin_expand=False, QC=True
-    )
-    N4n_clim, N4n_std, _, _ = get_climatology(
-        "N4n", SUBLIST, LayerList, basin_expand=False, QC=True
+    # N1p_clim, N1p_std, _, _ = get_climatology(
+    #    "N1p", SUBLIST, LayerList, basin_expand=False, QC=True
+    # )
+    # N5s_clim, N5s_std, _, _ = get_climatology(
+    #    "N5s", SUBLIST, LayerList, basin_expand=False, QC=True
+    # )
+    # N4n_clim, N4n_std, _, _ = get_climatology(
+    #    "N4n", SUBLIST, LayerList, basin_expand=False, QC=True
+    # )
+    N1p_clim, N1p_profs, _, _ = get_climatology_open(
+        "N1p",
+        SUBLIST,
+        LayerList,
+        TheMask,
+        useLogistic=True,
+        startpt=np.asarray([0.1, 0.1, 1000, 0.4], dtype=np.float64),
+        basin_expand=False,
+        climatology_interval=TI,
     )

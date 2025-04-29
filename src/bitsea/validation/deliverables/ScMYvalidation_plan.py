@@ -1,6 +1,5 @@
 import argparse
 
-import mpi4py.MPI
 import numpy as np
 
 import bitsea.matchup.matchup as matchup
@@ -169,8 +168,14 @@ if area == "Med":
     from bitsea.basins import V2 as OGS
 
     BASINS = OGS.Pred
+
 if area == "rivers":
     from bitsea.basins import RiverBoxes as OGS
+
+    BASINS = OGS.P
+
+if area == "coastal":
+    from bitsea.basins import COASTAL12nm as OGS
 
     BASINS = OGS.P
 

@@ -12,7 +12,7 @@ from bitsea.components.component_mask import ComponentMask
 
 # All this code is just to define the class Point as a tuple of two integers;
 # we need the "if" because TypeAlias exists only in Python 3.9
-if sys.version_info >= (3, 9):
+if sys.version_info >= (3, 10):
     from typing import TypeAlias
 
     Point: TypeAlias = Tuple[int, int]

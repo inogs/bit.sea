@@ -168,7 +168,7 @@ suffix = sat_TL.filelist[0].name[8:]
 if area == "Med":
     from bitsea.basins import V2 as OGS
 
-    BASINS = OGS.Pred
+    BASINS = OGS.P
 
 if area == "rivers":
     from bitsea.basins import RiverBoxes as OGS

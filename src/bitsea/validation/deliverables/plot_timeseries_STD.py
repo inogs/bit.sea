@@ -82,7 +82,8 @@ def argument():
         type=str,
         required=False,
         default="Med",
-        help=""" Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers""",
+        help="Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite",
+        choices=["Med", "rivers", "coastal"],
     )
 
     return parser.parse_args()
@@ -100,6 +101,8 @@ if args.zone == "Med":
     from bitsea.basins import V2 as OGS
 if args.zone == "rivers":
     from bitsea.basins import RiverBoxes as OGS
+if args.zone == "coastal":
+    from bitsea.basins import COASTAL12nm as OGS
 
 
 model_label = " MODEL"
@@ -137,7 +140,7 @@ def get_vmax(var: str, sub: str, zone: str) -> float:
             if sub.startswith("Po"):
                 vmax = 4.0
             if sub.startswith("Piave"):
-                vmax = 4.0
+                vmax = 2.0
         else:
             if sub in ["alb", "swm1", "swm2", "nwm", "tyr1", "tyr2"]:
                 vmax = 0.9

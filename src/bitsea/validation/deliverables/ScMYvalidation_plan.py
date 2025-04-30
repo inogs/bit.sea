@@ -167,18 +167,12 @@ suffix = sat_TL.filelist[0].name[8:]
 
 if area == "Med":
     from bitsea.basins import V2 as OGS
-
-    BASINS = OGS.Pred
-
 if area == "rivers":
     from bitsea.basins import RiverBoxes as OGS
-
-    BASINS = OGS.P
-
 if area == "coastal":
     from bitsea.basins import COASTAL12nm as OGS
 
-    BASINS = OGS.P
+BASINS = OGS.P
 
 nFrames = model_TL.nTimes
 nSub = len(OGS.P.basin_list)

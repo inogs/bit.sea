@@ -7,7 +7,6 @@ from bitsea.utilities.argparse_types import existing_dir_path
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as pl
-from bitsea.basins import V2 as OGS
 from bitsea.validation.deliverables import netcdf_validation_file
 from bitsea.commons.Timelist import TimeInterval
 
@@ -52,6 +51,23 @@ def argument():
         required=True,
         help=""" Date end for time interval to consider for validation,format %Y%m%d""",
     )
+    parser.add_argument(
+        "--coastness",
+        "-c",
+        type=str,
+        default="open_sea",
+        choices=["coast", "open_sea", "everywhere"],
+    )
+
+    parser.add_argument(
+        "--zone",
+        "-z",
+        type=str,
+        required=False,
+        default="Med",
+        help="Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite",
+        choices=["Med", "rivers", "coastal"],
+    )
     return parser.parse_args()
 
 
@@ -73,9 +89,17 @@ PFT_NAME = [
 COLOR = ["tab:blue", "tab:orange", "tab:green", "tab:purple"]
 LIGHTCOLOR = ["lightsteelblue", "moccasin", "palegreen", "plum"]
 
+if args.zone == "Med":
+    from bitsea.basins import V2 as OGS
+if args.zone == "rivers":
+    from bitsea.basins import RiverBoxes as OGS
+if args.zone == "coastal":
+    from bitsea.basins import COASTAL12nm as OGS
 
 MATRIX_LIST = [
-    netcdf_validation_file.dir_reader(TI, INPUTDIR, var, "open_sea")
+    netcdf_validation_file.dir_reader(
+        TI, INPUTDIR, var, "open_sea", args.coastness
+    )
     for var in VARLIST
 ]
 

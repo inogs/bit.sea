@@ -1,5 +1,6 @@
 import argparse
 
+import mpi4py.MPI
 import numpy as np
 
 import bitsea.matchup.matchup as matchup

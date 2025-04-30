@@ -127,12 +127,16 @@ def get_vmin(var: str) -> float:
 def get_vmax(var: str, sub: str, zone: str) -> float:
     if var.startswith("RRS"):
         vmax = 0.0025
+        if var.startswith(("RRS5", "RRS6")):
+            vmax = 0.01
     if var == "kd490":
-        vmax = 0.09
+        vmax = 0.12
     if var in ["P1l", "P2l", "P3l", "P4l", "P_l"]:
         if zone == "rivers":
-            vmax = 1.0
-            if sub == "Po":
+            vmax = 1.2
+            if sub.startswith("Po"):
+                vmax = 4.0
+            if sub.startswith("Piave"):
                 vmax = 4.0
         else:
             if sub in ["alb", "swm1", "swm2", "nwm", "tyr1", "tyr2"]:

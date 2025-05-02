@@ -30,22 +30,16 @@ import numpy as np
 from bitsea.basins import V2
 from bitsea.commons.utils import writetable
 
-#NEW DATASET FROM G:COSSARINI (DIFFERENT FORMAT):
-socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",usecols=range(0,12))
-#socat=np.loadtxt(INPUTDIR +"monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
-num_socat=np.loadtxt(INPUTDIR +"monthly_num_socat.txt",usecols=range(0,12))
-#num_socat=np.loadtxt(INPUTDIR +"monthly_num_socat.txt",skiprows=1,usecols=range(1,13))
+socat=np.loadtxt(INPUTDIR +"monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
+num_socat=np.loadtxt(INPUTDIR +"monthly_num_socat.txt",skiprows=1,usecols=range(1,13))
 model=np.loadtxt(filemodel,skiprows=1,usecols=range(1,13))
-model=model[:-2,:] # ELIMINATE atl AND med BASINS
 
-#nSUB = len(V2.P.basin_list)
-nSUB = len(V2.P.basin_list)-2 #Exclude ATL and MED basins
+nSUB = len(V2.P.basin_list)
 M = np.zeros((nSUB, 4),np.float32)*np.nan
 TOT_RMSD = np.zeros((1, 2),np.float32)*np.nan
 SUB_flag = np.ones((nSUB,),bool)
 
 for isub, sub in enumerate(V2.P.basin_list):
-  if (sub.name != "atl") and (sub.name != "med"):
     if np.isnan(socat[isub,:]).all():
         BIAS,RMSD=np.nan,np.nan
     else:
@@ -74,7 +68,6 @@ TOT_RMSD[0,1]=np.nansum(num_socat[SUB_flag,:])
 
 print ("TOTAL RMSD: ", "%8.2f"%  TOT_RMSD[0,0])
 rows_names_list=[sub.name for sub in V2.P]
-rows_names_list=rows_names_list[:-2] #Exclude ATL and MED basins
 column_names_list=["BIAS","RMSD","CORR","nSOCAT"]
 outfile=OUTDIR + "pCO2-SURF-M-CLASS4-CLIM-RMSD-BASIN.txt"
 writetable(outfile, M, rows_names_list, column_names_list,fmt=("%8.2f\t   %8.2f\t   %8.2f\t   %d"))

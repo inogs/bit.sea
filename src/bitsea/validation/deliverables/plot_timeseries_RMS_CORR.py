@@ -1,7 +1,7 @@
-# OUTPUTS for SAT Validation
-# images and tables for QUID
-# CMEMS-Med-QUID-006-014.docx
-# Figure IV.3 and table IV.1 (and IV.17 for ROFI areas)
+# OUTPUTS
+# images for QUID
+# CMEMS-Med-QUID-006-008-V2-V1.0.docx
+# Figure IV.3 and table IV.1
 import argparse
 
 import matplotlib
@@ -23,9 +23,9 @@ from bitsea.commons import timerequestors
 def argument():
     parser = argparse.ArgumentParser(
         description="""
-    Plot timeseries for BIAS and RMSE for QUID
-    CMEMS-Med-QUID-006-014.docx
-    Figure IV.3 and table IV.1 (and IV.17 for ROFI areas)
+    Plot timeseries fo BIAS and RMSE for QUID
+    CMEMS-Med-QUID-006-008-V2-V1.0.docx
+    Figure IV.3 and table IV.1
     """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -91,7 +91,7 @@ def argument():
         type=str,
         required=False,
         default="Med",
-        help=""" Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med, rivers, coastal""",
+        help=""" Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers""",
     )
 
     return parser.parse_args()
@@ -104,7 +104,7 @@ def get_vmax(var: str, sub: str, zone: str):
     if var == "kd490":
         vmax = 0.1
     if var.startswith("RRS"):
-        vmax = 0.0025 #VDB vmax=0.01
+        vmax = 0.0025
     if var in ["P1l", "P2l", "P3l", "P4l", "P_l"]:
         if zone == "rivers":
             vmax = 1.0
@@ -123,8 +123,6 @@ if args.zone == "Med":
 if args.zone == "rivers":
     print("rivers")
     from bitsea.basins import RiverBoxes as OGS
-if args.zone == "coastal":
-    from bitsea.basins import COASTAL12nm as OGS
 
 model_label = " MODEL"
 
@@ -221,113 +219,48 @@ STD_MOD_sum = np.nanmean(dr.MODEL__STD[ii, :], axis=0)
 STD_REF_sum = np.nanmean(dr.SAT____STD[ii, :], axis=0)
 CORR_sum = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii, :], axis=0)
 
-# IF ZONE=ROFI AREAS, CALCULATE ALSO AUTUMN METRICS:
-if (args.zone == "rivers") or (args.zone == "coastal"):
-      iSeas=3 # OCT-DEC
+mat = np.zeros((nSUB, 18), np.float32)
 
-      CLIM_REQ=timerequestors.Clim_season(iSeas,S)
-      ii,w=TL.select(CLIM_REQ)
-      RMS__aut = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[     ii,:],axis=0)
-      BIAS_aut = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[    ii,:],axis=0)
-      RMSL_aut = np.nanmean(dr.BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG[ ii,:],axis=0)
-      BIASLaut = np.nanmean(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG[ii,:],axis=0)
+mat[:, 0] = RMS__win
+mat[:, 1] = RMS__sum
+mat[:, 2] = BIAS_win
+mat[:, 3] = BIAS_sum
+mat[:, 4] = RMSL_win
+mat[:, 5] = RMSL_sum
+mat[:, 6] = BIASLwin
+mat[:, 7] = BIASLsum
+mat[:, 8] = STD_MOD_win
+mat[:, 9] = STD_REF_win
+mat[:, 10] = STD_MOD_sum
+mat[:, 11] = STD_REF_sum
+mat[:, 12] = CORR_win
+mat[:, 13] = CORR_sum
+# ----
+mat[:, 14] = MEAN_MOD_win
+mat[:, 15] = MEAN_REF_win
+mat[:, 16] = MEAN_MOD_sum
+mat[:, 17] = MEAN_REF_sum
 
-      MEAN_MOD_aut = np.nanmean(dr.MODEL_MEAN[ii,:],axis=0)
-      MEAN_REF_aut = np.nanmean(dr.SAT___MEAN[ii,:],axis=0)
-
-      STD_MOD_aut = np.nanmean(dr.MODEL__STD[ii,:],axis=0)
-      STD_REF_aut = np.nanmean(dr.SAT____STD[ii,:],axis=0)
-      CORR_aut    = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN[ii,:],axis=0)
-      #ANNUAL CORRELATION needed for checking Rivers variability:
-      CORR_ann = np.nanmean(dr.BGC_CLASS4_CHL_CORR_SURF_BASIN,axis=0)
-
-#-------
-# OUTPUT selection by zone:
-if args.zone == "Med":
-      mat = np.zeros((nSUB, 18), np.float32)
-
-      mat[:, 0] = RMS__win
-      mat[:, 1] = RMS__sum
-      mat[:, 2] = BIAS_win
-      mat[:, 3] = BIAS_sum
-      mat[:, 4] = RMSL_win
-      mat[:, 5] = RMSL_sum
-      mat[:, 6] = BIASLwin
-      mat[:, 7] = BIASLsum
-      mat[:, 8] = STD_MOD_win
-      mat[:, 9] = STD_REF_win
-      mat[:, 10] = STD_MOD_sum
-      mat[:, 11] = STD_REF_sum
-      mat[:, 12] = CORR_win
-      mat[:, 13] = CORR_sum
-      # ----
-      mat[:, 14] = MEAN_MOD_win
-      mat[:, 15] = MEAN_REF_win
-      mat[:, 16] = MEAN_MOD_sum
-      mat[:, 17] = MEAN_REF_sum
-
-      # WRITE OUT THE OUTPUT IN A TABLE:
-      outfiletable = args.outdir / ("table4.1_" + args.var + "_" + args.zone + ".txt")
-      rows_names = [sub.name for sub in OGS.P.basin_list]
-      column_names = [
-          "RMSwin",
-          "RMSsum",
-          "BIASwin",
-          "BIASsum",
-          "RMSLwin",
-          "RMSLsum",
-          "BIASLwin",
-          "BIASLsum",
-          "STD_MODwin",
-          "STD_SATwin",
-          "STD_MODsum",
-          "STD_SATsum",
-          "CORRwin",
-          "CORRsum",
-          "MEAN_MODwin",
-          "MEAN_SATwin",
-          "MEAN_MODsum",
-          "MEAN_SATsum",
-      ]
-      writetable(outfiletable, mat, rows_names, column_names, fmt="%5.3f\t")
-
-# FOR ROFI AREAS or COASTAL (not tested yet):
-if (args.zone == "rivers") or (args.zone == "coastal"):
-      # Metrics for ROFI areas
-      mat2 = np.zeros((nSUB,7),np.float32)
-      mat2[:,0] = RMS__win
-      mat2[:,1] = RMS__sum
-      mat2[:,2] = RMS__aut
-      mat2[:,3] = BIAS_win
-      mat2[:,4] = BIAS_sum
-      mat2[:,5] = BIAS_aut
-      mat2[:,6] = CORR_ann
-
-      ## Autumn metrics for ROFI areas
-      #mat3 = np.zeros((nSUB,9),np.float32)
-      #mat3[:,0] = RMS__aut
-      #mat3[:,1] = BIAS_aut
-      #mat3[:,2] = RMSL_aut
-      #mat3[:,3] = BIASLaut
-      #mat3[:,4] = STD_MOD_aut
-      #mat3[:,5] = STD_REF_aut
-      #mat3[:,6] = CORR_aut
-      #mat3[:,7] = MEAN_MOD_aut
-      #mat3[:,8] = MEAN_REF_aut
-
-      # WRITE OUT THE OUTPUT IN A TABLE:
-      outfiletable2 = args.outdir / ("table4.17_" + args.var + "_" + args.zone + ".txt")
-      print (outfiletable2)
-      rows_names=[sub.name for sub in OGS.P.basin_list]
-
-      column_names = [
-          "RMSwin",
-          "RMSsum",
-          "RMSaut",
-          "BIASwin",
-          "BIASsum",
-          "BIASaut",
-          "CORRann",
-      ]
-      writetable(outfiletable2, mat2, rows_names, column_names, fmt='%5.3f\t')
-
+outfiletable = args.outdir / ("table4.1_" + args.var + ".txt")
+rows_names = [sub.name for sub in OGS.P.basin_list]
+column_names = [
+    "RMSwin",
+    "RMSsum",
+    "BIASwin",
+    "BIASsum",
+    "RMSLwin",
+    "RMSLsum",
+    "BIASLwin",
+    "BIASLsum",
+    "STD_MODwin",
+    "STD_SATwin",
+    "STD_MODsum",
+    "STD_SATsum",
+    "CORRwin",
+    "CORRsum",
+    "MEAN_MODwin",
+    "MEAN_SATwin",
+    "MEAN_MODsum",
+    "MEAN_SATsum",
+]
+writetable(outfiletable, mat, rows_names, column_names, fmt="%5.3f\t")

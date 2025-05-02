@@ -37,7 +37,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['ppn'] )
+                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','DIC'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -130,11 +130,7 @@ CONVERSION_DICT={
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-#req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
-if args.endtime.year > args.starttime.year:
-    req_label=f"{args.starttime.year}_{args.endtime.year}"
-else:
-    req_label=f"{args.starttime.year}"
+req_label = "Ave." + str(TI.start_time.year) + "-" +str(TI.end_time.year-1)
 
 TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
 if TL.inputFrequency is None:
@@ -196,8 +192,12 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.set_ylabel('Lat').set_fontsize(12)
     ax.tick_params(axis='x', labelsize=10)
 # CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
-    ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-    title = "%s %s %s" % ('annual', 'npp', layer.__repr__())
+    if (var=="ppn"):
+        ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        title = "%s %s %s" % ('annual', 'npp', layer.__repr__())
+    else:
+        ax.text(-4,44.5,var + ' [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
+        title = "%s %s %s" % ('annual', var, layer.__repr__())
 
     ax.xaxis.set_ticks(np.arange(-2,36,6))
     ax.yaxis.set_ticks(np.arange(30,46,4))
@@ -208,15 +208,15 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.set_ylim([30, 46])
 #########
     ax.grid()
+    if (var == "pH"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pH$\mathrm{_T}$", layer.__repr__())
+    if (var == "pCO2"): title = "%s %s %s" % (MONTH_STRING[TI.start_time.month - 1], "pCO2", layer.__repr__())
     pl.suptitle(title)
     pl.savefig(outfile)
     pl.close(fig)
-
-# GENERATE TABLE FOR SUBBASIN MEAN AND STD AND CALCULATE EAN VALUES
     if (var == "ppn"): 
         # READ OBS DATASETS:
-#        DIR_OBS="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/PPN/"
-        DIR_OBS="/g100_work/OGS23_PRACE_IT/lfeudale/NPP_OBS/datasets_cafe_octac/"
+        #DIR_OBS="/g100_scratch/userexternal/lfeudale/NPP_OBS/STAT_2019/"
+        DIR_OBS="/gss/gss_work/DRES_OGS_BiGe/Observations/TIME_RAW_DATA/STATIC/PPN/"
         filename_CAFE="CAFE/ppn_CAFE_mean_16basins_2019.txt"
         filename_OCTAC="OCTAC/ppn_OCTAC_mean_16basins_2019.txt"
 #       RMSE = np.loadtxt(INDIR + '/' + var + '.rmse.txt', skiprows=1,usecols=[ii for ii in range(1,8)])
@@ -231,8 +231,8 @@ for il, layer in enumerate(PLOT.layerlist):
         from bitsea.basins import V2 as OGS
         from bitsea.commons.submask import SubMask
         from bitsea.commons.utils import writetable
-        tablefile = OUTPUTDIR + '/' + var + '_mean_basin_'raq_label'.txt'
-        tablefile_PPN_EAN =  OUTPUTDIR + '/' + var + '_ean_'raq_label'.txt'
+        tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
+        tablefile_PPN_EAN =  OUTPUTDIR + '/' + var + '_ean.txt'
 
         SUBlist = OGS.P.basin_list
         nSub   = len(SUBlist)

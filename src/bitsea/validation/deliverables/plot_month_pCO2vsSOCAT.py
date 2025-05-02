@@ -33,9 +33,7 @@ import matplotlib.mlab as mlab
 import matplotlib.pyplot as pl
 from bitsea.basins import V2 as OGS
 
-#NEW DATASET FROM G:COSSARINI (DIFFERENT FORMAT):
-socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",usecols=range(0,12))
-#socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
+socat=np.loadtxt(INPUTDIR + "monthly_clim_socat.txt",skiprows=1,usecols=range(1,13))
 model=np.loadtxt(INPUTDIR + "monthly_pCO2.txt",skiprows=1,usecols=range(1,13))
 
 nSUB = len(OGS.P.basin_list)

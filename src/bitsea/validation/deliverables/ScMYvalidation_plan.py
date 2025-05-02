@@ -119,7 +119,7 @@ def argument():
         type=str,
         required=False,
         default="Med",
-        help=""" Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med or rivers""",
+        help=""" Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite: Med, rivers, coastal""",
     )
     return parser.parse_args()
 
@@ -165,14 +165,18 @@ model_TL = TimeList.fromfilenames(TI, MODEL_DIR, "*.nc", filtervar=modvarname)
 
 suffix = sat_TL.filelist[0].name[8:]
 
-if area == "Med":
+if area == "Med":      #16 subbasins
     from bitsea.basins import V2 as OGS
+    BASINS = OGS.P # THE LIST CONSIDER THE ALSO THE MED BASIN
+   # BASINS = OGS.Pred # THE LIST IS REDUCED: THE CALCULATION IS NOT DONE FOR THE WHOLE MED BASIN
 
-    BASINS = OGS.Pred
-if area == "rivers":
+if area == "rivers":   # Rivers list
     from bitsea.basins import RiverBoxes as OGS
-
     BASINS = OGS.P
+
+if (area=="coastal"):  # 12ml from coast, just for validation with high res SAT
+    from bitsea.basins import COASTAL12nm as OGS
+    BASINS=OGS.P
 
 nFrames = model_TL.nTimes
 nSub = len(OGS.P.basin_list)

@@ -119,7 +119,7 @@ for ivar, V in enumerate(VARLIST):
     for itime, Req in enumerate(MonthlyRequestors):
         if Req.time_interval.end_time > TL.timeinterval.end_time :
             Req.time_interval.end_time = TL.timeinterval.end_time
-        print (Req)
+        print (Req, flush=True)
         for iSub, Sub in enumerate(OGS.basin_list):
             BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
             BASIN_PROFILES_float = bio_float.remove_bad_sensors(BASIN_PROFILES_float_raw,var)

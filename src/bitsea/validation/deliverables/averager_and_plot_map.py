@@ -35,7 +35,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['P_l','P_i','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','ALK','DIC','netPPYc','N4n','N5s','CO2airflux'] )
+                                choices = ['P_l','Z_c','N1p', 'N3n', 'O2o', 'pCO2','PH','pH','ppn','P_c','Ac','ALK','DIC','netPPYc','N4n','N5s','CO2airflux'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -136,7 +136,7 @@ CONVERSION_DICT={
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,
-         'P_i' : 1,
+         'Z_c' : 1,
 	 'Ac'  : 1,
          'ALK' : 1,
          'DIC' : 1, 

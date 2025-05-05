@@ -228,7 +228,7 @@ for il, layer in enumerate(PLOT.layerlist):
         from bitsea.commons.submask import SubMask
         from bitsea.basins.basin import ComposedBasin
         from bitsea.commons.utils import writetable
-        tablefile = OUTPUTDIR + '/' + var + '_mean_basin.txt'
+        tablefile = OUTPUTDIR / f"{var}_mean_basin.txt"
         OGSred = ComposedBasin('OGSred',[OGS.alb,
                     #  OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr,
                     OGS.swm, OGS.nwm, OGS.tyr,

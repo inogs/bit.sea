@@ -2,7 +2,7 @@ import argparse
 from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Reads in the input directory two files ( model and ref)
+    Reads in the input directory two files (model and ref)
     containing [(nVar, nTime, nSub, nStat)] arrays to generate
     the following metrics:
 
@@ -128,8 +128,6 @@ METRICS_SHORT= ['CORR','INT_0-200_BIAS','INT_0-200_RMSD','DCM_BIAS','DCM_RMSD','
 nStat        = len(METRICS)
 nSub         = len(OGS.basin_list)
 
-M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
-
 times = [req.time_interval.start_time for req in M.TL.getMonthlist()  ]
 ti_restrict = TI
 ii = np.zeros((len(times),) , bool)
@@ -156,17 +154,10 @@ for ivar, var in enumerate(VARLIST):
             axes[1].plot(times, Int_Ref,'r',label='REF INTEG')
             axes[1].plot(times,Int_Mod,'b',label='MOD INTEG')
             
-            TABLE_METRICS[iSub,1] = np.nanmean(Int_Ref[ii])
-            TABLE_METRICS[iSub,2] = np.nanmean(Int_Mod[ii])
-            TABLE_METRICS[iSub,3] = np.nanstd(Int_Ref[ii])
-            TABLE_METRICS[iSub,4] = np.nanstd(Int_Mod[ii])
-
             good = ~np.isnan(Int_Ref[ii]) &  ~np.isnan(Int_Mod[ii])
             m = matchup(Int_Mod[ii][good],   Int_Ref[ii][good])
-
             TABLE_METRICS[iSub,5] = m.bias()
             TABLE_METRICS[iSub,6] = m.RMSE()
-
              
             axes[1].plot(times,A_float[ivar,:,iSub,5],'--r',label='REF SURF')
             axes[1].plot(times,A_model[ivar,:,iSub,5],'--b',label='MOD SURF')
@@ -176,10 +167,9 @@ for ivar, var in enumerate(VARLIST):
             axes[1].set_ylabel('Oxygen 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
         if (var == "N3n"):
             axes[1].set_ylabel('Nitrate 0-200m \n $[mmol{\  } m^{-3}]$',fontsize=15)
-        legend = axes[1].legend(loc='upper left', shadow=True, fontsize=12)
+        legend = axes[1].legend(loc='upper left', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
 
         corr = A_float[ivar,:,iSub,1]
-#        ref_corr = np.zeros(len(corr), np.float32 ) * np.nan
         for icr , cr in enumerate(corr):
             if (cr <= 0):
                 corr[icr] = np.nan
@@ -206,14 +196,12 @@ for ivar, var in enumerate(VARLIST):
             DCM_Mod = A_model[ivar,:,iSub,2]
             WBL_Ref = A_float[ivar,:,iSub,3]
             WBL_Mod = A_model[ivar,:,iSub,3]
-            axes[3].plot(times,DCM_Ref,'r',label='DCM REF')
+            # DCM defined already for APR to OCT; the other months are nan
+            axes[3].plot(times,DCM_Ref,'-rD',label='DCM REF')
             axes[3].plot(times,DCM_Mod,'b',label='DCM MOD')
             # FILTER OUT MAY TO NOV INCLUDED:
-            WBL_Ref[4:11] = np.nan
-            WBL_Mod[4:11] = np.nan
-            WBL_Ref[16:23] = np.nan
-            WBL_Mod[16:23] = np.nan
-            axes[3].plot(times,WBL_Ref,'--r',label='WBL REF')
+            # WBL already defined for JAN to MAR; the other months are nan
+            axes[3].plot(times,WBL_Ref,'--rD',label='WBL REF')
             axes[3].plot(times,WBL_Mod,'--b',label='WBL MOD')
 
             axes[3].invert_yaxis()
@@ -225,13 +213,14 @@ for ivar, var in enumerate(VARLIST):
 
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='best', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
 
             TABLE_METRICS[iSub,7] = np.nanmean(DCM_Ref[ii])
             TABLE_METRICS[iSub,8] = np.nanmean(DCM_Mod[ii])
             TABLE_METRICS[iSub,9] = np.nanstd(DCM_Ref[ii])
             TABLE_METRICS[iSub,10] = np.nanstd(DCM_Mod[ii])
 
+            # CONSIDER JUST GOOD DATA (filter out NAN)
             good = ~np.isnan(DCM_Ref[ii]) &  ~np.isnan(DCM_Mod[ii])
             m = matchup(DCM_Mod[ii][good],   DCM_Ref[ii][good])
             TABLE_METRICS[iSub,11] = m.bias()
@@ -242,6 +231,7 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,15] = np.nanstd(WBL_Ref[ii])
             TABLE_METRICS[iSub,16] = np.nanstd(WBL_Mod[ii])
 
+            # CONSIDER JUST GOOD DATA (filter out NAN)
             good = ~np.isnan(WBL_Ref[ii]) &  ~np.isnan(WBL_Mod[ii])
             m = matchup(WBL_Mod[ii][good],   WBL_Ref[ii][good])
             TABLE_METRICS[iSub,17] = m.bias()
@@ -261,16 +251,20 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,20] = np.nanmean(Nit_Mod[ii])
             TABLE_METRICS[iSub,21] = np.nanstd(Nit_Ref[ii])
             TABLE_METRICS[iSub,22] = np.nanstd(Nit_Mod[ii])
+
+            # CONSIDER JUST GOOD DATA (filter out NAN)
             good = ~np.isnan(Nit_Ref[ii]) &  ~np.isnan(Nit_Mod[ii])
             m = matchup(Nit_Mod[ii][good],   Nit_Ref[ii][good])
             TABLE_METRICS[iSub,23] = m.bias()
             TABLE_METRICS[iSub,24] = m.RMSE()
+#            TABLE_METRICS[iSub,23] = np.nanmean(BIAS_matrix[ivar,:,iSub,4])
+#            TABLE_METRICS[iSub,24] = np.nanmean(RMSD_matrix[ivar,:,iSub,4])
 #        else:
             axes[3].plot(times,  np.ones_like(times))
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
             axes[1].set_ylim([0,6])
             ax2.set_ylim([0,45])
             axes[3].set_ylim([200,0])
@@ -286,7 +280,7 @@ for ivar, var in enumerate(VARLIST):
             axes[3].invert_yaxis()
             axes[3].set_ylabel('MAX OXY depth $[m]$',fontsize=15)
             axes[3].xaxis.set_major_formatter(mdates.DateFormatter("%d-%m-%Y"))
-            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12)
+            legend = axes[3].legend(loc='lower right', shadow=True, fontsize=12, fancybox=True, framealpha=0.75)
             xlabels = axes[3].get_xticklabels()
             plt.setp(xlabels, rotation=30)
 
@@ -295,6 +289,7 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,27] = np.nanstd(OMZmeanRef[ii])
             TABLE_METRICS[iSub,28] = np.nanstd(OMZmeanMod[ii])
 
+            # CONSIDER JUST GOOD DATA (filter out NAN)
             good = ~np.isnan(OMZmeanRef[ii]) &  ~np.isnan(OMZmeanMod[ii])
             m = matchup(OMZmeanMod[ii][good],   OMZmeanRef[ii][good])
             TABLE_METRICS[iSub,29] = m.bias()
@@ -304,7 +299,8 @@ for ivar, var in enumerate(VARLIST):
             TABLE_METRICS[iSub,32] = np.nanmean(O2oMaxMod[ii])
             TABLE_METRICS[iSub,33] = np.nanstd(O2oMaxRef[ii])
             TABLE_METRICS[iSub,34] = np.nanstd(O2oMaxMod[ii])
-
+           
+            # CONSIDER JUST GOOD DATA (filter out NAN)
             good = ~np.isnan(O2oMaxRef[ii]) &  ~np.isnan(O2oMaxMod[ii])
             m = matchup(O2oMaxMod[ii][good],   O2oMaxRef[ii][good])
             TABLE_METRICS[iSub,35] = m.bias()

@@ -18,22 +18,18 @@ from bitsea.timeseries.plot import read_pickle_file
 def argument():
     parser = argparse.ArgumentParser(
         description="""
-    Generates in output directory two files ( model and ref) for each pfts (P1l, P2l, P3l, P4l)
-    containing [nSub, nLayers] arrays of climatologies.
+    Generates in output directory 6 files for each pfts (P1l, P2l, P3l, P4l)
+    containing [nSub, nLayers] arrays of climatologies,
+    having the following nomenclature:
 
-    if (P_type=="P1l"): P_name="DIATO"
-    if (P_type=="P2l"): P_name="NANO"
-    if (P_type=="P3l"): P_name="PICO"
-    if (P_type=="P4l"): P_name="DINO"
+    - {var}_ModelMean_table_LayBas_winter.txt
+    - {var}_ModelStd_table_LayBas_winter.txt
+    - {var}_ModelMean_table_Lay_winter.txt
+    - {var}_CLIM_table_LayBas_1.txt
+    - {var}_CLIM_table_LayBas_sd1.txt
+    - {var}_RefMean_table_Lay_winter.txt
 
-    The files have the following nomenclature:
-    infile_MEAN=INDIR + P_type + "_OPTION3_newSeasons3_means.csv"
-    infile_STD=INDIR  + P_type + "_OPTION3_newSeasons3_std.csv"
-
-    These arrays will be used in the next step to generate the following metrics:
-
-    # Input: DIRECTORYof StatProfiles of P1l, P2l, P3l, P4l (files *.pkl)
-
+    Metric classes:
     P1l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     P2l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     P3l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
@@ -348,13 +344,3 @@ for ivar, var in enumerate(VARLIST):
         rows_names,
         ["stdWref", "stdWmod", "stdSref", "stdSmod"],
     )
-
-Cols_names = ["meanWref", "meanWmod", "meanSref", "meanSmod"]
-Rows_names = [
-    "(0,10)",
-    "(10,30)",
-    "(30,60)",
-    "(100,150)",
-    "(150,300)",
-    "(0,300)",
-]

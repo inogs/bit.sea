@@ -13,7 +13,6 @@ from bitsea.commons.utils import addsep
 from bitsea.commons.utils import writetable
 from bitsea.timeseries.plot import Hovmoeller_matrix
 from bitsea.timeseries.plot import read_pickle_file
-# opa_prex_or_die "python static_clim_validationi_HPLC.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101"
 
 
 def argument():
@@ -88,26 +87,10 @@ LayerList = [
 rows_names = [layer.string() for layer in LayerList]
 
 INPUTDIR = addsep(args.inputdir)
-# Example:
-# run = "MedBFM4.2_Q24_v3"
-# INPUTDIR="/g100_scratch/userexternal/lfeudale/dev/TRANSITION_V11/STATIC/STAT_PROFILES_MedBFM4.2_Q24_v3/"
-
 OUTDIR = addsep(args.outdir)
-# Exmaple:
-# OUTDIR = "/g100_work/OGS_devC/Benchmark/pub/lfeudale/HPLC/Test_Benchmark/" + run + "/tables/"
-# MASKFILE="/g100_scratch/userexternal/camadio0/" + run + "/wrkdir/MODEL/meshmask.nc"
-##MASKFILE='/g100_work/OGS_prodC/OPA/V10C-prod/etc/static-data/MED24_125/meshmask.nc'
-
 TI = TimeInterval(args.starttime, args.endtime, "%Y%m%d")
 
-# Example:
-# starttime="20190101"
-# endtime="20200101"
-# TI = TimeInterval(starttime,endtime,"%Y%m%d")
-
-
-# TheMask= Mask.from_file(args.maskfile, loadtmask=False)
-TheMask = Mask.from_file(args.maskfile)  # , loadtmask=False)
+TheMask = Mask.from_file(args.maskfile)
 jpk, jpj, jpi = TheMask.shape
 z = -TheMask.zlevels
 
@@ -150,7 +133,6 @@ SUBlist = basV2.Pred.basin_list
 SUBlist.remove(SUBlist[-1])  # REMOVE ATLANTIC BUFFER
 basin_names = [sub.name for sub in SUBlist]
 
-# SUBlist2 = basV2.Pred2.basin_list
 nSub = len(SUBlist)
 nLayers = len(LayerList)
 METRICvar = {
@@ -171,7 +153,6 @@ VARnameNC = {
 # media_seasonal_fdiatom, media_seasonal_fnano_ALL, media_seasonal_fpico_ALL, media_seasonal_fdino_ALL
 # Remove Altantic Buffer from the list:
 
-# RESULTS ARRAY dimensions for graphycs:
 RESULTS_MEAN = np.zeros(
     (nLayers, 4), np.float32
 )  # "meanWref","meanWmod","meanSref","meanSmod" --> 4 COLUMNS
@@ -180,13 +161,10 @@ RESULTS_STD = np.zeros(
 )  # "stdWref","stdWmod","stdSref","stdSmod"      --> 4 COLUMNS
 
 rows_names = [layer.string() for layer in LayerList]
-# column_names=['bias','rmse','corr']
-# column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
 
 
 for ivar, var in enumerate(VARLIST):
     filename = INPUTDIR + var + ".pkl"
-    # READ THE StatProfiles *pkl with the TimeList:
     TIMESERIES, TL = read_pickle_file(filename)
 
     print(METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
@@ -213,16 +191,14 @@ for ivar, var in enumerate(VARLIST):
                 if x.month in [1, 2, 3, 4, 11, 12]
             ]
             ind_Seas = ind_WINTER
-        ###
-        print(ind_Seas)
+
         TIMESERIES_season = TIMESERIES[
             ind_Seas, :, :, :, :
         ]  # dim(StatProf)==> [nFrames,nSub,nCoast,depth,nStat]
         TIMES = []
-        #    ind=[ii for ii, x in enumerate(masks_seasons[iSeas]) if x]
+
         for ii in ind_Seas:
             TIMES.append(TL.Timelist[ii])
-        print(TIMES)
         TLL = TimeList(TIMES)
 
         CLIM_MODEL = np.zeros((nSub, nLayers))
@@ -232,7 +208,6 @@ for ivar, var in enumerate(VARLIST):
 
         for iSub, sub in enumerate(SUBlist):
             print(sub.name)
-            print("TIMESERIES_season: " + str(TIMESERIES_season.shape))
             Mean_profiles, _, _ = Hovmoeller_matrix(
                 TIMESERIES_season, TLL, np.arange(jpk), iSub, icoast=1, istat=0
             )  # istat=0 --> MEAN
@@ -271,7 +246,6 @@ for ivar, var in enumerate(VARLIST):
             ["Mean", "Std"],
         )
 
-        #    CLIM_REF_static = np.zeros((2,nSub,nLayers,3),np.float32) # [SEASONS,NSUB,NLAYER,NMETRICS]; METRICS:1.MEAN, 2.STD, 3.COUNT
         CLIM_REF_static = np.zeros(
             (2, nSub, nLayers, 2), np.float32
         )  # [SEASONS,NSUB,NLAYER,NMETRICS]
@@ -279,13 +253,8 @@ for ivar, var in enumerate(VARLIST):
         # Read Climatology:
         infile = HPLC_CLIM_path + "OUTPUT" + VARnameNC[var] + ".nc"
         f = nc.Dataset(infile, "r")
-        CLIM_REF_static[:, :, :, 0] = f.variables["mean_" + VARnameNC[var]][
-            :
-        ]  # [season,basins,layers] ,metric]
-        CLIM_REF_static[:, :, :, 1] = f.variables["std_" + VARnameNC[var]][
-            :
-        ]  # [season,basins,layers] ,metric]
-        #    CLIM_REF_static[:,:,0,2] = f.variables["counter_" + VARnameNC[var]][:]  # [season,basins]
+        CLIM_REF_static[:, :, :, 0] = f.variables["mean_" + VARnameNC[var]][:]
+        CLIM_REF_static[:, :, :, 1] = f.variables["std_" + VARnameNC[var]][:]
         f.close()
 
         Ref_Med_Mean_Std = np.zeros(

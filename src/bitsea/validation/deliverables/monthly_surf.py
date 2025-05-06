@@ -1,7 +1,8 @@
 import argparse
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    Produces tables [sub, month] of means of surface values for a given year
+    Produces tables [sub, month] of means of surface values
+    as monthly climatologies of all the years provided in input directory
     in files called monthl.var.txt
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
@@ -10,10 +11,6 @@ def argument():
                                 type = str,
                                 required = False,
                                 help = '''A STAT_PROFILES dir with pkl files''')
-    parser.add_argument(   '--year', '-y',
-                                type = str,
-                                required = True
-                                )    
 
     parser.add_argument(   '--outdir', '-o',
                                 type = str,
@@ -46,12 +43,8 @@ for var in VARLIST:
     MONTHLY = np.zeros((nSUB, 12),np.float32)*np.nan
 
     for imonth in range(12):
-#        req=timerequestors.Monthly_req(int(args.year),imonth+1)
-# Consider the month climatology:
         req=timerequestors.Clim_month(imonth+1)
         ii, w = TL.select(req)
-        print (ii)
-        print (w)
         for kk in ii: print (TL.Timelist[kk])
         for isub, sub in enumerate(OGS.P):
             V=data[ii,isub,1,0,0]

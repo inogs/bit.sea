@@ -27,6 +27,8 @@ def argument():
 
 args = argument()
 
+import numpy as np
+
 from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.instruments import superfloat as bio_float

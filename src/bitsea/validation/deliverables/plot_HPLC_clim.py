@@ -12,11 +12,20 @@ def argument():
     parser = argparse.ArgumentParser(
         description="""
     Generates plots comparison of 4PFTs with HPLC dataset
+    Reads inputs as:
+    {var}_OPTION3_newSeasons3_means.csv
+    {var}_OPTION3_newSeasons3_std.csv"
     """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument("--inputdir", "-i", type=str, required=True, help="")
+    parser.add_argument(
+        "--inputdir",
+        "-i",
+        type=str,
+        required=True,
+        help="directory with csv files",
+    )
     parser.add_argument("--outdir", "-o", type=str, required=True, help="")
 
     parser.add_argument(

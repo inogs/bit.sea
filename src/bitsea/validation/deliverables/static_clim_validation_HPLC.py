@@ -57,6 +57,13 @@ def argument():
         "--maskfile", "-m", type=str, default=None, required=True, help=""
     )
     parser.add_argument(
+        "--climdir",
+        "-c",
+        type=str,
+        default="/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/HPLC",
+        required=False,
+    )
+    parser.add_argument(
         "--starttime",
         "-s",
         type=str,
@@ -88,6 +95,7 @@ rows_names = [layer.string() for layer in LayerList]
 
 INPUTDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
+HPLC_CLIM_path = addsep(args.climdir)
 TI = TimeInterval(args.starttime, args.endtime, "%Y%m%d")
 
 TheMask = Mask.from_file(args.maskfile)
@@ -95,12 +103,6 @@ jpk, jpj, jpi = TheMask.shape
 z = -TheMask.zlevels
 
 z_clim = np.array([-(el.bottom + el.top) / 2 for el in LayerList])
-
-# DATASET of PFTS "CLIMATOLOGY" from HPLC
-HPLC_CLIM_path = (
-    "/g100_scratch/userexternal/lfeudale/HPLC/HPLC_pfts_CLIMATOLOGY/"
-)
-# HPLC_CLIM_path="/g100_scratch/userexternal/gocchipi/analisi_file_eva/"
 
 
 def Layers_Mean(Pres, Values, LayerList):

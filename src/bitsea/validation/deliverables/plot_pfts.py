@@ -98,7 +98,7 @@ if args.zone == "coastal":
 
 MATRIX_LIST = [
     netcdf_validation_file.dir_reader(
-        TI, INPUTDIR, var, "open_sea", args.coastness
+        TI, INPUTDIR, var, args.coastness
     )
     for var in VARLIST
 ]

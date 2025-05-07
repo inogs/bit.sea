@@ -223,7 +223,7 @@ for itime, modeltime in enumerate(modeltimes):
     try:
         CoupledList = sat_TL.couple_with([modeltime])
         sattime = CoupledList[0][0]
-    except AttributeError:
+    except IndexError:
         print("No sat file compliant with ", modfile)
         continue
 

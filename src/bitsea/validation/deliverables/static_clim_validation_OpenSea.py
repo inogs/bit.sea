@@ -20,6 +20,11 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--climdir', '-c',
+                                type = str,
+                                default = "/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins",
+                                required = True,
+                                help = "Directory with Clim_for_IC/ inside containing NetCDF files")
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 default = None,
@@ -56,6 +61,7 @@ LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,1
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
+DIR_ICs = addsep(args.climdir) + "Clim_for_IC/"
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
 TheMask = Mask.from_file(args.maskfile)

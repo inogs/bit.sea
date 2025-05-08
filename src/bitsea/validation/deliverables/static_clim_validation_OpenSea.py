@@ -133,10 +133,6 @@ for ivar, var in enumerate(VARLIST):
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
-    print ("CLIM_REF_static")
-    print (CLIM_REF_static)
-    print ("CLIM_MODEL")
-    print (CLIM_MODEL)
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
@@ -186,7 +182,6 @@ for bottom in PresDOWN:
     top = bottom
 nLayers = len(LayerList_2)
 LayerList_3=LayerList_2[:7]
-print ("LayerList_3 = ", LayerList_3)
 nLayers3 = len(LayerList_3)
 
 rows_names=[sub.name for sub in SUBlist]

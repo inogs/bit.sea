@@ -121,7 +121,7 @@ for var in VARLIST:
     timeseries_DICT[var]=TIMESERIES
 #-------------------------------------------------
 var_ordered_nut_clim = ['N3n', 'N1p', 'O2o', 'N5s', 'N4n']
-for iSub, sub in enumerate(basV2.P):
+for iSub, sub in enumerate(SUBLIST):
     submask = SubMask(sub, TheMask)
     F = fg2.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
@@ -181,7 +181,7 @@ for var in VARLIST:
     TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 
-for iSub, sub in enumerate(basV2.P):
+for iSub, sub in enumerate(SUBLIST):
     submask = SubMask(sub, TheMask)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
@@ -219,7 +219,7 @@ for iSub, sub in enumerate(basV2.P):
             axis_secondary = None
         else:
             axis_secondary = axes[i + 4]
-        figure_generator.clim_profile_plotter(z_clim,ds_clim[f"{var}_clim_mean"],ds_clim[f"{var}_clim_mean"], axis_main, axis_secondary)
+        figure_generator.clim_profile_plotter(z_clim,ds_clim[f"{var}_clim_mean"][iSub,:],ds_clim[f"{var}_clim_std"][iSub,:], axis_main, axis_secondary)
 
 
 

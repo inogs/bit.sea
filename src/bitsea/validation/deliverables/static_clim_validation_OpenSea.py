@@ -88,8 +88,9 @@ def Layers_Mean(Pres,Values,LayerList):
     for ilayer, layer in enumerate(LayerList):
         ii = (Pres>=layer.top) & (Pres<layer.bottom)
         if (ii.sum()> 1 ) :
-            local_profile = Values[ii]
-            MEAN_LAY[ilayer] = np.mean(local_profile)
+            local_profile = np.array(Values[ii])
+            if not np.isnan(local_profile).any():
+                MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
 
 
@@ -118,7 +119,6 @@ for ivar, var in enumerate(VARLIST):
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req) 
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print (METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
     climfile= CLIMDIR + var + "_clim_metrics.nc"
     with xr.open_dataset(climfile) as ds:
         CLIM_REF_static = ds['mean'].values
@@ -126,7 +126,6 @@ for ivar, var in enumerate(VARLIST):
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        print (sub.name)
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
@@ -197,7 +196,6 @@ for var in VARLIST:
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req)
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print (METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN")
     CLIM_REF_static = clim_prof_Qc(CLIMDIR,var)
 
     if ( var == "pCO2" ):

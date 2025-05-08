@@ -55,13 +55,15 @@ from bitsea.commons.utils import addsep
 from bitsea.matchup.statistics import matchup
 from bitsea.commons.utils import writetable
 from bitsea.commons import timerequestors
+import xarray as xr
 
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 #LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-DIR_ICs = addsep(args.climdir) + "Clim_Annual_Ref/"
+CLIMDIR = addsep(args.climdir) + "Clim_Annual_Ref/"
+
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
 TheMask = Mask.from_file(args.maskfile)
@@ -88,17 +90,15 @@ def Layers_Mean(Pres,Values,LayerList):
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
 
     for ilayer, layer in enumerate(LayerList):
-        ii = (Pres>=layer.top) & (Pres<=layer.bottom)
+        ii = (Pres>=layer.top) & (Pres<layer.bottom)
         if (ii.sum()> 1 ) :
             local_profile = Values[ii]
             MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
 
-# BFMv2:
-#VARLIST=['N1p','N3n','O2o','Ac','DIC','pH']
-# BFMv5:
+
 VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','N4n','N5s','pCO2']
-SUBlist = basV2.Pred.basin_list
+SUBlist = basV2.Pred.basin_list[:]
 nLayers = len(LayerList)
 
 METRICvar = {'N1p':'PHO',

@@ -14,6 +14,11 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--climdir', '-c',
+                                type = str,
+                                default = "/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins",
+                                required = True,
+                                help = "Directory with Clim_Annual_Ref inside containing NetCDF files")
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 default = None,
@@ -36,7 +41,6 @@ matplotlib.use('Agg')
 
 from bitsea.commons.layer import Layer
 import bitsea.basins.V2 as basV2
-from bitsea.static.climatology import get_climatology_open
 import figure_generator
 import figure_generator_extended as fg2
 from bitsea.commons.time_interval import TimeInterval
@@ -50,10 +54,13 @@ from bitsea.commons.submask import SubMask
 import matplotlib.pyplot as pl
 from bitsea.commons.utils import addsep
 from bitsea.commons import genUserDateList as DL
+import xarray as xr
+import os
 
 IDrun='MedBGCins'
 OUTDIR=addsep(args.outdir)
 MODDIR=addsep(args.inputdir)
+CLIMDIR = addsep(args.climdir) + "Clim_Annual_Ref/"
 
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 Req=timerequestors.Generic_req(TI)
@@ -71,15 +78,31 @@ TL = TimeList.fromfilenames(TI, MODDIR, "ave*nc")
 #weekly=DL.getTimeList(TI.start_time, TI.end_time, days=7)
 #TL=TimeList(weekly)
 
-SUBLIST = basV2.P.basin_list
-
-N3n_clim, N3n_std, N3n_vals, N3n_profs = get_climatology_open('N3n', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False)
-N1p_clim, N1p_std, N1p_vals, N1p_profs = get_climatology_open('N1p', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64),basin_expand=False)
-O2o_clim, O2o_std, O2o_vals, O2o_profs = get_climatology_open('O2o', SUBLIST, LayerList,TheMask,basin_expand=False)
-N4n_clim, N4n_std, N4n_vals, N4n_profs = get_climatology_open('N4n', SUBLIST, LayerList,TheMask,basin_expand=False)
-N5s_clim, N5s_std, N5s_vals, N5s_profs = get_climatology_open('N5s', SUBLIST, LayerList,TheMask,useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False)
-
+SUBLIST = basV2.Pred.basin_list[:]
+SUBLIST.remove(SUBLIST[-1])
 VARLIST=['P_l','N1p','N3n','O2o','N4n','N5s']
+VARLIST_all=['N1p','N3n','O2o','N4n','N5s','pCO2','DIC','ALK','pH']
+# CLIM section for all variables
+mean_clim_dict = {}
+std_clim_dict = {}
+for var in VARLIST_all:
+    filename = os.path.join(CLIMDIR, f"{var}_clim_plot.nc")
+    with xr.open_dataset(filename) as ds:
+        mean_clim_dict[var] = (ds['mean'].dims, ds['mean'].values)
+        std_clim_dict[var] = (ds['std'].dims, ds['std'].values)
+
+
+ds_clim = xr.Dataset(
+    {
+        f"{var}_clim_mean": xr.DataArray(data, dims=dims)
+        for var, (dims, data) in mean_clim_dict.items()
+    } | {
+        f"{var}_clim_std": xr.DataArray(data, dims=dims)
+        for var, (dims, data) in std_clim_dict.items()
+    }
+)
+
+
 var_dype = [(var,np.float32) for var in VARLIST]
 nVar = len(VARLIST)
 
@@ -97,8 +120,8 @@ for var in VARLIST:
     TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 #-------------------------------------------------
-
-for iSub, sub in enumerate(basV2.P):
+var_ordered_nut_clim = ['N3n', 'N1p', 'O2o', 'N5s', 'N4n']
+for iSub, sub in enumerate(SUBLIST):
     submask = SubMask(sub, TheMask)
     F = fg2.figure_generator(submask)
     fig, axes = F.gen_structure_1(IDrun,'annual',sub.name)
@@ -137,34 +160,16 @@ for iSub, sub in enumerate(basV2.P):
     fg2.profile_plotter(z,MEAN['N5s'],'k', axes[4], axes[10],label)
     fg2.profile_plotter(z,MEAN['N4n'],'k', axes[5], axes[11],label)
 
-    N3n_clim_mean=N3n_clim[iSub,:]
-    N3n_clim_std =N3n_std[ iSub,:]
-    N1p_clim_mean=N1p_clim[iSub,:]
-    N1p_clim_std =N1p_std[ iSub,:]
-    O2o_clim_mean=O2o_clim[iSub,:]
-    O2o_clim_std =O2o_std[ iSub,:]
-    N5s_clim_mean=N5s_clim[iSub,:]
-    N5s_clim_std =N5s_std[ iSub,:]
-    N4n_clim_mean=N4n_clim[iSub,:]
-    N4n_clim_std =N4n_std[ iSub,:]
-
-    fg2.clim_profile_plotter(z_clim,N3n_clim_mean,N3n_clim_std, axes[1], axes[7])
-    fg2.clim_profile_plotter(z_clim,N1p_clim_mean,N1p_clim_std, axes[2], axes[8])
-    fg2.clim_profile_plotter(z_clim,O2o_clim_mean,O2o_clim_std, axes[3], axes[9])
-    fg2.clim_profile_plotter(z_clim,N5s_clim_mean,N5s_clim_std, axes[4], axes[10])
-    fg2.clim_profile_plotter(z_clim,N4n_clim_mean,N4n_clim_std, axes[5], axes[11])
+    for i, var in enumerate(var_ordered_nut_clim, start=1):#index = 0 is P_l, not plotted as clim
+        fg2.clim_profile_plotter(z_clim,ds_clim[f"{var}_clim_mean"][iSub,:],ds_clim[f"{var}_clim_std"][iSub,:],axes[i],axes[i + 6])
 
     fig.savefig(outfile)
     print (outfile,flush=True)
     pl.close(fig)
 
 
-######
+###### CARBONATIC VARIABLES
 
-Ac__clim, Ac__std, ALK_vals, ALK_profs = get_climatology_open('ALK' , SUBLIST, LayerList, TheMask)
-DIC_clim, DIC_std, DIC_vals, DIC_profs = get_climatology_open('DIC', SUBLIST, LayerList, TheMask)
-pCO2clim, pCO2std, pCO2vals, pCO2profs = get_climatology_open('pCO2',SUBLIST, LayerList, TheMask)
-PH__clim, PH__std, PH__vals, PH__profs = get_climatology_open('pH' , SUBLIST, LayerList, TheMask)
 
 VARLIST=['pCO2','DIC','ALK','pH']
 var_dype = [(var,np.float32) for var in VARLIST]
@@ -176,7 +181,7 @@ for var in VARLIST:
     TIMESERIES=TIMESERIES_complete[ind,:]
     timeseries_DICT[var]=TIMESERIES
 
-for iSub, sub in enumerate(basV2.P):
+for iSub, sub in enumerate(SUBLIST):
     submask = SubMask(sub, TheMask)
     F = figure_generator.figure_generator(submask)
     fig, axes = F.gen_structure_3(IDrun,'annual',sub.name)
@@ -208,20 +213,15 @@ for iSub, sub in enumerate(basV2.P):
     figure_generator.profile_plotter(z,MEAN['DIC' ],'k', axes[1], axes[5],label)
     figure_generator.profile_plotter(z,MEAN['ALK'  ],'k', axes[2], axes[6],label)
     figure_generator.profile_plotter(z,MEAN['pH'  ],'k', axes[3], axes[7],label)
+    for i, var in enumerate(VARLIST):
+        axis_main = axes[i]
+        if i == 0:  # pCO2
+            axis_secondary = None
+        else:
+            axis_secondary = axes[i + 4]
+        figure_generator.clim_profile_plotter(z_clim,ds_clim[f"{var}_clim_mean"][iSub,:],ds_clim[f"{var}_clim_std"][iSub,:], axis_main, axis_secondary)
 
-    Ac__clim_mean=Ac__clim[iSub,:]
-    Ac__clim_std =Ac__std[ iSub,:]
-    Dic_clim_mean=DIC_clim[iSub,:]
-    Dic_clim_std =DIC_std[ iSub,:]
-    pCO2clim_mean=pCO2clim[iSub,:]
-    pCO2clim_std =pCO2std[ iSub,:]
-    PH__clim_mean=PH__clim[iSub,:]
-    PH__clim_std =PH__std[ iSub,:]
 
-    figure_generator.clim_profile_plotter(z_clim,pCO2clim_mean,pCO2clim_std, axes[0], axes[4])
-    figure_generator.clim_profile_plotter(z_clim,Dic_clim_mean,Dic_clim_std, axes[1], axes[5])
-    figure_generator.clim_profile_plotter(z_clim,Ac__clim_mean,Ac__clim_std, axes[2], axes[6])
-    figure_generator.clim_profile_plotter(z_clim,PH__clim_mean,PH__clim_std, axes[3], axes[7])
 
     fig.savefig(outfile)
     print (outfile)

@@ -56,6 +56,7 @@ from bitsea.commons.utils import writetable
 from bitsea.commons import timerequestors
 import xarray as xr
 
+#List consistent with /g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins/Clim_Annual_Ref
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
 INPUTDIR=addsep(args.inputdir)

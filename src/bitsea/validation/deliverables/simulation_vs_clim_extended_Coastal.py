@@ -62,6 +62,7 @@ TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
 z = -TheMask.zlevels
 
+#List consistent with /g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins/Clim_Annual_Ref
 PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
 LayerList=[ Layer(PresDOWN[k], PresDOWN[k+1])  for k in range(len(PresDOWN)-1)]
 

@@ -1,0 +1,2 @@
+class OptionalDependencyMissing(UserWarning):
+    pass

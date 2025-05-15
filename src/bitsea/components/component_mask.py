@@ -67,7 +67,7 @@ class ComponentMask:
         (i.e., that are `True`) and that are on the boundary of the mask.
 
         In other words, it returns the cells whose value is `True` but that
-        have a neighbour that is `False`. With the word "neighbour", in this
+        have a neighbor that is `False`. With the word "neighbour", in this
         case, we also include cells that can be reached by going one step
         in every direction, including the diagonals.
 
@@ -80,17 +80,17 @@ class ComponentMask:
             ~mask, 1, mode="constant", constant_values=closed_boundary
         )
 
-        # To determine if a cell has a neighbour that is outside the mask, is
-        # enough to shift the indices of tha mask by 1 on every possible
-        # direction. If we apply the following slices to the enlarged_data we
-        # may get the original values (slice associated to 0), the original
-        # values moved towards the right (slice associated to 1) or ti the left
-        # (slice associated to -1). By applying all the possible choice of the
-        # slices for each axis, we get all the possible neighbours.
+        # To determine if a cell has a neighbor outside the mask, is enough
+        # to shift the indices of the mask by 1 in every possible direction.
+        # If we apply the following slices to `enlarged_data`, we may get
+        # the original values (slice associated with 0), the original values
+        # moved towards the right (slice associated with 1) or to the left
+        # (slice associated with -1). By applying all the possible choices
+        # of the slices for each axis, we get all the possible neighbors.
         slice_shifts = {0: slice(1, -1), 1: slice(2, None), -1: slice(None, -2)}
 
         # After the loop, this array will contain `True` if the point at that
-        # position has a neighbour that is outside the mask
+        # position has a neighbor that is outside the mask
         neighbour_outside = np.zeros_like(mask)
 
         # For every axis, we decide where we need to shift
@@ -212,10 +212,10 @@ class ComponentMask:
     ) -> np.ndarray:
         """
         Returns the cells of the component with the specified ID that are on
-        the boundary of the component, i.e. that have at least one neighbour
+        the boundary of the component, i.e., that have at least one neighbor
         that is not in the component.
 
-        We consider as "neighbours" also points that can be reached by moving
+        We consider as "neighbors" also points that can be reached by moving
         along the diagonals. This ensures that the corner of a concave mask
         is also included in the boundary.
 
@@ -245,7 +245,7 @@ class ComponentMask:
         be part of the original mask. This may happen if there is a hole that
         includes the vertex of a concave angle of the external boundary. In this
         case, when the hole is filled by the algorithm, the vertex becomes part
-        of the boundary. If you don't want this behaviour, intersect the output
+        of the boundary. If you don't want this behavior, intersect the output
         of this function with the original mask.
         """
         component_mask = self.get_component(component_id)

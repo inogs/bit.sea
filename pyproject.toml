@@ -17,6 +17,8 @@ matplotlib = ">3.7.5"
 netcdf4 = "^1.6.5"
 cartopy = "^0.23.0"
 geographiclib = "^2.0"
+
+[tool.poetry.group.performances.dependencies]
 numba = ">0.58"
 
 [tool.poetry.group.dev.dependencies]

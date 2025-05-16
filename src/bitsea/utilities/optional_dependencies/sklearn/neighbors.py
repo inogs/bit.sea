@@ -26,7 +26,7 @@ class BallTreeFallBack:
             warn(
                 "sklearn.neighbors.BallTree is not available. "
                 "This code will use a fallback implementation that is way "
-                "slower. If you want to suppress this warning, install"
+                "slower. If you want to suppress this warning, install "
                 "sklearn",
                 OptionalDependencyMissing,
             )

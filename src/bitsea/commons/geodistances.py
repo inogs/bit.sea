@@ -135,7 +135,7 @@ def compute_geodesic_distance(
     The algorithm used by this function is extremely accurate but way more
     computationally expensive than the `compute_great_circle_distance`; if
     you may tolerate an error of a few metres, and you have to compute several
-    millions of distances, you may consider to use the other method.
+    millions of distances, you may consider using the other method.
     """
     use_scalars = True
     for v in lat1, lon1, lat2, lon2:

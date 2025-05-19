@@ -1,106 +1,108 @@
 import argparse
-# opa_prex_or_die "python static_clim_validationi_HPLC.py -i $STAT_PROFILES_DIR -o $DIR -m $MASKFILE -s 20190101 -e 20200101"
+
+import netCDF4 as nc
+import numpy as np
+import numpy.ma as ma
+
+from bitsea.basins import V2 as basV2
+from bitsea.commons.layer import Layer
+from bitsea.commons.mask import Mask
+from bitsea.commons.time_interval import TimeInterval
+from bitsea.commons.Timelist import TimeList
+from bitsea.commons.utils import addsep
+from bitsea.commons.utils import writetable
+from bitsea.timeseries.plot import Hovmoeller_matrix
+from bitsea.timeseries.plot import read_pickle_file
+
+
 def argument():
-    parser = argparse.ArgumentParser(description = '''
-    Generates in output directory two files ( model and ref) for each pfts (P1l, P2l, P3l, P4l)
-    containing [nSub, nLayers] arrays of climatologies.
+    parser = argparse.ArgumentParser(
+        description="""
+    Generates in output directory 6 files for each pfts (P1l, P2l, P3l, P4l)
+    containing [nSub, nLayers] arrays of climatologies,
+    having the following nomenclature:
 
-    if (P_type=="P1l"): P_name="DIATO"
-    if (P_type=="P2l"): P_name="NANO"
-    if (P_type=="P3l"): P_name="PICO"
-    if (P_type=="P4l"): P_name="DINO"
+    - {var}_ModelMean_table_LayBas_winter.txt
+    - {var}_ModelStd_table_LayBas_winter.txt
+    - {var}_ModelMean_table_Lay_winter.txt
+    - {var}_CLIM_table_LayBas_1.txt
+    - {var}_CLIM_table_LayBas_sd1.txt
+    - {var}_RefMean_table_Lay_winter.txt
 
-    The files have the following nomenclature:
-    infile_MEAN=INDIR + P_type + "_OPTION3_newSeasons3_means.csv"
-    infile_STD=INDIR  + P_type + "_OPTION3_newSeasons3_std.csv"
-
-    These arrays will be used in the next step to generate the following metrics:
-
-    # Input: DIRECTORYof StatProfiles of P1l, P2l, P3l, P4l (files *.pkl) 
-
+    Metric classes:
     P1l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     P2l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     P3l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
     P4l-LAYER-Y-CLASS4-CLIM-BIAS/RMSD
-    ''', formatter_class=argparse.RawTextHelpFormatter)
+    """,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
 
-    parser.add_argument(   '--inputdir','-i',
-                                type = str,
-                                required = True,
-                                help = 'Directory of StatProfiles of P1l, P2l, P3l, P4l in *.pkl')
+    parser.add_argument(
+        "--inputdir",
+        "-i",
+        type=str,
+        required=True,
+        help="Directory of StatProfiles of P1l, P2l, P3l, P4l in *.pkl",
+    )
 
-    parser.add_argument(   '--outdir', '-o',
-                                type = str,
-                                default = None,
-                                required = True,
-                                help = "")
-    parser.add_argument(   '--maskfile', '-m',
-                                type = str,
-                                default = None,
-                                required = True,
-                                help = "")
-    parser.add_argument(   '--starttime','-s',
-                                type = str,
-                                required = True,
-                                help = 'start date in yyyymmdd format')
-    parser.add_argument(   '--endtime','-e',
-                                type = str,
-                                required = True,
-                                help = 'start date in yyyymmdd format')   
+    parser.add_argument(
+        "--outdir", "-o", type=str, default=None, required=True, help=""
+    )
+    parser.add_argument(
+        "--maskfile", "-m", type=str, default=None, required=True, help=""
+    )
+    parser.add_argument(
+        "--climdir",
+        "-c",
+        type=str,
+        default="/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/HPLC",
+        required=False,
+    )
+    parser.add_argument(
+        "--starttime",
+        "-s",
+        type=str,
+        required=True,
+        help="start date in yyyymmdd format",
+    )
+    parser.add_argument(
+        "--endtime",
+        "-e",
+        type=str,
+        required=True,
+        help="start date in yyyymmdd format",
+    )
     return parser.parse_args()
+
 
 args = argument()
 
-import numpy as np
-import netCDF4 as nc
-from bitsea.commons.time_interval import TimeInterval
-from bitsea.commons.Timelist import TimeList
-from bitsea.timeseries.plot import Hovmoeller_matrix
-from bitsea.timeseries.plot import read_pickle_file
-from bitsea.commons.mask import Mask
-from bitsea.commons.layer import Layer
-from bitsea.basins import V2 as basV2
-from bitsea.static import climatology
-from bitsea.commons.utils import addsep
-from bitsea.matchup.statistics import matchup
-from bitsea.commons.utils import writetable
-import numpy.ma as ma
+LayerList = [
+    Layer(0, 10),
+    Layer(10, 30),
+    Layer(30, 60),
+    Layer(60, 100),
+    Layer(100, 150),
+    Layer(150, 300),
+    Layer(0, 300),
+]
+rows_names = [layer.string() for layer in LayerList]
 
-LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(0,300)]
-rows_names  =[layer.string() for layer in LayerList]
-
-INPUTDIR=addsep(args.inputdir)
-#Example:
-#run = "MedBFM4.2_Q24_v3"
-#INPUTDIR="/g100_scratch/userexternal/lfeudale/dev/TRANSITION_V11/STATIC/STAT_PROFILES_MedBFM4.2_Q24_v3/"
-             
+INPUTDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
-# Exmaple:
-#OUTDIR = "/g100_work/OGS_devC/Benchmark/pub/lfeudale/HPLC/Test_Benchmark/" + run + "/tables/"
-#MASKFILE="/g100_scratch/userexternal/camadio0/" + run + "/wrkdir/MODEL/meshmask.nc"
-##MASKFILE='/g100_work/OGS_prodC/OPA/V10C-prod/etc/static-data/MED24_125/meshmask.nc'
+HPLC_CLIM_path = addsep(args.climdir)
+TI = TimeInterval(args.starttime, args.endtime, "%Y%m%d")
 
-TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
-
-# Example:
-#starttime="20190101"
-#endtime="20200101"
-#TI = TimeInterval(starttime,endtime,"%Y%m%d")
-
-
-#TheMask= Mask.from_file(args.maskfile, loadtmask=False)
-TheMask= Mask.from_file(args.maskfile) #, loadtmask=False)
-jpk,jpj,jpi = TheMask.shape
+TheMask = Mask.from_file(args.maskfile)
+jpk, jpj, jpi = TheMask.shape
 z = -TheMask.zlevels
 
-z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
+z_clim = np.array([-(el.bottom + el.top) / 2 for el in LayerList])
 
-# DATASET of PFTS "CLIMATOLOGY" from HPLC
-HPLC_CLIM_path="/g100_scratch/userexternal/lfeudale/HPLC/HPLC_pfts_CLIMATOLOGY/"
-#HPLC_CLIM_path="/g100_scratch/userexternal/gocchipi/analisi_file_eva/"
 
-def Layers_Mean(Pres,Values,LayerList):
-    '''
+def Layers_Mean(Pres, Values, LayerList):
+    """
     Performs mean of profile along layers.
 
     Arguments:
@@ -109,154 +111,236 @@ def Layers_Mean(Pres,Values,LayerList):
     * LayerList * list of layer objects
     Returns :
     * MEAN_LAY * [nLayers] numpy array, mean of each layer
-    '''
+    """
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
-    STD_LAY  = np.zeros(len(LayerList), np.float32)
+    STD_LAY = np.zeros(len(LayerList), np.float32)
 
     for ilayer, layer in enumerate(LayerList):
-        ii = (Pres>=layer.top) & (Pres<=layer.bottom)
-        if (ii.sum()> 1 ) :
+        ii = (Pres >= layer.top) & (Pres <= layer.bottom)
+        if ii.sum() > 1:
             local_profile = Values[ii]
             MEAN_LAY[ilayer] = np.mean(local_profile)
             STD_LAY[ilayer] = np.std(local_profile)
     return MEAN_LAY, STD_LAY
 
+
 #########
 
-VARLIST=['P1l','P2l','P3l','P4l']
+VARLIST = ["P1l", "P2l", "P3l", "P4l"]
 SUBlist = basV2.Pred.basin_list
-SUBlist.remove(SUBlist[-1]) # REMOVE ATLANTIC BUFFER
-basin_names=[sub.name for sub in SUBlist] 
+SUBlist.remove(SUBlist[-1])  # REMOVE ATLANTIC BUFFER
+basin_names = [sub.name for sub in SUBlist]
 
-#SUBlist2 = basV2.Pred2.basin_list
 nSub = len(SUBlist)
 nLayers = len(LayerList)
-METRICvar = {'P1l':'Diatoms',
-             'P2l':'Nanophytoplankton',
-             'P3l':'Picophytoplankton',
-             'P4l':'Dinoflagellates'}
+METRICvar = {
+    "P1l": "Diatoms",
+    "P2l": "Nanophytoplankton",
+    "P3l": "Picophytoplankton",
+    "P4l": "Dinoflagellates",
+}
 
-VARnameNC = {'P1l':'media_seasonal_fdiatom_ALL',
-             'P2l':'media_seasonal_fnano_ALL',
-             'P3l':'media_seasonal_fpico_ALL',
-             'P4l':'media_seasonal_fdino_ALL'}
+VARnameNC = {
+    "P1l": "media_seasonal_fdiatom_ALL",
+    "P2l": "media_seasonal_fnano_ALL",
+    "P3l": "media_seasonal_fpico_ALL",
+    "P4l": "media_seasonal_fdino_ALL",
+}
 
 
 # media_seasonal_fdiatom, media_seasonal_fnano_ALL, media_seasonal_fpico_ALL, media_seasonal_fdino_ALL
 # Remove Altantic Buffer from the list:
 
-# RESULTS ARRAY dimensions for graphycs:
-RESULTS_MEAN = np.zeros((nLayers,4),np.float32) # "meanWref","meanWmod","meanSref","meanSmod" --> 4 COLUMNS
-RESULTS_STD = np.zeros((nLayers,4),np.float32) # "stdWref","stdWmod","stdSref","stdSmod"      --> 4 COLUMNS
+RESULTS_MEAN = np.zeros(
+    (nLayers, 4), np.float32
+)  # "meanWref","meanWmod","meanSref","meanSmod" --> 4 COLUMNS
+RESULTS_STD = np.zeros(
+    (nLayers, 4), np.float32
+)  # "stdWref","stdWmod","stdSref","stdSmod"      --> 4 COLUMNS
 
-rows_names  =[layer.string() for layer in LayerList]
-#column_names=['bias','rmse','corr']
-#column_names_STD=['bias','rmse','corr','mod_MEAN','ref_MEAN','mod_STD','ref_STD']
+rows_names = [layer.string() for layer in LayerList]
 
 
 for ivar, var in enumerate(VARLIST):
-  filename = INPUTDIR + var + ".pkl"
-  # READ THE StatProfiles *pkl with the TimeList: 
-  TIMESERIES,TL=read_pickle_file(filename)
+    filename = INPUTDIR + var + ".pkl"
+    TIMESERIES, TL = read_pickle_file(filename)
 
-  print (METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
- 
-  BIAS = np.zeros((2, nLayers))
-  RMSD = np.zeros((2, nLayers))
-  CORR = np.zeros((2, nLayers))
+    print(METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
 
-########## DEFINE SEASONS: ##########
-  for iSeas in [0,1]: # 0=Summer, 1=Winter
-    if (iSeas==0): 
-       SeasonName="summer" #imonths in [5,6,7,8,9,10]
-       ind_SUMMER=[ii for ii, x in enumerate(TL.Timelist) if x.month in [5,6,7,8,9,10]]
-       ind_Seas=ind_SUMMER
-    if (iSeas==1): 
-       SeasonName="winter" #imonths in [1,2,3,4,11,12]
-       ind_WINTER=[ii for ii, x in enumerate(TL.Timelist) if x.month in [1,2,3,4,11,12]]
-       ind_Seas=ind_WINTER
-###
-    print (ind_Seas)
-    TIMESERIES_season=TIMESERIES[ind_Seas,:,:,:,:]  # dim(StatProf)==> [nFrames,nSub,nCoast,depth,nStat]
-    TIMES=[]
-#    ind=[ii for ii, x in enumerate(masks_seasons[iSeas]) if x]
-    for ii in ind_Seas: TIMES.append(TL.Timelist[ii]) 
-    print (TIMES)
-    TLL=TimeList(TIMES)
+    BIAS = np.zeros((2, nLayers))
+    RMSD = np.zeros((2, nLayers))
+    CORR = np.zeros((2, nLayers))
 
-    CLIM_MODEL = np.zeros((nSub, nLayers))
-    CLIM_MODEL_STD = np.zeros((nSub, nLayers))
+    ########## DEFINE SEASONS: ##########
+    for iSeas in [0, 1]:  # 0=Summer, 1=Winter
+        if iSeas == 0:
+            SeasonName = "summer"  # imonths in [5,6,7,8,9,10]
+            ind_SUMMER = [
+                ii
+                for ii, x in enumerate(TL.Timelist)
+                if x.month in [5, 6, 7, 8, 9, 10]
+            ]
+            ind_Seas = ind_SUMMER
+        if iSeas == 1:
+            SeasonName = "winter"  # imonths in [1,2,3,4,11,12]
+            ind_WINTER = [
+                ii
+                for ii, x in enumerate(TL.Timelist)
+                if x.month in [1, 2, 3, 4, 11, 12]
+            ]
+            ind_Seas = ind_WINTER
 
-    Model_Med_Mean_Std = np.zeros((nLayers,2),np.float32)
+        TIMESERIES_season = TIMESERIES[
+            ind_Seas, :, :, :, :
+        ]  # dim(StatProf)==> [nFrames,nSub,nCoast,depth,nStat]
+        TIMES = []
 
-    for iSub, sub in enumerate(SUBlist):
-        print (sub.name)
-        print ("TIMESERIES_season: " + str(TIMESERIES_season.shape))
-        Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES_season,TLL, np.arange(jpk), iSub, icoast=1, istat=0) # istat=0 --> MEAN
-        mean_profile = Mean_profiles.mean(axis=1)
-        mean_profile[mean_profile==0]=np.nan
+        for ii in ind_Seas:
+            TIMES.append(TL.Timelist[ii])
+        TLL = TimeList(TIMES)
 
-        Std_profiles,_,_ = Hovmoeller_matrix(TIMESERIES_season,TLL, np.arange(jpk), iSub, icoast=1, istat=1) # istat=1 --> STD
+        CLIM_MODEL = np.zeros((nSub, nLayers))
+        CLIM_MODEL_STD = np.zeros((nSub, nLayers))
 
+        Model_Med_Mean_Std = np.zeros((nLayers, 2), np.float32)
 
-        CLIM_MODEL[iSub,:], _ = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
-        CLIM_MODEL_STD[iSub,:], _ = Layers_Mean(TheMask.zlevels, Std_profiles ,LayerList)
+        for iSub, sub in enumerate(SUBlist):
+            print(sub.name)
+            Mean_profiles, _, _ = Hovmoeller_matrix(
+                TIMESERIES_season, TLL, np.arange(jpk), iSub, icoast=1, istat=0
+            )  # istat=0 --> MEAN
+            mean_profile = Mean_profiles.mean(axis=1)
+            mean_profile[mean_profile == 0] = np.nan
 
-    Model_Med_Mean_Std[:,0]=np.nanmean(CLIM_MODEL,axis=0) 
-    Model_Med_Mean_Std[:,1]=np.nanmean(CLIM_MODEL_STD,axis=0) 
-    writetable(OUTDIR + var + "_ModelMean_table_LayBas_" + SeasonName + ".txt",CLIM_MODEL, basin_names,rows_names) 
-    writetable(OUTDIR + var + "_ModelStd_table_LayBas_" + SeasonName + ".txt",CLIM_MODEL_STD, basin_names,rows_names)
-    writetable(OUTDIR + var + "_ModelMean_table_Lay_" + SeasonName + ".txt",Model_Med_Mean_Std,rows_names,["Mean","Std"])    
+            Std_profiles, _, _ = Hovmoeller_matrix(
+                TIMESERIES_season, TLL, np.arange(jpk), iSub, icoast=1, istat=1
+            )  # istat=1 --> STD
 
-#    CLIM_REF_static = np.zeros((2,nSub,nLayers,3),np.float32) # [SEASONS,NSUB,NLAYER,NMETRICS]; METRICS:1.MEAN, 2.STD, 3.COUNT
-    CLIM_REF_static = np.zeros((2,nSub,nLayers,2),np.float32) # [SEASONS,NSUB,NLAYER,NMETRICS]
+            CLIM_MODEL[iSub, :], _ = Layers_Mean(
+                TheMask.zlevels, mean_profile, LayerList
+            )
+            CLIM_MODEL_STD[iSub, :], _ = Layers_Mean(
+                TheMask.zlevels, Std_profiles, LayerList
+            )
 
-    # Read Climatology:
-    infile = HPLC_CLIM_path + "OUTPUT" + VARnameNC[var] + ".nc"
-    f = nc.Dataset(infile, 'r')
-    CLIM_REF_static[:,:,:,0] = f.variables["mean_" + VARnameNC[var]][:] # [season,basins,layers] ,metric]
-    CLIM_REF_static[:,:,:,1] = f.variables["std_" + VARnameNC[var]][:]  # [season,basins,layers] ,metric]
-#    CLIM_REF_static[:,:,0,2] = f.variables["counter_" + VARnameNC[var]][:]  # [season,basins]
-    f.close()
+        Model_Med_Mean_Std[:, 0] = np.nanmean(CLIM_MODEL, axis=0)
+        Model_Med_Mean_Std[:, 1] = np.nanmean(CLIM_MODEL_STD, axis=0)
+        writetable(
+            OUTDIR + var + "_ModelMean_table_LayBas_" + SeasonName + ".txt",
+            CLIM_MODEL,
+            basin_names,
+            rows_names,
+        )
+        writetable(
+            OUTDIR + var + "_ModelStd_table_LayBas_" + SeasonName + ".txt",
+            CLIM_MODEL_STD,
+            basin_names,
+            rows_names,
+        )
+        writetable(
+            OUTDIR + var + "_ModelMean_table_Lay_" + SeasonName + ".txt",
+            Model_Med_Mean_Std,
+            rows_names,
+            ["Mean", "Std"],
+        )
 
-    Ref_Med_Mean_Std = np.zeros((nLayers,2),np.float32)  # LAYERS and SEASONS
-    Ref_Med_Mean_Std[:,0]=np.nanmean(CLIM_REF_static[iSeas,:,:,0],axis=0)
-    Ref_Med_Mean_Std[:,1]=np.nanmean(CLIM_REF_static[iSeas,:,:,1],axis=0) 
-    writetable(OUTDIR + var + "_CLIM_table_LayBas_" + str(iSeas) + ".txt", CLIM_REF_static[iSeas,:,:,0], basin_names,rows_names) #,["Mean","Std"])
-    writetable(OUTDIR + var + "_CLIM_table_LayBas_sd" + str(iSeas) + ".txt", CLIM_REF_static[iSeas,:,:,1], basin_names,rows_names)
-    writetable(OUTDIR + var + "_RefMean_table_Lay_" + SeasonName + ".txt",Ref_Med_Mean_Std,rows_names,["Mean","Std"])
-    
+        CLIM_REF_static = np.zeros(
+            (2, nSub, nLayers, 2), np.float32
+        )  # [SEASONS,NSUB,NLAYER,NMETRICS]
 
-    BIAS[iSeas,:] = np.nanmean(CLIM_MODEL-CLIM_REF_static[iSeas,:,:,0],axis=0) 
-    RMSD[iSeas,:] = np.sqrt(np.nanmean((CLIM_MODEL-CLIM_REF_static[iSeas,:,:,0])**2,axis=0))
-    for ilayer, lay in enumerate(LayerList):
-        CORR[iSeas,ilayer] = (ma.corrcoef(ma.masked_invalid(CLIM_MODEL[:,ilayer]), ma.masked_invalid(CLIM_REF_static[iSeas,:,ilayer,0])))[0,1] 
+        # Read Climatology:
+        infile = HPLC_CLIM_path + "OUTPUT" + VARnameNC[var] + ".nc"
+        f = nc.Dataset(infile, "r")
+        CLIM_REF_static[:, :, :, 0] = f.variables["mean_" + VARnameNC[var]][:]
+        CLIM_REF_static[:, :, :, 1] = f.variables["std_" + VARnameNC[var]][:]
+        f.close()
 
-    if (iSeas==1): # WINTER
-        print ("WIN")
-        RESULTS_MEAN[:,0] = Ref_Med_Mean_Std[:,0]
-        RESULTS_MEAN[:,1] = Model_Med_Mean_Std[:,0]
-        RESULTS_STD[:,0] = Ref_Med_Mean_Std[:,1]
-        RESULTS_STD[:,1] = Model_Med_Mean_Std[:,1]
+        Ref_Med_Mean_Std = np.zeros(
+            (nLayers, 2), np.float32
+        )  # LAYERS and SEASONS
+        Ref_Med_Mean_Std[:, 0] = np.nanmean(
+            CLIM_REF_static[iSeas, :, :, 0], axis=0
+        )
+        Ref_Med_Mean_Std[:, 1] = np.nanmean(
+            CLIM_REF_static[iSeas, :, :, 1], axis=0
+        )
+        writetable(
+            OUTDIR + var + "_CLIM_table_LayBas_" + str(iSeas) + ".txt",
+            CLIM_REF_static[iSeas, :, :, 0],
+            basin_names,
+            rows_names,
+        )  # ,["Mean","Std"])
+        writetable(
+            OUTDIR + var + "_CLIM_table_LayBas_sd" + str(iSeas) + ".txt",
+            CLIM_REF_static[iSeas, :, :, 1],
+            basin_names,
+            rows_names,
+        )
+        writetable(
+            OUTDIR + var + "_RefMean_table_Lay_" + SeasonName + ".txt",
+            Ref_Med_Mean_Std,
+            rows_names,
+            ["Mean", "Std"],
+        )
 
-    if (iSeas==0): # SUMMER
-        print ("SUM")
-        RESULTS_MEAN[:,2] = Ref_Med_Mean_Std[:,0]
-        RESULTS_MEAN[:,3] = Model_Med_Mean_Std[:,0]
-        RESULTS_STD[:,2] = Ref_Med_Mean_Std[:,1]
-        RESULTS_STD[:,3] = Model_Med_Mean_Std[:,1]
+        BIAS[iSeas, :] = np.nanmean(
+            CLIM_MODEL - CLIM_REF_static[iSeas, :, :, 0], axis=0
+        )
+        RMSD[iSeas, :] = np.sqrt(
+            np.nanmean(
+                (CLIM_MODEL - CLIM_REF_static[iSeas, :, :, 0]) ** 2, axis=0
+            )
+        )
+        for ilayer, lay in enumerate(LayerList):
+            CORR[iSeas, ilayer] = (
+                ma.corrcoef(
+                    ma.masked_invalid(CLIM_MODEL[:, ilayer]),
+                    ma.masked_invalid(CLIM_REF_static[iSeas, :, ilayer, 0]),
+                )
+            )[0, 1]
 
+        if iSeas == 1:  # WINTER
+            print("WIN")
+            RESULTS_MEAN[:, 0] = Ref_Med_Mean_Std[:, 0]
+            RESULTS_MEAN[:, 1] = Model_Med_Mean_Std[:, 0]
+            RESULTS_STD[:, 0] = Ref_Med_Mean_Std[:, 1]
+            RESULTS_STD[:, 1] = Model_Med_Mean_Std[:, 1]
 
- 
-  writetable(OUTDIR + var + "_BIAS" + ".txt", np.transpose(BIAS) ,rows_names,["summer","winter"]) #, basin_names,rows_names)
-  writetable(OUTDIR + var + "_RMSD" + ".txt", np.transpose(RMSD) ,rows_names,["summer","winter"]) 
-  writetable(OUTDIR + var + "_CORR" + ".txt", np.transpose(CORR) ,rows_names,["summer","winter"])
-    
-  writetable(OUTDIR + var + "_OPTION3_newSeasons3_means.csv",RESULTS_MEAN, rows_names,["meanWref","meanWmod","meanSref","meanSmod"])
-  writetable(OUTDIR + var + "_OPTION3_newSeasons3_std.csv",RESULTS_STD, rows_names,["stdWref","stdWmod","stdSref","stdSmod"])
+        if iSeas == 0:  # SUMMER
+            print("SUM")
+            RESULTS_MEAN[:, 2] = Ref_Med_Mean_Std[:, 0]
+            RESULTS_MEAN[:, 3] = Model_Med_Mean_Std[:, 0]
+            RESULTS_STD[:, 2] = Ref_Med_Mean_Std[:, 1]
+            RESULTS_STD[:, 3] = Model_Med_Mean_Std[:, 1]
 
-Cols_names=["meanWref","meanWmod","meanSref","meanSmod"]
-Rows_names=["(0,10)","(10,30)", "(30,60)", "(100,150)", "(150,300)", "(0,300)"]
+    writetable(
+        OUTDIR + var + "_BIAS" + ".txt",
+        np.transpose(BIAS),
+        rows_names,
+        ["summer", "winter"],
+    )  # , basin_names,rows_names)
+    writetable(
+        OUTDIR + var + "_RMSD" + ".txt",
+        np.transpose(RMSD),
+        rows_names,
+        ["summer", "winter"],
+    )
+    writetable(
+        OUTDIR + var + "_CORR" + ".txt",
+        np.transpose(CORR),
+        rows_names,
+        ["summer", "winter"],
+    )
 
-import sys
-sys.exit()
+    writetable(
+        OUTDIR + var + "_OPTION3_newSeasons3_means.csv",
+        RESULTS_MEAN,
+        rows_names,
+        ["meanWref", "meanWmod", "meanSref", "meanSmod"],
+    )
+    writetable(
+        OUTDIR + var + "_OPTION3_newSeasons3_std.csv",
+        RESULTS_STD,
+        rows_names,
+        ["stdWref", "stdWmod", "stdSref", "stdSmod"],
+    )

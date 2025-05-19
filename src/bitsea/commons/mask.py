@@ -8,12 +8,14 @@ from warnings import warn
 
 import netCDF4
 import numpy as np
+import xarray as xr
 from numpy.typing import ArrayLike
 
 from bitsea.commons.bathymetry import Bathymetry
 from bitsea.commons.geodistances import extend_from_average
 from bitsea.commons.grid import Grid
 from bitsea.commons.grid import MaskLayer
+from bitsea.commons.grid import RegularGrid
 from bitsea.commons.mesh import Mesh
 from bitsea.components.component_mask_2d import ComponentMask2D
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
@@ -530,6 +532,20 @@ class Mask(BooleanArrayWrapper, Mesh):
                 mask_var_name=mask_var_name,
                 read_e3t=read_e3t,
             )
+
+    @classmethod
+    def from_mer_file(
+        cls,
+        file_path: PathLike,
+    ):
+        with xr.open_dataset(file_path) as ds:
+            latitude = ds.latitude.values
+            longitude = ds.longitude.values
+            zlevels = ds.depth.values
+            mask_array = ds.tmask.values == 1
+        grid = RegularGrid(lat=latitude, lon=longitude)
+        mask = cls(grid=grid, zlevels=zlevels, mask_array=mask_array)
+        return mask
 
     def _add_attributes_on_file(self, file_pointer):
         """

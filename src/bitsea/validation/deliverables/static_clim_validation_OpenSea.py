@@ -20,6 +20,11 @@ def argument():
                                 default = None,
                                 required = True,
                                 help = "")
+    parser.add_argument(   '--climdir', '-c',
+                                type = str,
+                                default = "/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins",
+                                required = True,
+                                help = "Directory with Clim_Annual_Ref inside containing NetCDF files")
     parser.add_argument(   '--maskfile', '-m',
                                 type = str,
                                 default = None,
@@ -45,24 +50,24 @@ from bitsea.timeseries.plot import read_pickle_file
 from bitsea.commons.mask import Mask
 from bitsea.commons.layer import Layer
 from bitsea.basins import V2 as basV2
-from bitsea.static import climatology
 from bitsea.commons.utils import addsep
 from bitsea.matchup.statistics import matchup
 from bitsea.commons.utils import writetable
 from bitsea.commons import timerequestors
+import xarray as xr
 
+#List consistent with /g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins/Clim_Annual_Ref
 LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
-#LayerList = [Layer(0,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
+CLIMDIR = addsep(args.climdir) + "Clim_Annual_Ref/"
+
 TI = TimeInterval(args.starttime,args.endtime,"%Y%m%d")
 
 TheMask = Mask.from_file(args.maskfile)
 jpk,jpj,jpi = TheMask.shape
-z = -TheMask.zlevels
 
-z_clim = np.array([-(l.bottom+l.top)/2  for l in LayerList])
 
 TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*nc")
 Req=timerequestors.Generic_req(TI)
@@ -82,17 +87,16 @@ def Layers_Mean(Pres,Values,LayerList):
     MEAN_LAY = np.zeros(len(LayerList), np.float32)
 
     for ilayer, layer in enumerate(LayerList):
-        ii = (Pres>=layer.top) & (Pres<=layer.bottom)
+        ii = (Pres>=layer.top) & (Pres<layer.bottom)
         if (ii.sum()> 1 ) :
-            local_profile = Values[ii]
-            MEAN_LAY[ilayer] = np.mean(local_profile)
+            local_profile = np.array(Values[ii])
+            if not np.isnan(local_profile).any():
+                MEAN_LAY[ilayer] = np.mean(local_profile)
     return MEAN_LAY
 
-# BFMv2:
-#VARLIST=['N1p','N3n','O2o','Ac','DIC','pH']
-# BFMv5:
+
 VARLIST=['N1p','N3n','O2o','ALK','DIC','pH','N4n','N5s','pCO2']
-SUBlist = basV2.Pred.basin_list
+SUBlist = basV2.Pred.basin_list[:]
 nLayers = len(LayerList)
 
 METRICvar = {'N1p':'PHO',
@@ -116,30 +120,19 @@ for ivar, var in enumerate(VARLIST):
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req) 
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print (METRICvar[var] + "-LAYER-Y-CLASS4-CLIM-BIAS,RMSD")
-    
-    if var=='N1p':
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64), basin_expand=False, QC=True)
-    elif var=='N3n':
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False, QC=True)
-    elif var=='N5s':     
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64), basin_expand=False, QC=True)
-    else:    
-        CLIM_REF_static,_,_,Nprofs = climatology.get_climatology_open(var,SUBlist, LayerList, TheMask, useLogistic=False, basin_expand=False,QC=True)
+    climfile= CLIMDIR + var + "_clim_metrics.nc"
+    with xr.open_dataset(climfile) as ds:
+        CLIM_REF_static = ds['mean'].values
+
     nSub = len(SUBlist)
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):
-        print (sub.name)
         Mean_profiles,_,_ = Hovmoeller_matrix(TIMESERIES,TL, np.arange(jpk), iSub, icoast=1, istat=0)
         mean_profile = Mean_profiles.mean(axis=1)
         mean_profile[mean_profile==0]=np.nan
         CLIM_MODEL[iSub,:] = Layers_Mean(TheMask.zlevels, mean_profile,LayerList)
     np.save(OUTDIR + var + "_ref_clim", CLIM_REF_static)
     np.save(OUTDIR + var + "_mod_clim", CLIM_MODEL)
-    print ("CLIM_REF_static")
-    print (CLIM_REF_static)
-    print ("CLIM_MODEL")
-    print (CLIM_MODEL)
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
@@ -165,6 +158,21 @@ for ivar, var in enumerate(VARLIST):
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM_STD.txt", STATS_STD,rows_names,column_names_STD)
 
 # PROF statistics
+def clim_prof_Qc(CLIMDIR, var):
+    """
+    Applies quality check flag to climatology
+    profiles used in plot (14 layers)
+    """
+    climfile= CLIMDIR + var + "_clim_plot.nc"
+    with xr.open_dataset(climfile) as ds:
+        clim_tmp = ds['mean'].values
+    climfile= CLIMDIR + var + "_clim_metrics.nc"
+    with xr.open_dataset(climfile) as ds:
+        included = ds['included_profs_flag'].values
+    qc = included.astype(np.float64)
+    qc[qc == 0] = np.nan
+    CLIM_REF_static = clim_tmp*qc[:,None]
+    return CLIM_REF_static
 
 PresDOWN=np.array([25,50,75,100,125,150,200,400,600,800,1000,1500,2000,2500])
 LayerList_2=[]
@@ -174,11 +182,11 @@ for bottom in PresDOWN:
     top = bottom
 nLayers = len(LayerList_2)
 LayerList_3=LayerList_2[:7]
-print ("LayerList_3 = ", LayerList_3)
 nLayers3 = len(LayerList_3)
 
 rows_names=[sub.name for sub in SUBlist]
 column_names = ['correlation']
+
 
 for var in VARLIST:
     if ( var == "pCO2" ): # Integral only up to 200m. It works because pCO2 is the last var of the VARLIST 
@@ -189,16 +197,11 @@ for var in VARLIST:
     TIMESERIES_complete,TL_complete=read_pickle_file(filename)
     ind,ww=TL_complete.select(Req)
     TIMESERIES=TIMESERIES_complete[ind,:]
-    print (METRICvar[var] + "-PROF-Y-CLASS4-CLIM-CORR-BASIN")
+    CLIM_REF_static = clim_prof_Qc(CLIMDIR,var)
 
-    if var=='N1p':
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 1000, 0.4],dtype=np.float64), basin_expand=False, QC=True)
-    elif var=='N3n':
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64),basin_expand=False, QC=True)
-    elif var=='N5s':
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var, SUBlist, LayerList_2, TheMask, useLogistic=True,startpt=np.asarray([0.1, 0.1, 500, 4],dtype=np.float64), basin_expand=False, QC=True)
-    else:
-        CLIM_REF_static,_,_,_ = climatology.get_climatology_open(var,SUBlist, LayerList_2, TheMask, useLogistic=False, basin_expand=False,QC=True)
+    if ( var == "pCO2" ):
+        CLIM_REF_static = CLIM_REF_static[:,:7]
+
 
     CLIM_MODEL = np.zeros((nSub, nLayers))
     for iSub, sub in enumerate(SUBlist):

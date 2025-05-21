@@ -50,6 +50,7 @@ from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons import genUserDateList as DL
 from bitsea.commons import timerequestors as requestors
 import calendar
+import sys
 
 INDIRSAT = addsep(args.inputsat)
 INDIRFLOAT = addsep(args.inputfloat)
@@ -73,6 +74,8 @@ Month = STARTTIME[4:6]
 TLfloat = TimeList.fromfilenames(TI,INDIRFLOAT,"BioFloat_Weekly*nc", \
                     prefix="BioFloat_Weekly_validation_", \
                     dateformat='%Y%m%d')
+
+#### Sat
 TLsat = {}
 
 LISTforecast = ['f%d' %ii for ii in range(1,4)]
@@ -92,6 +95,8 @@ for ff in LISTforecast:
     TLsat[ff] = TimeList.fromfilenames(TI,INDIRSAT,"Validation_" + ff + "*", \
                         prefix="Validation_" + ff + "_YYYYMMDD_on_daily_Sat.", \
                         dateformat='%Y%m%d')
+
+#### end Sat
 
 METRICS_NAMES = [
     'number of data values',
@@ -253,7 +258,7 @@ M_depths = M1.layerlist.split(',')
 DEPTHSlist = []
 for layername in M_depths:
     top,bottom_m = layername.split('-')
-    if float(top)>150 : continue
+    #if float(top)>150 : continue
     bottom = float(bottom_m[:-1])
     DEPTHSlist.append(bottom)
 Ndepths = len(DEPTHSlist)
@@ -261,11 +266,12 @@ Ndepths = len(DEPTHSlist)
 Nmetrics = len(METRICS_NAMES)
 Nsub = len(AREA_NAMES)
 
-MetricsFLOAT = np.zeros((Ndates,Ndepths,Nmetrics,Nsub))
+varlist=['P_l','N3n','O2o']
+Nvar=len(varlist)
+
+MetricsFLOAT = np.zeros((Ndates,Ndepths,Nmetrics,Nsub,Nvar))
 MetricsFLOAT[:] = np.nan
 TIMELIST = np.zeros((Ndates,),np.float32)
-
-
 
 for idate,datef in enumerate(AllDates):
     TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
@@ -278,13 +284,18 @@ for idate,datef in enumerate(AllDates):
         for isub,subname in enumerate(AREA_NAMES):
             if subname=='Aegean Sea': continue
             varname = DICTmetricnames[0][metric].decode()
-            MetricsFLOAT[idate,:,mm,isub] = M.variables[varname][0,indexAREAS[subname],:Ndepths].data.copy()
+            for ivar, VAR in enumerate (varlist):
+                MetricsFLOAT[idate,:,mm,isub,ivar] = M.variables[varname][0,indexAREAS[subname],:Ndepths].data.copy()
 
 masknan = np.isnan(MetricsFLOAT)
 MetricsFLOAT[masknan] = 1.e+20
 
+
 outfile = 'product_quality_stats_' + productname + '_' + STARTTIME + '_' + END__TIME + '.nc'
 outfilepath = OUTDIR + outfile
+
+print(outfilepath)
+
 S=NC.Dataset(outfilepath,"w")
 
 S.createDimension("time"         ,None)
@@ -294,7 +305,6 @@ S.createDimension("metrics"      ,len(METRICS_NAMES))
 S.createDimension("depths"       ,Ndepths)
 S.createDimension("surface"      ,1)
 S.createDimension("forecasts"    ,len(leadtimes))
-
 
 ncvar = S.createVariable("area_names",'c',('areas','string_length'))
 x=np.array(ALLstring,dtype=str)
@@ -343,13 +353,33 @@ for tt in ['LOG','NOLOG']:
 
 statsname = 'stats_profile_chlorophyll'
 parametername = "Chlorophyll"
-ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas'),fill_value=1.e+20)
+ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas',),fill_value=1.e+20)
 ncvar[:,:,:,:,:] = np.nan
-ncvar[:,0,:,:,:] = MetricsFLOAT
+ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,0]
 
 setattr(S.variables[statsname], "parameter",parametername)
 setattr(S.variables[statsname], "reference","BGC-Argo floats")
 setattr(S.variables[statsname], "units"    ,"mg Chl*m^-3")
+
+statsname = 'stats_profile_nitrate'
+parametername = "Nitrate"
+ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas',),fill_value=1.e+20)
+ncvar[:,:,:,:,:] = np.nan
+ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,1]
+
+setattr(S.variables[statsname], "parameter",parametername)
+setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "units"    ,"mmol NO3*m^-3")
+
+statsname = 'stats_profile_oxygen'
+parametername = "Oxygen"
+ncvar=S.createVariable(statsname,'f',('time','forecasts','depths','metrics','areas',),fill_value=1.e+20)
+ncvar[:,:,:,:,:] = np.nan
+ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,2]
+
+setattr(S.variables[statsname], "parameter",parametername)
+setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "units"    ,"mmol O2*m^-3")
 
 setattr(S,"contact","service.med.ogs@inogs.it")
 setattr(S,"product",productname)

@@ -19,7 +19,7 @@ from bitsea.utilities.argparse_types import date_from_str
 from bitsea.utilities.argparse_types import existing_dir_path
 from bitsea.utilities.argparse_types import existing_file_path
 from bitsea.utilities.argparse_types import generic_path
-
+import sys
 
 def argument():
     parser = argparse.ArgumentParser(
@@ -86,14 +86,16 @@ R = timerequestors.Weekly_req(d.year, d.month, d.day)
 Check_Obj = check.check(Path(""), verboselevel=0)
 
 LAYERLIST = [
-    Layer(0, 10),
-    Layer(10, 30),
-    Layer(30, 60),
-    Layer(60, 100),
-    Layer(100, 150),
-    Layer(150, 300),
-]
-VARLIST = ["P_l"]
+     Layer(0, 10),
+     Layer(10, 30),
+     Layer(30, 60),
+     Layer(60, 100),
+     Layer(100, 150),
+     Layer(150, 300),
+     Layer(300, 600),
+     ]
+
+VARLIST=['P_l','N3n','O2o']
 nSub = len(OGS.MVR.basin_list)
 nDepth = len(LAYERLIST)
 nVar = len(VARLIST)
@@ -125,6 +127,7 @@ ANOMALY_CORR[:] = np.nan
 TI = R.time_interval
 TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
+
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6, 36, 30, 46))
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 
@@ -132,7 +135,6 @@ if args.basedir_clim is not None:
     TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM / "PROFILES", "ave*nc")
     TLclim.inputFrequency = "monthly"
     Mclim = Matchup_Manager(ALL_PROFILES, TLclim, BASEDIR_CLIM)
-
 
 for ivar, var in enumerate(VARLIST):
     print(var)
@@ -153,7 +155,6 @@ for ivar, var in enumerate(VARLIST):
                 interpolation_on_Float=True,
             )
             Matchup_object_list.append(floatmatchup)
-
             if args.basedir_clim is not None:
                 floatmatchup_clim = Mclim.getMatchups2(
                     [p],
@@ -165,7 +166,6 @@ for ivar, var in enumerate(VARLIST):
                 Matchup_object_list_clim.append(floatmatchup_clim)
             else:
                 Matchup_object_list_clim.append(floatmatchup)
-
         for ilayer, layer in enumerate(LAYERLIST):
             MODEL_LAYER_MEAN = []  # one value for each suitable profile in (subbasin, layer)
             REF_LAYER_MEAN = []
@@ -209,6 +209,7 @@ for ivar, var in enumerate(VARLIST):
                     ANOMALY_CORR[ivar, isub, ilayer] = (
                         M_LAYER_ANOMALY.correlation()
                     )
+
 
 ncOUT = NC.Dataset(outfile, "w")
 

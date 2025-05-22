@@ -7,8 +7,17 @@ from typing import Optional
 from typing import Tuple
 
 import numpy as np
-from geographiclib.geodesic import Geodesic
 from numpy.typing import ArrayLike
+
+from bitsea.utilities.optional_dependencies.geographiclib.geodesic import (
+    Geodesic,
+)
+from bitsea.utilities.optional_dependencies.geographiclib.geodesic import (
+    GEOGRAPHICLIB_AVAILABLE,
+)
+from bitsea.utilities.optional_dependencies.geographiclib.geodesic import (
+    warn_about_missing_geographiclib,
+)
 
 
 class GridSidesAlgorithm(Enum):
@@ -43,80 +52,6 @@ WGS84 = Ellipsoid("WGS84", 6378137, 1 / 298.257223563)
 GEODESIC = Geodesic(WGS84.major_axis, WGS84.flattening)
 
 
-def _geodetic_distance(
-    p1: Tuple[float, float], p2: Tuple[float, float]
-) -> float:
-    """
-    Calculate the geodetic distance between two points on Earth.
-
-    This function computes the geodetic distance between two geographical
-    points, specified by their latitude and longitude, using the Geodesic
-    Inverse method.
-    It accurately calculates the shortest distance over the Earth's
-    ellipsoidal surface.
-
-    This function returns the distance in meters.
-
-    This function is not intended to be called directly. Instead, it is
-    used by the `GeoPySidesCalculator` class.
-
-    Args:
-        p1: The latitude and longitude of the first point in degrees.
-        p2: The latitude and longitude of the second point in degrees.
-
-    Returns:
-        float: The geodetic distance between the two specified points,
-            in meters.
-    """
-    lat1, lon1 = p1
-    lat2, lon2 = p2
-    return GEODESIC.Inverse(lat1, lon1, lat2, lon2, Geodesic.DISTANCE)["s12"]
-
-
-def _great_circle_distance(
-    p1: Tuple[float, float], p2: Tuple[float, float]
-) -> float:
-    """
-    Calculate the great-circle distance between two points on the Earth's
-    surface.
-
-    This function computes the great-circle distance, which is the shortest
-    distance between two points on the surface of a sphere, in this case,
-    the Earth. The calculation is performed using the haversine formula.
-    The Earth is approximated as a sphere of radius 6,371,009 meters.
-
-    This function returns the distance in meters.
-
-    This function is not intended to be called directly. Instead, it is
-    used by the `GeoPySidesCalculator` class.
-
-    Args:
-        p1: The latitude and longitude of the first point in degrees.
-        p2: The latitude and longitude of the second point in degrees.
-
-    Returns:
-        float: The great-circle distance between the two points, in meters.
-    """
-    lat1, lon1 = np.radians(p1[0]), np.radians(p1[1])
-    lat2, lon2 = np.radians(p2[0]), np.radians(p2[1])
-
-    sin_lat1, cos_lat1 = np.sin(lat1), np.cos(lat1)
-    sin_lat2, cos_lat2 = np.sin(lat2), np.cos(lat2)
-
-    delta_lon = lon2 - lon1
-    cos_delta_lon, sin_delta_lon = np.cos(delta_lon), np.sin(delta_lon)
-
-    d = np.arctan2(
-        np.sqrt(
-            (cos_lat2 * sin_delta_lon) ** 2
-            + (cos_lat1 * sin_lat2 - sin_lat1 * cos_lat2 * cos_delta_lon) ** 2
-        ),
-        sin_lat1 * sin_lat2 + cos_lat1 * cos_lat2 * cos_delta_lon,
-    )
-
-    return 6371009 * d
-
-
 def compute_geodesic_distance(
     *,
     lat1: np.typing.ArrayLike,
@@ -129,6 +64,12 @@ def compute_geodesic_distance(
     Compute the geodesic distance between two points on Earth (approximated
     using the WSG84 ellipsoid).
 
+    This function computes the geodetic distance between two geographical
+    points, specified by their latitude and longitude, using the Geodesic
+    Inverse method.
+    It accurately calculates the shortest distance over the Earth's
+    ellipsoidal surface.
+
     This function returns the distance in meters, and it supports Numpy
     vectorization.
 
@@ -137,6 +78,16 @@ def compute_geodesic_distance(
     you may tolerate an error of a few metres, and you have to compute several
     millions of distances, you may consider using the other method.
     """
+    if not GEOGRAPHICLIB_AVAILABLE:
+        warn_about_missing_geographiclib(
+            "geographiclib is not installed. For this reason, this code will "
+            "compute the geodesic distance using the great-circle formula"
+            "(neglecting the elipsoidal shape of the Earth). If you need "
+            "this kind of accuracy, please install geographiclib."
+        )
+        return compute_great_circle_distance(
+            lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+        )
     use_scalars = True
     for v in lat1, lon1, lat2, lon2:
         if not np.isscalar(v):
@@ -190,7 +141,24 @@ def compute_great_circle_distance(
     This function returns the distance in meters, and it supports Numpy
     vectorization.
     """
-    return _great_circle_distance((lat1, lon1), (lat2, lon2))
+    lat1, lon1 = np.radians(lat1), np.radians(lon1)
+    lat2, lon2 = np.radians(lat2), np.radians(lon2)
+
+    sin_lat1, cos_lat1 = np.sin(lat1), np.cos(lat1)
+    sin_lat2, cos_lat2 = np.sin(lat2), np.cos(lat2)
+
+    delta_lon = lon2 - lon1
+    cos_delta_lon, sin_delta_lon = np.cos(delta_lon), np.sin(delta_lon)
+
+    d = np.arctan2(
+        np.sqrt(
+            (cos_lat2 * sin_delta_lon) ** 2
+            + (cos_lat1 * sin_lat2 - sin_lat1 * cos_lat2 * cos_delta_lon) ** 2
+        ),
+        sin_lat1 * sin_lat2 + cos_lat1 * cos_lat2 * cos_delta_lon,
+    )
+
+    return 6371009 * d
 
 
 def extend_from_average(
@@ -354,20 +322,24 @@ class GeoPySidesCalculator:
         # v_faces_lat_coords = gphiv
 
         if self._geodesic:
-            distance_function = _geodetic_distance
+            distance_function = compute_geodesic_distance
         else:
-            distance_function = _great_circle_distance
+            distance_function = compute_great_circle_distance
 
         e1t = np.empty_like(xlevels, dtype=np.float32)
         e2t = np.empty_like(xlevels, dtype=np.float32)
         for i, j in cart_prod(range(e1t.shape[0]), range(e1t.shape[1])):
             e1t[i, j] = distance_function(
-                (u_faces_lat_coords[i, j], u_faces_lon_coords[i, j]),
-                (u_faces_lat_coords[i, j + 1], u_faces_lon_coords[i, j + 1]),
+                lat1=u_faces_lat_coords[i, j],
+                lon1=u_faces_lon_coords[i, j],
+                lat2=u_faces_lat_coords[i, j + 1],
+                lon2=u_faces_lon_coords[i, j + 1],
             )
             e2t[i, j] = distance_function(
-                (v_faces_lat_coords[i, j], v_faces_lon_coords[i, j]),
-                (v_faces_lat_coords[i + 1, j], v_faces_lon_coords[i + 1, j]),
+                lat1=v_faces_lat_coords[i, j],
+                lon1=v_faces_lon_coords[i, j],
+                lat2=v_faces_lat_coords[i + 1, j],
+                lon2=v_faces_lon_coords[i + 1, j],
             )
 
         return e1t, e2t

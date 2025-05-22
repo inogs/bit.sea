@@ -69,7 +69,7 @@ class ArrayWrapper:
     def __getitem__(self, item) -> np.ndarray:
         output = self._data_array.__getitem__(item)
 
-        # If `item` triggers a copy (i.e. if it uses advanced indices),
+        # If `item` triggers a copy (i.e., if it uses advanced indices),
         # then we can return the selection as is. Otherwise, we set
         # the `write` flag to `False` to preserve the data of this
         # object

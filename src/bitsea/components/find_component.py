@@ -2,10 +2,10 @@ from collections.abc import Iterable
 from typing import Tuple
 
 import numpy as np
-from numba import jit
 
 from bitsea.components.neighbour_schemes import CrossNeighbours
 from bitsea.components.neighbour_schemes import NeighbourScheme
+from bitsea.utilities.optional_dependencies.numba import jit
 
 
 def find_component(
@@ -21,7 +21,7 @@ def find_component(
     binary mask.
     Connectivity is determined by a specified neighbor scheme, which defines the
     relationships between adjacent points. The output is a boolean array where
-    only the points in the connected component, starting from the given point,
+    only the points in the connected component starting from the given point
     are `True`.
 
     This function can be used for applications such as detecting lakes or

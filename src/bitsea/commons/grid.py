@@ -9,7 +9,6 @@ from typing import Union
 import netCDF4
 import numpy as np
 from numpy.typing import ArrayLike
-from sklearn.neighbors import BallTree
 
 from bitsea.basins.region import Polygon
 from bitsea.basins.region import Rectangle
@@ -20,6 +19,7 @@ from bitsea.commons.geodistances import GridSidesAlgorithm
 from bitsea.commons.geodistances import NemoGridSidesCalculator
 from bitsea.commons.utils import search_closest_sorted
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
+from bitsea.utilities.optional_dependencies.sklearn.neighbors import BallTree
 
 
 class OutsideDomain(ValueError):
@@ -440,9 +440,9 @@ class IrregularGrid(BaseGrid):
         # Initialized as a list that contains only `None`; when we need a
         # BallTree we will replace the first element of the list with a BallTree
         # object (the list will never have more than one element).
-        # This mechanism allows to share the cache among different objects that
+        # This mechanism allows sharing the cache among different objects that
         # represent the same grid (see, for example, the MaskLayers objects);
-        # when one of the objects initialize the cache, it is initialized for
+        # when one of the objects initializes the cache, it is initialized for
         # all of them
         self._balltree_cache: List[Optional[BallTree]] = [None]
 
@@ -537,7 +537,7 @@ class IrregularGrid(BaseGrid):
         )
 
         # Now we do the same for the other sides. Here we need to concatenate
-        # only two elements because one of the vertex is shared with the
+        # only two elements because one of the vertices is shared with the
         # previous side
         top_boundary_lon = np.concatenate(
             (v_faces_lon_coords[-1, :][::-1], (u_faces_lon_coords[-1, 0],))
@@ -839,9 +839,9 @@ class MaskLayer(BooleanArrayWrapper, Grid, ABC):
     ):
         """
         Extends a grid object and transforms it into a grid. This is usually
-        more
-        efficient than using the initializer directly, as it can reuse some cached
-        values from the original grid object, reducing the need for copying.
+        more efficient than using the initializer directly, as it can reuse
+        some cached values from the original grid object, reducing the need
+        for copying.
         """
         if isinstance(grid, RegularGrid):
             return RegularMaskLayer.from_grid(

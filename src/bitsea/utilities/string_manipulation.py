@@ -188,7 +188,7 @@ def read_csv_txt(txt: str) -> List[List[str]]:
     Parse the content of a CSV file into a list of lists.
 
     Although Python's standard library includes a CSV reader, it cannot handle
-    fields that exceed a specific length. While this is usually sufficient for
+    fields that exceed a specific length. While this is usually enough for
     most files, certain files (e.g., those containing WKT polygons) require the
     ability to process arbitrarily long fields. This function addresses that
     limitation with a pure Python implementation of a CSV reader.

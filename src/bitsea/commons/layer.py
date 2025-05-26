@@ -1,31 +1,34 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
+from numbers import Real
 import numpy as np
 
-class Layer(object):
-    def __init__(self,top, bottom):
+class Layer:
+    """
+    This object represents a depth interval in meters. It is defined
+    by two numbers, `top`and `bottom`
+    """
+    def __init__(self, top: Real, bottom: Real):
         t = float(top)
         b = float(bottom)
-        if t <= b:
-            self.__top = t
-            self.__bottom = b
-        else:
+        if t > b:
             raise ValueError("top must be above of bottom")
 
+        self.__top = t
+        self.__bottom = b
+
     def __repr__(self):
-        if self.top ==self.bottom:
-            return "Layer %g m" %self.__top
-        return "Layer %g-%g m" %(self.__top, self.__bottom)
+        return self.__str__()
 
     def __str__(self):
-        if self.top ==self.bottom:
-            return "Layer %g m" %self.__top
-        return "layer%g-%g" %(self.__top, self.__bottom)
+        if self.top == self.bottom:
+            return f"Layer {self.__top} m"
+        return f"Layer {self.__top}-{self.__bottom} m"
 
     def string(self):
-        if self.top ==self.bottom:
-            return "%gm" %self.__top
-        return "%g-%gm" %(self.__top, self.__bottom)
+        if self.top == self.bottom:
+            return f"{self.__top}m"
+        return f"{self.__top}-{self.__bottom}m"
 
     def longname(self):
         if self.top ==self.bottom:

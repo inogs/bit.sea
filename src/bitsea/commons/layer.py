@@ -1,13 +1,16 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 from numbers import Real
+
 import numpy as np
+
 
 class Layer:
     """
     This object represents a depth interval in meters. It is defined
-    by two numbers, `top`and `bottom`
+    by two numbers, `top` and `bottom`
     """
+
     def __init__(self, top: Real, bottom: Real):
         t = float(top)
         b = float(bottom)
@@ -18,22 +21,29 @@ class Layer:
         self.__bottom = b
 
     def __repr__(self):
-        return self.__str__()
+        return f"Layer({self.__top}, {self.__bottom})"
 
     def __str__(self):
         if self.top == self.bottom:
             return f"Layer {self.__top} m"
-        return f"Layer {self.__top}-{self.__bottom} m"
+        return f"Layer {self.__top:g}-{self.__bottom:g} m"
+
+    def __eq__(self, other):
+        if not isinstance(other, Layer):
+            return NotImplemented
+        top_close = np.abs(self.top - other.top) < 1e-6
+        bottom_close = np.abs(self.bottom - other.bottom) < 1e-6
+        return top_close and bottom_close
 
     def string(self):
         if self.top == self.bottom:
-            return f"{self.__top}m"
-        return f"{self.__top}-{self.__bottom}m"
+            return f"{self.__top:g}m"
+        return f"{self.__top:g}-{self.__bottom:g}m"
 
     def longname(self):
-        if self.top ==self.bottom:
-            return "%04gm" %self.__top
-        return "%04g-%04gm" %(self.__top, self.__bottom)
+        if self.top == self.bottom:
+            return f"{self.__top:04g}m"
+        return f"{self.__top:04g}-{self.__bottom:04g}m"
 
     @property
     def top(self):
@@ -43,13 +53,16 @@ class Layer:
     def bottom(self):
         return self.__bottom
 
+
 class LayerMap(object):
     def __init__(self, mask, top, bottom):
-        if (top.shape==mask.shape[1:]) & (bottom.shape==mask.shape[1:]):
+        if (top.shape == mask.shape[1:]) & (bottom.shape == mask.shape[1:]):
             self.__mask = mask
             self.__dim = mask.shape[1:]
         else:
-            raise ValueError("top and bottom dimensions must be equal to mask dimensions along lat and lon")
+            raise ValueError(
+                "top and bottom dimensions must be equal to mask dimensions along lat and lon"
+            )
 
         if np.all(top <= bottom):
             self.__top = top
@@ -58,16 +71,19 @@ class LayerMap(object):
             raise ValueError("top must be above of bottom")
 
     def __repr__(self):
-        return "Map of Layers with dimensions %g,%g" %(self.__dim[0], self.__dim[1])
+        return "Map of Layers with dimensions %g,%g" % (
+            self.__dim[0],
+            self.__dim[1],
+        )
 
     def __str__(self):
-        return "maplayer(%g,%g)" %(self.__dim[0], self__dim[1])
+        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
 
     def string(self):
-        return "maplayer(%g,%g)" %(self.__dim[0], self__dim[1])
+        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
 
     def longname(self):
-        return "Map of Layers, dimension %g,%g" %(self.__dim[0], self__dim[1])
+        return "Map of Layers, dimension %g,%g" % (self.__dim[0], self.__dim[1])
 
     @property
     def top(self):
@@ -84,4 +100,3 @@ class LayerMap(object):
     @property
     def dimension(self):
         return self.__dim
-

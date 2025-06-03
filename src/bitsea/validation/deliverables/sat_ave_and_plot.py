@@ -88,7 +88,7 @@ var = 'SATchl'
 
 outfile    = OUTPUTDIR / f"Map_{var}_{req_label}.png"
 print(outfile)
-fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplot({'clim':[0,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
 ax.set_xlim([-6,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
@@ -107,7 +107,8 @@ pl.close(fig)
 
 outfile    = OUTPUTDIR / f"Maplog_{var}_{req_label}.png"
 print(outfile)
-fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplotlog({'clim':[1.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
+
 ax.set_xlim([-6,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)

@@ -30,7 +30,7 @@ scikit-learn = "^1.4.2"
 coverage = "^7.6.4"
 pytest = "^8.3.2"
 pre-commit = "^3.8.0"
-requests = "^2.32.3"
+requests = "^2.32.4"
 hypothesis = "^6.115.3"
 
 [build-system]

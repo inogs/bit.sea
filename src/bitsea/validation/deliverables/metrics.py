@@ -37,12 +37,7 @@ def MLD(Temperature, Salinity, Pres, insitu_T=False):
     It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
     """
     th = 10  # threshold of depth minimum
-    i_less_than_10 = Pres < th
-    i_10 = (
-        i_less_than_10[-1] + 1
-    )  # (this is the index corresponding approx ~10m of the zlevel array)
-    # NO IT IS NOT! THIS IS:
-    #i_10 = np.abs(Pres - th).argmin()
+    i_10 = np.abs(Pres - th).argmin()
     T = Temperature
     S = Salinity
     # if T is in-situ (e.g. float data) convert to potential temperature 
@@ -51,7 +46,7 @@ def MLD(Temperature, Salinity, Pres, insitu_T=False):
     D1000 = Pres[
         (Pres < 1000) & (Pres > th)
     ]  # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
-    bitsea/validation/deliverablesT1000 = T[(Pres < 1000) & (Pres > th)]
+    T1000 = T[(Pres < 1000) & (Pres > th)]
     S1000 = S[(Pres < 1000) & (Pres > th)]
     Dens1000 = sw.dens(S1000, T1000, D1000) - 1000  # DENSITY # SIGMA
     PDens1000 = (

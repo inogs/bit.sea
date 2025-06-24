@@ -30,22 +30,19 @@ def find_DCM(Chl_profile, zlev):
     return CM, DCM
 
 
-def MLD(Temperature, Salinity, Pres):
+def MLD(Temperature, Salinity, Pres, insitu_T=False):
     """Calculation of Mixed Layer Depth based on temperature difference of 0.2
     mld is defined as the level where the difference of temperature with respect the reference level of 10m
     is of 0.2C
     It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
     """
     th = 10  # threshold of depth minimum
-    i_less_than_10 = Pres < th
-    i_10 = (
-        i_less_than_10[-1] + 1
-    )  # (this is the index corresponding approx ~10m of the zlevel array)
-    i_10 = (
-        i_less_than_10[-1] + 1
-    )  # (this is the index corresponding approx ~10m of the zlevel array)
+    i_10 = np.abs(Pres - th).argmin()
     T = Temperature
     S = Salinity
+    # if T is in-situ (e.g. float data) convert to potential temperature 
+    if insitu_T: 
+        T = sw.ptmp(S, T, Pres)
     D1000 = Pres[
         (Pres < 1000) & (Pres > th)
     ]  # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)

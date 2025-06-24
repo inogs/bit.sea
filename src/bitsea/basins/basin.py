@@ -69,14 +69,14 @@ class Basin(object):
         if module_name == DEFAULT_BASIN_MODULE:
             return self.name
 
-        if module_name.startswith("basins."):
-            module_name = "." + module_name[len("basins") :]
+        if module_name.startswith("bitsea.basins."):
+            module_name = "." + module_name[len("bitsea.basins") :]
         return "{}.{}".format(module_name, self.name)
 
     @staticmethod
     def load_from_uuid(uuid: str):
         if uuid.startswith(".."):
-            uuid = "basins" + uuid[1:]
+            uuid = "bitsea.basins" + uuid[1:]
 
         if "." not in uuid:
             basin_module = DEFAULT_BASIN_MODULE

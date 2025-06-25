@@ -19,7 +19,7 @@ from bitsea.utilities.argparse_types import date_from_str
 from bitsea.utilities.argparse_types import existing_dir_path
 from bitsea.utilities.argparse_types import existing_file_path
 from bitsea.utilities.argparse_types import generic_path
-import sys
+
 
 def argument():
     parser = argparse.ArgumentParser(
@@ -127,7 +127,6 @@ ANOMALY_CORR[:] = np.nan
 TI = R.time_interval
 TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
-
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6, 36, 30, 46))
 M = Matchup_Manager(ALL_PROFILES, TL, BASEDIR)
 
@@ -209,7 +208,6 @@ for ivar, var in enumerate(VARLIST):
                     ANOMALY_CORR[ivar, isub, ilayer] = (
                         M_LAYER_ANOMALY.correlation()
                     )
-
 
 ncOUT = NC.Dataset(outfile, "w")
 

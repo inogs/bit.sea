@@ -20,8 +20,11 @@ class check():
         if verboselevel = 1, a NetCDF will be printed out
         else, no files will be dumped
         '''
-        self.outdir = OUTDIR
-        OUTDIR.mkdir(parents=True, exist_ok=True)
+        if OUTDIR=="":
+            self.outdir=""
+        else:    
+            self.outdir = OUTDIR
+            OUTDIR.mkdir(parents=True, exist_ok=True)
         self.verboselevel=verboselevel
         self.threshold_nitrate = threshold_nitrate
 

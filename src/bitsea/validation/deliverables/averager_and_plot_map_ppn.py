@@ -38,7 +38,7 @@ def argument():
                                 type = str,
                                 required = True,
                                 default = '',
-                                choices = ['ppn'] )
+                                choices = ['ppn','P_c','P_z'] )
     parser.add_argument(   '--plotlistfile', '-l',
                                 type = str,
                                 required = True,
@@ -119,6 +119,8 @@ TheMask = Mask.from_file(args.maskfile)
 
 CONVERSION_DICT={
          'ppn' : 365./1000,
+         'P_c' : 1,
+         'Z_c' : 1,
          }
 
 MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
@@ -189,6 +191,14 @@ for il, layer in enumerate(PLOT.layerlist):
     # colors = ['navy','blue','royalblue','deepskyblue','aqua','lawngreen','greenyellow','gold','orange','red','maroon']
     colors = ['midnightblue','indigo','blue','royalblue','deepskyblue','aqua','greenyellow','gold','orange','red','maroon']
     # New corlors more similar to Lazzari et al. (2012)
+
+#    cmap=viridis
+#    cmap=matplotlib.colormaps['viridis']
+    cmap=matplotlib.colormaps['cividis']
+
+    n_lines=len(levels)
+    # Take colors at regular intervals spanning the colormap.
+    colors = cmap(np.linspace(0, 1, n_lines))
 
     CS=ax.contourf(TheMask.xlevels, TheMask.ylevels,integrated_masked,levels,colors=colors)
     cbar=fig.colorbar(CS,ticks=levels)

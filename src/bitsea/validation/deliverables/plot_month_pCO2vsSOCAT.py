@@ -55,11 +55,18 @@ for im,lab in enumerate(Imesi):
 fig, axs = pl.subplots(2,2, facecolor='w', edgecolor='k')
 axs = axs.ravel()
 
+mk=["o","v","s","*"]
+c_palette=["grey","cyan","yellow","magenta"]
+c_palette=["grey","orange","blue","green"]
+#c_palette=["grey",
 for ns,sub in enumerate(OGS.P.basin_list[:4]):
             print (ns, sub)
-            c=next(color)
-            axs[0].plot(x,model[ns,:],'-',c=c,label=sub.name,linewidth=2.0)
-            axs[0].plot(x,socat[ns,:]*K,'--',c=c,linewidth=2.0) #,marker="o")
+#            c=next(color)
+            c=c_palette[ns]
+           # axs[0].plot(x,model[ns,:],'-',c=c,marker=mk[ns],label=sub.name,linewidth=2.0)
+           # axs[0].plot(x,socat[ns,:]*K,'--',c=c,marker=mk[ns],linewidth=2.0) #,marker="o")
+            axs[0].plot(x,model[ns,:],'-',c=c,linewidth=2.0)
+            axs[0].plot(x,socat[ns,:]*K,'--',c=c,marker=mk[ns],linewidth=2.0,label=sub.name)
             axs[0].legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
             axs[0].grid(color='k',linestyle='--')
             axs[0].set_xticks(x_ticks)
@@ -73,9 +80,12 @@ color=iter(cm.rainbow(np.linspace(0,1,4)))
 for ns,sub in enumerate(OGS.P.basin_list[4:8]):
             js=ns+4
             print (ns, sub)
-            c=next(color)
-            axs[1].plot(x,model[js,:],'-',c=c,label=sub.name,linewidth=2.0)
-            axs[1].plot(x,K*socat[js,:],'--',c=c,linewidth=2.0) #,marker="o")
+            #c=next(color)
+            c=c_palette[ns]
+#            axs[1].plot(x,model[js,:],'-',c=c,marker=mk[ns],label=sub.name,linewidth=2.0)
+#            axs[1].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2.0) #,marker="o")
+            axs[1].plot(x,model[js,:],'-',c=c,linewidth=2.0)
+            axs[1].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2.0,label=sub.name)
             axs[1].legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
             axs[1].grid(color='k',linestyle='--')
             axs[1].set_xticks(x_ticks)
@@ -88,9 +98,12 @@ color=iter(cm.rainbow(np.linspace(0,1,4)))
 for ns,sub in enumerate(OGS.P.basin_list[8:12]):
             js=ns+8
             print (ns, sub)
-            c=next(color)
-            axs[2].plot(x,model[js,:],'-',c=c,label=sub.name,linewidth=2)
-            axs[2].plot(x,K*socat[js,:],'--',c=c,linewidth=2) #,marker="o")
+          #  c=next(color)
+            c=c_palette[ns]
+#            axs[2].plot(x,model[js,:],'-',c=c,marker=mk[ns],label=sub.name,linewidth=2)
+#            axs[2].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2) #,marker="o")
+            axs[2].plot(x,model[js,:],'-',c=c,linewidth=2)
+            axs[2].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2,label=sub.name) #,marker="o")
             axs[2].legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
             axs[2].grid(color='k',linestyle='--')
             axs[2].set_xticks(x_ticks)
@@ -103,9 +116,12 @@ color=iter(cm.rainbow(np.linspace(0,1,4)))
 for ns,sub in enumerate(OGS.P.basin_list[12:16]):
             js=ns+12
             print (ns, sub)
-            c=next(color)
-            axs[3].plot(x,model[js,:],'-',c=c,label=sub.name,linewidth=2)
-            axs[3].plot(x,K*socat[js,:],'--',c=c,linewidth=2) #,marker="o")
+           #c=c_palette[ns] c=next(color)
+            c=c_palette[ns]
+#            axs[3].plot(x,model[js,:],'-',c=c,marker=mk[ns],label=sub.name,linewidth=2)
+#            axs[3].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2) #,marker="o")
+            axs[3].plot(x,model[js,:],'-',c=c,linewidth=2)
+            axs[3].plot(x,K*socat[js,:],'--',c=c,marker=mk[ns],linewidth=2,label=sub.name)
             axs[3].legend(loc="best",labelspacing=0, handletextpad=0,borderpad=0.1)
             axs[3].grid(color='k',linestyle='--')
             axs[3].set_xticks(x_ticks)

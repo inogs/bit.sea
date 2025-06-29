@@ -129,7 +129,7 @@ Sat2d[~mask] = np.NaN
 var = 'SATchl'
 
 outfile    = OUTPUTDIR / f"Map_{var}_RMSD_{req_label}.png"
-fig,ax     = mapplot({'clim':[0.001,0.07],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplot({'clim':[0.001,0.07],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
@@ -147,7 +147,8 @@ pl.close(fig)
 
 
 outfile    = OUTPUTDIR / f"Maplog_{var}_RMSD_{req_label}.png"
-fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplotlog({'clim':[0.01,1],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
+#fig,ax     = mapplotlog({'clim':[0.01,0.4],  'data':Sat2d},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)
@@ -164,7 +165,7 @@ pl.close(fig)
 
 
 outfile    = OUTPUTDIR / f"Map_COUNTS_{var}_RMSD_{req_label}.png"
-fig,ax     = mapplot({'clim':[40,55],  'data':COUNTS},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+fig,ax     = mapplot({'clim':[40,55],  'data':COUNTS},fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat, colormap='viridis')
 ax.set_xlim([-5,36])
 ax.set_ylim([30,46])
 ax.set_xlabel('Lon').set_fontsize(12)

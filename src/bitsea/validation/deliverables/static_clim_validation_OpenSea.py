@@ -57,7 +57,7 @@ from bitsea.commons import timerequestors
 import xarray as xr
 
 #List consistent with /g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/MedBGCins/Clim_Annual_Ref
-LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000)]
+LayerList = [Layer(0,10), Layer(10,30), Layer(30,60), Layer(60,100), Layer(100,150), Layer(150,300), Layer(300,600), Layer(600,1000), Layer(0,1000)]
 
 INPUTDIR=addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
@@ -136,6 +136,7 @@ for ivar, var in enumerate(VARLIST):
     STATS = np.zeros((nLayers,3),np.float32)*np.nan
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
+
         refsubs = CLIM_REF_static[:,ilayer]
         modsubs =      CLIM_MODEL[:,ilayer]
         bad = np.isnan(refsubs) | np.isnan(modsubs)
@@ -143,17 +144,33 @@ for ivar, var in enumerate(VARLIST):
 
         m = matchup(modsubs[good], refsubs[good])
 
-        STATS[ilayer,0] = m.bias()
-        STATS[ilayer,1] = m.RMSE()
-        STATS[ilayer,2] = m.correlation()
+        # SET THE METRICS OF THE TOTAL LAYER 0-1000 AS THE MEAN VALUES OF THE LAYERS ABOVE
+        if (layer == Layer(0,1000) ):
+
+            STATS[ilayer,0] = np.mean(STATS[:-1,0])
+            STATS[ilayer,1] = np.mean(STATS[:-1,1])
+            STATS[ilayer,2] = np.mean(STATS[:-1,2])
  
-        STATS_STD[ilayer,0] = m.bias()
-        STATS_STD[ilayer,1] = m.RMSE()
-        STATS_STD[ilayer,2] = m.correlation()
-        STATS_STD[ilayer,3] = np.mean(modsubs[good])
-        STATS_STD[ilayer,4] = np.mean(refsubs[good])
-        STATS_STD[ilayer,5] = np.std(modsubs[good])
-        STATS_STD[ilayer,6] = np.std(refsubs[good])
+            STATS_STD[ilayer,0] = np.mean(STATS_STD[:-1,0])
+            STATS_STD[ilayer,1] = np.mean(STATS_STD[:-1,1])
+            STATS_STD[ilayer,2] = np.mean(STATS_STD[:-1,2])
+            STATS_STD[ilayer,3] = np.mean(STATS_STD[:-1,3])
+            STATS_STD[ilayer,4] = np.mean(STATS_STD[:-1,4])
+            STATS_STD[ilayer,5] = np.mean(STATS_STD[:-1,5])
+            STATS_STD[ilayer,6] = np.mean(STATS_STD[:-1,6])
+
+        else:
+            STATS[ilayer,0] = m.bias()
+            STATS[ilayer,1] = m.RMSE()
+            STATS[ilayer,2] = m.correlation()
+ 
+            STATS_STD[ilayer,0] = m.bias()
+            STATS_STD[ilayer,1] = m.RMSE()
+            STATS_STD[ilayer,2] = m.correlation()
+            STATS_STD[ilayer,3] = np.mean(modsubs[good])
+            STATS_STD[ilayer,4] = np.mean(refsubs[good])
+            STATS_STD[ilayer,5] = np.std(modsubs[good])
+            STATS_STD[ilayer,6] = np.std(refsubs[good])
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM.txt", STATS,rows_names,column_names)
     writetable(OUTDIR + var + "-LAYER-Y-CLASS4-CLIM_STD.txt", STATS_STD,rows_names,column_names_STD)
 

@@ -21,7 +21,7 @@ from bitsea.components.component_mask_2d import ComponentMask2D
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
-# The fill value used for the missing values; this is a low precision number
+# The fill value used for the missing values; this is a low precision number,
 # so it is stable no matter what dtype is used for the numpy array
 FILL_VALUE = np.float32(1e20)
 
@@ -321,7 +321,7 @@ class Mask(BooleanArrayWrapper, Mesh):
             extend_from_average(self.xlevels, axis=0), axis=1
         )
 
-        # Now we transform the paths that we have compute previously into
+        # Now we transform the paths that we have computed previously into
         # paths of coordinates. We also discard the paths that are shorter
         # than `min_line_length` and we save the length of the longest path
         longest_path = 0
@@ -427,6 +427,64 @@ class Mask(BooleanArrayWrapper, Mesh):
             n_vertical_cells = np.count_nonzero(self[:, jj, ji], axis=0)
 
         return super().column_side_area(ji, jj, side, n_vertical_cells)
+
+    def to_xarray(self) -> xr.Dataset:
+        """
+        Converts the `Mask` object to an `xarray.Dataset`. The new dataset
+        follows the name conventions of CMEMS for the coordinates: the
+        latitude is called "latitude" (instead of "lat"), the "longitude" is
+        called "longitude", and the depth is called "depth".
+
+        Returns:
+            An Xarray Dataset
+        """
+        if self.grid.is_regular():
+            return xr.Dataset(
+                {
+                    "tmask": (("depth", "latitude", "longitude"), self),
+                },
+                coords={
+                    "latitude": (("latitude",), self.lat),
+                    "longitude": (("longitude",), self.lon),
+                    "depth": (("depth",), self.zlevels),
+                },
+            )
+        return xr.Dataset(
+            {
+                "tmask": (("depth", "y", "x"), self),
+            },
+            coords={
+                "latitude": (("y", "x"), self.ylevels),
+                "longitude": (("y", "x"), self.xlevels),
+                "depth": (("depth",), self.zlevels),
+            },
+        )
+
+    @staticmethod
+    def from_xarray(dataset: xr.Dataset) -> "Mask":
+        """
+        Create a Mask object from an Xarray Dataset.
+
+        This function is the inverse of `Mask.to_xarray`. It takes an Xarray
+        generated from a *regular* Mask (i.e., one that has a regular grid)
+        using its method `to_xarray` and returns a Mask object.
+
+        This function does not support Datasets generated from a `Mask` that
+        is not regular.
+
+        Args:
+            dataset (xr.Dataset): The input xarray Dataset containing latitude,
+                                  longitude, depth, and mask data.
+
+        Returns:
+            Mask: A Mask object constructed using the provided xarray Dataset.
+        """
+        latitude = dataset.latitude.values
+        longitude = dataset.longitude.values
+        grid = RegularGrid(lat=latitude, lon=longitude)
+
+        depth = dataset.depth.values
+        return Mask(grid=grid, zlevels=depth, mask_array=dataset.tmask.values)
 
     @classmethod
     def from_file_pointer(

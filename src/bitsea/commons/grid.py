@@ -194,7 +194,7 @@ class Grid(ABC):
         raise NotImplementedError
 
     def is_regular(self):
-        """Returns "True" if the grid is regular, i.e. if all the columns of
+        """Returns "True" if the grid is regular, i.e., if all the columns of
         xlevels and all the rows of ylevels are the same."""
         return False
 

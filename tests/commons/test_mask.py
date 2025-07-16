@@ -3,6 +3,7 @@ from itertools import product as cart_prod
 import numpy as np
 import pytest
 
+from bitsea.commons.grid import RegularGrid
 from bitsea.commons.mask import FILL_VALUE
 from bitsea.commons.mask import Mask
 from bitsea.commons.mask import MaskBathymetry
@@ -50,6 +51,22 @@ def mask(mesh):
         mask_array=mask_array,
         allow_broadcast=True,
         e3t=mesh.e3t,
+    )
+
+
+@pytest.fixture
+def regular_mask():
+    latitudes = np.linspace(30.0, 45.0, 31)
+    longitudes = np.linspace(-5.0, 30.0, 36)
+    grid = RegularGrid(lat=latitudes, lon=longitudes)
+    level_boundaries = np.array([0.0, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 30.0])
+    mask_array = np.zeros(grid.shape, dtype=bool)
+    mask_array[latitudes < 40.0, longitudes > 10.0] = True
+    return Mask(
+        grid,
+        zlevels=(level_boundaries[:-1] + level_boundaries[1:]) / 2.0,
+        mask_array=mask_array,
+        allow_broadcast=True,
     )
 
 
@@ -373,3 +390,22 @@ def test_mask_save(tmp_path, mask):
     assert np.all(new_mask.e3t == mask.e3t)
 
     mask_path.unlink()
+
+
+def test_regular_mask_xarray_conversions(regular_mask):
+    xarray_mask = regular_mask.to_xarray()
+    new_mask = Mask.from_xarray(xarray_mask)
+
+    assert np.allclose(regular_mask, new_mask)
+    assert np.allclose(regular_mask.xlevels, new_mask.xlevels)
+    assert np.allclose(regular_mask.ylevels, new_mask.ylevels)
+    assert np.allclose(regular_mask.zlevels, new_mask.zlevels)
+    assert np.allclose(regular_mask, new_mask)
+
+
+def test_mask_to_xarray(mask):
+    xarray_mask = mask.to_xarray()
+    assert np.allclose(xarray_mask.latitude, mask.ylevels)
+    assert np.allclose(xarray_mask.longitude, mask.xlevels)
+    assert np.allclose(xarray_mask.depth, mask.zlevels)
+    assert np.allclose(xarray_mask.tmask, mask)

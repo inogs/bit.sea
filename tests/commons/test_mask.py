@@ -1,5 +1,6 @@
 from itertools import product as cart_prod
 
+import netCDF4
 import numpy as np
 import pytest
 
@@ -7,6 +8,7 @@ from bitsea.commons.grid import RegularGrid
 from bitsea.commons.mask import FILL_VALUE
 from bitsea.commons.mask import Mask
 from bitsea.commons.mask import MaskBathymetry
+from bitsea.commons.mask import MaskWithRivers
 from bitsea.commons.mesh import Mesh
 
 
@@ -409,3 +411,28 @@ def test_mask_to_xarray(mask):
     assert np.allclose(xarray_mask.longitude, mask.xlevels)
     assert np.allclose(xarray_mask.depth, mask.zlevels)
     assert np.allclose(xarray_mask.tmask, mask)
+
+
+def test_mask_with_rivers_from_file(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "mask_with_rivers.nc"
+
+    rivers_mask = MaskWithRivers.from_file(mask_file)
+    water_cells = rivers_mask.get_water_cells()
+
+    with netCDF4.Dataset(mask_file, "r") as ds:
+        original_mask = np.asarray(ds.variables["tmask"]) > 0.5
+        rivers = np.asarray(ds.variables["rivers"])
+
+    assert np.all(original_mask == water_cells)
+
+    # Check that in the current mask every cell assigned to a river is set
+    # to "False"
+    for i, j in zip(*np.where(rivers)):
+        assert not np.any(rivers_mask[:, i, j])
+
+    # Assert that if a value inside water_cells is True, then it is also True
+    # inside rivers_mask (rivers_mask is contained inside water_cells)
+    assert np.all(
+        np.logical_or(np.logical_and(rivers_mask, water_cells), ~rivers_mask)
+    )

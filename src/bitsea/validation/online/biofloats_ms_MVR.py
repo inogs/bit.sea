@@ -26,7 +26,7 @@ def argument():
         description="""
     Generates float validation data on a single week, from one single chain run.
     Week is centered on thursday.
-    Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
+    Produces a single file, containing bias, mse and number of measurements for each subbasin and layer
     for chlorophyll, nitrate and oxygen.
     In this approach we define the measurement as mean on layer of the float profile values.
     """,
@@ -116,11 +116,11 @@ REF___VARIANCE = np.zeros((nVar, nSub, nDepth), np.float32)
 REF___VARIANCE[:] = np.nan
 
 BIAS = np.zeros((nVar, nSub, nDepth), np.float32)
-RMSE = np.zeros((nVar, nSub, nDepth), np.float32)
+MSE = np.zeros((nVar, nSub, nDepth), np.float32)
 CORR = np.zeros((nVar, nSub, nDepth), np.float32)
 ANOMALY_CORR = np.zeros((nVar, nSub, nDepth), np.float32)
 BIAS[:] = np.nan
-RMSE[:] = np.nan
+MSE[:] = np.nan
 CORR[:] = np.nan
 ANOMALY_CORR[:] = np.nan
 
@@ -189,7 +189,7 @@ for ivar, var in enumerate(VARLIST):
                     np.array(MODEL_LAYER_MEAN), np.array(REF_LAYER_MEAN)
                 )
                 BIAS[ivar, isub, ilayer] = M_LAYER.bias()
-                RMSE[ivar, isub, ilayer] = M_LAYER.RMSE()
+                MSE[ivar, isub, ilayer] = M_LAYER.MSE()
                 MODEL_MEAN[ivar, isub, ilayer] = np.nanmean(MODEL_LAYER_MEAN)
                 REF___MEAN[ivar, isub, ilayer] = np.nanmean(REF_LAYER_MEAN)
 
@@ -229,8 +229,8 @@ setattr(ncOUT, "layerlist", s[:-1])
 
 ncvar = ncOUT.createVariable("bias", "f", ("var", "sub", "depth"))
 ncvar[:] = BIAS
-ncvar = ncOUT.createVariable("rmse", "f", ("var", "sub", "depth"))
-ncvar[:] = RMSE
+ncvar = ncOUT.createVariable("mse", "f", ("var", "sub", "depth"))
+ncvar[:] = MSE
 ncvar = ncOUT.createVariable("npoints", "i", ("var", "sub", "depth"))
 ncvar[:] = NPROFILES
 ncvar = ncOUT.createVariable("nobs", "i", ("var", "sub", "depth"))

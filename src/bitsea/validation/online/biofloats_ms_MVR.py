@@ -125,6 +125,7 @@ CORR[:] = np.nan
 ANOMALY_CORR[:] = np.nan
 
 TI = R.time_interval
+print(TI)
 TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6, 36, 30, 46))
@@ -146,6 +147,8 @@ for ivar, var in enumerate(VARLIST):
         Matchup_object_list = []
         Matchup_object_list_clim = []
         for p in Profilelist:
+            #if p.ID() == '': # If a float should be excluded, add its ID here.
+            #    continue
             floatmatchup = M.getMatchups2(
                 [p],
                 TheMask.zlevels,

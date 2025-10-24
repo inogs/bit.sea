@@ -112,11 +112,9 @@ VARLIST = [P_l,N3n,O2o,P_c]
 nVar = len(VARLIST)
 nSub = len(OGS.basin_list)
 
-METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf']
 METRICS = ['Int_0-200','Corr','DCM','z_01','Nit_1','SurfVal','nProf','dNit_dz','CM','O2o_sat','OMZ','max_O2']
 nStat = len(METRICS)
 
-M = Matchup_Manager(ALL_PROFILES,TL,BASEDIR)
 MonthlyRequestors=M.TL.getMonthlist()
 nTime = len(MonthlyRequestors)
 
@@ -136,8 +134,7 @@ for ivar, V in enumerate(VARLIST):
     if var_mod == "P_c": Check_obj = Check_obj_PhytoC
 
     for itime, Req in enumerate(MonthlyRequestors):
-        if Req.time_interval.end_time > TL.timeinterval.end_time :
-            Req.time_interval.end_time = TL.timeinterval.end_time
+        Req.time_interval = Req.time_interval.intersect(TI)
         print (Req, flush=True)
         for iSub, Sub in enumerate(OGS.basin_list):
             BASIN_PROFILES_float_raw = bio_float.FloatSelector(var,Req.time_interval,Sub)
@@ -153,12 +150,13 @@ for ivar, V in enumerate(VARLIST):
                 if p.available_params.find(var)<0 : continue
                 if (var_mod=="P_c"):
                     Pres,Profile,Qc=p.read(var,var_mod="P_c")
-                    print (p.ID())
                 else:
                     Pres,Profile,Qc=p.read(var) #,True)
 
                 if len(Pres) < 10 : continue
+
                 GM = M.getMatchups2([p], TheMask.zlevels, var_mod, interpolation_on_Float=False,checkobj=V.check_obj, extrapolation=V.extrap)
+
 
                 if GM.number() == 0 :
                     print (p.ID() + " excluded")

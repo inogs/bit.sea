@@ -669,7 +669,7 @@ if __name__ == '__main__':
     DE = DataExtractor(mask,filename,'N1p')
     k=0
     map2d=DE.values[k,:,:]
-    map2d[~mask.mask[k,:,:]] = np.NaN
+    map2d[~mask.mask[k,:,:]] = np.nan
     from bitsea.commons.layer import Layer
     map_dict ={'data':map2d, 'clim':[0,0.1],'date':datetime.strptime('20160116','%Y%m%d'),'varname':'N1p', 'layer':Layer(0,10),'longname':'Phosphate', 'units':'mmolP/m3'}
     #fig, ax = mapplot_onlycolor(map_dict, fig=None, ax=None, mask=mask,ncolors=24,cbar_ticks=5, dpi=72.0)

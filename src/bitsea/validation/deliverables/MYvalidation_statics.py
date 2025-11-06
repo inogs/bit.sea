@@ -52,16 +52,16 @@ LAYERLIST = [Layer(0,10), Layer(10,50), Layer(50,100), Layer(100,150), Layer(150
 nSUB = len(SUBlist)
 nLay = len(LAYERLIST)
 
-BGC_CLASS4_NIT_RMS_LAYER_BASIN  = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
-BGC_CLASS4_PHOS_RMS_LAYER_BASIN = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
-BGC_CLASS4_CHL_RMS_LAYER_BASIN  = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
-BGC_CLASS4_O2_RMS_LAYER_BASIN   = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
+BGC_CLASS4_NIT_RMS_LAYER_BASIN  = np.ones((nSUB,nLay), dtype=np.float32)*np.nan
+BGC_CLASS4_PHOS_RMS_LAYER_BASIN = np.ones((nSUB,nLay), dtype=np.float32)*np.nan
+BGC_CLASS4_CHL_RMS_LAYER_BASIN  = np.ones((nSUB,nLay), dtype=np.float32)*np.nan
+BGC_CLASS4_O2_RMS_LAYER_BASIN   = np.ones((nSUB,nLay), dtype=np.float32)*np.nan
 
 VARLIST = ['N1p', 'N3n','O2o']#'chl']
 
 for modelvarname in VARLIST:
 
-    OUTPUT = np.ones((nSUB,nLay), dtype=np.float32)*np.NaN
+    OUTPUT = np.ones((nSUB,nLay), dtype=np.float32)*np.nan
     for isub, sub in enumerate(SUBlist):
         Profilelist=N.Selector(NUTRVARS[modelvarname],T_INT,sub)
         nP = len(Profilelist)

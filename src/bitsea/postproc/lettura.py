@@ -8,7 +8,7 @@ N1p = M.variables['N1p'].data[0,:,:,:]
 M.close()
 
 A=N1p.copy()
-A[A>1e+19]=np.NaN
+A[A>1e+19]=np.nan
 pl.imshow(A[0,:,:])
 
 

@@ -47,7 +47,7 @@ for time,archived_file,satfile in DAILY_SAT_LIST:
     modelLand  = np.isnan(Model) #lands are nan
     nodata     = cloudsLand | modelLand
     selection  = ~nodata # & TheMask.mask_at_level(200.0)
-    Misfit[nodata] = np.NaN
+    Misfit[nodata] = np.nan
     
     netcdf3.write_2d_file(Misfit, 'chl_misfit', outfile, TheMask)
     

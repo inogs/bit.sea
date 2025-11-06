@@ -83,7 +83,7 @@ Sat2d=Sat.averager(SAT_3D)
 
 mask=TheMask.mask_at_level(0)
 Sat2d[Sat2d<0] = np.nan
-Sat2d[~mask] = np.NaN
+Sat2d[~mask] = np.nan
 var = 'SATchl'
 
 outfile    = OUTPUTDIR / f"Map_{var}_{req_label}.png"

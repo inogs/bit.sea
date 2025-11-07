@@ -57,7 +57,7 @@ Float_Index_dtype = np.dtype(
         ("file_name", np.str_, 200),
         ("lat", np.float64),
         ("lon", np.float64),
-        ("time", np.str__, 17),
+        ("time", np.str_, 17),
         ("parameters", np.str_, 200),
         ("parameter_data_mode", np.str_, 200),
     ]

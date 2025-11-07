@@ -47,7 +47,6 @@ mydtype = np.dtype(
 )
 
 
-input_file = "/gpfs/scratch/userexternal/gbolzon0/V7C/Med_floats.txt"
 CORIOLIS_INDEX_FILE = np.loadtxt(args.inputfile, dtype=mydtype, delimiter=",")
 nFiles = len(CORIOLIS_INDEX_FILE)
 

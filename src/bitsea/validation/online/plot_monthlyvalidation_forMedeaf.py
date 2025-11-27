@@ -43,6 +43,7 @@ from bitsea.basins import V2 as OGS
 import sys
 
 
+
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
 
@@ -63,11 +64,12 @@ if VAR not in LIST_VAR:
 
 
 DICTvardim = {
-    'areas': 'area_names',
-    'metrics': 'metric_names',
-    'forecasts': 'forecasts',
-    'time': 'time',
-    'depths': 'depths',
+    'time': 'time',    
+    'area': 'area',
+    'metric': 'metric',
+    'depth': 'depth',
+    'layer': 'layer',
+    'forecast': 'forecast',
 }
 
 
@@ -83,57 +85,62 @@ def reshape_label(handles_labels):
    return(reshaped_list)
 
 for ii,filein in enumerate(TLmvr.filelist):
-    #print(filein)
+    print(filein)
     MVR = NC.Dataset(filein,'r')
     datesmonth = MVR.variables['time'][:].data.copy()
     dates.extend(list(datesmonth))
     if VAR == "chlorophyll":
-       satstats_month = MVR.variables['stats_surface_chlorophyll'][:].data.copy()
+       satstats_month = MVR.variables['stats_chlorophyll-a_sat-l3'][:].data.copy()
        satstats.extend(list(satstats_month))
-    # chla;o2;no3# 
-    floatstats_month = MVR.variables['stats_profile_'+VAR][:].data.copy()
+       print('stats_'+VAR+'-a-ins-pf')
+       floatstats_month = MVR.variables['stats_'+VAR+'-a_ins-pf'][:].data.copy()
+    #o2;no3# 
+    else:
+       NAMEVAR='stats_'+VAR+'-ins-pf'
+       print(NAMEVAR)
+       floatstats_month = MVR.variables['stats_'+VAR+'_ins-pf'][:].data.copy()
     floatstats.extend(list(floatstats_month))
-    
-
-
     if ii==0:
         DICTdim_sat = {}
         if VAR == "chlorophyll":
-           dimtuple = MVR.variables['stats_surface_chlorophyll'].dimensions
+           dimtuple = MVR.variables['stats_chlorophyll-a_sat-l3'].dimensions
         else: 
-           dimtuple = MVR.variables['stats_profile_'+VAR].dimensions 
-           
+           dimtuple = MVR.variables['stats_'+VAR+'_ins-pf' ].dimensions 
            
         for iid,dd in enumerate(dimtuple):
            if VAR == "chlorophyll":
-              if 'surf' in dd:
-                 DICTdim_sat[dd] = ['surface',iid]
+              if 'depth' in dd:
+                 DICTdim_sat[dd] = ['depth',iid]
                  continue
            else:
-              if 'dep' in dd: 
-                 DICTdim_sat[dd] = ['depth',iid]
+              if 'lay' in dd: 
+                 DICTdim_sat[dd] = ['layer',iid]
                  continue 
            varname = DICTvardim[dd]
-           vv = MVR.variables[varname][:].data.copy()
+           vv = MVR.variables[varname][:]
            if vv.dtype.kind=='f': 
                DICTdim_sat[dd] = [vv,iid]
-           if vv.dtype.kind=='S': 
+           if vv.dtype.kind=='S' or vv.dtype.kind=='O': 
                vLIST = []
-               for iiv in range(vv.shape[0]):
-                   vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
+               #for iiv in range(vv.shape[0]):
+                   #vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
+               vLIST=list(vv)
                DICTdim_sat[dd] = [vLIST,iid] 
-        
+       
         DICTdim_float = {}
-        dimtuple = MVR.variables['stats_profile_'+VAR].dimensions
+        if VAR == "chlorophyll":
+            dimtuple = MVR.variables['stats_'+VAR+'-a_ins-pf' ].dimensions
+        else:
+            dimtuple = MVR.variables['stats_'+VAR+'_ins-pf' ].dimensions
         for iid,dd in enumerate(dimtuple):
             varname = DICTvardim[dd]
-            vv = MVR.variables[varname][:].data.copy()
+            vv = MVR.variables[varname][:]
             if vv.dtype.kind=='f': 
                 DICTdim_float[dd] = [vv,iid]
-            if vv.dtype.kind=='S': 
-                vLIST = []
-                for iiv in range(vv.shape[0]):
-                    vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
+            if vv.dtype.kind=='S' or vv.dtype.kind=='O': 
+                vLIST = list(vv)
+                #for iiv in range(vv.shape[0]):
+                #    vLIST.append(''.join([vv[iiv,kk].decode("utf-8") for kk in range(vv.shape[1])]))
                 DICTdim_float[dd] = [vLIST,iid] 
 
 
@@ -144,7 +151,7 @@ array_satstats[array_satstats>1.e+19] = np.nan
 
 dates_datetime = []
 for dd in dates:
-    ddordinal = int(dd) + datetime.datetime(1970,1,1).toordinal()
+    ddordinal = int(dd) + datetime.datetime(1950,1,1).toordinal()
     dd_datetime = datetime.datetime.fromordinal(ddordinal)
     dates_datetime.append(dd_datetime)
 
@@ -157,7 +164,7 @@ for subaggregate in OGS.MVR.basin_list:
             break
 
 DICTsub_shortname = {}
-for subname in DICTdim_sat['areas'][0]:
+for subname in DICTdim_sat['area'][0]:
     for sub in OGS.P.basin_list:
         if subname in sub.extended_name:
             DICTsub_shortname[subname] = sub.name
@@ -177,8 +184,8 @@ DICTvargroup = {
     'mean squared error':    2,
     'variance of product':   3,
     'variance of reference': 3,
-    'correlation':           4,
-    'anomaly correlation':   5,
+    'anomaly correlation':   4,
+    'correlation':           5,
 }
 
 
@@ -189,18 +196,18 @@ plt.close('all')
 
 if VAR == 'chlorophyll':
 
-    indmetrics = DICTdim_sat['metrics'][1]
-    indsub = DICTdim_sat['areas'][1]
+    indmetrics = DICTdim_sat['metric'][1]
+    indsub = DICTdim_sat['area'][1]
 
     noforecasts = ['number of data values','mean of reference','variance of reference']
-    for isub,subname in enumerate(DICTdim_sat['areas'][0]):
+    for isub,subname in enumerate(DICTdim_sat['area'][0]):
        fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)
-       for iim,mm in enumerate(DICTdim_sat['metrics'][0]):
+       for iim,mm in enumerate(DICTdim_sat['metric'][0]):
            nax = DICTvargroup[mm]
            ix_ax = int(np.floor(nax/2))
            iy_ax = nax-2*ix_ax
            plt.sca(axs[ix_ax,iy_ax])
-           for iif,ff in enumerate(DICTdim_sat['forecasts'][0]):
+           for iif,ff in enumerate(DICTdim_sat['forecast'][0]):
                if 'reference' in mm:
                    label = mm
                else:
@@ -213,7 +220,7 @@ if VAR == 'chlorophyll':
                DICTind = {
                    indmetrics: iim,
                    indsub: isub,
-                   DICTdim_sat['forecasts'][1]: iif,
+                   DICTdim_sat['forecast'][1]: iif,
                }
                selection_sat = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_sat.keys()))]
                plt.plot(dates_datetime,array_satstats[tuple(selection_sat)],
@@ -229,7 +236,8 @@ if VAR == 'chlorophyll':
            plt.grid()
        plt.suptitle(subname)
        fig.autofmt_xdate()
-       plt.savefig(OUTDIR + '/satmetric' + DICTsub_shortname[subname].upper() + '.png')
+       BASIN=subname.replace(' ','_')
+       plt.savefig(OUTDIR + '/satmetric_' +  BASIN+ '.png')
 
 else:
     pass
@@ -237,24 +245,26 @@ else:
 
 # float
 plt.close('all')
-indmetrics = DICTdim_sat['metrics'][1]
-indsub = DICTdim_sat['areas'][1]
+indmetrics = DICTdim_sat['metric'][1]
+indsub     = DICTdim_sat['area'][1]
+indlayer   = DICTdim_float['layer'][1]
 
-LISTalpha_depth = np.linspace(1,0.3, len(DICTdim_float['depths'][0]))
+LISTalpha_depth = np.linspace(1,0.3, len(DICTdim_float['layer'][0]))
 
 for sub in OGS.MVR.basin_list:
     print (sub.name)
     handles_labels = []
     fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,12])#,sharey=True)
-    
-     
-    for iim,mm in enumerate(DICTdim_sat['metrics'][0]): # loop su tutte le metriche 
+    for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche 
+        
+        #import sys
+        #sys.exit('carol')
         nax = DICTvargroup[mm]
         ix_ax = int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         ax = axs[ix_ax, iy_ax]
         iii=0
-        for iid,depth in enumerate(DICTdim_float['depths'][0]):
+        for iid,depth in enumerate(DICTdim_float['layer'][0]):
             group_label = "Mod" if iim == 0 else "Ref"
             label = f"{depth}m {group_label}"
             lab   = str(int(depth))
@@ -266,14 +276,13 @@ for sub in OGS.MVR.basin_list:
                 if 'ref' in mm:
                     CMAP=cmap(1)
 
-
             ax.set_title(title)
 
             DICTind = {
                 indmetrics: iim,
                 indsub: DICTsubgroup_index[sub.name],
-                DICTdim_sat['forecasts'][1]: 0,
-                DICTdim_float['depths'][1]: iid,
+                DICTdim_sat['forecast'][1]: 0,
+                DICTdim_float['layer'][1]: iid,
             }
             selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
 

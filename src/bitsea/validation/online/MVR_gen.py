@@ -181,7 +181,7 @@ for tt in ['LOG','NOLOG']:
 
     for idate,datef in enumerate(AllDates):
         req = requestors.Daily_req(datef.year,datef.month,datef.day)
-        TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
+        TIMELIST[idate] = datef.toordinal() - datetime.datetime(1950,1,1).toordinal()
         for iforecast,ff in enumerate(LISTforecast):
             ii = TLsat[ff].select_one(req)
             if ii==None: continue
@@ -270,11 +270,11 @@ varlist=['P_l','N3n','O2o']
 Nvar=len(varlist)
 
 MetricsFLOAT = np.zeros((Ndates,Ndepths,Nmetrics,Nsub,Nvar))
-MetricsFLOAT[:] = np.nan
+MetricsFLOAT[:] = 1.e+20
 TIMELIST = np.zeros((Ndates,),np.float32)
 
 for idate,datef in enumerate(AllDates):
-    TIMELIST[idate] = datef.toordinal() - datetime.datetime(1970,1,1).toordinal()
+    TIMELIST[idate] = datef.toordinal() - datetime.datetime(1950,1,1).toordinal()
     ii,diffseconds = TLfloat.find(datef,returndiff=True)
     if diffseconds/24/3600>3.5: continue
     filef = TLfloat.filelist[ii]
@@ -296,6 +296,9 @@ outfilepath = OUTDIR + outfile
 
 print(outfilepath)
 
+#import sys
+#sys.exit()
+
 S=NC.Dataset(outfilepath,"w")
 
 S.createDimension("time"         ,None)
@@ -305,25 +308,61 @@ S.createDimension("depth"       ,1)
 S.createDimension("layer"       ,Ndepths)
 S.createDimension("forecast"    ,len(leadtimes))
 
-ncvar = S.createVariable("area", str, ("area",)) # 
-x=np.array(ALLstring,dtype=str)
-ncvar[:] = x[:Nsub]
-#ncvar[:] = x.view('U1').reshape(x.size,-1)[:Nsub,:]
+subbasins_renamed = [
+    "Alboran Sea",
+    "South West Med western part",
+    "South West Med eastern part",
+    "North West Med",
+    "Tyrrhenian Sea northern part",
+    "Tyrrhenian Sea southern part",
+    "Adriatic Sea northern part",
+    "Adriatic Sea southern part",
+    "Aegean Sea",
+    "Ionian Sea western part",
+    "Ionian Sea south-eastern part",
+    "Ionian Sea north-eastern part",
+    "Levantine Sea western part",
+    "Levantine Sea central-northern part",
+    "Levantine Sea central-southern part",
+    "Levantine Sea eastern part",
+    "Full domain"
+]
 
+x=np.array(ALLstring,dtype=str)
+
+from netCDF4 import stringtochar
+# writing AREA as Variable
+vlen_str = S.createVLType(str, "vlen_str")
+ncvar = S.createVariable("area", vlen_str, ("area",))
+for i, name in enumerate(subbasins_renamed):
+    ncvar[i] = name
+
+#ncvar = S.createVariable("area", str, ("area",)) # 
+#x=np.array(subbasins_renamed ,dtype=str)
+#ncvar[:] = subbasins_renamed  #x[:Nsub]
 setattr(S.variables['area'],"long_name"  ,"area")
 setattr(S.variables['area'], "description", "Geographical areas that are included in the Region of reference")
 
-
+# writing metric as Variable
 ncvar = S.createVariable("metric", str, ('metric'))
 ncvar[:] = x[Nsub:]
 setattr(S.variables['metric'], "long_name", "List of CLASS4 metrics")
 
-ncvar = S.createVariable("forecast",'f',('forecast',))
+# writing forecast as Variable
+ncvar = S.createVariable("forecast",'f4',('forecast',) , fill_value=-999.0)
 ncvar[:] = leadtimes
 setattr(S.variables['forecast'],"description","forecast lead time")
 setattr(S.variables['forecast'],"units"    ,"hours")
 
+# writing depth as Variable
+ncvar = S.createVariable("depth",'f',('depth',))
+ncvar[:]=np.array(0)
+setattr(S.variables['depth'],"long_name"  ,"depth")
+setattr(S.variables['depth'],"units"      ,"m")
+setattr(S.variables['depth'], "description", "Surface level (0 m) over which statistics are calculated")
 
+
+# writing layer as Variable 
 ncvar = S.createVariable("layer",'f',('layer',))
 ncvar[:]=np.array(DEPTHSlist)
 setattr(S.variables['layer'],"long_name"  ,"layer")
@@ -331,64 +370,76 @@ setattr(S.variables['layer'],"positive"   ,"down")
 setattr(S.variables['layer'],"units"      ,"m")
 setattr(S.variables['layer'],"description","depth of the base of the vertical layer over which statistics are aggregated")
 
-ncvar = S.createVariable("time",'f',('time',))
+# writing time as Variable
+ncvar = S.createVariable('time', 'f4', ('time',), fill_value=-999.0)
 ncvar[:]=TIMELIST
 setattr(S.variables['time'],"long_name"    ,"validity time")
 setattr(S.variables['time'],"standard_name","time")
-setattr(S.variables['time'],"units"        ,"days since 1970-01-01")
+setattr(S.variables['time'],"units"        ,"days since 1950-01-01 12:00:00")
 setattr(S.variables['time'],"axis"         ,"T")
 
-for tt in ['LOG','NOLOG']:
+# writing stats_chlorophyll-a_sat as Variable ONLY NOLOG
+for tt in ['NOLOG']:  #for tt in ['LOG','NOLOG']:
     if tt=='LOG':
         stringlog = '_' + tt
     else:
         stringlog = ''
-    statsname = 'stats_Chlorophyll-a_sat-l3' + stringlog.lower()
+    statsname = 'stats_chlorophyll-a_sat-l3' + stringlog.lower()
     if tt=='LOG':
-        parametername = 'log of Surface Chlorophyll'
+        parametername = 'log of Surface chlorophyll'
     else:
         parametername = "Surface Chlorophyll"
-    ncvar=S.createVariable(statsname,'f',('time','forecast','depth','metric','area'),fill_value=1.e+20)
+    ncvar = S.createVariable(statsname, 'f4', ('time', 'forecast', 'depth', 'metric', 'area'), fill_value=-999.0)
     ncvar[:,:,0,:,:] = MetricsSAT[tt]
     setattr(S.variables[statsname], "parameter",parametername)
-    setattr(S.variables[statsname], "reference","Satellite observations from OC-TAC")
-    setattr(S.variables[statsname], "units"    ,"log(mg Chl*m^-3)")
+    setattr(S.variables[statsname], "reference","OCEANCOLOUR_MED_BGC_L3_NRT_009_141")
+    setattr(S.variables[statsname], "metric_name","CHL-SURF-D-CLASS4-SAT-PQD_EAN-XYZ-MED")
+    setattr(S.variables[statsname], "units"    ,"mg Chl*m^-3") #log removed
 
 
 ###### saving FLOAT
-
-statsname = 'stats_Chlorophyll-a_ins-pf'
+# writing Chlorophyll as BGC-Argo  Variable
+statsname = 'stats_chlorophyll-a_ins-pf'
 parametername = "Chlorophyll"
-ncvar=S.createVariable(statsname,'f',('time','forecast','layer','metric','area',),fill_value=1.e+20)
+ncvar=S.createVariable(statsname,'f4',('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
+
 ncvar[:,:,:,:,:] = np.nan
 ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,0]
 
 setattr(S.variables[statsname], "parameter",parametername)
-setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "reference","BGC-Argo")
+setattr(S.variables[statsname], "metric_name","CHL-X_Y-D-CLASS4-PROF-PQD_EAN-XY-MED")
 setattr(S.variables[statsname], "units"    ,"mg Chl*m^-3")
 
+
+# writing nitrate as BGC-Argo  Variable
 statsname = 'stats_nitrate_ins-pf'
 parametername = "Nitrate"
-ncvar=S.createVariable(statsname,'f',('time','forecast','layer','metric','area',),fill_value=1.e+20)
+ncvar = S.createVariable(statsname, 'f4', ('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
+
 ncvar[:,:,:,:,:] = np.nan
 ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,1]
 
 setattr(S.variables[statsname], "parameter",parametername)
-setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "reference","BGC-Argo")
+setattr(S.variables[statsname], "metric_name","NO3-X_Y-D-CLASS4-PROF-PQD_EAN-XY-MED")
 setattr(S.variables[statsname], "units"    ,"mmol NO3*m^-3")
 
-
+# writing Oxygen as BGC-Argo  Variable
 statsname = 'stats_oxygen_ins-pf'
 parametername = "Oxygen"
-ncvar=S.createVariable(statsname,'f',('time','forecast','layer','metric','area',),fill_value=1.e+20)
+ncvar = S.createVariable(statsname, 'f4', ('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
 ncvar[:,:,:,:,:] = np.nan
 ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,2]
 
 
 setattr(S.variables[statsname], "parameter",parametername)
-setattr(S.variables[statsname], "reference","BGC-Argo floats")
+setattr(S.variables[statsname], "reference","BGC-Argo")
+setattr(S.variables[statsname], "metric_name","O2-X_Y-D-CLASS4-PROF-PQD_EAN-XY-MED")
 setattr(S.variables[statsname], "units"    ,"mmol O2*m^-3")
 
+
+# writing metadata
 setattr(S,"contact","service.med.ogs@inogs.it")
 setattr(S,"product",productname)
 setattr(S,"start_date",STARTTIME)

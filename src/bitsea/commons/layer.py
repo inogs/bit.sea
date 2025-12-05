@@ -21,12 +21,12 @@ class Layer:
         self.__bottom = b
 
     def __repr__(self):
-        return f"Layer({self.__top}, {self.__bottom})"
+        return f"{self.__class__.__name__}({self.__top}, {self.__bottom})"
 
     def __str__(self):
         if self.top == self.bottom:
-            return f"Layer {self.__top} m"
-        return f"Layer {self.__top:g}-{self.__bottom:g} m"
+            return f"{self.__class__.__name__} {self.__top} m"
+        return f"{self.__class__.__name__} {self.__top:g}-{self.__bottom:g} m"
 
     def __eq__(self, other):
         if not isinstance(other, Layer):
@@ -67,8 +67,8 @@ class Layer:
 
 
 class LayerMap(object):
-    def __init__(self, mask, top, bottom):
-        if (top.shape == mask.shape[1:]) & (bottom.shape == mask.shape[1:]):
+    def __init__(self, mask: np.ndarray, top: np.ndarray, bottom: np.ndarray):
+        if top.shape == mask.shape[1:] and bottom.shape == mask.shape[1:]:
             self.__mask = mask
             self.__dim = mask.shape[1:]
         else:
@@ -83,19 +83,18 @@ class LayerMap(object):
             raise ValueError("top must be above of bottom")
 
     def __repr__(self):
-        return "Map of Layers with dimensions %g,%g" % (
-            self.__dim[0],
-            self.__dim[1],
+        return (
+            f"Map of Layers with dimensions {self.__dim[0]:g},{self.__dim[1]:g}"
         )
 
     def __str__(self):
-        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
+        return self.string()
 
     def string(self):
-        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
+        return f"maplayer({self.__dim[0]:g},{self.__dim[1]:g})"
 
     def longname(self):
-        return "Map of Layers, dimension %g,%g" % (self.__dim[0], self.__dim[1])
+        return f"Map of Layers, dimension {self.__dim[0]:g},{self.__dim[1]:g}"
 
     @property
     def top(self):

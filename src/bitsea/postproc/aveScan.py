@@ -415,7 +415,7 @@ def dumpPointProfiles(var):
     ncOUT_Pprofiles.createDimension("z"         ,jpk)            
     global VAR
     #VAR = VAR.copy()
-    VAR[~tmask]=np.NaN    
+    VAR[~tmask]=np.nan    
     P=PointProfiles(var)
     ncvar    = ncOUT_Pprofiles.createVariable(var  ,'f',('Ncruise','z'))    
     ncvar[:] = P

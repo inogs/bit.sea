@@ -86,7 +86,7 @@ maskcoast = masks & (mask200==False)
 
 mapc = np.load(mapcfile)
 if (mapc.shape==(jpj,jpi))==False:
-    print 'incorrect maskcoast shape EXIT'
+    print('incorrect maskcoast shape EXIT')
     import sys
     sys.exit(0)
 #version = 'v02' # version of model error limit
@@ -113,9 +113,9 @@ def write_eof(outfile,eofp,eofa):
     ncOUT.createDimension('neof',neof)
 
     ncvar = ncOUT.createVariable('eva','f',('neof','nreg'))
-    ncvar[:] = eofa;
+    ncvar[:] = eofa
     ncvar = ncOUT.createVariable('evc','f',('neof','nlev','nreg'))
-    ncvar[:] = eofp;
+    ncvar[:] = eofp
 
     ncOUT.close()
 
@@ -126,7 +126,7 @@ dtype = [(sub.name, bool) for sub in OGS.Pred]
 SUBareas = np.zeros((jpj,jpi),dtype=dtype)
 SUBtot = np.zeros((jpj,jpi),np.int)
 for isub,sub in enumerate(OGS.Pred):
-    print sub.name
+    print(sub.name)
     SUBareas[sub.name] = SubMask(sub, TheMask).mask_at_level(0)
     SUBtot[SUBareas[sub.name]] = isub
 SUBtot[tgr==0] = -1000
@@ -181,7 +181,7 @@ for im in range(12):
         ap = eva['open'][inds,:neof]
 #        ap = EOF.variables['eva'].data[:neof,inds-1].copy()
         var2D = varmap[jp,ip]
-        if np.isnan(var2D) : print('Var NaN')
+        if np.isnan(var2D) : print('Var nan')
         lmbd = ap**2
         e2   = pp[:,0]**2
         sigma2 = np.sum(lmbd * e2)
@@ -208,7 +208,7 @@ for im in range(12):
             pp = evc['coast' + cstr][inds,:neof,:]
             ap = eva['coast' + cstr][inds,:neof]
             var2D = varmap[jp,ip]
-            if np.isnan(var2D) : print('Var NaN')
+            if np.isnan(var2D) : print('Var nan')
             lmbd = ap[:neof]**2
             e2   = pp[:neof,0]**2
             sigma2 = np.sum(lmbd * e2)
@@ -223,7 +223,7 @@ for im in range(12):
             eofa[:,iiz] = eofa[:,iiz+1]
             eofp[:,:,iiz] = eofp[:,:,iiz+1]
     else: 
-        print 'To much 0 in eof and eva EXIT'
+        print('To much 0 in eof and eva EXIT')
         import sys
         sys.exit()
         

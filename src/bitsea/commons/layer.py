@@ -21,12 +21,12 @@ class Layer:
         self.__bottom = b
 
     def __repr__(self):
-        return f"Layer({self.__top}, {self.__bottom})"
+        return f"{self.__class__.__name__}({self.__top}, {self.__bottom})"
 
     def __str__(self):
         if self.top == self.bottom:
-            return f"Layer {self.__top} m"
-        return f"Layer {self.__top:g}-{self.__bottom:g} m"
+            return f"{self.__class__.__name__} {self.__top} m"
+        return f"{self.__class__.__name__} {self.__top:g}-{self.__bottom:g} m"
 
     def __eq__(self, other):
         if not isinstance(other, Layer):
@@ -54,44 +54,10 @@ class Layer:
         return self.__bottom
 
 
-class LayerMap(object):
-    def __init__(self, mask, top, bottom):
-        if (top.shape == mask.shape[1:]) & (bottom.shape == mask.shape[1:]):
-            self.__mask = mask
-            self.__dim = mask.shape[1:]
-        else:
-            raise ValueError(
-                "top and bottom dimensions must be equal to mask dimensions along lat and lon"
-            )
-
-        if np.all(top <= bottom):
-            self.__top = top
-            self.__bottom = bottom
-        else:
-            raise ValueError("top must be above of bottom")
-
-    def __repr__(self):
-        return "Map of Layers with dimensions %g,%g" % (
-            self.__dim[0],
-            self.__dim[1],
-        )
-
-    def __str__(self):
-        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
-
-    def string(self):
-        return "maplayer(%g,%g)" % (self.__dim[0], self.__dim[1])
-
-    def longname(self):
-        return "Map of Layers, dimension %g,%g" % (self.__dim[0], self.__dim[1])
-
-    @property
-    def top(self):
-        return self.__top
-
-    @property
-    def bottom(self):
-        return self.__bottom
+class LayerMap(Layer):
+    def __init__(self, mask, top: Real, bottom: Real):
+        super().__init__(top, bottom)
+        self.__mask = mask
 
     @property
     def mask(self):
@@ -99,4 +65,4 @@ class LayerMap(object):
 
     @property
     def dimension(self):
-        return self.__dim
+        return self.__mask.shape[1:]

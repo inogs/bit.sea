@@ -1,36 +1,45 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
-import os
-from pathlib import Path
+import datetime
 import warnings
-import numpy as np
-from xml.dom import minidom
 from ast import literal_eval
 from numbers import Real
+from pathlib import Path
+from xml.dom import minidom
 
-from bitsea.commons.layer import Layer, LayerMap
-from bitsea.commons.utils import get_date_string
-from bitsea.commons.xml_module import *
-from bitsea.commons.dataextractor import DataExtractor
-from bitsea.layer_integral.mapplot import mapplot,mapplot_medeaf_V5C,mapplot_nocolor
-import datetime
 import matplotlib.pyplot as pl
+import numpy as np
+
+from bitsea.commons.dataextractor import DataExtractor
+from bitsea.commons.layer import Layer
+from bitsea.commons.layer import LayerMap
+from bitsea.commons.utils import get_date_string
+from bitsea.commons.xml_module import get_node_attr
+from bitsea.commons.xml_module import get_subelements
+from bitsea.layer_integral.mapplot import mapplot_medeaf_V5C
+
 
 def warn_user(msg):
     warnings.warn(msg, SyntaxWarning, stacklevel=2)
 
+
 class Plot(object):
     def __init__(self, varname, longvarname, units, layerlist, clim):
-        #Input validation
+        # Input validation
         self.__varname = str(varname)
         self.__longvarname = str(longvarname)
         self.__units = units
-        if not isinstance(layerlist, (list, tuple)) or ((len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))):
+        if not isinstance(layerlist, (list, tuple)) or (
+            (len(layerlist) > 0) and not isinstance(layerlist[0], (Layer,))
+        ):
             raise ValueError("layerlist must be a list of Layers")
         self.__layerlist = layerlist
-        if not (clim is None):
-            if (not isinstance(clim, (list, tuple)) or (len(clim) != 2) or not
-            (isinstance(clim[0], Real) and isinstance(clim[1], Real))):
+        if clim is not None:
+            if (
+                not isinstance(clim, (list, tuple))
+                or (len(clim) != 2)
+                or not (isinstance(clim[0], Real) and isinstance(clim[1], Real))
+            ):
                 raise ValueError("clim must be a list of two numbers")
         self.__clim = clim
         self.__climslist = list()
@@ -39,8 +48,10 @@ class Plot(object):
     @property
     def varname(self):
         return self.__varname
+
     def longvarname(self):
         return self.__longvarname
+
     def units(self):
         return self.__units
 
@@ -55,6 +66,7 @@ class Plot(object):
     @property
     def climlist(self):
         return self.__climslist
+
     @property
     def depthfilters(self):
         return self.__depthfilters
@@ -68,15 +80,15 @@ class Plot(object):
         self.__climslist.append(clim)
         self.__depthfilters.append(mapdepthfilter)
 
-class MapBuilder(object):
 
+class MapBuilder(object):
     def __init__(self, plotlistfile, TL, MaskObject, outputdir):
-        '''
+        """
         Arguments :
         * TL * is a Timelist object
-        '''
+        """
 
-        self.__TL =TL
+        self.__TL = TL
         self.__outputdir = Path(outputdir)
         if not self.__outputdir.is_dir():
             raise ValueError(
@@ -84,47 +96,60 @@ class MapBuilder(object):
                 "{}".format(outputdir)
             )
         self._mask = MaskObject
-        with open(plotlistfile, 'r') as f:
+        with open(plotlistfile, "r") as f:
             xmldoc = minidom.parse(f)
         self.__plotlist = list()
-        #For each LayersMaps element
+        # For each LayersMaps element
         for lm in xmldoc.getElementsByTagName("LayersMaps"):
-            #For each plots element
+            # For each plots element
             for pdef in get_subelements(lm, "plots"):
                 clim = get_node_attr(pdef, "clim")
-                if not (clim is None):
+                if clim is not None:
                     clim = literal_eval(clim)
-                plot = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "plotunits"), [], clim)
-                #For each depth element
+                plot = Plot(
+                    get_node_attr(pdef, "var"),
+                    get_node_attr(pdef, "longname"),
+                    get_node_attr(pdef, "plotunits"),
+                    [],
+                    clim,
+                )
+                # For each depth element
                 for d in get_subelements(pdef, "depth"):
                     clim = get_node_attr(d, "clim")
-                    if not (clim is None):
+                    if clim is not None:
                         clim = literal_eval(clim)
-                    plot.append_layer(Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom")), clim)
+                    plot.append_layer(
+                        Layer(
+                            get_node_attr(d, "top"), get_node_attr(d, "bottom")
+                        ),
+                        clim,
+                    )
                 self.__plotlist.append(plot)
 
-    def read_background(self,filename):
+    def read_background(self, filename):
         sfondo = pl.imread(filename)
         return sfondo
 
-    def plot_maps_data(self, basemap_obj, maptype=0, background_img=None,nranks=1, rank=0):
-        '''
+    def plot_maps_data(
+        self, basemap_obj, maptype=0, background_img=None, nranks=1, rank=0
+    ):
+        """
         Parallel generator of a large set of images.
         Manages ave.date17.var.nc and ave.date17.phys.nc
 
-        Arguments : 
+        Arguments :
           * basemap_obj *  a Basemap object
           * map_type      *  integer, flag used to choose a plot method in mapplot module
                 = 0, the default, to call mapplot.mapplot()
                 = 1, to call mapplot.mapplot_onlycolor()
                 = 2, to call mapplot.mapplot_nocolor()
          * nranks, rank * integers to manage the ranks
-        
-        ''' 
+
+        """
 
         TL = self.__TL
         INPUTDIR = Path(TL.inputdir)
-        nTimes   = TL.nTimes
+        nTimes = TL.nTimes
 
         try:
             file_name = TL.filelist[0].name
@@ -136,39 +161,66 @@ class MapBuilder(object):
         nplots = len(self.__plotlist)
         PROCESSES = np.arange(nTimes * nplots)
         for ip in PROCESSES[rank::nranks]:
-            (itime, ivar) = divmod(ip,nplots)
+            (itime, ivar) = divmod(ip, nplots)
             p = self.__plotlist[ivar]
-            var     =  self.__plotlist[ivar].varname   #VARLIST[ivar]
+            var = self.__plotlist[ivar].varname  # VARLIST[ivar]
             if is_file_phys:
-                file_name = "ave.{}.phys.nc".format(TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S"))
+                file_name = "ave.{}.phys.nc".format(
+                    TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S")
+                )
             else:
-                file_name = "ave.{}.{}.nc".format(TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S"), var)
+                file_name = "ave.{}.{}.nc".format(
+                    TL.Timelist[itime].strftime("%Y%m%d-%H:%M:%S"), var
+                )
             file_path = str(INPUTDIR / file_name)
             longdate, shortdate = get_date_string(file_path)
-#        for f in self.__netcdffileslist:
-#            for p in self.__plotlist:
-            msg = "rank %d works on %s %s" %(rank, file_path, var)
-            print(msg,flush=True)
-            de = DataExtractor(self._mask, filename=file_path, varname=p.varname)
+            #        for f in self.__netcdffileslist:
+            #            for p in self.__plotlist:
+            msg = "rank %d works on %s %s" % (rank, file_path, var)
+            print(msg, flush=True)
+            de = DataExtractor(
+                self._mask, filename=file_path, varname=p.varname
+            )
 
-            for i,l in enumerate(p.layerlist):
-                outfile_name = "ave.{}.{}.{}.png".format(shortdate, p.varname, l)
+            for i, layer in enumerate(p.layerlist):
+                outfile_name = "ave.{}.{}.{}.png".format(
+                    shortdate, p.varname, layer
+                )
                 outfile = self.__outputdir / outfile_name
-                mapdata = MapBuilder.get_layer_average(de, l)
+                mapdata = MapBuilder.get_layer_average(de, layer)
                 try:
                     clim = p.climlist[i]
                     if clim is None:
                         raise ValueError
                 except ValueError:
                     if p.clim is None:
-                        raise ValueError("No clim defined for %s %s" % (p.varname, repr(l)))
+                        raise ValueError(
+                            "No clim defined for %s %s"
+                            % (p.varname, repr(layer))
+                        )
                     else:
                         clim = p.clim
 
                 if maptype == 1:
-                    dateobj=datetime.datetime.strptime(shortdate,'%Y%m%d')
-                    mapdict={'varname':p.varname, 'longname':p.longvarname(), 'clim':clim, 'layer':l, 'data':mapdata, 'date':dateobj,'units':p.units()}
-                    fig, ax = mapplot_medeaf_V5C(mapdict, basemap_obj, self._mask, fig=None, ax=None , ncolors=24, logo=background_img)
+                    dateobj = datetime.datetime.strptime(shortdate, "%Y%m%d")
+                    mapdict = {
+                        "varname": p.varname,
+                        "longname": p.longvarname(),
+                        "clim": clim,
+                        "layer": layer,
+                        "data": mapdata,
+                        "date": dateobj,
+                        "units": p.units(),
+                    }
+                    fig, ax = mapplot_medeaf_V5C(
+                        mapdict,
+                        basemap_obj,
+                        self._mask,
+                        fig=None,
+                        ax=None,
+                        ncolors=24,
+                        logo=background_img,
+                    )
                     fig.savefig(outfile, dpi=200)
                     pl.close(fig)
                 # Code commented because it is not longer maintained
@@ -181,7 +233,6 @@ class MapBuilder(object):
                 #     fig.canvas.print_figure(outfile + ".svg")
                 #     return
 
-
     @staticmethod
     def get_layer_max(data_extractor, layer):
         """Returns a 2D NumPy array with the maximum over depth.
@@ -192,57 +243,70 @@ class MapBuilder(object):
             - *layer*: a Layer object that contains the vertical boundaries for
               the computation.
         """
-        if not isinstance(layer, (Layer,LayerMap)) :
+        if not isinstance(layer, (Layer, LayerMap)):
             raise ValueError("layer must be a Layer or a MapLayer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
-        if data_extractor.dims ==2 :
+        if data_extractor.dims == 2:
             return data_extractor.values
 
-        if isinstance(layer, (Layer,)) :
-            #Find Z indices
-            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
-            bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
+        if isinstance(layer, (Layer,)):
+            # Find Z indices
+            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][
+                0
+            ]
+            bottom_index = np.where(
+                data_extractor._mask.zlevels < layer.bottom
+            )[0][-1]
             if top_index == bottom_index:
-                #Just one layer so we return the sliced data
-                output = data_extractor.filled_values[top_index,:,:]
+                # Just one layer so we return the sliced data
+                output = data_extractor.filled_values[top_index, :, :]
                 return output
-            #Workaround for Python ranges
+            # Workaround for Python ranges
             bottom_index += 1
-            #Get the slice of the values
-            v = np.array(data_extractor.values[top_index:bottom_index,:,:])
-            #Get the max of the values
-            maximum = np.nanmax(v,0)
+            # Get the slice of the values
+            v = np.array(data_extractor.values[top_index:bottom_index, :, :])
+            # Get the max of the values
+            maximum = np.nanmax(v, 0)
             output = maximum
             return output
 
-        if isinstance(layer, (LayerMap,)) :
-            #Find Z indices
-            top_index    = np.zeros(layer.dimension,dtype=int)
-            bottom_index = np.zeros(layer.dimension,dtype=int)
+        if isinstance(layer, (LayerMap,)):
+            # Find Z indices
+            top_index = np.zeros(layer.dimension, dtype=int)
+            bottom_index = np.zeros(layer.dimension, dtype=int)
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    top_index[jj,ii] =  np.where(data_extractor._mask.zlevels >= layer.top[jj,ii])[0][0]
-                    bottom_index[jj,ii] = np.where(data_extractor._mask.zlevels < layer.bottom[jj,ii])[0][-1]
-                    #Workaround for Python ranges
-                    bottom_index[jj,ii] += 1
-            #Min top index
+                    top_index[jj, ii] = np.where(
+                        data_extractor._mask.zlevels >= layer.top[jj, ii]
+                    )[0][0]
+                    bottom_index[jj, ii] = np.where(
+                        data_extractor._mask.zlevels < layer.bottom[jj, ii]
+                    )[0][-1]
+                    # Workaround for Python ranges
+                    bottom_index[jj, ii] += 1
+            # Min top index
             min_top_index = top_index.min()
-            #Max bottom index
+            # Max bottom index
             max_bottom_index = bottom_index.max()
-            #Build local mask matrix
-            lmask = np.array(data_extractor._mask.mask[min_top_index:max_bottom_index,:,:], dtype=np.double)
+            # Build local mask matrix
+            lmask = np.array(
+                data_extractor._mask.mask[min_top_index:max_bottom_index, :, :],
+                dtype=np.double,
+            )
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    j = top_index[jj,ii] - min_top_index 
-                    lmask[:j,jj,ii] = 0
-                    i = bottom_index[jj,ii] - min_top_index
-                    lmask[i:,jj,ii] = 0 
-            #Get the slice of the values
-            v = np.array(data_extractor.values[min_top_index:max_bottom_index,:,:])
-            v[lmask==0] = 0
-            #Build max matrix (2D)
-            maximum = np.nanmax(v,0)
+                    j = top_index[jj, ii] - min_top_index
+                    lmask[:j, jj, ii] = 0
+                    i = bottom_index[jj, ii] - min_top_index
+                    lmask[i:, jj, ii] = 0
+            # Get the slice of the values
+            v = np.array(
+                data_extractor.values[min_top_index:max_bottom_index, :, :]
+            )
+            v[lmask == 0] = 0
+            # Build max matrix (2D)
+            maximum = np.nanmax(v, 0)
             output = maximum
             return output
 
@@ -256,97 +320,113 @@ class MapBuilder(object):
             - *layer*: a Layer object that contains the vertical boundaries for
               the computation.
         """
-        if not isinstance(layer, (Layer,LayerMap)):
+        if not isinstance(layer, Layer):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
-        if data_extractor.dims ==2 :
+        if data_extractor.dims == 2:
             return data_extractor.values
 
-        if isinstance(layer, (Layer,)) :
-            #Find Z indices
-            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
-            if layer.bottom < data_extractor._mask.zlevels[0]:
-                bottom_index=0
-            else:
-                bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
-            if bottom_index == (top_index-1) : #when layer.top==layer.bottom
-                bottom_index = top_index
-            if top_index == bottom_index:
-                #Just one layer so we return the sliced data
-                output = data_extractor.filled_values[top_index,:,:]
-                return output
-            #Workaround for Python ranges
-            bottom_index += 1
-            #Build local mask matrix
-            lmask = np.array(data_extractor._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-            #Build dz matrix
-            dzm = np.ones_like(lmask, dtype=np.double)
-            j = 0
-            for i in range(top_index, bottom_index):
-                dzm[j,:,:] = data_extractor._mask.dz[i]
-                j += 1
-            #Get the slice of the values
-            v = np.array(data_extractor.values[top_index:bottom_index,:,:])
-            #Build integral matrix (2D)
-            integral = (v * dzm * lmask).sum(axis=0)
-            #Build height matrix (2D)
-            height = (dzm * lmask).sum(axis=0)
-            indexmask = height > 0
-            #Build output matrix (2D)
-            output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
-            output[indexmask] = integral[indexmask] / height[indexmask]
-            return output
-
-        if isinstance(layer, (LayerMap,)):
-            #Find Z indices
-            top_index    = np.zeros(layer.dimension,dtype=int)
-            bottom_index = np.zeros(layer.dimension,dtype=int)
+        if isinstance(layer, LayerMap):
+            # Find Z indices
+            top_index = np.zeros(layer.dimension, dtype=int)
+            bottom_index = np.zeros(layer.dimension, dtype=int)
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    top_index[jj,ii] =  np.where(data_extractor._mask.zlevels >= layer.top[jj,ii])[0][0]
-                    if layer.bottom[jj,ii] < data_extractor._mask.zlevels[0]:
-                        bottom_index[jj,ii]=0
+                    top_index[jj, ii] = np.where(
+                        data_extractor._mask.zlevels >= layer.top[jj, ii]
+                    )[0][0]
+                    if layer.bottom[jj, ii] < data_extractor._mask.zlevels[0]:
+                        bottom_index[jj, ii] = 0
                     else:
-                        bottom_index[jj,ii] = np.where(data_extractor._mask.zlevels < layer.bottom[jj,ii])[0][-1]
-                        #Workaround for Python ranges
-                        bottom_index[jj,ii] += 1
-            #Min top index
+                        bottom_index[jj, ii] = np.where(
+                            data_extractor._mask.zlevels < layer.bottom[jj, ii]
+                        )[0][-1]
+                        # Workaround for Python ranges
+                        bottom_index[jj, ii] += 1
+            # Min top index
             min_top_index = top_index.min()
-            #Max bottom index
+            # Max bottom index
             max_bottom_index = bottom_index.max()
-            #Build local mask matrix
-            lmask = np.array(data_extractor._mask.mask[min_top_index:max_bottom_index,:,:], dtype=np.double)
+            # Build local mask matrix
+            lmask = np.array(
+                data_extractor._mask.mask[min_top_index:max_bottom_index, :, :],
+                dtype=np.double,
+            )
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    j = top_index[jj,ii] - min_top_index 
-                    lmask[:j,jj,ii] = 0
-                    i = bottom_index[jj,ii] - min_top_index
-                    lmask[i:,jj,ii] = 0 
-            #Build dz matrix
+                    j = top_index[jj, ii] - min_top_index
+                    lmask[:j, jj, ii] = 0
+                    i = bottom_index[jj, ii] - min_top_index
+                    lmask[i:, jj, ii] = 0
+            # Build dz matrix
             dzm = np.ones_like(lmask, dtype=np.double)
             j = 0
             for i in range(min_top_index, max_bottom_index):
-                dzm[j,:,:] = data_extractor._mask.dz[i]
+                dzm[j, :, :] = data_extractor._mask.dz[i]
                 j += 1
-            #Get the slice of the values
-            v = np.array(data_extractor.values[min_top_index:max_bottom_index,:,:])
-            #Build integral matrix (2D)
+            # Get the slice of the values
+            v = np.asarray(
+                data_extractor.values[min_top_index:max_bottom_index, :, :]
+            )
+            # Build integral matrix (2D)
             integral = (v * dzm * lmask).sum(axis=0)
-            #Build height matrix (2D)
+            # Build height matrix (2D)
             height = (dzm * lmask).sum(axis=0)
             indexmask = height > 0
-            #Build output matrix (2D)
-            output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
+            # Build output matrix (2D)
+            output = np.full_like(
+                integral, data_extractor.fill_value, dtype=np.double
+            )
             output[indexmask] = integral[indexmask] / height[indexmask]
             return output
 
-
-                      
-
+        if isinstance(layer, Layer):
+            # Find Z indices
+            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][
+                0
+            ]
+            if layer.bottom < data_extractor._mask.zlevels[0]:
+                bottom_index = 0
+            else:
+                bottom_index = np.where(
+                    data_extractor._mask.zlevels < layer.bottom
+                )[0][-1]
+            if bottom_index == (top_index - 1):  # when layer.top==layer.bottom
+                bottom_index = top_index
+            if top_index == bottom_index:
+                # Just one layer so we return the sliced data
+                output = data_extractor.filled_values[top_index, :, :]
+                return output
+            # Workaround for Python ranges
+            bottom_index += 1
+            # Build local mask matrix
+            lmask = np.asarray(
+                data_extractor._mask.mask[top_index:bottom_index, :, :],
+                dtype=np.double,
+            )
+            # Build dz matrix
+            dzm = np.ones_like(lmask, dtype=np.double)
+            j = 0
+            for i in range(top_index, bottom_index):
+                dzm[j, :, :] = data_extractor._mask.dz[i]
+                j += 1
+            # Get the slice of the values
+            v = np.array(data_extractor.values[top_index:bottom_index, :, :])
+            # Build integral matrix (2D)
+            integral = (v * dzm * lmask).sum(axis=0)
+            # Build height matrix (2D)
+            height = (dzm * lmask).sum(axis=0)
+            indexmask = height > 0
+            # Build output matrix (2D)
+            output = np.full_like(
+                integral, data_extractor.fill_value, dtype=np.double
+            )
+            output[indexmask] = integral[indexmask] / height[indexmask]
+            return output
 
     @staticmethod
-    def get_layer_integral(data_extractor,layer):
+    def get_layer_integral(data_extractor, layer):
         """Returns a 2D NumPy array with the integral over depth.
 
         Args:
@@ -355,82 +435,102 @@ class MapBuilder(object):
             - *layer*: a Layer object that contains the vertical boundaries for
               the computation.
         """
-        if not isinstance(layer, (Layer,LayerMap)):
+        if not isinstance(layer, (Layer, LayerMap)):
             raise ValueError("layer must be a Layer object")
         if not isinstance(data_extractor, (DataExtractor,)):
             raise ValueError("dataextractor must be a DataExtractor object")
         if data_extractor.dims == 2:
             return data_extractor.values
 
-        #Find Z indices
+        # Find Z indices
         if isinstance(layer, (Layer,)):
-            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][0]
+            top_index = np.where(data_extractor._mask.zlevels >= layer.top)[0][
+                0
+            ]
             if layer.bottom < data_extractor._mask.zlevels[0]:
-                bottom_index=0
+                bottom_index = 0
             else:
-                bottom_index = np.where(data_extractor._mask.zlevels < layer.bottom)[0][-1]
+                bottom_index = np.where(
+                    data_extractor._mask.zlevels < layer.bottom
+                )[0][-1]
             if top_index == bottom_index:
-                #Just one layer so we return the sliced data
-                output = data_extractor.filled_values[top_index,:,:]
+                # Just one layer so we return the sliced data
+                output = data_extractor.filled_values[top_index, :, :]
                 return output
-            #Workaround for Python ranges
+            # Workaround for Python ranges
             bottom_index += 1
-            #Build local mask matrix
-            lmask = np.array(data_extractor._mask.mask[top_index:bottom_index,:,:], dtype=np.double)
-            #Build dz matrix
+            # Build local mask matrix
+            lmask = np.array(
+                data_extractor._mask.mask[top_index:bottom_index, :, :],
+                dtype=np.double,
+            )
+            # Build dz matrix
             dzm = np.ones_like(lmask, dtype=np.double)
             j = 0
             for i in range(top_index, bottom_index):
-                dzm[j,:,:] = data_extractor._mask.dz[i]
+                dzm[j, :, :] = data_extractor._mask.dz[i]
                 j += 1
-            #Get the slice of the values
-            v = np.array(data_extractor.values[top_index:bottom_index,:,:])
-            #Build integral matrix (2D)
+            # Get the slice of the values
+            v = np.array(data_extractor.values[top_index:bottom_index, :, :])
+            # Build integral matrix (2D)
             integral = (v * dzm * lmask).sum(axis=0)
-            #Build height matrix (2D)
+            # Build height matrix (2D)
             height = (dzm * lmask).sum(axis=0)
             indexmask = height > 0
-            #Build output matrix (2D)
-            output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
+            # Build output matrix (2D)
+            output = np.full_like(
+                integral, data_extractor.fill_value, dtype=np.double
+            )
             output[indexmask] = integral[indexmask]
             return output
 
         if isinstance(layer, (LayerMap,)):
-           #Find Z indices
-            top_index    = np.zeros(layer.dimension,dtype=int)
-            bottom_index = np.zeros(layer.dimension,dtype=int)
+            # Find Z indices
+            top_index = np.zeros(layer.dimension, dtype=int)
+            bottom_index = np.zeros(layer.dimension, dtype=int)
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    top_index[jj,ii] =  np.where(data_extractor._mask.zlevels >= layer.top[jj,ii])[0][0]
-                    bottom_index[jj,ii] = np.where(data_extractor._mask.zlevels < layer.bottom[jj,ii])[0][-1]
-                    #Workaround for Python ranges
-                    bottom_index[jj,ii] += 1
-            #Min top index
+                    top_index[jj, ii] = np.where(
+                        data_extractor._mask.zlevels >= layer.top[jj, ii]
+                    )[0][0]
+                    bottom_index[jj, ii] = np.where(
+                        data_extractor._mask.zlevels < layer.bottom[jj, ii]
+                    )[0][-1]
+                    # Workaround for Python ranges
+                    bottom_index[jj, ii] += 1
+            # Min top index
             min_top_index = top_index.min()
-            #Max bottom index
+            # Max bottom index
             max_bottom_index = bottom_index.max()
-            #Build local mask matrix
-            lmask = np.array(data_extractor._mask.mask[min_top_index:max_bottom_index,:,:], dtype=np.double)
+            # Build local mask matrix
+            lmask = np.array(
+                data_extractor._mask.mask[min_top_index:max_bottom_index, :, :],
+                dtype=np.double,
+            )
             for jj in range(layer.dimension[0]):
                 for ii in range(layer.dimension[1]):
-                    j = top_index[jj,ii] - min_top_index
-                    lmask[:j,jj,ii] = 0
-                    i = bottom_index[jj,ii] - min_top_index
-                    lmask[i:,jj,ii] = 0
-            #Build dz matrix
+                    j = top_index[jj, ii] - min_top_index
+                    lmask[:j, jj, ii] = 0
+                    i = bottom_index[jj, ii] - min_top_index
+                    lmask[i:, jj, ii] = 0
+            # Build dz matrix
             dzm = np.ones_like(lmask, dtype=np.double)
             j = 0
             for i in range(min_top_index, max_bottom_index):
-                dzm[j,:,:] = data_extractor._mask.dz[i]
+                dzm[j, :, :] = data_extractor._mask.dz[i]
                 j += 1
-            #Get the slice of the values
-            v = np.array(data_extractor.values[min_top_index:max_bottom_index,:,:])
-            #Build integral matrix (2D)
+            # Get the slice of the values
+            v = np.array(
+                data_extractor.values[min_top_index:max_bottom_index, :, :]
+            )
+            # Build integral matrix (2D)
             integral = (v * dzm * lmask).sum(axis=0)
-            #Build height matrix (2D)
+            # Build height matrix (2D)
             height = (dzm * lmask).sum(axis=0)
             indexmask = [height > 0]
-            #Build output matrix (2D)
-            output = np.full_like(integral, data_extractor.fill_value, dtype=np.double)
+            # Build output matrix (2D)
+            output = np.full_like(
+                integral, data_extractor.fill_value, dtype=np.double
+            )
             output[indexmask] = integral[indexmask]
             return output

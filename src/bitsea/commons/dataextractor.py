@@ -115,15 +115,8 @@ class DataExtractor(object):
             self.__shape = self.__values.shape
             self.dims = len(self.__values.shape)
 
-            for attr_name in [
-                "missing_value",
-                "fillvalue",
-                "fillValue",
-                "FillValue",
-            ]:
-                if attr_name in dset.variables[v].ncattrs():
-                    fv = getattr(dset.variables[v], attr_name)
-                    self.__dset_fillvalue = fv
+            # Find fill value
+            self.__dset_fillvalue = dset.variables[v].get_fill_value()
 
             self.__filename = fn
             self.__varname = v

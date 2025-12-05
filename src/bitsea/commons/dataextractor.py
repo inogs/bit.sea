@@ -116,7 +116,10 @@ class DataExtractor(object):
             self.dims = len(self.__values.shape)
 
             # Find fill value
-            self.__dset_fillvalue = dset.variables[v].get_fill_value()
+            try:
+                self.__dset_fillvalue = dset.variables[v].get_fill_value()
+            except AttributeError:
+                self.__dset_fillvalue = getattr(dset.variables[v], "_FillValue")
 
             self.__filename = fn
             self.__varname = v

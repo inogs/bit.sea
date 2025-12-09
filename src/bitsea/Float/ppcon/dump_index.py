@@ -86,7 +86,7 @@ def file_header_content(filename,VARLIST, avail_params=None):
     lat=float(ncIN.variables['LATITUDE'][0])
 
 
-    ref  = np.array(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
+    ref  = np.asarray(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
     juld = int (ncIN.variables['JULD'][0])
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)

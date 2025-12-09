@@ -124,7 +124,7 @@ class BioFloat(Instrument):
         if varObj.datatype=='S1':
             M[M==fillvalue] = '0'
         else:
-            M[M==fillvalue] = np.NaN;
+            M[M==fillvalue] = np.nan;
         return M
 
     def __merge_profile_with_adjusted(self,profile, profile_adj):

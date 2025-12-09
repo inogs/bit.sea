@@ -197,7 +197,10 @@ class SimplePolygonalBasin(SimpleBasin):
         fill=True,
         transform=None,
     ):
-        patch_kwargs = {"color": color, "alpha": alpha, "fill": fill}
+        if fill:
+            patch_kwargs = {"facecolor": color, "edgecolor": "none", "alpha": alpha, "fill": fill}
+        else:
+            patch_kwargs = {"facecolor": "none", "edgecolor": color, "alpha": alpha, "fill": fill}
         if zorder is not None:
             patch_kwargs["zorder"] = zorder
         if transform is not None:

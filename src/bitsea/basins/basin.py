@@ -6,6 +6,7 @@ from inspect import currentframe
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.patches import PathPatch
 
 from bitsea.basins.region import EmptyRegion
 from bitsea.basins.region import Region
@@ -129,31 +130,35 @@ class Basin(object):
         lat_points=100,
         color="tab:blue",
         alpha=1,
-        axes=None,
-        filled=True,
+        zorder=None,
+        axis=None,
+        fill=True,
         transform=None,
     ):
         lon_grid, lat_grid, inside_domain = self.grid(
             lon_window, lat_window, lon_points, lat_points
         )
 
-        if axes is None:
-            axes = plt.gca()
+        if axis is None:
+            axis = plt.gca()
 
         kwargs = {}
 
-        if filled:
-            plot_f = axes.contourf
+        if fill:
+            plot_f = axis.contourf
             cm = LinearSegmentedColormap.from_list(
                 "none", ["black", color], N=2
             )
             kwargs["cmap"] = cm
         else:
-            plot_f = axes.contour
+            plot_f = axis.contour
             kwargs["colors"] = [color]
 
         if transform is not None:
             kwargs["transform"] = transform
+
+        if zorder is not None:
+            kwargs["zorder"] = zorder
 
         current_plot = plot_f(
             lon_grid, lat_grid, inside_domain, [0.1, 1], alpha=alpha, **kwargs
@@ -179,6 +184,34 @@ class SimplePolygonalBasin(SimpleBasin):
     def borders(self):
         return self.region.borders
 
+    def plot(
+        self,
+        lon_window=(-8, 38),
+        lat_window=(30, 47),
+        lon_points=100,
+        lat_points=100,
+        color="tab:blue",
+        alpha=1,
+        zorder=None,
+        axis=None,
+        fill=True,
+        transform=None,
+    ):
+        patch_kwargs = {"color": color, "alpha": alpha, "fill": fill}
+        if zorder is not None:
+            patch_kwargs["zorder"] = zorder
+        if transform is not None:
+            patch_kwargs["transform"] = transform
+
+        patch = PathPatch(self.region.path, **patch_kwargs)
+
+        if axis is None:
+            axis = plt.gca()
+
+        axis.add_patch(patch)
+
+        return patch
+
 
 class SimpleBathymetricBasin(SimpleBasin):
     pass
@@ -196,6 +229,33 @@ class ComposedBasin(Basin):
 
     def __iter__(self):
         return self.basin_list.__iter__()
+
+    def plot(
+        self,
+        lon_window=(-8, 38),
+        lat_window=(30, 47),
+        lon_points=100,
+        lat_points=100,
+        color="tab:blue",
+        alpha=1,
+        zorder=None,
+        axis=None,
+        fill=True,
+        transform=None,
+    ):
+        for basin in self.basin_list:
+            basin.plot(
+                lon_window=lon_window,
+                lat_window=lat_window,
+                lon_points=lon_points,
+                lat_points=lat_points,
+                color=color,
+                alpha=alpha,
+                zorder=zorder,
+                axis=axis,
+                fill=fill,
+                transform=transform,
+            )
 
     def is_inside(self, lon, lat):
         if len(self.basin_list) == 0:

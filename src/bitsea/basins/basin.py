@@ -1,14 +1,19 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
 import importlib
+from collections.abc import Sequence
 from inspect import currentframe
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.patches import PathPatch
+from matplotlib.path import Path
 
 from bitsea.basins.region import EmptyRegion
 from bitsea.basins.region import Region
+from bitsea.commons.geodistances import compute_great_circle_distance
 
 
 # This is the default module for the basins, i.e. the basins of this
@@ -69,14 +74,14 @@ class Basin(object):
         if module_name == DEFAULT_BASIN_MODULE:
             return self.name
 
-        if module_name.startswith("basins."):
-            module_name = "." + module_name[len("basins") :]
+        if module_name.startswith("bitsea.basins."):
+            module_name = "." + module_name[len("bitsea.basins") :]
         return "{}.{}".format(module_name, self.name)
 
     @staticmethod
     def load_from_uuid(uuid: str):
         if uuid.startswith(".."):
-            uuid = "basins" + uuid[1:]
+            uuid = "bitsea.basins" + uuid[1:]
 
         if "." not in uuid:
             basin_module = DEFAULT_BASIN_MODULE
@@ -129,37 +134,41 @@ class Basin(object):
         lat_points=100,
         color="tab:blue",
         alpha=1,
-        axes=None,
-        filled=True,
+        zorder=None,
+        axis=None,
+        fill=True,
         transform=None,
     ):
         lon_grid, lat_grid, inside_domain = self.grid(
             lon_window, lat_window, lon_points, lat_points
         )
 
-        if axes is None:
-            axes = plt.gca()
+        if axis is None:
+            axis = plt.gca()
 
         kwargs = {}
 
-        if filled:
-            plot_f = axes.contourf
+        if fill:
+            plot_f = axis.contourf
             cm = LinearSegmentedColormap.from_list(
                 "none", ["black", color], N=2
             )
             kwargs["cmap"] = cm
         else:
-            plot_f = axes.contour
+            plot_f = axis.contour
             kwargs["colors"] = [color]
 
         if transform is not None:
             kwargs["transform"] = transform
 
+        if zorder is not None:
+            kwargs["zorder"] = zorder
+
         current_plot = plot_f(
             lon_grid, lat_grid, inside_domain, [0.1, 1], alpha=alpha, **kwargs
         )
 
-        return current_plot
+        return (current_plot,)
 
 
 class SimpleBasin(Basin):
@@ -175,9 +184,105 @@ class SimpleBasin(Basin):
 
 
 class SimplePolygonalBasin(SimpleBasin):
+    @staticmethod
+    def _densify_polygonal(
+        coords: Sequence[Tuple[float, float]], resolution=5000
+    ) -> Path:
+        """
+        Transform a sequence of coordinates into a Path object
+
+        Given a sequence of coordinates (lon, lat), this function returns a
+        Path object: the region of the plane that is delimited by the segments
+        defined by the coordinates.
+
+        This function is intended to be used to draw polygons on projected
+        Cartopy maps; in this case, the segments must follow the projection of
+        the plot and not be rendered as straight lines. This is obtained by
+        "densifying" the points on the boundaries of the polygon. In this way,
+        the segments are rendered as a sequence of short straight lines on the
+        map, but the actual path followed by the polygon is more accurate.
+
+        Args:
+            coords: a sequence of (lon, lat) tuples. The last point is expected
+                to be equal to the first one (the path is closed)
+            resolution: this is the distance (in metres) between two
+                consecutive points on the path of the segment. There will be no
+                segments longer than this distance.
+
+        Returns:
+            A Path object.
+        """
+        densified_lon = [coords[0][0]]
+        densified_lat = [coords[0][1]]
+        for a, b in zip(coords[:-1], coords[1:]):
+            point_distance = compute_great_circle_distance(
+                lat1=a[1], lon1=a[0], lat2=b[1], lon2=b[0]
+            )
+            if point_distance < resolution:
+                densified_lon.append(b[0])
+                densified_lat.append(b[1])
+                continue
+
+            edge_points = int(np.ceil(point_distance / resolution)) + 1
+            densified_lon.extend(np.linspace(a[0], b[0], edge_points)[1:])
+            densified_lat.extend(np.linspace(a[1], b[1], edge_points)[1:])
+
+        # Create a path object
+        codes = [Path.LINETO] * len(densified_lon)
+        codes[0] = Path.MOVETO
+        codes[-1] = Path.CLOSEPOLY
+
+        densified_coords = np.column_stack([densified_lon, densified_lat])
+
+        return Path(densified_coords, codes)
+
     @property
     def borders(self):
         return self.region.borders
+
+    def plot(
+        self,
+        lon_window=(-8, 38),
+        lat_window=(30, 47),
+        lon_points=100,
+        lat_points=100,
+        color="tab:blue",
+        alpha=1,
+        zorder=None,
+        axis=None,
+        fill=True,
+        transform=None,
+    ):
+        if fill:
+            patch_kwargs = {
+                "facecolor": color,
+                "edgecolor": "none",
+                "alpha": alpha,
+                "fill": fill,
+            }
+        else:
+            patch_kwargs = {
+                "facecolor": "none",
+                "edgecolor": color,
+                "alpha": alpha,
+                "fill": fill,
+            }
+        if zorder is not None:
+            patch_kwargs["zorder"] = zorder
+        if transform is not None:
+            patch_kwargs["transform"] = transform
+
+        coords = self.region.borders
+        path = self._densify_polygonal(coords)
+
+        patch = PathPatch(path, **patch_kwargs)
+
+        if axis is None:
+            axis = plt.gca()
+
+        axis.add_patch(patch)
+
+        return (patch,)
 
 
 class SimpleBathymetricBasin(SimpleBasin):
@@ -196,6 +301,37 @@ class ComposedBasin(Basin):
 
     def __iter__(self):
         return self.basin_list.__iter__()
+
+    def plot(
+        self,
+        lon_window=(-8, 38),
+        lat_window=(30, 47),
+        lon_points=100,
+        lat_points=100,
+        color="tab:blue",
+        alpha=1,
+        zorder=None,
+        axis=None,
+        fill=True,
+        transform=None,
+    ):
+        plots = []
+        for basin in self.basin_list:
+            current_plot = basin.plot(
+                lon_window=lon_window,
+                lat_window=lat_window,
+                lon_points=lon_points,
+                lat_points=lat_points,
+                color=color,
+                alpha=alpha,
+                zorder=zorder,
+                axis=axis,
+                fill=fill,
+                transform=transform,
+            )
+            plots.extend(current_plot)
+
+        return tuple(plots)
 
     def is_inside(self, lon, lat):
         if len(self.basin_list) == 0:

@@ -20,7 +20,20 @@ class TimeInterval():
             return True
         else:
             return False
-
+    def intersect(self,T2):
+        '''
+          Argument:
+          T2 : a TimeInterval object
+          Returns:
+            the overlapping TimeInterval object
+            None if there is no overlapping interval
+        '''
+        theWindow_start = max(self.start_time,T2.start_time)
+        theWindow_end = min(self.end_time,T2.end_time)
+        if theWindow_start < theWindow_end:
+            return TimeInterval.fromdatetimes(theWindow_start,theWindow_end)
+        else:
+            return None
     def overlapTime(self,T2):
         '''
           Argument:

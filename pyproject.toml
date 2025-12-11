@@ -12,19 +12,32 @@ packages = [
 python = "^3.9"
 numpy = ">1.26.2"
 scipy = "^1.12.0"
-scikit-learn = "^1.4.2"
-matplotlib = ">3.7.5"
 netcdf4 = "^1.6.5"
+xarray = ">2024.1.0"
+
+[tool.poetry.group.plots.dependencies]
+matplotlib = ">3.7.5"
 cartopy = "^0.23.0"
+
+[tool.poetry.group.algorithms.dependencies]
 geographiclib = "^2.0"
+
+[tool.poetry.group.performances.dependencies]
 numba = ">0.58"
+scikit-learn = "^1.4.2"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.6.4"
 pytest = "^8.3.2"
 pre-commit = "^3.8.0"
-requests = "^2.32.3"
+requests = "^2.32.4"
 hypothesis = "^6.115.3"
+
+[tool.poetry.extras]
+plots = ["matplotlib", "cartopy"]
+algorithms = ["geographiclib"]
+performances = ["numba", "scikit-learn"]
+all = ["matplotlib", "cartopy", "geographiclib", "numba", "scikit-learn"]
 
 [build-system]
 requires = ["poetry-core"]

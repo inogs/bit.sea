@@ -5,8 +5,8 @@ import numpy as np
 
 
 @overload
-def is_leap(year: Union[int, np.int32, np.int64]):
-    ...
+def is_leap(year: Union[int, np.int32, np.int64]) -> bool: ...
+
 
 def is_leap(year: np.ndarray) -> bool:
     """Check if a year is leap or not
@@ -19,8 +19,7 @@ def is_leap(year: np.ndarray) -> bool:
          an array of booleans, one for each year.
     """
     output = np.logical_and(
-        year % 4 == 0,
-        np.logical_or(year % 100 != 0, year % 400 == 0)
+        year % 4 == 0, np.logical_or(year % 100 != 0, year % 400 == 0)
     )
 
     # If the result is not an array, cast it to a standard Python bool

@@ -37,13 +37,7 @@ def MLD(Temperature, Salinity, Pres):
     It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
     """
     th = 10  # threshold of depth minimum
-    i_less_than_10 = Pres < th
-    i_10 = (
-        i_less_than_10[-1] + 1
-    )  # (this is the index corresponding approx ~10m of the zlevel array)
-    i_10 = (
-        i_less_than_10[-1] + 1
-    )  # (this is the index corresponding approx ~10m of the zlevel array)
+    i_10 = np.abs(Pres - th).argmin()
     T = Temperature
     S = Salinity
     D1000 = Pres[

@@ -142,7 +142,6 @@ class _PointGraph:
             elif len(odd_degree_points) == 2:
                 return odd_degree_points[0]
             else:
-                print([(p, count_edges(p)) for p in points])
                 raise NonEulerianPathError("No Eulerian path exists")
 
         remaining_edges = {p: get_neighbours(p).copy() for p in points}

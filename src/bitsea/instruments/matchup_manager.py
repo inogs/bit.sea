@@ -339,7 +339,9 @@ class Matchup_Manager():
 
 
         for p in Profilelist:
-            assert p in self.PROFILE_LIST
+            if not p in self.PROFILE_LIST:
+                raise ValueError(f"{p.ID()} not in Profilelist of Matchup Manager")
+
             Model_time = self.modeltime(p)
             if not self.TI.contains(Model_time) :
                 print( Model_time.strftime("%Y%m%d-%H:%M:%S is a time not included by profiler"))

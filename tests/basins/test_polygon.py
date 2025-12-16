@@ -70,6 +70,7 @@ def test_polygon_boundary():
     assert [p[1] for p in test_poly.borders] == lat
 
 
+@pytest.mark.uses_test_data
 def test_read_wkt_file(test_data_dir: Path):
     wkt_file_path = test_data_dir / "wkt_polys.csv"
     with open(wkt_file_path, "r") as f:

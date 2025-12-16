@@ -39,7 +39,7 @@ def nitrate_correction(p, Pres, Value):
     * Qc    * array of integers, 8
     * shift * float value
     """
-    ji, jj = TheMask.convert_lon_lat_to_indices(p.lon, p.lat)
+    ji, jj = TheMask.convert_lon_lat_to_indices(lon=p.lon, lat=p.lat)
 
     N3n_600_800 = N3n[jj, ji]
     assert not np.isnan(N3n_600_800)

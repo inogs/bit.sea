@@ -136,7 +136,7 @@ CONVERSION_DICT={
          'pCO2': 1,
          'P_l' : 1,
          'P_c' : 1,
-         'Z_c' : 1,
+         'Z_c' : 1./1000,
 	 'Ac'  : 1,
          'ALK' : 1,
          'DIC' : 1, 
@@ -170,6 +170,12 @@ for k in indexes:
 print ("time averaging ...")
 M3d     = TimeAverager3D(filelist, weights, var, TheMask)
 print ("... done.")
+
+if (var == "CO2airflux"):
+    ccmap="seismic"
+else:
+    ccmap="viridis"
+
 for il, layer in enumerate(PLOT.layerlist):
     z_mask = PLOT.depthfilters[il]
     z_mask_str = "-%04gm" %z_mask
@@ -196,7 +202,7 @@ for il, layer in enumerate(PLOT.layerlist):
     integrated_masked[integrated_masked==0]=np.nan # sostituisco gli 0 con i NAN
 
     fig,ax     = mapplot({'clim':clim, 'data':integrated_masked, }, \
-        fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+        fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat,colormap=ccmap)
     ax.set_xlim([-6,36])
     ax.set_ylim([30,46])
     ax.set_xlabel('Lon').set_fontsize(11)
@@ -209,7 +215,13 @@ for il, layer in enumerate(PLOT.layerlist):
     ax.yaxis.set_ticks(np.arange(30,46,4))
     #ax.text(-4,30.5,req_label,horizontalalignment='left',verticalalignment='center',fontsize=13, color='black')
     ax.grid()
-    title = "%s %s %s" % (req_label, var, layer.__repr__())
+    #title = "%s %s %s" % (req_label, var, layer.__repr__())
+    if (var=="Z_c"):
+        title = "%s %s %s" % ('annual', 'ZOOPL', layer.__repr__())
+    else:
+        title = "%s %s %s" % (req_label, var, layer.__repr__())
+    if (var=="P_c"): title = "%s %s %s" % ('annual', "phytoplankton biomass", layer.__repr__())
+
     fig.suptitle(title)
     fig.savefig(outfile)
     pl.close(fig)
@@ -220,7 +232,7 @@ for il, layer in enumerate(PLOT.layerlist):
     if (var == 'P_l'):
         climlog=PLOTlog.climlist[il]
         fig,ax = mapplotlog({'clim':climlog, 'data':integrated_masked, }, \
-            fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat)
+            fig=None,ax=None,mask=TheMask,coastline_lon=clon,coastline_lat=clat,colormap='viridis')
         ax.set_xlim([-6,36])
         ax.set_ylim([30,46])
         ax.set_xlabel('Lon').set_fontsize(11)
@@ -236,3 +248,43 @@ for il, layer in enumerate(PLOT.layerlist):
         fig.suptitle(title)
         fig.savefig(outfilelog)
         pl.close(fig)
+
+    if (var == "P_c" or var == "Z_c"):
+        ncfile=OUTPUTDIR / f"{filename}.nc"
+        netcdf3.write_2d_file(integrated_masked,var,ncfile,TheMask)
+
+        from bitsea.basins import V2 as OGS
+        from bitsea.commons.submask import SubMask
+        from bitsea.basins.basin import ComposedBasin
+        from bitsea.commons.utils import writetable
+        tablefile = OUTPUTDIR / f"{var}_{req_label}_mean_basin.txt"
+        print(tablefile)
+        if (var == "P_c"):
+            OGSred = ComposedBasin('OGSred',[OGS.alb, \
+             #       OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr, \
+                    OGS.swm, OGS.nwm, OGS.tyr, \
+                    OGS.adr, OGS.ion, OGS.lev , OGS.med], \
+                    'Gruped Subbasin for ' + var + ' analysis')
+
+        if (var == "Z_c"):
+            OGSred = ComposedBasin('OGSred',[OGS.alb, \
+                    OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr, \
+             #       OGS.swm, OGS.nwm, OGS.tyr, \
+                    OGS.adr, OGS.aeg, OGS.ion, OGS.lev , OGS.med], \
+                   # 'Gruped Subbasin for ppn analysis')
+                    'Gruped Subbasin for integral variable analysis')
+
+
+        SUBlist = OGSred.basin_list
+        nSub   = len(OGSred.basin_list)
+        rows_names=[sub.name for sub in SUBlist]
+        var_submean = np.zeros((nSub,2),np.float32)*np.nan
+        for isub, sub in enumerate(OGSred):
+            S = SubMask(sub, TheMask)   # S = SubMask(sub, maskobject=TheMask)
+            mask2d=S.mask[0,:,:]
+            var_submean[isub,0] = integrated_masked[mask2d].mean()
+            var_submean[isub,1] = integrated_masked[mask2d].std()
+
+        writetable(tablefile,var_submean,rows_names,['MEAN' ,'STD'],fmt=("%8.2f\t %8.2f"))
+
+

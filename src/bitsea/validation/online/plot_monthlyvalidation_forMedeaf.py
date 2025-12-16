@@ -256,99 +256,110 @@ for sub in OGS.MVR.basin_list:
     handles_labels = []
     fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,12])#,sharey=True)
     for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche 
-        
         #import sys
         #sys.exit('carol')
+        #10-60-100-150m chla
+        #10-60-100-150-600m doxy no3
         nax = DICTvargroup[mm]
         ix_ax = int(np.floor(nax/2))
         iy_ax = nax-2*ix_ax
         ax = axs[ix_ax, iy_ax]
         iii=0
         for iid,depth in enumerate(DICTdim_float['layer'][0]):
-            group_label = "Mod" if iim == 0 else "Ref"
-            label = f"{depth}m {group_label}"
-            lab   = str(int(depth))
-            CMAP=cmap(0)
-            title= mm.capitalize()
-            
-            if str(nax) in ['1','3']: # see DICTvargroup
-                title= mm.split()[0].capitalize() + ' Mod vs Ref'
-                if 'ref' in mm:
-                    CMAP=cmap(1)
+            if VAR == 'chlorophyll': 
+                LISTDEPTH=np.array([10,60,100,150])
+                LISTLINEE=np.array(['10','100','150'])
+            else: 
+                LISTDEPTH = np.array([10,60,100,150,600]) 
+                LISTLINEE = np.array([10,100,600])
+            if int(depth) in LISTDEPTH:
+                group_label = "Mod" if iim == 0 else "Ref"
+                label = f"{depth}m {group_label}"
+                lab   = str(int(depth))
+                CMAP=cmap(0)
+                title= mm.capitalize()
+                
+                if str(nax) in ['1','3']: # see DICTvargroup
+                    title= mm.split()[0].capitalize() + ' Mod vs Ref'
+                    if 'ref' in mm:
+                        CMAP=cmap(1)
 
-            ax.set_title(title)
+                ax.set_title(title)
 
-            DICTind = {
-                indmetrics: iim,
-                indsub: DICTsubgroup_index[sub.name],
-                DICTdim_sat['forecast'][1]: 0,
-                DICTdim_float['layer'][1]: iid,
-            }
-            selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
+                DICTind = {
+                    indmetrics: iim,
+                    indsub: DICTsubgroup_index[sub.name],
+                    DICTdim_sat['forecast'][1]: 0,
+                    DICTdim_float['layer'][1]: iid,
+                }
+                selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
 
-            #
-            ax.plot(dates_datetime,
-               array_floatstats[tuple(selection)],
-               #color=CMAP,
-               color='k',
-               linewidth=0.4,
-               alpha=LISTalpha_depth[iid])
-            
-            if (iii % 2) == 0:
+                # 
+                arr=array_floatstats[tuple(selection)]
+                if mm.startswith('number'):
+                    arr[arr == 0] = np.nan
 
-               line = ax.scatter(dates_datetime,
-                     array_floatstats[tuple(selection)],
-                     facecolor=CMAP,    
-                     edgecolors='k',     
-                     alpha=LISTalpha_depth[iid],
-                     label=label,
-                     s=20,             
-                     marker='o')
-            
-            else:   
+                #ax.plot(dates_datetime,
+                #   arr,
+                #   color='k',
+                #   linewidth=0.4,
+                #   alpha=LISTalpha_depth[iid])
 
-               line = ax.scatter(dates_datetime,
-                     array_floatstats[tuple(selection)],
-                     facecolor=CMAP,      
-                     edgecolors='k',
-                     alpha=LISTalpha_depth[iid],
-                     label=label,
-                     s=20,               
-                     marker='s')
-            
-            iii+=1
-            y_values = array_floatstats[tuple(selection)]
-            x_values = dates_datetime
+                if int(depth) not in LISTLINEE:
+                   #pass
+                   line=ax.plot(dates_datetime,
+                   arr,
+                   color=CMAP,
+                   linewidth=1,
+                   alpha=LISTalpha_depth[iid])
 
-            # Trova il primo valore non-NaN
-            #for x, y in zip(x_values, y_values):
-            #from datetime import timedelta            
-            #for x, y in zip(x_values, y_values):
-            #  if not np.isnan(y):
-            #   if (iii % 2) == 0:
-            #      ax.text(x +  timedelta(days=1), y, lab, fontsize=10, color='k', verticalalignment='bottom', horizontalalignment='left')
-            #      iii+=1
-            #      break
-            #   else:
-            #      ax.text(x -  timedelta(days=2), y, lab, fontsize=10, color='k', verticalalignment='bottom', horizontalalignment='left') 
-               
-            #      iii+=1
-            #      break              
+                   ax.annotate(
+                   f"{int(depth)}",
+                   xy=(dates_datetime[0], arr[0]),   # primo punto della linea
+                   xytext=(-10, -2),                    # offset VERSO L’ALTO (in pixel)
+                   textcoords="offset points",
+                   ha="center",
+                   va="bottom",
+                   fontsize=8,
+                   color=CMAP,
+                   alpha=LISTalpha_depth[iid]
+                   )
 
-            #
+                else:
+                    
+                   if (iii % 2) == 0: # scala verdi
+                         line = ax.scatter(dates_datetime,
+                             arr,
+                             facecolor=CMAP,    
+                             edgecolors='k',     
+                             alpha=LISTalpha_depth[iid],
+                             label=label,
+                             s=20,             
+                             marker='o')
 
-            #line, = ax.plot(dates_datetime,array_floatstats[tuple(selection)],            
-            #                color=CMAP,
-            #                linewidth=0.4,
-            #                marker='o',
-            #                edgecolor='k',
-            #                alpha=LISTalpha_depth[iid],
-            #                label=label)
-            if iim == 0 or iim==2:
-               handles_labels.append((label, line))
+                   else:   # scala aracionw
+                         line = ax.scatter(dates_datetime,
+                             arr,
+                             facecolor=CMAP,      
+                             edgecolors='k',
+                             alpha=LISTalpha_depth[iid],
+                             label=label,
+                             s=20,               
+                             marker='s')
+                
+                iii+=1
+                y_values = array_floatstats[tuple(selection)]
+                x_values = dates_datetime
+
+                if iim == 0 or iim==2:
+                   handles_labels.append((label, line))
+            else:
+                pass
 
     for axx in axs.flatten():
-        axx.grid()
+        #axx.grid()
+        axx.grid(color='silver', linewidth=0.3)
+
     plt.suptitle(sub.name +' '+ VAR)
     fig.autofmt_xdate()
 
@@ -364,10 +375,11 @@ for sub in OGS.MVR.basin_list:
             labels_seen.add(label)
             labels.append(label)
             handles.append(handle)
+    
 
     fig.legend(handles, labels,
                loc='lower center',
-               ncol=iid+1,
+               ncol=len(LISTDEPTH), #iid+1,
                bbox_to_anchor=(0.5, -0.))  # Spazio sotto
 
     plt.subplots_adjust(top=0.93, left=0.04, bottom=0.15, right=0.97)

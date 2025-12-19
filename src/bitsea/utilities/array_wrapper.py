@@ -1,4 +1,7 @@
+from typing import Union
+
 import numpy as np
+from numpy.typing import DTypeLike
 
 
 class ArrayWrapper:
@@ -47,8 +50,36 @@ class ArrayWrapper:
         """
         return self._data_array.view()
 
-    def __array__(self):
-        return self.as_array()
+    def __array__(
+        self,
+        dtype: Union[DTypeLike, None] = None,
+        copy: Union[bool, None] = None,
+    ) -> np.ndarray:
+        dtype = np.dtype(dtype) if dtype is not None else None
+
+        copy_needed = False
+        if dtype is not None:
+            if self._data_array.dtype != dtype:
+                copy_needed = True
+
+        if copy_needed and copy is False:
+            raise ValueError(
+                "Unable to avoid copy while creating an array as requested.\n"
+                "If using `np.array(obj, copy=False)` replace it with "
+                "`np.asarray(obj)` to allow a copy when needed (no behavior "
+                "change in NumPy 1.x).\n"
+                "For more details, see "
+                "https://numpy.org/devdocs/numpy_2_0_migration_guide.html"
+                "#adapting-to-changes-in-the-copy-keyword."
+            )
+
+        if copy:
+            copy_needed = True
+
+        if not copy_needed:
+            return self.as_array()
+
+        return np.array(self._data_array, dtype=dtype, copy=True)
 
     @property
     def dtype(self):

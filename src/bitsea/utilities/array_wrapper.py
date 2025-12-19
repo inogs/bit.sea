@@ -67,7 +67,7 @@ class ArrayWrapper:
                 "Unable to avoid copy while creating an array as requested.\n"
                 "If using `np.array(obj, copy=False)` replace it with "
                 "`np.asarray(obj)` to allow a copy when needed (no behavior "
-                "change in NumPy 1.x)."
+                "change in NumPy 1.x).\n"
                 "For more details, see "
                 "https://numpy.org/devdocs/numpy_2_0_migration_guide.html"
                 "#adapting-to-changes-in-the-copy-keyword."

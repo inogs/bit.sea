@@ -278,14 +278,13 @@ for idate,datef in enumerate(AllDates):
     ii,diffseconds = TLfloat.find(datef,returndiff=True)
     if diffseconds/24/3600>3.5: continue
     filef = TLfloat.filelist[ii]
-    
     M = NC.Dataset(filef,"r")
     for mm,metric in enumerate(METRICS_NAMES):
         for isub,subname in enumerate(AREA_NAMES):
             if subname=='Aegean Sea': continue
             varname = DICTmetricnames[0][metric].decode()
             for ivar, VAR in enumerate (varlist):
-                MetricsFLOAT[idate,:,mm,isub,ivar] = M.variables[varname][0,indexAREAS[subname],:Ndepths].data.copy()
+                MetricsFLOAT[idate,:,mm,isub,ivar] = M.variables[varname][ivar,indexAREAS[subname],:Ndepths].data.copy()
 
 masknan = np.isnan(MetricsFLOAT)
 MetricsFLOAT[masknan] = 1.e+20
@@ -403,8 +402,9 @@ statsname = 'stats_chlorophyll-a_ins-pf'
 parametername = "Chlorophyll"
 ncvar=S.createVariable(statsname,'f4',('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
 
-ncvar[:,:,:,:,:] = np.nan
-ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,0]
+ncvar[:,:,:,:,:]   = np.nan
+ncvar[:,0,:,:,:]   = MetricsFLOAT[:,:,:,:,0]
+ncvar[:,:,-3:,:,:] = np.nan
 
 setattr(S.variables[statsname], "parameter",parametername)
 setattr(S.variables[statsname], "reference","BGC-Argo")

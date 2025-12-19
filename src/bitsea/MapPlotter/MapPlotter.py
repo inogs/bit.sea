@@ -83,7 +83,7 @@ class MapPlotter():
 			> fname:      NetCDF file name
 			> varname:    Variable name inside NetCDF file
 			> fill_value: NetCDF fill value (default: 1e20)
-			> mask_value: Value to replace the fill value (default: NaN)
+			> mask_value: Value to replace the fill value (default: nan)
 
 		Output:
 			> variable as a numpy array.

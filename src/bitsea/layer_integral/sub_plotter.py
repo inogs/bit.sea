@@ -30,7 +30,7 @@ for isub, sub in enumerate(SUBLIST):
     xC[isub]=TheMask.xlevels[submask].mean()
     yC[isub]=TheMask.ylevels[submask].mean()
 
-SUB_matrix[~mask] = np.NaN
+SUB_matrix[~mask] = np.nan
 
 x,y = TheMask_all.coastline(200,50) # executed before axis creation, in order to avoid the plot of all contours
 map_dict = {'data':SUB_matrix, 'clim':[0,nSub-1]}

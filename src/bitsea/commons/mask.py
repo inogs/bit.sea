@@ -347,14 +347,14 @@ class Mask(BooleanArrayWrapper, Mesh):
             )
             return zero_array, zero_array.copy()
 
-        # Now we have the paths; we want to concatenate them inserting a NaN
+        # Now we have the paths; we want to concatenate them inserting a nan
         # between two different paths. In this way, it will be easy to plot
-        # the results (because the NaN will split the line of matplotlib).
+        # the results (because the nan will split the line of matplotlib).
         lat_values = (p[0] for p in coord_paths)
         lon_values = (p[1] for p in coord_paths)
 
         # We prepare the array that will be used to split: it contains just
-        # one NaN
+        # one nan
         nan_split = np.full((1,), fill_value=np.nan)
 
         lat_separated_values = []

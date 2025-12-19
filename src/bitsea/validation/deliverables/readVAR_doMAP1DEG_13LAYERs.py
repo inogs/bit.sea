@@ -167,7 +167,7 @@ for varname in VARlist:
       ncIN = NC.netcdf_file(avefile,"r")
       A = ncIN.variables[varname].data[0,:,:,:]
       VAR=A.copy()
-      VAR[VAR>1e+19]=np.NaN # NaN for no values
+      VAR[VAR>1e+19]=np.nan # NaN for no values
       ncIN.close()
       
       VARdZ=VAR*dZ # multiply VAR for height of the cells

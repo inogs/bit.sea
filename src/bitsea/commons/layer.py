@@ -45,6 +45,18 @@ class Layer:
             return f"{self.__top:04g}m"
         return f"{self.__top:04g}-{self.__bottom:04g}m"
 
+    def to_file_postfix(self):
+        """
+        Returns a filename-safe string representation of this layer.
+
+        Returns a string that describes the layer in a format suitable for use
+        in filenames, containing only alphanumeric characters, dots, and
+        hyphens.
+        """
+        if self.top == self.bottom:
+            return f"layer{self.__top:g}"
+        return f"layer{self.__top:g}-{self.__bottom:g}"
+
     @property
     def top(self):
         return self.__top

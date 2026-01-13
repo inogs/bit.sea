@@ -184,7 +184,9 @@ for tt in ['LOG','NOLOG']:
         TIMELIST[idate] = datef.toordinal() - datetime.datetime(1950,1,1).toordinal()
         for iforecast,ff in enumerate(LISTforecast):
             ii = TLsat[ff].select_one(req)
-            if ii==None: continue
+            if ii==None:
+                print(req, ff, " not found in ", INDIRSAT)
+                continue
             filef = TLsat[ff].filelist[ii]
         
             M = NC.Dataset(filef,"r")

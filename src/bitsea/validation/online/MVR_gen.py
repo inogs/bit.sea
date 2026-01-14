@@ -406,7 +406,7 @@ ncvar=S.createVariable(statsname,'f4',('time', 'forecast', 'layer', 'metric', 'a
 
 ncvar[:,:,:,:,:]   = np.nan
 ncvar[:,0,:,:,:]   = MetricsFLOAT[:,:,:,:,0]
-ncvar[:,:,-2:,:,:] = np.nan
+ncvar[:,:,-1:,:,:] = np.nan
 
 setattr(S.variables[statsname], "parameter",parametername)
 setattr(S.variables[statsname], "reference","BGC-Argo")

@@ -41,8 +41,8 @@ from bitsea.commons.utils import addsep
 from bitsea.commons.Timelist import TimeList
 from bitsea.basins import V2 as OGS
 import sys
-
-
+import pandas as pd
+import os
 
 INDIR = addsep(args.inputdir)
 OUTDIR = addsep(args.outdir)
@@ -84,6 +84,47 @@ def reshape_label(handles_labels):
        reshaped_list.append(ref)
    return(reshaped_list)
 
+
+def plot_profiles_rmse(df, outdir, VAR, sub):
+    """Crea e salva un line plot con doppio asse Y:
+    """
+    fig, ax1 = plt.subplots(figsize=(8, 6))
+    ax2 = ax1.twinx()
+
+    # Linee
+    ax1.plot(df.index, df['#profiles'],
+             linewidth=3, marker='o',
+             color='tab:blue', label='#profiles')
+
+    ax2.plot(df.index, df['MSE'],
+             linewidth=3, marker='s',
+             color='tab:orange', label='MSE')
+
+    # Assi
+    ax1.set_xlabel('Depth [m]', fontsize=12)
+    ax1.set_ylabel('#profiles', fontsize=12, color='tab:blue')
+    ax2.set_ylabel('MSE', fontsize=12, color='tab:orange')
+
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax2.tick_params(axis='y', labelcolor='tab:orange')
+
+    ax1.grid(True, alpha=0.3)
+    ax1.set_title(f'{VAR} – {sub.name.upper()}', fontsize=14)
+
+    # Legenda unica
+    l1, lab1 = ax1.get_legend_handles_labels()
+    l2, lab2 = ax2.get_legend_handles_labels()
+    ax1.legend(l1 + l2, lab1 + lab2, loc='best')
+
+    plt.tight_layout()
+
+    outfile = os.path.join(
+        outdir,f"{VAR}_floatmetric_{sub.name.upper()}.png")
+
+    plt.savefig(outfile)
+    plt.close(fig)
+
+
 for ii,filein in enumerate(TLmvr.filelist):
     print(filein)
     MVR = NC.Dataset(filein,'r')
@@ -104,9 +145,12 @@ for ii,filein in enumerate(TLmvr.filelist):
         DICTdim_sat = {}
         if VAR == "chlorophyll":
            dimtuple = MVR.variables['stats_chlorophyll-a_sat-l3'].dimensions
+           UNITS_for_Title=("(mg Chl*m$^{-3}$)")
         else: 
            dimtuple = MVR.variables['stats_'+VAR+'_ins-pf' ].dimensions 
-           
+           if VAR=="nitrate": UNITS_for_Title = '(mmol NO3*m$^{-3}$)'
+           else: UNITS_for_Title = '(mmol O2*m$^{-3})$'
+
         for iid,dd in enumerate(dimtuple):
            if VAR == "chlorophyll":
               if 'depth' in dd:
@@ -234,7 +278,7 @@ if VAR == 'chlorophyll':
            plt.sca(axx)
            plt.legend()
            plt.grid()
-       plt.suptitle(subname)
+       plt.suptitle(subname + ' ' + UNITS_for_Title )
        fig.autofmt_xdate()
        BASIN=subname.replace(' ','_')
        plt.savefig(OUTDIR + '/satmetric_' +  BASIN+ '.png')
@@ -252,135 +296,106 @@ indlayer   = DICTdim_float['layer'][1]
 LISTalpha_depth = np.linspace(1,0.3, len(DICTdim_float['layer'][0]))
 
 for sub in OGS.MVR.basin_list:
-    print (sub.name)
-    handles_labels = []
-    fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,12])#,sharey=True)
-    for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche 
-        #import sys
-        #sys.exit('carol')
-        #10-60-100-150m chla
-        #10-60-100-150-600m doxy no3
-        nax = DICTvargroup[mm]
-        ix_ax = int(np.floor(nax/2))
-        iy_ax = nax-2*ix_ax
-        ax = axs[ix_ax, iy_ax]
-        iii=0
-        for iid,depth in enumerate(DICTdim_float['layer'][0]):
-            if VAR == 'chlorophyll': 
-                LISTDEPTH=np.array([10,60,100,150])
-                LISTLINEE=np.array(['10','100','150'])
-            else: 
-                LISTDEPTH = np.array([10,60,100,150,600]) 
-                LISTLINEE = np.array([10,100,600])
-            if int(depth) in LISTDEPTH:
-                group_label = "Mod" if iim == 0 else "Ref"
-                label = f"{depth}m {group_label}"
-                lab   = str(int(depth))
-                CMAP=cmap(0)
-                title= mm.capitalize()
+    print ('Processing ' +  sub.name)
+    df=pd.DataFrame(index=np.arange(0,7), columns=['#profiles','MSE'])
+    for iid,depth in enumerate(DICTdim_float['layer'][0]):
+        handles_labels = []
+        skip_figure = False
+        fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,12])#,sharey=True)
+        for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche 
+            nax = DICTvargroup[mm]
+            ix_ax = int(np.floor(nax/2))
+            iy_ax = nax-2*ix_ax
+            ax = axs[ix_ax, iy_ax]
+            group_label = "Mod" if iim == 0 else "Ref"
+            label = f"{depth}m {group_label}"
+            lab   = str(int(depth))
+            CMAP=cmap(0)
+            title= mm.capitalize()
                 
-                if str(nax) in ['1','3']: # see DICTvargroup
-                    title= mm.split()[0].capitalize() + ' Mod vs Ref'
-                    if 'ref' in mm:
-                        CMAP=cmap(1)
+            if str(nax) in ['1','3']: # see DICTvargroup
+                title= mm.split()[0].capitalize() + ' Mod vs Ref'
+                if 'ref' in mm:
+                    CMAP=cmap(1)
 
-                ax.set_title(title)
+            #ax.set_title(title)
 
-                DICTind = {
-                    indmetrics: iim,
-                    indsub: DICTsubgroup_index[sub.name],
-                    DICTdim_sat['forecast'][1]: 0,
-                    DICTdim_float['layer'][1]: iid,
-                }
-                selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
-
-                # 
-                arr=array_floatstats[tuple(selection)]
-                if mm.startswith('number'):
-                    arr[arr == 0] = np.nan
-
-                #ax.plot(dates_datetime,
-                #   arr,
-                #   color='k',
-                #   linewidth=0.4,
-                #   alpha=LISTalpha_depth[iid])
-
-                if int(depth) not in LISTLINEE:
-                   #pass
-                   line=ax.plot(dates_datetime,
-                   arr,
-                   color=CMAP,
-                   linewidth=1,
-                   alpha=LISTalpha_depth[iid])
-
-                   ax.annotate(
-                   f"{int(depth)}",
-                   xy=(dates_datetime[0], arr[0]),   # primo punto della linea
-                   xytext=(-10, -2),                    # offset VERSO L’ALTO (in pixel)
-                   textcoords="offset points",
-                   ha="center",
-                   va="bottom",
-                   fontsize=8,
-                   color=CMAP,
-                   alpha=LISTalpha_depth[iid]
-                   )
+            DICTind = {
+                indmetrics: iim,
+                indsub: DICTsubgroup_index[sub.name],
+                DICTdim_sat['forecast'][1]: 0,
+                DICTdim_float['layer'][1]: iid,
+            }
+            selection = [DICTind.get(dd,slice(None)) for dd in range(len(DICTdim_float.keys()))]
+            
+            arr=array_floatstats[tuple(selection)]
+            if mm.startswith('number'):
+                if np.all(arr == 0) or np.all(np.isnan(arr)):
+                   print('No data found in --> ' + sub.name + ' in depth -->' + str(int(depth)  ))
+                   skip_figure = True
+                   break 
 
                 else:
-                    
-                   if (iii % 2) == 0: # scala verdi
-                         line = ax.scatter(dates_datetime,
-                             arr,
-                             facecolor=CMAP,    
-                             edgecolors='k',     
-                             alpha=LISTalpha_depth[iid],
-                             label=label,
-                             s=20,             
-                             marker='o')
-
-                   else:   # scala aracionw
-                         line = ax.scatter(dates_datetime,
-                             arr,
-                             facecolor=CMAP,      
-                             edgecolors='k',
-                             alpha=LISTalpha_depth[iid],
-                             label=label,
-                             s=20,               
-                             marker='s')
-                
-                iii+=1
-                y_values = array_floatstats[tuple(selection)]
-                x_values = dates_datetime
-
-                if iim == 0 or iim==2:
-                   handles_labels.append((label, line))
+                   arr[arr == 0] = np.nan
+            
+            MEAN_VAL= np.nanmean(arr)
+            if mm.startswith('number') or mm == ('mean squared error'):
+                ax.set_title(title + ' ( mean value: ' +str(MEAN_VAL)  +') ' )
             else:
-                pass
+                ax.set_title(title)
 
-    for axx in axs.flatten():
-        #axx.grid()
-        axx.grid(color='silver', linewidth=0.3)
+            if mm.startswith('number'):
+               df.at[iid, '#profiles'] = np.around(MEAN_VAL, 2)
+            elif mm == 'mean squared error':
+               df.at[iid, 'MSE'] = MEAN_VAL
 
-    plt.suptitle(sub.name +' '+ VAR)
-    fig.autofmt_xdate()
+            # plot line and scatter dots
+            ax.plot(dates_datetime,arr,color='k',linewidth=1,zorder=1) #alpha=LISTalpha_depth[iid])
+            line = ax.scatter(dates_datetime,arr,facecolor=CMAP,    
+                   edgecolors='k',label=label,s=70, marker='o',zorder=2)
+            
+            y_values = array_floatstats[tuple(selection)]
+            x_values = dates_datetime
 
-    handles_labels=reshape_label(handles_labels)
-    handles_labels_mod = []
-    handles_labels_ref = []
+            if iim == 0 or iim==2:
+               handles_labels.append((label, line))
+        
+        if skip_figure:
+            plt.close(fig)
+            continue
+
+        for axx in axs.flatten():
+            axx.grid(True, linestyle='--', linewidth=0.5)
+        
+        plt.suptitle(f"{sub.name.capitalize()} {VAR} {UNITS_for_Title} layer:  {int(depth)}m" )
+
+        fig.autofmt_xdate()
+
+        handles_labels=reshape_label(handles_labels)
+        handles_labels_mod = []
+        handles_labels_ref = []
 
 
-    labels_seen = set()
-    handles, labels = [], []
-    for label, handle in handles_labels:
-        if label not in labels_seen:
-            labels_seen.add(label)
-            labels.append(label)
-            handles.append(handle)
+        labels_seen = set()
+        handles, labels = [], []
+        for label, handle in handles_labels:
+            if label not in labels_seen:
+                labels_seen.add(label)
+                labels.append(label)
+                handles.append(handle)
+
+        fig.legend(handles, labels,
+                   loc='lower center',
+                   ncol=2,
+                   fontsize=18,
+                   bbox_to_anchor=(0.5, -0.))  # Spazio sotto
+
+        plt.subplots_adjust(top=0.93, left=0.04, bottom=0.12, right=0.97)
+        plt.savefig(OUTDIR + '/'+VAR +'_floatmetric_' + sub.name.upper() +'_'+ str(int(depth)) + 'm.png')
+        plt.close(fig)
     
-
-    fig.legend(handles, labels,
-               loc='lower center',
-               ncol=len(LISTDEPTH), #iid+1,
-               bbox_to_anchor=(0.5, -0.))  # Spazio sotto
-
-    plt.subplots_adjust(top=0.93, left=0.04, bottom=0.15, right=0.97)
-    plt.savefig(OUTDIR + '/'+VAR +'_floatmetric_' + sub.name.upper() + '.png')
+    df.index= list(DICTdim_float['layer'][0])
+    outdir = os.path.join(OUTDIR, 'CSV')
+    os.makedirs(outdir, exist_ok=True)
+    plot_profiles_rmse(df, outdir, VAR, sub)
+    df.to_csv(outdir +'/'+ VAR +'_floatmetric_' + sub.name.upper() + '.csv' )

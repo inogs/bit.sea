@@ -190,8 +190,10 @@ for ii,filein in enumerate(TLmvr.filelist):
 
 array_floatstats = np.array(floatstats)
 array_floatstats[array_floatstats>1.e+19] = np.nan
+array_floatstats[array_floatstats<-990] = np.nan
 array_satstats = np.array(satstats)
 array_satstats[array_satstats>1.e+19] = np.nan
+array_satstats[array_satstats<-999] = np.nan
 
 dates_datetime = []
 for dd in dates:

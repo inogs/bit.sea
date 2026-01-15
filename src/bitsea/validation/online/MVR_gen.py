@@ -175,7 +175,7 @@ Nsub = len(AREA_NAMES)
 MetricsSAT = {}
 for tt in ['LOG','NOLOG']:
     MetricsSAT[tt] = np.zeros((Ndates,Nforecast,Nmetrics,Nsub))
-    MetricsSAT[tt][:] = np.nan
+    MetricsSAT[tt][:] = -999.0
     TIMELIST = np.zeros((Ndates,),np.float32)
 
 
@@ -196,7 +196,7 @@ for tt in ['LOG','NOLOG']:
                     MetricsSAT[tt][idate,iforecast,mm,isub] = M.variables[varname][indexAREAS[subname],1].data.copy()
         
     masknan = np.isnan(MetricsSAT[tt])
-    MetricsSAT[tt][masknan] = 1.e+20
+    MetricsSAT[tt][masknan] = -999.0
 
 #### FLOAT #############
 
@@ -272,7 +272,7 @@ varlist=['P_l','N3n','O2o']
 Nvar=len(varlist)
 
 MetricsFLOAT = np.zeros((Ndates,Ndepths,Nmetrics,Nsub,Nvar))
-MetricsFLOAT[:] = 1.e+20
+MetricsFLOAT[:] = -999.0
 TIMELIST = np.zeros((Ndates,),np.float32)
 
 for idate,datef in enumerate(AllDates):
@@ -289,7 +289,7 @@ for idate,datef in enumerate(AllDates):
                 MetricsFLOAT[idate,:,mm,isub,ivar] = M.variables[varname][ivar,indexAREAS[subname],:Ndepths].data.copy()
 
 masknan = np.isnan(MetricsFLOAT)
-MetricsFLOAT[masknan] = 1.e+20
+MetricsFLOAT[masknan] = -999.0
 
 
 outfile = 'product_quality_stats_' + productname + '_' + STARTTIME + '_' + END__TIME + '.nc'
@@ -404,9 +404,9 @@ statsname = 'stats_chlorophyll-a_ins-pf'
 parametername = "Chlorophyll"
 ncvar=S.createVariable(statsname,'f4',('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
 
-ncvar[:,:,:,:,:]   = np.nan
+ncvar[:,:,:,:,:]   = -999.0
 ncvar[:,0,:,:,:]   = MetricsFLOAT[:,:,:,:,0]
-ncvar[:,:,-1:,:,:] = np.nan
+ncvar[:,:,-1:,:,:] = -999.0
 
 setattr(S.variables[statsname], "parameter",parametername)
 setattr(S.variables[statsname], "reference","BGC-Argo")
@@ -419,7 +419,7 @@ statsname = 'stats_nitrate_ins-pf'
 parametername = "Nitrate"
 ncvar = S.createVariable(statsname, 'f4', ('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
 
-ncvar[:,:,:,:,:] = np.nan
+ncvar[:,:,:,:,:] = -999.0
 ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,1]
 
 setattr(S.variables[statsname], "parameter",parametername)
@@ -431,7 +431,7 @@ setattr(S.variables[statsname], "units"    ,"mmol NO3*m^-3")
 statsname = 'stats_oxygen_ins-pf'
 parametername = "Oxygen"
 ncvar = S.createVariable(statsname, 'f4', ('time', 'forecast', 'layer', 'metric', 'area'), fill_value=-999.0)
-ncvar[:,:,:,:,:] = np.nan
+ncvar[:,:,:,:,:] = -999.0
 ncvar[:,0,:,:,:] = MetricsFLOAT[:,:,:,:,2]
 
 

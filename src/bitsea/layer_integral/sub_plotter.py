@@ -6,11 +6,15 @@ import matplotlib.pyplot as pl
 from bitsea.layer_integral.mapplot import generic_mapplot_medeaf
 import matplotlib.font_manager as font_manager
 from matplotlib.font_manager import FontProperties
+from mpl_toolkits.basemap import Basemap
+
+# generic_mapplot_medeaf needs
+# ln -s /g100_work/OGS_prod2528/OPA/V12C-prod/etc/static-data/POSTPROC/fonts/TitilliumWeb-Regular.ttf
+# ln -s /g100_work/OGS_prod2528/OPA/V12C-prod/etc/static-data/POSTPROC/fonts/TitilliumWeb-Bold.ttf
 
 
-TheMask_all = Mask.from_file('/pico/home/usera07ogs/a07ogs00/OPA/V2C/etc/static-data/MED1672_cut/MASK/meshmask.nc')
-TheMask = TheMask_all.cut_at_level(0)
-mask = TheMask.mask_at_level(0)
+TheMask_all = Mask.from_file('/g100_work/OGS_prod2528/OPA/V12C-prod/etc/static-data/MED24_125/meshmask.nc')
+TheMask = Mask(TheMask_all.grid, np.zeros((1,)), TheMask_all.mask[0,:,:],allow_broadcast=True)
 jpk,jpj,jpi = TheMask.shape
 
 
@@ -20,7 +24,7 @@ SUBLIST = OGS.Pred.basin_list
 nSub = len(SUBLIST)
 xC = np.zeros(nSub,np.float32)
 yC = np.zeros(nSub,np.float32)
-colortext=['w','w','w','w','w','k','k','k','k','k','k','k','k','k','w','w']
+colortext=['w','w','w','w','w','k','k','k','k','k','k','k','k','k','w','w','w']
 cmap=pl.get_cmap('jet',nSub)
 
 for isub, sub in enumerate(SUBLIST):
@@ -30,20 +34,39 @@ for isub, sub in enumerate(SUBLIST):
     xC[isub]=TheMask.xlevels[submask].mean()
     yC[isub]=TheMask.ylevels[submask].mean()
 
-SUB_matrix[~mask] = np.NaN
+SUB_matrix[~TheMask.mask[0,:,:]] = np.nan
 
-x,y = TheMask_all.coastline(200,50) # executed before axis creation, in order to avoid the plot of all contours
+
+xlim = [-6.5, 36.5]
+ylim = [30, 46]
+xc = (xlim[0] + xlim[1]) / 2
+yc = (ylim[0] + ylim[1]) / 2
+
+mapobj = Basemap(
+    projection="merc",
+    lat_0=xc,
+    lon_0=yc,
+    llcrnrlon=xlim[0],
+    llcrnrlat=ylim[0],
+    urcrnrlon=xlim[1],
+    urcrnrlat=ylim[1],
+    area_thresh=None,
+    resolution="i",
+)
+
 map_dict = {'data':SUB_matrix, 'clim':[0,nSub-1]}
-bkg=pl.imread("/pico/home/usera07ogs/a07ogs00/OPA/V2C-dev/etc/static-data/POSTPROC/background_medeaf.png")
-fig,ax = generic_mapplot_medeaf(map_dict, fig=None, ax=None, mask=TheMask, ncolors=nSub, background_img=bkg)
-ax.plot(x,y,color='k',linewidth=0.7)
 
-#pl.close('all')
+logo = pl.imread("/g100_work/OGS_prod2528/OPA/V12C-prod/etc/static-data/POSTPROC/LogoEchoOGS4.png")
+pl.close('all')
+fig,ax = generic_mapplot_medeaf(map_dict, mapobj, TheMask, fig=None, ax=None, ncolors=nSub, logo=logo)
+
+
 font=FontProperties()
 font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=12)
 for isub,sub in enumerate(SUBLIST):
-    t = ax.text(xC[isub],yC[isub],sub.name, color=colortext[isub], verticalalignment='center', horizontalalignment='center')
-    t.set_font_properties(font_prop)
+    x,y=mapobj(xC[isub],yC[isub])
+    ax.annotate(sub.name, xy=(x,y), xytext=(0,0),textcoords="offset points", fontproperties=font_prop,color=colortext[isub], ha='center', va='center', alpha=1.0)
+
 
 fig.savefig('Subbasin_V3_200_color.png',dpi=96)
 

@@ -258,13 +258,12 @@ def mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None
 
     cax = fig.add_axes((0.88,.13, 0.03, 0.78))
     cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
-    matplotlib_version=2.0
-    if matplotlib_version<1.4 : cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
+
     ax.invert_yaxis()
 
-    if matplotlib_version < 1.4:
-        ax.set_yticklabels([], 'fontproperties', font_prop)
-        ax.set_xticklabels([], 'fontproperties', font_prop)
+    
+    ax.set_yticklabels([], fontproperties=font_prop)
+    ax.set_xticklabels([], fontproperties=font_prop)
     ax.set_xticks(np.arange(-2,36,4).tolist())
     ax.set_yticks(np.arange(32,46,4).tolist())
 
@@ -412,68 +411,86 @@ def mapplot_medeaf_V5C(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=No
 
     return fig, ax
 
-
-def generic_mapplot_medeaf(map_dict, fig, ax, mask=None,ncolors=256, background_img=None):
+def generic_mapplot_medeaf(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=None):
     """
     Designed for web site
-    Useful for subbasins or other infos
     """
+    background_color=(.9, .9, .9)
+    cmap=pl.get_cmap('viridis',ncolors)
 
     font=FontProperties()
-    font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=14)
+    font_prop   = font_manager.FontProperties(fname='TitilliumWeb-Bold.ttf', size='xx-large', weight='bold')
     font_prop13 = font_manager.FontProperties(fname='TitilliumWeb-Regular.ttf', size=13)
     #font.set_name('TitilliumWeb')
     if (fig is None) or (ax is None):
         fig , ax = pl.subplots()
-        fig.set_size_inches(10.0, 10.0*16/42)
+        fig.set_size_inches(10,10*map_obj.ymax/map_obj.xmax * (.85/.85))
+
     else:
         fig.clf()
         fig.add_axes(ax)
 
-    ratio=672./860
-    ax.set_position([0.08, 0.13, ratio, ratio])
-    clim = map_dict['clim']
+    #ax.set_facecolor(background_color)
+    ax.set_position([.10, .10, .85, .85])
+    R1 = Rectangle(28.90338, 34.88078, 37.28154, 39.795254)#anatolia
+    R2 = Rectangle(7.86973,11.0276,45.1554,46 )#nord italia
+    R3 = Rectangle(11.7043,12.3246,42.3872,43.5016)# centro italia
+    R4 = Rectangle(-0.532455,0.369799,40.9977,41.8014)# catalunya
+    R5 = Rectangle(-6,-3.57754,39.011,42.0531)# centro spagna
+    R6 = Rectangle(20.332,21.6854,40.3991,41.4642) #albania
+    R7 = Rectangle(35.1627,35.9522,30.7444,33.0422)# israel
+    R8 = Rectangle(28.2831,28.9034,45.1951,45.7487)# moldavia
+    R9 = Rectangle(19.0258,19.588,42.0524,42.3803)# Skadarko Jezero
+    R10 = Rectangle(27.7687,28.845,40.0348,40.2938)# 3 laghi vicino bursa, turchia
+    R11 = Rectangle(29.2417,30.0876,39.9683,40.6135)# terzo lago
+    R12 = Rectangle(31.7135,32.3184,31.0228,31.5918)#nilo
+    RECTANGLE_LIST=[R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11] # R12]
+    POLY=map_obj.coastpolygons
+    for polygon in POLY:
+        x,y=polygon
+        ax.fill(x,y,color=background_color)
+        if not is_in_boxes(x[0], y[0], RECTANGLE_LIST, map_obj):
+            ax.plot(x,y,linewidth=0.7, color="0.4")
+    
+    
+    vmin, vmax = map_dict['clim']
+    map2d=map_dict['data']
+    map2d[map2d>1.e+19] = np.nan
+    Zm = np.ma.masked_invalid(map2d)
+    cs=map_obj.pcolormesh(maskobj.xlevels, maskobj.ylevels, Zm,cmap=cmap,latlon='true',vmin=vmin,vmax=vmax, shading="nearest", ax=ax)
 
-    lon_min = mask.xlevels.min()
-    lon_max = mask.xlevels.max()
-    lat_min = mask.ylevels.min()
-    lat_max = mask.ylevels.max()
-    cmap=pl.get_cmap('jet',ncolors)
-    im = ax.imshow(map_dict['data'], extent=[lon_min, lon_max, lat_max, lat_min], cmap=cmap)
-    if not (background_img is None) :
-        ax.imshow(background_img, extent=[-6, 36, 30, 46])
-
-    #Set color bar
-    im.set_clim(clim[0], clim[1])
-    cbar_ticks_list = np.linspace(clim[0], clim[1], 5).tolist()
-    cbar_ticks_labels = list()
-    for t in cbar_ticks_list:
-        cbar_ticks_labels.append("%g" % (t,))
+    parallels = np.arange(32.,46.,4)
+    h_dict=map_obj.drawparallels(parallels,labels=[1,0,0,1],linewidth=0.5, fontsize=13, dashes=[1,2], ax=ax)
+    set_font(h_dict, font_prop13)
+    h_dict = map_obj.drawparallels(parallels,labels=[1,0,0,1],fontsize=13, dashes=[6,900],ax=ax)
+    set_invisible(h_dict)
+    # draw meridians
+    meridians = np.arange(-4.,40,4.)
+    set_font(map_obj.drawmeridians(meridians,labels=[0,0,0,1],linewidth=0.5,fontsize=13, dashes=[1,2],ax=ax), font_prop13 ) #dashes=[6,900])
+    set_invisible(map_obj.drawmeridians(meridians,labels=[0,0,0,1],fontsize=13, dashes=[6,900],ax=ax))
+    
+    nticks = 6
+    cbar_ticks_list = np.linspace(vmin, vmax, nticks).tolist()    
 
 
-    #cax = fig.add_axes((0.88,.13, 0.03, 0.78))
-    #cbar = fig.colorbar(im, cax=cax, ticks=cbar_ticks_list)
-    #cbar.ax.set_yticklabels(cbar_ticks_labels, 'fontproperties', font_prop)
-    ax.invert_yaxis()
+    if not (logo is None):
+        x0,y0=map_obj(0.2,32.1)
+        x1,y1=map_obj(7.8,34.9)
+        im=ax.imshow(logo,extent=[x0, x1, y0, y1])
+        im.set_zorder(ax.get_zorder()+2)
+    
+    t=ax.set_xlabel('Longitude',size= 'xx-large',fontweight='bold',labelpad = 20)#).set_fontsize(15)
+    t.set_font_properties(font_prop)
+    t=ax.set_ylabel('Latitude',size= 'xx-large',fontweight='bold',labelpad = 40)#).set_fontsize(15)
+    t.set_font_properties(font_prop)
 
-    ax.set_yticklabels([], 'fontproperties', font_prop)
-    ax.set_xticklabels([], 'fontproperties', font_prop)
-    ax.set_xticks(np.arange(-2,36,4).tolist())
-    ax.set_yticks(np.arange(32,46,4).tolist())
+    ax.set_position([.10, .10, .85, .85])
 
-    #ax.set_yticklabels([u"32N", u"36N", u"40N", u"44N"], 'fontproperties', font_prop)
-    ax.set_xlim([-6, 36])
-    ax.set_ylim([30, 46])
-    t=ax.set_xlabel("longitude (deg)");
-    t.set_font_properties(font_prop13)
-    t=ax.set_ylabel("latitude (deg)")
-    t.set_font_properties(font_prop13)
+    watermarkstring='Copyright : \nOGS ECHO GROUP\nmedeaf.ogs.it'
+    ax.annotate(watermarkstring, xy=(0.50,.2), xycoords='axes fraction' ,fontsize=8,fontweight='bold', color='gray', ha='left', va='bottom', alpha=0.3)
+    
+    fig.patch.set_alpha(0.0)
 
-
-
-    ax.set_position([0.08, 0.13, ratio, ratio])
-    ax.axes.get_xaxis().set_visible(True)
-    ax.axes.get_yaxis().set_visible(True)
     return fig, ax
 
 

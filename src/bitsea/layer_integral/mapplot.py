@@ -411,7 +411,7 @@ def mapplot_medeaf_V5C(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=No
 
     return fig, ax
 
-def generic_mapplot_medeaf(map_dict, map_obj, maskobj, fig, ax, ncolors=256, logo=None):
+def generic_mapplot_medeaf(map_dict, map_obj, maskobj, fig=None, ax=None, ncolors=256, logo=None):
     """
     Designed for web site
     """

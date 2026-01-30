@@ -95,7 +95,7 @@ SUFFIX={'P_l'  : '_cmems_obs-oc_med_bgc-plankton_nrt_l3-multi-1km_P1D.nc',
 
 def climfilename(CLIM_DIR, month,var):
     if var=='P_l':
-        return CLIM_DIR + '/ave.yyyy' + month + '15-00:00:00.nc'
+        return CLIM_DIR + f"/ave.yyyy{month}15-00:00:00.{var}.nc"
     else:
         return None
         

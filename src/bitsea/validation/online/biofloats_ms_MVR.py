@@ -26,7 +26,7 @@ def argument():
         description="""
     Generates float validation data on a single week, from one single chain run.
     Week is centered on thursday.
-    Produces a single file, containing bias, rmse and number of measurements for each subbasin and layer
+    Produces a single file, containing bias, mse and number of measurements for each subbasin and layer
     for chlorophyll, nitrate and oxygen.
     In this approach we define the measurement as mean on layer of the float profile values.
     """,
@@ -86,14 +86,16 @@ R = timerequestors.Weekly_req(d.year, d.month, d.day)
 Check_Obj = check.check(Path(""), verboselevel=0)
 
 LAYERLIST = [
-    Layer(0, 10),
-    Layer(10, 30),
-    Layer(30, 60),
-    Layer(60, 100),
-    Layer(100, 150),
-    Layer(150, 300),
-]
-VARLIST = ["P_l"]
+     Layer(0, 10),
+     Layer(10, 30),
+     Layer(30, 60),
+     Layer(60, 100),
+     Layer(100, 150),
+     Layer(150, 300),
+     Layer(300, 600),
+     ]
+
+VARLIST=['P_l','N3n','O2o']
 nSub = len(OGS.MVR.basin_list)
 nDepth = len(LAYERLIST)
 nVar = len(VARLIST)
@@ -114,15 +116,16 @@ REF___VARIANCE = np.zeros((nVar, nSub, nDepth), np.float32)
 REF___VARIANCE[:] = np.nan
 
 BIAS = np.zeros((nVar, nSub, nDepth), np.float32)
-RMSE = np.zeros((nVar, nSub, nDepth), np.float32)
+MSE = np.zeros((nVar, nSub, nDepth), np.float32)
 CORR = np.zeros((nVar, nSub, nDepth), np.float32)
 ANOMALY_CORR = np.zeros((nVar, nSub, nDepth), np.float32)
 BIAS[:] = np.nan
-RMSE[:] = np.nan
+MSE[:] = np.nan
 CORR[:] = np.nan
 ANOMALY_CORR[:] = np.nan
 
 TI = R.time_interval
+print(TI)
 TL = TimeList.fromfilenames(TI, BASEDIR / "PROFILES", "ave*nc")
 
 ALL_PROFILES = bio_float.FloatSelector(None, TI, Rectangle(-6, 36, 30, 46))
@@ -132,7 +135,6 @@ if args.basedir_clim is not None:
     TLclim = TimeList.fromfilenames(None, BASEDIR_CLIM / "PROFILES", "ave*nc")
     TLclim.inputFrequency = "monthly"
     Mclim = Matchup_Manager(ALL_PROFILES, TLclim, BASEDIR_CLIM)
-
 
 for ivar, var in enumerate(VARLIST):
     print(var)
@@ -145,6 +147,8 @@ for ivar, var in enumerate(VARLIST):
         Matchup_object_list = []
         Matchup_object_list_clim = []
         for p in Profilelist:
+            #if p.ID() == '4903760_20251026-22:50:21_4.198_38.402': # If a float should be excluded, add its ID here.
+            #    continue
             floatmatchup = M.getMatchups2(
                 [p],
                 TheMask.zlevels,
@@ -153,7 +157,6 @@ for ivar, var in enumerate(VARLIST):
                 interpolation_on_Float=True,
             )
             Matchup_object_list.append(floatmatchup)
-
             if args.basedir_clim is not None:
                 floatmatchup_clim = Mclim.getMatchups2(
                     [p],
@@ -165,7 +168,6 @@ for ivar, var in enumerate(VARLIST):
                 Matchup_object_list_clim.append(floatmatchup_clim)
             else:
                 Matchup_object_list_clim.append(floatmatchup)
-
         for ilayer, layer in enumerate(LAYERLIST):
             MODEL_LAYER_MEAN = []  # one value for each suitable profile in (subbasin, layer)
             REF_LAYER_MEAN = []
@@ -190,7 +192,7 @@ for ivar, var in enumerate(VARLIST):
                     np.array(MODEL_LAYER_MEAN), np.array(REF_LAYER_MEAN)
                 )
                 BIAS[ivar, isub, ilayer] = M_LAYER.bias()
-                RMSE[ivar, isub, ilayer] = M_LAYER.RMSE()
+                MSE[ivar, isub, ilayer] = M_LAYER.MSE()
                 MODEL_MEAN[ivar, isub, ilayer] = np.nanmean(MODEL_LAYER_MEAN)
                 REF___MEAN[ivar, isub, ilayer] = np.nanmean(REF_LAYER_MEAN)
 
@@ -230,8 +232,8 @@ setattr(ncOUT, "layerlist", s[:-1])
 
 ncvar = ncOUT.createVariable("bias", "f", ("var", "sub", "depth"))
 ncvar[:] = BIAS
-ncvar = ncOUT.createVariable("rmse", "f", ("var", "sub", "depth"))
-ncvar[:] = RMSE
+ncvar = ncOUT.createVariable("mse", "f", ("var", "sub", "depth"))
+ncvar[:] = MSE
 ncvar = ncOUT.createVariable("npoints", "i", ("var", "sub", "depth"))
 ncvar[:] = NPROFILES
 ncvar = ncOUT.createVariable("nobs", "i", ("var", "sub", "depth"))

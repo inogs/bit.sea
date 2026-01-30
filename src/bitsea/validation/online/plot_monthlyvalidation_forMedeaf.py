@@ -85,7 +85,7 @@ def reshape_label(handles_labels):
    return(reshaped_list)
 
 
-def plot_profiles_rmse(df, outdir, VAR, sub):
+def plot_profiles_mse(df, outdir, VAR, sub):
     """Crea e salva un line plot con doppio asse Y:
     """
     fig, ax1 = plt.subplots(figsize=(8, 6))
@@ -399,5 +399,5 @@ for sub in OGS.MVR.basin_list:
     df.index= list(DICTdim_float['layer'][0])
     outdir = os.path.join(OUTDIR, 'CSV')
     os.makedirs(outdir, exist_ok=True)
-    plot_profiles_rmse(df, outdir, VAR, sub)
+    plot_profiles_mse(df, outdir, VAR, sub)
     df.to_csv(outdir +'/'+ VAR +'_floatmetric_' + sub.name.upper() + '.csv' )

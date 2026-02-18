@@ -394,7 +394,7 @@ for sub in OGS.MVR.basin_list:
     df.index= list(DICTdim_float['layer'][0])
     outdir = OUTDIR / 'CSV'
     outdir.mkdir(exist_ok=True)
-    plot_profiles_mse(df, outdir, VAR, sub)
+    plot_profiles_mse(df, OUTDIR, VAR, sub)
     outfile_csv = outdir / f"{VAR}_floatmetric_{sub.name.upper()}.csv"
     print(outfile_csv)
     df.to_csv(outfile_csv)

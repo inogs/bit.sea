@@ -1,4 +1,5 @@
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Plot results of Monthly Validation Report
@@ -9,14 +10,14 @@ def argument():
     )
 
     parser.add_argument(   '--outdir', '-o',
-                            type = str,
+                            type = existing_dir_path,
                             required =True,
                             default = "./",
                             help = ''' Output dir'''
                             )
 
     parser.add_argument(   '--inputdir', '-i',
-                            type = str,
+                            type = existing_dir_path,
                             required = True,
                             default = '',
                             help = 'Input dir')
@@ -24,7 +25,7 @@ def argument():
     parser.add_argument(   '--varname', '-vv',
                             type = str,
                             required = True,
-                            default = 'chlorophyll',
+                            choices= ['chlorophyll', 'nitrate', 'oxygen'],
                             help = 'varname')
 
 
@@ -37,15 +38,13 @@ import netCDF4 as NC
 import datetime
 import matplotlib.pyplot as plt
 
-from bitsea.commons.utils import addsep
 from bitsea.commons.Timelist import TimeList
 from bitsea.basins import V2 as OGS
-import sys
 import pandas as pd
-import os
 
-INDIR = addsep(args.inputdir)
-OUTDIR = addsep(args.outdir)
+
+INDIR = args.inputdir
+OUTDIR = args.outdir
 
 
 TLmvr = TimeList.fromfilenames(None,INDIR,'product_quality*nc',
@@ -57,10 +56,6 @@ satstats = []
 floatstats = []
 
 VAR = args.varname
-LIST_VAR = ['chlorophyll', 'nitrate', 'oxygen']
-
-if VAR not in LIST_VAR:
-    sys.exit(f"Selected varname '{VAR}' is not valid. Choose from: {', '.join(LIST_VAR)}")
 
 
 DICTvardim = {
@@ -88,6 +83,8 @@ def reshape_label(handles_labels):
 def plot_profiles_mse(df, outdir, VAR, sub):
     """Crea e salva un line plot con doppio asse Y:
     """
+    outfile = outdir / f"{VAR}_floatmetric_{sub.name.upper()}.png"
+    print(outfile)
     fig, ax1 = plt.subplots(figsize=(8, 6))
     ax2 = ax1.twinx()
 
@@ -117,10 +114,6 @@ def plot_profiles_mse(df, outdir, VAR, sub):
     ax1.legend(l1 + l2, lab1 + lab2, loc='best')
 
     plt.tight_layout()
-
-    outfile = os.path.join(
-        outdir,f"{VAR}_floatmetric_{sub.name.upper()}.png")
-
     plt.savefig(outfile)
     plt.close(fig)
 
@@ -247,6 +240,9 @@ if VAR == 'chlorophyll':
 
     noforecasts = ['number of data values','mean of reference','variance of reference']
     for isub,subname in enumerate(DICTdim_sat['area'][0]):
+       BASIN=subname.replace(' ','_')
+       outfile = OUTDIR / f"{VAR}_satmetric_{BASIN}.png"
+       print(outfile)
        fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)
        for iim,mm in enumerate(DICTdim_sat['metric'][0]):
            nax = DICTvargroup[mm]
@@ -282,11 +278,7 @@ if VAR == 'chlorophyll':
            plt.grid()
        plt.suptitle(subname + ' ' + UNITS_for_Title )
        fig.autofmt_xdate()
-       BASIN=subname.replace(' ','_')
-       plt.savefig(OUTDIR + '/satmetric_' +  BASIN+ '.png')
-
-else:
-    pass
+       plt.savefig(outfile)
 
 
 # float
@@ -303,8 +295,10 @@ for sub in OGS.MVR.basin_list:
     for iid,depth in enumerate(DICTdim_float['layer'][0]):
         handles_labels = []
         skip_figure = False
+        outfile = OUTDIR / f"{VAR}_floatmetric_{sub.name.upper()}_{int(depth)}m.png"
         fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,12])#,sharey=True)
-        for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche 
+
+        for iim,mm in enumerate(DICTdim_sat['metric'][0]): # loop su tutte le metriche
             nax = DICTvargroup[mm]
             ix_ax = int(np.floor(nax/2))
             iy_ax = nax-2*ix_ax
@@ -393,11 +387,14 @@ for sub in OGS.MVR.basin_list:
                    bbox_to_anchor=(0.5, -0.))  # Spazio sotto
 
         plt.subplots_adjust(top=0.93, left=0.04, bottom=0.12, right=0.97)
-        plt.savefig(OUTDIR + '/'+VAR +'_floatmetric_' + sub.name.upper() +'_'+ str(int(depth)) + 'm.png')
+        print(outfile)
+        plt.savefig(outfile)
         plt.close(fig)
     
     df.index= list(DICTdim_float['layer'][0])
-    outdir = os.path.join(OUTDIR, 'CSV')
-    os.makedirs(outdir, exist_ok=True)
+    outdir = OUTDIR / 'CSV'
+    outdir.mkdir(exist_ok=True)
     plot_profiles_mse(df, outdir, VAR, sub)
-    df.to_csv(outdir +'/'+ VAR +'_floatmetric_' + sub.name.upper() + '.csv' )
+    outfile_csv = outdir / f"{VAR}_floatmetric_{sub.name.upper()}.csv"
+    print(outfile_csv)
+    df.to_csv(outfile_csv)

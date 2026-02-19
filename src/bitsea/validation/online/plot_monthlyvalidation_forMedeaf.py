@@ -228,6 +228,27 @@ DICTvargroup = {
 }
 
 
+DICTlong_short_subnames = {
+    'Alboran Sea': 'ALB',
+    'South West Med western part': 'SWM1',
+    'South West Med eastern part': 'SWM2',
+    'North West Med': 'NWM',
+    'Tyrrhenian Sea northern part': 'TYR1',
+    'Tyrrhenian Sea southern part': 'TYR2',
+    'Adriatic Sea northern part': 'ADR1',
+    'Adriatic Sea southern part': 'ADR2',
+    'Aegean Sea': 'AEG',
+    'Ionian Sea western part': 'ION1',
+    'Ionian Sea south-eastern part': 'ION2',
+    'Ionian Sea north-eastern part': 'ION3',
+    'Levantine Sea western part': 'LEV1',
+    'Levantine Sea central-northern part': 'LEV2',
+    'Levantine Sea central-southern part': 'LEV3', 
+    'Levantine Sea eastern part': 'LEV4',
+    'Full domain': 'MED',
+}
+
+
 cmap = plt.get_cmap("Dark2")
 cmap_edge = plt.get_cmap("gray")
 
@@ -240,7 +261,7 @@ if VAR == 'chlorophyll':
 
     noforecasts = ['number of data values','mean of reference','variance of reference']
     for isub,subname in enumerate(DICTdim_sat['area'][0]):
-       BASIN=subname.replace(' ','_')
+       BASIN = DICTlong_short_subnames[subname]
        outfile = OUTDIR / f"{VAR}_satmetric_{BASIN}.png"
        print(outfile,flush=True)
        fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)

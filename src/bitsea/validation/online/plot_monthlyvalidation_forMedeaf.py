@@ -84,7 +84,7 @@ def plot_profiles_mse(df, outdir, VAR, sub):
     """Crea e salva un line plot con doppio asse Y:
     """
     outfile = outdir / f"{VAR}_floatmetric_{sub.name.upper()}.png"
-    print(outfile)
+    print(outfile,flush=True)
     fig, ax1 = plt.subplots(figsize=(8, 6))
     ax2 = ax1.twinx()
 
@@ -119,7 +119,7 @@ def plot_profiles_mse(df, outdir, VAR, sub):
 
 
 for ii,filein in enumerate(TLmvr.filelist):
-    print(filein)
+    print(filein,flush=True)
     MVR = NC.Dataset(filein,'r')
     datesmonth = MVR.variables['time'][:].data.copy()
     dates.extend(list(datesmonth))
@@ -131,7 +131,7 @@ for ii,filein in enumerate(TLmvr.filelist):
     #o2;no3# 
     else:
        NAMEVAR='stats_'+VAR+'-ins-pf'
-       print(NAMEVAR)
+       print(NAMEVAR,flush=True)
        floatstats_month = MVR.variables['stats_'+VAR+'_ins-pf'][:].data.copy()
     floatstats.extend(list(floatstats_month))
     if ii==0:
@@ -242,7 +242,7 @@ if VAR == 'chlorophyll':
     for isub,subname in enumerate(DICTdim_sat['area'][0]):
        BASIN=subname.replace(' ','_')
        outfile = OUTDIR / f"{VAR}_satmetric_{BASIN}.png"
-       print(outfile)
+       print(outfile,flush=True)
        fig,axs = plt.subplots(3,2,sharex=True,figsize=[14,8])#,sharey=True)
        for iim,mm in enumerate(DICTdim_sat['metric'][0]):
            nax = DICTvargroup[mm]
@@ -290,7 +290,7 @@ indlayer   = DICTdim_float['layer'][1]
 LISTalpha_depth = np.linspace(1,0.3, len(DICTdim_float['layer'][0]))
 
 for sub in OGS.MVR.basin_list:
-    print ('Processing ' +  sub.name)
+    print ('Processing ' +  sub.name,flush=True)
     df=pd.DataFrame(index=np.arange(0,7), columns=['#profiles','MSE'])
     for iid,depth in enumerate(DICTdim_float['layer'][0]):
         handles_labels = []
@@ -387,7 +387,7 @@ for sub in OGS.MVR.basin_list:
                    bbox_to_anchor=(0.5, -0.))  # Spazio sotto
 
         plt.subplots_adjust(top=0.93, left=0.04, bottom=0.12, right=0.97)
-        print(outfile)
+        print(outfile,flush=True)
         plt.savefig(outfile)
         plt.close(fig)
     
@@ -396,5 +396,5 @@ for sub in OGS.MVR.basin_list:
     outdir.mkdir(exist_ok=True)
     plot_profiles_mse(df, OUTDIR, VAR, sub)
     outfile_csv = outdir / f"{VAR}_floatmetric_{sub.name.upper()}.csv"
-    print(outfile_csv)
+    print(outfile_csv,flush=True)
     df.to_csv(outfile_csv)

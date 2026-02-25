@@ -601,8 +601,14 @@ class Mask(BooleanArrayWrapper, Mesh):
             longitude = ds.longitude.values
             zlevels = ds.depth.values
             mask_array = ds.tmask.values == 1
+
+            if "e3t" in ds.variables:
+                e3t = ds.e3t.values
+            else:
+                e3t = None
+
         grid = RegularGrid(lat=latitude, lon=longitude)
-        mask = cls(grid=grid, zlevels=zlevels, mask_array=mask_array)
+        mask = cls(grid=grid, zlevels=zlevels, mask_array=mask_array, e3t=e3t)
         return mask
 
     def _add_attributes_on_file(self, file_pointer):

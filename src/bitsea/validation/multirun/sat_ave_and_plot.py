@@ -73,7 +73,7 @@ for iFrame, k in enumerate(indexes):
 Sat2d=Sat.averager(SAT_3D)
 
 masknan=TheMask.mask_at_level(0)
-Sat2d[~masknan] = np.NaN
+Sat2d[~masknan] = np.nan
 var = 'SATchl'
 layer = Layer(0,10)
 

@@ -110,11 +110,11 @@ for varname in VARlist:
       ncIN = NC.netcdf_file(avefile,"r")
       A = ncIN.variables[varname].data[0,:,:,:]
       VAR=A.copy()
-      VAR[VAR>1e+19]=np.NaN # NaN for no values
+      VAR[VAR>1e+19]=np.nan # NaN for no values
       ncIN.close()
       for jk in range(0,jpk-Lnull):
         VAR1=VAR[jk,:,:]*mask200 
-        VAR1[VAR1==0]=np.NaN
+        VAR1[VAR1==0]=np.nan
         for iz in range(0,18):
                a=VAR1[(Lon>=LON1[iz]) & (Lon<LON1[iz]+4) & (Lat>=LAT1[iz]) & (Lat<LAT1[iz]+4) ]
                VARiz[it,jk,iz]=np.nansum(a) / np.sum(np.isfinite(a))

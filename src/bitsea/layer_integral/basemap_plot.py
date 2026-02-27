@@ -79,8 +79,8 @@ def do_plot(myplot,matrixToPlot,maskObj):
     tmask = maskObj.mask
     mask_2D   = tmask[tk_m,:,:]
     mask_2D[Lon < -5.3]   = False # Atlantic buffer
-    Lonp=Lon#; Lonp[~mask_2D]=np.NaN
-    Latp=Lat#; Latp[~mask_2D]=np.NaN
+    Lonp=Lon#; Lonp[~mask_2D]=np.nan
+    Latp=Lat#; Latp[~mask_2D]=np.nan
 
 # Colors
     cmap=pl.get_cmap('jet')

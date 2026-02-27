@@ -347,14 +347,14 @@ class Mask(BooleanArrayWrapper, Mesh):
             )
             return zero_array, zero_array.copy()
 
-        # Now we have the paths; we want to concatenate them inserting a NaN
+        # Now we have the paths; we want to concatenate them inserting a nan
         # between two different paths. In this way, it will be easy to plot
-        # the results (because the NaN will split the line of matplotlib).
+        # the results (because the nan will split the line of matplotlib).
         lat_values = (p[0] for p in coord_paths)
         lon_values = (p[1] for p in coord_paths)
 
         # We prepare the array that will be used to split: it contains just
-        # one NaN
+        # one nan
         nan_split = np.full((1,), fill_value=np.nan)
 
         lat_separated_values = []
@@ -601,8 +601,14 @@ class Mask(BooleanArrayWrapper, Mesh):
             longitude = ds.longitude.values
             zlevels = ds.depth.values
             mask_array = ds.tmask.values == 1
+
+            if "e3t" in ds.variables:
+                e3t = ds.e3t.values
+            else:
+                e3t = None
+
         grid = RegularGrid(lat=latitude, lon=longitude)
-        mask = cls(grid=grid, zlevels=zlevels, mask_array=mask_array)
+        mask = cls(grid=grid, zlevels=zlevels, mask_array=mask_array, e3t=e3t)
         return mask
 
     def _add_attributes_on_file(self, file_pointer):

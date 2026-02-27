@@ -8,6 +8,12 @@ from bitsea.utilities.array_wrapper import ArrayWrapper
 from bitsea.utilities.array_wrapper import BooleanArrayWrapper
 
 
+@pytest.fixture
+def sample_array_wrapper():
+    data = np.array([[1, 2], [3, 4]], dtype=np.float64)
+    return ArrayWrapper(wrapped_data=data)
+
+
 @given(shape=st.lists(st.integers(min_value=1, max_value=10), max_size=4))
 def test_array_wrapper_init(shape):
     shape = tuple(shape)
@@ -105,3 +111,47 @@ def test_boolean_array_wrapper_as_mask(shape):
 
     assert np.sum(test_data[mask]) == np.count_nonzero(mask) * 3
     assert np.sum(test_data[~mask]) == (mask.size - np.count_nonzero(mask)) * 3
+
+
+def test_array_return_without_dtype_or_copy(sample_array_wrapper):
+    result = sample_array_wrapper.__array__()
+    expected = np.array([[1, 2], [3, 4]], dtype=np.float64)
+    assert isinstance(result, np.ndarray)
+    assert result.dtype == expected.dtype
+    assert np.array_equal(result, expected)
+
+
+def test_array_with_specified_dtype(sample_array_wrapper):
+    result = sample_array_wrapper.__array__(dtype=np.int32)
+    expected = np.array([[1, 2], [3, 4]], dtype=np.int32)
+    assert isinstance(result, np.ndarray)
+    assert result.dtype == expected.dtype
+    assert np.array_equal(result, expected)
+
+
+def test_array_with_copy_true(sample_array_wrapper):
+    result = sample_array_wrapper.__array__(copy=True)
+    original_array = sample_array_wrapper.as_array()
+    assert isinstance(result, np.ndarray)
+    assert np.array_equal(result, original_array)
+    # Verify that a copy was made
+    result[0, 0] = 99
+    assert result[0, 0] != original_array[0, 0]
+
+
+def test_array_with_copy_false_raises_error_for_dtype_mismatch(
+    sample_array_wrapper,
+):
+    with pytest.raises(
+        ValueError,
+        match="Unable to avoid copy while creating an array as requested.",
+    ):
+        sample_array_wrapper.__array__(dtype=np.int32, copy=False)
+
+
+def test_array_with_no_copy_when_dtype_matches(sample_array_wrapper):
+    result = sample_array_wrapper.__array__(dtype=np.float64, copy=False)
+    original_array = sample_array_wrapper.as_array()
+    assert isinstance(result, np.ndarray)
+    assert result.dtype == original_array.dtype
+    assert np.shares_memory(result, original_array)

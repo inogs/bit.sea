@@ -2,8 +2,7 @@ import numpy as np
 import netCDF4 as NC4
 import datetime
 from bitsea.instruments.instrument import ContainerProfile
-import seawater
-from seawater.library import T90conv
+import gsw
 from bitsea.commons.utils import find_index
 from bitsea.commons.time_interval import TimeInterval
 from bitsea.commons import timerequestors
@@ -76,11 +75,11 @@ class DatasetExtractor():
             sali   = self.DATA[ipsal,:]
             pres   = self.DATA[5,:]
             good_rho  = (sali < 1.e+19 ) & (sali>0) & (temp < 1.e+19 ) & (temp>0) & (pres < 1.e+19 ) & (pres>0)
-            t = T90conv(temp)
             n = len(values)
             calculated_rho  = np.ones((n),np.float32)*np.nan
             assumed_density = np.ones((n),np.float32)*np.nan
-            calculated_rho[good_rho]  = seawater.dens(sali[good_rho],t[good_rho],pres[good_rho])
+            SA = gsw.SA_from_SP(sali[good_rho], pres[good_rho], 0, 0)
+            calculated_rho[good_rho]  = gsw.rho(SA, gsw.CT_from_t(SA, temp[good_rho], pres[good_rho]), pres[good_rho])
 
             for i in range(n):
                 if good_rho[i]:

@@ -2,8 +2,7 @@ import numpy as np
 import scipy.io.netcdf as NC
 import datetime
 from bitsea.instruments.instrument import ContainerProfile
-import seawater
-from seawater.library import T90conv
+import gsw
 from bitsea.commons.utils import find_index
 
 class IspraExtractor():
@@ -75,11 +74,11 @@ class IspraExtractor():
             pres   = self.DATA[5,:]
             dens   = self.DATA[idens,:]
             good_rho  = (sali < 1.e+19 ) & (sali>0) & (temp < 1.e+19 ) & (temp>0) & (pres < 1.e+19 ) & (pres>0)
-            t = T90conv(temp)
             n = len(values)
             calculated_rho  = np.ones((n),np.float32)*np.nan
             assumed_density = np.ones((n),np.float32)*np.nan
-            calculated_rho[good_rho]  = seawater.dens(sali[good_rho],t[good_rho],pres[good_rho])
+            SA = gsw.SA_from_SP(sali[good_rho], pres[good_rho], 0, 0)
+            calculated_rho[good_rho]  = gsw.rho(SA, gsw.CT_from_t(SA, temp[good_rho], pres[good_rho]), pres[good_rho])
 
 
             good_dens = (dens < 1.e+19 ) & (dens>0)

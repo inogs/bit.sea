@@ -3,8 +3,7 @@ import os,datetime
 from instrument import Instrument, Profile
 import scipy.io.netcdf as NC
 import index_reader
-import seawater
-from seawater.library import T90conv
+import gsw
 
 
 from bitsea.commons.time_interval import TimeInterval
@@ -97,8 +96,8 @@ class Mooring(Instrument):
             self._good_data = (temp_qc == 1 ) & (psal_qc == 1 ) & (pres_qc == 1 ) & (self._QC == 1)
             self.__file_already_read = True
 
-            tconv = T90conv(self._TEMP)
-            self._RHO = seawater.dens(self._PSAL,tconv, self._PRES)
+            SA = gsw.SA_from_SP(self._PSAL, self._PRES, self.lon, self.lat)
+            self._RHO = gsw.rho(SA, gsw.CT_from_t(SA, self._TEMP, self._PRES), self._PRES)
         return self._VAR, self._PRES, self._QC, self._timesInFile
 
     def conversion(self,var,Profile,Rho):

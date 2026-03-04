@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import numpy as np
-import seawater as sw
+import gsw
 
 
 def find_DCM(Chl_profile, zlev):
@@ -45,9 +45,11 @@ def MLD(Temperature, Salinity, Pres):
     ]  # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
     T1000 = T[(Pres < 1000) & (Pres > th)]
     S1000 = S[(Pres < 1000) & (Pres > th)]
-    Dens1000 = sw.dens(S1000, T1000, D1000) - 1000  # DENSITY # SIGMA
+    SA1000 = gsw.SA_from_SP(S1000, D1000, 0, 0)
+    CT1000 = gsw.CT_from_t(SA1000, T1000, D1000)
+    Dens1000 = gsw.rho(SA1000, CT1000, D1000) - 1000  # DENSITY # SIGMA
     PDens1000 = (
-        sw.pden(S1000, T1000, D1000) - 1000
+        gsw.sigma0(SA1000, CT1000)
     )  # POTENTIAL DENSITY # SIGMA THETA
     for ip, p in enumerate(T1000):
         #            abs_diff=abs(p-T1000[0])

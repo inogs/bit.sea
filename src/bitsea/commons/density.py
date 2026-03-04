@@ -1,5 +1,5 @@
-import numpy as np 
-import seawater as sw 
+import numpy as np
+import gsw
 from bitsea.commons.dataextractor import DataExtractor
 
 def get_density(filename, Maskobj):
@@ -23,9 +23,11 @@ def get_density(filename, Maskobj):
     SALI = DataExtractor(Maskobj,filename,'vosaline').values
     
     RHO         = np.zeros((jpk,jpj,jpi), np.float32)
-    T           = np.zeros((jpk,jpj,jpi), np.float32)
-    T[tmask]    = sw.temp(SALI[tmask],TEMP[tmask],PRES[tmask])
-    RHO[tmask]  = sw.dens(SALI[tmask],T[tmask],PRES[tmask])
+    LON         = np.broadcast_to(Maskobj.xlevels, (jpk,jpj,jpi))
+    LAT         = np.broadcast_to(Maskobj.ylevels, (jpk,jpj,jpi))
+    SA          = gsw.SA_from_SP(SALI[tmask], PRES[tmask], LON[tmask], LAT[tmask])
+    CT          = gsw.CT_from_pt(SA, TEMP[tmask])
+    RHO[tmask]  = gsw.rho(SA, CT, PRES[tmask])
     return RHO
 
 if __name__=="__main__":

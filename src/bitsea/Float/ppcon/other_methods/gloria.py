@@ -4,7 +4,7 @@ import datetime
 import torch
 import numpy as np
 import pandas as pd
-import seawater as sw
+import gsw
 import scipy.ndimage
 
 from other_methods.PreparationData import preparation_dataset, normalization_training
@@ -45,7 +45,7 @@ def get_gloria_profile(year, day_rad, lat, lon, temperature, psalinity, doxygen,
         doxy = doxygen[k]
         psal = psalinity[k]
 
-        depth_unnormalized = sw.eos80.dpth(pres[k], lat)
+        depth_unnormalized = -gsw.z_from_p(pres[k], lat)
         depth_u = depth_unnormalized / 20000 + (1 / ((1 + np.exp(-depth_unnormalized / 300)) ** 3))
 
         # pressure = sw.eos80.pres(depth_unnormalized, lat)

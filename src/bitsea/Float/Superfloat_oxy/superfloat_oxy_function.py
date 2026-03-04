@@ -6,7 +6,7 @@ from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
+import gsw
 import datetime
 
 def remove_bad_sensors(Profilelist,var):

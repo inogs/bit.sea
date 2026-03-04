@@ -50,7 +50,7 @@ from bitsea.mhelpers.pgmean import PLGaussianMean
 from profiler_phys import *
 from bitsea.instruments.matchup_manager import Matchup_Manager
 import matplotlib.dates as mdates
-import seawater
+import gsw
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
 
@@ -188,8 +188,10 @@ for j,wmo in enumerate(wmo_list):
 
         timelabel_list.append(p.time)
 	
-        densprof_Ref = seawater.dens(NewProf_5m['vosaline'],NewProf_5m['votemper'],NewPres_5m)
-        densprof_Mod = seawater.dens(M_newDepth['vosaline'],M_newDepth['votemper'],NewPres_5m)
+        SA_Ref = gsw.SA_from_SP(NewProf_5m['vosaline'], NewPres_5m, p.lon, p.lat)
+        densprof_Ref = gsw.rho(SA_Ref, gsw.CT_from_t(SA_Ref, NewProf_5m['votemper'], NewPres_5m), NewPres_5m)
+        SA_Mod = gsw.SA_from_SP(M_newDepth['vosaline'], NewPres_5m, p.lon, p.lat)
+        densprof_Mod = gsw.rho(SA_Mod, gsw.CT_from_t(SA_Mod, M_newDepth['votemper'], NewPres_5m), NewPres_5m)
         plotmat[:,ip] = densprof_Ref
         plotmat_model[:,ip] = densprof_Mod
         pcl_ref.append(find_NITRICL_dz_max(densprof_Ref,NewPres_5m))

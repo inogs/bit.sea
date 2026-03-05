@@ -1,5 +1,6 @@
 from itertools import product as cart_prod
 
+import netCDF4
 import numpy as np
 import pytest
 
@@ -7,6 +8,7 @@ from bitsea.commons.grid import RegularGrid
 from bitsea.commons.mask import FILL_VALUE
 from bitsea.commons.mask import Mask
 from bitsea.commons.mask import MaskBathymetry
+from bitsea.commons.mask import MaskWithRivers
 from bitsea.commons.mesh import Mesh
 
 
@@ -409,3 +411,58 @@ def test_mask_to_xarray(mask):
     assert np.allclose(xarray_mask.longitude, mask.xlevels)
     assert np.allclose(xarray_mask.depth, mask.zlevels)
     assert np.allclose(xarray_mask.tmask, mask)
+
+
+@pytest.mark.uses_test_data
+def test_mask_with_rivers_from_file(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "mask_with_rivers.nc"
+
+    rivers_mask = MaskWithRivers.from_file(mask_file)
+    water_cells = rivers_mask.get_water_cells()
+
+    with netCDF4.Dataset(mask_file, "r") as ds:
+        original_mask = np.asarray(ds.variables["tmask"]) > 0.5
+        rivers = np.asarray(ds.variables["rivers"])
+
+    assert np.all(original_mask == water_cells)
+
+    # Check that in the current mask every cell assigned to a river is set
+    # to "False"
+    for i, j in zip(*np.where(rivers)):
+        assert not np.any(rivers_mask[:, i, j])
+
+    # Assert that if a value inside water_cells is True, then it is also True
+    # inside rivers_mask (rivers_mask is contained inside water_cells)
+    assert np.all(
+        np.logical_or(np.logical_and(rivers_mask, water_cells), ~rivers_mask)
+    )
+
+
+@pytest.mark.uses_test_data
+def test_mask_with_rivers_copy(test_data_dir):
+    mask_dir = test_data_dir / "masks"
+    mask_file = mask_dir / "mask_with_rivers.nc"
+
+    rivers_mask = MaskWithRivers.from_file(mask_file)
+    copied_mask = rivers_mask.copy()
+
+    assert isinstance(copied_mask, MaskWithRivers)
+
+    # The sea mask should be preserved
+    assert np.all(np.asarray(rivers_mask) == np.asarray(copied_mask))
+
+    # The river-aware water mask should be preserved
+    assert np.all(
+        rivers_mask.get_water_cells() == copied_mask.get_water_cells()
+    )
+
+    # Verify that the copy is independent: modifying the copy should not
+    # affect the original
+    original_sea_mask = np.copy(rivers_mask[:])
+    if np.any(rivers_mask):
+        # Flip the first True value in the copied mask
+        idx = tuple(np.argwhere(rivers_mask)[0])
+        copied_mask.as_mutable_array()[idx] = False
+        assert not np.all(np.asarray(copied_mask[:]) == original_sea_mask)
+        assert np.all(np.asarray(rivers_mask[:]) == original_sea_mask)

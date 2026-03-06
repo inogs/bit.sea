@@ -13,7 +13,7 @@ swm2 = Rectangle(lonmin=5.0, lonmax=9.25, latmin=32.0, latmax=39.5)
 swm2 = SimplePolygonalBasin("swm2", swm2, "South Western Mediterranean east")
 
 nwm = Rectangle(lonmin=-0.7, lonmax=9.25, latmin=39.5, latmax=44.7)
-nwm = SimplePolygonalBasin("nwm", nwm, "North Western Mediterranean ")
+nwm = SimplePolygonalBasin("nwm", nwm, "North Western Mediterranean")
 
 tyr1 = Rectangle(lonmin=9.25, lonmax=15.0, latmin=41.25, latmax=46.0)
 tyr1 = SimplePolygonalBasin("tyr1", tyr1, "Northern Tyrrhenian")

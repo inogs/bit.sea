@@ -213,7 +213,7 @@ swm = ComposedBasin("swm", [swm1, swm2], "South Western Mediterraneaan Sea")
 NRT3 = ComposedBasin(
     "NRT3",
     [alb, swm, nwm, tyr, adr, ion, lev],
-    "Gruped Subbasin for Near Real Time medeaf page",
+    "Grouped Subbasin for Near Real Time medeaf page",
 )
 MVR = ComposedBasin(
     "MVR ",

@@ -1,9 +1,9 @@
 # Copyright (c) 2016 eXact Lab srl
 # Author: Gianfranco Gallizia <gianfranco.gallizia@exact-lab.it>
 # Utility functions for Regions and Basins
-
 from basin import SimpleBasin
 from region import Rectangle
+
 
 def divide_in_sections(rect, lon_side, lat_side, start_lon, start_lat):
     """
@@ -32,7 +32,9 @@ def divide_in_sections(rect, lon_side, lat_side, start_lon, start_lat):
     if (lat_side > (rect.latmax - rect.latmin)) or (lat_side <= 0):
         raise ValueError("Invalid lat_side: %g" % lat_side)
     if not rect.is_inside(start_lon, start_lat):
-        raise ValueError("Invalid starting point: %g %g" % (start_lon, start_lat))
+        raise ValueError(
+            "Invalid starting point: %g %g" % (start_lon, start_lat)
+        )
     output = list()
     # Bottom Left point
     BL_point = [start_lon, start_lat]
@@ -42,11 +44,9 @@ def divide_in_sections(rect, lon_side, lat_side, start_lon, start_lat):
     lon_in = 0
     lat_in = 0
     # Latitude cycle
-    while (TR_point[1] <= rect.latmax):
+    while TR_point[1] <= rect.latmax:
         # Longitude cycle
-        while (TR_point[0] <= rect.lonmax):
-            # Create the section
-            s = Rectangle(BL_point[0], TR_point[0], BL_point[1], TR_point[1])
+        while TR_point[0] <= rect.lonmax:
             # Create and append the basin to output
             output.append(SimpleBasin("section_%d_%d" % (lat_in, lon_in), rect))
             # Increment longitude index

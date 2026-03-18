@@ -242,19 +242,19 @@ for itime, modeltime in enumerate(modeltimes):
         "COASTNESS_LIST": COASTNESS_LIST,
         "basinlist": [sub.name for sub in OGS.P],
     }
-    D["VALID_POINTS"] = np.zeros((nSub, nCoast), np.float32)
-    D["MODEL_MEAN"] = np.zeros((nSub, nCoast), np.float32)
-    D["SAT___MEAN"] = np.zeros((nSub, nCoast), np.float32)
-    D["MODEL__STD"] = np.zeros((nSub, nCoast), np.float32)
-    D["SAT____STD"] = np.zeros((nSub, nCoast), np.float32)
-    D["BGC_CLASS4_CHL_BIAS_SURF_BASIN"] = np.zeros((nSub, nCoast), np.float32)
-    D["BGC_CLASS4_CHL_RMS_SURF_BASIN"] = np.zeros((nSub, nCoast), np.float32)
-    D["BGC_CLASS4_CHL_CORR_SURF_BASIN"] = np.zeros((nSub, nCoast), np.float32)
-    D["BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG"] = np.zeros(
-        (nSub, nCoast), np.float32
+    D["VALID_POINTS"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["MODEL_MEAN"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["SAT___MEAN"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["MODEL__STD"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["SAT____STD"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["BGC_CLASS4_CHL_BIAS_SURF_BASIN"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["BGC_CLASS4_CHL_RMS_SURF_BASIN"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["BGC_CLASS4_CHL_CORR_SURF_BASIN"] = np.full((nSub, nCoast), np.nan, np.float32)
+    D["BGC_CLASS4_CHL_RMS_SURF_BASIN_LOG"] = np.full(
+        (nSub, nCoast), np.nan, np.float32
     )
-    D["BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG"] = np.zeros(
-        (nSub, nCoast), np.float32
+    D["BGC_CLASS4_CHL_BIAS_SURF_BASIN_LOG"] = np.full(
+        (nSub, nCoast), np.nan, np.float32
     )
     for icoast, coast in enumerate(COASTNESS_LIST):
         for isub, sub in enumerate(BASINS):

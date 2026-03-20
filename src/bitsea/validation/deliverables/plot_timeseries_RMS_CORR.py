@@ -294,14 +294,26 @@ if args.zone == "Med":
 # FOR ROFI AREAS or COASTAL (not tested yet):
 if (args.zone == "rivers") or (args.zone == "coastal"):
       # Metrics for ROFI areas
-      mat2 = np.zeros((nSUB,7),np.float32)
+      mat2 = np.zeros((nSUB,19),np.float32)
       mat2[:,0] = RMS__win
       mat2[:,1] = RMS__sum
       mat2[:,2] = RMS__aut
       mat2[:,3] = BIAS_win
       mat2[:,4] = BIAS_sum
       mat2[:,5] = BIAS_aut
-      mat2[:,6] = CORR_ann
+      mat2[:,6] = MEAN_MOD_win
+      mat2[:,7] = MEAN_REF_win
+      mat2[:,8] = MEAN_MOD_sum
+      mat2[:,9] = MEAN_REF_sum
+      mat2[:,10] = MEAN_MOD_aut
+      mat2[:,11] = MEAN_REF_aut
+      mat2[:,12] = STD_MOD_win
+      mat2[:,13] = STD_REF_win
+      mat2[:,14] = STD_MOD_sum
+      mat2[:,15] = STD_REF_sum
+      mat2[:,16] = STD_MOD_aut
+      mat2[:,17] = STD_REF_aut
+      mat2[:,18] = CORR_ann
 
       ## Autumn metrics for ROFI areas
       #mat3 = np.zeros((nSUB,9),np.float32)
@@ -327,6 +339,18 @@ if (args.zone == "rivers") or (args.zone == "coastal"):
           "BIASwin",
           "BIASsum",
           "BIASaut",
+          "MEAN_MODwin",
+          "MEAN_REFwin",
+          "MEAN_MODsum",
+          "MEAN_REFsum",
+          "MEAN_MODaut",
+          "MEAN_REFaut",
+          "STD_MODwin",
+          "STD_REFwin",
+          "STD_MODsum",
+          "STD_REFsum",
+          "STD_MODaut",
+          "STD_REFaut",
           "CORRann",
       ]
       writetable(outfiletable2, mat2, rows_names, column_names, fmt='%5.3f\t')

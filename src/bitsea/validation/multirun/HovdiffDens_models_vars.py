@@ -47,7 +47,7 @@ from bitsea.basins import OGS
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from bitsea.timeseries.plot import *
-import seawater
+import gsw
 import numpy.ma as ma
 from bitsea.mhelpers.pgmean import PLGaussianMean
 
@@ -163,7 +163,8 @@ for j,wmo in enumerate(wmo_list):
                 M = readModelProfile(FILENAME,var_mod,p.ID())
                 M_newDepth[var_mod]=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
 
-            densprof_Mod = seawater.dens(M_newDepth['vosaline'],M_newDepth['votemper'],NewPres_5m)
+            SA_M = gsw.SA_from_SP(M_newDepth['vosaline'], NewPres_5m, p.lon, p.lat)
+            densprof_Mod = gsw.rho(SA_M, gsw.CT_from_t(SA_M, M_newDepth['votemper'], NewPres_5m), NewPres_5m)
             plotmat_model[run][:,ip] = densprof_Mod
 
     print "Density " + str(len(timelabel_list)) +  p.available_params

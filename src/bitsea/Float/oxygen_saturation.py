@@ -105,5 +105,5 @@ if __name__ == "__main__":
     if not CR:
                Prof=np.nan*np.ones_like(Prof)
                Qc=4*np.ones_like(Qc)
-               print("Exclude WMO " + np.str(p._my_float.wmo) + " - " + p._my_float.time.strftime("%Y%m%d"))
+               print("Exclude WMO " + str(p._my_float.wmo) + " - " + p._my_float.time.strftime("%Y%m%d"))
 

@@ -14,7 +14,7 @@ for il,line in enumerate(inputf):
     if il>0:
         linelist = line.strip().split(';')
         StatNameDist['int'].append(linelist[0])
-        Distances['int'].append(np.float(linelist[1]))
+        Distances['int'].append(float(linelist[1]))
 
 inputf.close()
 
@@ -27,7 +27,7 @@ for il,line in enumerate(inputf):
     if il>0:
         linelist = line.strip().split(';')
         StatNameDist['est'].append(linelist[0])
-        Distances['est'].append(np.float(linelist[1]))
+        Distances['est'].append(float(linelist[1]))
 
 inputf.close()
 
@@ -35,7 +35,7 @@ statExcludeInt = StatNameDist['int']
 
 # Exclude stations close to the coast
 limdist = 500 #m
-print('Threshold for the distance from the coast: ' + np.str(limdist) + 'm')
+print('Threshold for the distance from the coast: ' + str(limdist) + 'm')
 excludedist = []
 for iid in range(len(Distances['est'])):
     dd = Distances['est'][iid]

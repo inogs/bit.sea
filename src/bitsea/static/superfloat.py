@@ -120,7 +120,7 @@ class BioFloat(Instrument):
         try:
             Qc      = ncIN.variables[var + "_QC"].data.copy()
         except:
-            Qc = np.ones_like(Pres, dtype=np.int)*2
+            Qc = np.ones_like(Pres, dtype=int)*2
         ncIN.close()
 
         return Pres, Profile, Qc

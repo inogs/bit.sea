@@ -189,7 +189,7 @@ for j,wmo in enumerate(wmo_list):
             slope_mod.append(find_SLOPE_dz_max(M_newDepth,NewPres_5m))
 
         print wmo
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print var_mod + " " + str(len(timelabel_list)) +  p.available_params
         if theresvar==0:
             print 'No N3n'
             continue

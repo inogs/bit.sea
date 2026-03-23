@@ -40,12 +40,12 @@ UNIT_LABELS_DICT=  {'fluxCO2'       : 'mmol C m'  + u'\u207B' + u'\u00B2' +'d' +
 
 
 plot_conf=np.dtype([('title'          ,'S100')  , ('var' ,'S100')        ,\
-                    ('unit_conversion',np.float), ('unit_label','S100')  ,\
+                    ('unit_conversion',float), ('unit_label','S100')  ,\
                     ('operator'       ,'S100')                           ,\
-                    ('vmin'           ,np.float), ('vmax',np.float)      ,\
+                    ('vmin'           ,float), ('vmax',float)      ,\
                     ('depth'          ,'S100')                           ,\
-                    ('lonS'           ,np.float), ('lonE',np.float)      ,\
-                    ('latS'           ,np.float), ('latE',np.float)      ,\
+                    ('lonS'           ,float), ('lonE',float)      ,\
+                    ('latS'           ,float), ('latE',float)      ,\
                     ('start'          ,'S100')  , ('end'   ,'S100')      ,\
                     ('indataAve'      ,'S100')  , ('aggregation' ,'S100'),\
                     ('InputDir'       ,'S100')  , ('OutputDir'   ,'S100'),\

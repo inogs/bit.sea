@@ -83,7 +83,7 @@ def readModelProfile(filename,var, wmo):
 # jpk,jpj,jpi = TheMask.shape
 # z = -TheMask.zlevels
 
-LIMdep = [np.float(args.topdepth),np.float(args.bottomdepth)]
+LIMdep = [float(args.topdepth),float(args.bottomdepth)]
 txtLIMdep = '%d_' %LIMdep[0] + '%d' %LIMdep[1]
 
 PresDOWN=np.array([0,25,50,75,100,125,150,200,400,600,800,1000])
@@ -165,7 +165,7 @@ for wmo in wmo_list:
     print wmo
     list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
     np_tot = len(list_float_track)
-    print '  number of profiles for this float ' + np.str(np_tot) 
+    print '  number of profiles for this float ' + str(np_tot) 
         
     for p in list_float_track:
         # for indSub, sub in enumerate(basV2.Pred):
@@ -253,8 +253,8 @@ pl.figure(figsize=(9,5))
 
 for trs in thresholdLIST:
     pl.bar(wmo_plotlist,DICTthresh[trs],1, \
-        label=np.str(trs) + \
-        ' ' + np.str(np.sum(DICTthresh[trs])) + ' on ' + np.str(nTOTp) \
+        label=str(trs) + \
+        ' ' + str(np.sum(DICTthresh[trs])) + ' on ' + str(nTOTp) \
         )
 
 pl.tick_params(axis='x',rotation=30)
@@ -273,8 +273,8 @@ pl.figure(figsize=(9,5))
 
 for trs in thresholdLIST:
     pl.bar(wmo_plotlist,100.*np.array(DICTthresh[trs])/np.array(wmo_totp),1, \
-        label=np.str(trs) + \
-        ' ' + np.str(np.sum(DICTthresh[trs])) + ' on ' + np.str(nTOTp) \
+        label=str(trs) + \
+        ' ' + str(np.sum(DICTthresh[trs])) + ' on ' + str(nTOTp) \
         )
 
 pl.tick_params(axis='x',rotation=30)
@@ -301,12 +301,12 @@ pl.show(block=False)
 #             LIST[var_mod][1].append(iip[var_mod])
 #             LIST[var_mod][2].append(iip[var_mod]-iipcheck[var_mod])
 
-#             percex = np.float(iipcheck[var_mod])/np.float(iip[var_mod])*100.
+#             percex = float(iipcheck[var_mod])/float(iip[var_mod])*100.
 #             print '  Number of profiles for ' + var_mod + \
-#                 ' ' + np.str(iip[var_mod])
+#                 ' ' + str(iip[var_mod])
 #             print '  Number of excluded ' + \
-#                 '  ' + np.str(iipcheck[var_mod]) + ' percent ' + \
-#                 np.str(percex) + '  (considered ' + np.str(100.-percex) + ')'
+#                 '  ' + str(iipcheck[var_mod]) + ' percent ' + \
+#                 str(percex) + '  (considered ' + str(100.-percex) + ')'
 
 
 # pl.close('all')

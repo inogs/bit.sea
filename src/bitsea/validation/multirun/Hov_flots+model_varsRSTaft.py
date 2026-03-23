@@ -174,7 +174,7 @@ for ivar, var_mod in enumerate(VARLIST):
                 print ' ... Not exists ' + p.time.strftime("PROFILES/ave.%Y%m%d-%H:00:00.profiles.nc")
                 continue
 
-        print var_mod + " " + np.str(len(timelabel_list)) + p.available_params
+        print var_mod + " " + str(len(timelabel_list)) + p.available_params
         if p.available_params.find(var) < 0:
             continue
 

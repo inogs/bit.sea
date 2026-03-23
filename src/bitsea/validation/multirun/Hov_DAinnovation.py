@@ -102,9 +102,9 @@ nVar = len(VARLIST)
 Profilelist_1 = bio_float.FloatSelector(None, TI1, OGS.med)
 wmo_list = bio_float.get_wmo_list(Profilelist_1)
 
-NewPres_5m = np.linspace(0, dep2, np.int(dep2)/5+1)
+NewPres_5m = np.linspace(0, dep2, int(dep2)/5+1)
 depths = NewPres_5m
-depths_part = np.linspace(0, dep1, np.int(dep1)/5+1)
+depths_part = np.linspace(0, dep1, int(dep1)/5+1)
 nlev_part = len(depths_part)
 
 Check_obj = check.check("",verboselevel=0)
@@ -172,7 +172,7 @@ for j, wmo in enumerate(wmo_list):
         if len(Goodp)==0: continue
         
         print wmo
-        print var_mod + " " + np.str(len(timelabel_list))
+        print var_mod + " " + str(len(timelabel_list))
 
         fig = pl.figure()
         fig.set_size_inches(15, 10)

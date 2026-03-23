@@ -127,7 +127,7 @@ for wmo in wmo_list:
     print wmo
     list_float_track=bio_float.filter_by_wmo(Profilelist_1,wmo)
     np_tot = len(list_float_track)
-    print '  number of profiles for this float ' + np.str(np_tot) 
+    print '  number of profiles for this float ' + str(np_tot) 
         
     timeseries_DICT = {}
     for var_mod in VARLIST:
@@ -169,12 +169,12 @@ for wmo in wmo_list:
             LIST[var_mod][1].append(iip[var_mod])
             LIST[var_mod][2].append(iip[var_mod]-iipcheck[var_mod])
 
-            percex = np.float(iipcheck[var_mod])/np.float(iip[var_mod])*100.
+            percex = float(iipcheck[var_mod])/float(iip[var_mod])*100.
             print '  Number of profiles for ' + var_mod + \
-                ' ' + np.str(iip[var_mod])
+                ' ' + str(iip[var_mod])
             print '  Number of excluded ' + \
-                '  ' + np.str(iipcheck[var_mod]) + ' percent ' + \
-                np.str(percex) + '  (considered ' + np.str(100.-percex) + ')'
+                '  ' + str(iipcheck[var_mod]) + ' percent ' + \
+                str(percex) + '  (considered ' + str(100.-percex) + ')'
 
 
 pl.close('all')

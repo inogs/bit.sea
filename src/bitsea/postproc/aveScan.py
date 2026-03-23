@@ -128,9 +128,9 @@ def wp(data, wt, percentiles):
     data = np.asarray(data) 
     assert len(data.shape) == 1 
     if wt is None:
-        wt = np.ones(data.shape, np.float)     
+        wt = np.ones(data.shape, float)     
     else: 
-        wt = np.asarray(wt, np.float) 
+        wt = np.asarray(wt, float) 
         assert wt.shape == data.shape 
         assert np.greater_equal(wt, 0.0).all(), "Not all weights are non-negative." 
     assert len(wt.shape) == 1

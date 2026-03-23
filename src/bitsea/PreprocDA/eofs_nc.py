@@ -124,7 +124,7 @@ def write_eof(outfile,eofp,eofa):
 AREASlist = [sub.name for sub in OGS.Pred]
 dtype = [(sub.name, bool) for sub in OGS.Pred]
 SUBareas = np.zeros((jpj,jpi),dtype=dtype)
-SUBtot = np.zeros((jpj,jpi),np.int)
+SUBtot = np.zeros((jpj,jpi),int)
 for isub,sub in enumerate(OGS.Pred):
     print(sub.name)
     SUBareas[sub.name] = SubMask(sub, TheMask).mask_at_level(0)

@@ -88,7 +88,7 @@ for iTime,filename in enumerate(TL_orig.filelist):
 
 
     julian = int( iDate.strftime("%j") )
-    print(' ... day ' + np.str(julian) + '  of ' + np.str(iDate.year))
+    print(' ... day ' + str(julian) + '  of ' + str(iDate.year))
     if julian == 366:
         julian = 365
 

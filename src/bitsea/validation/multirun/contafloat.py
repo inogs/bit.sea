@@ -83,9 +83,9 @@ pl.close('all')
 
 pl.figure(figsize=[9,5])
 pl.bar(dates['P_l'],nprofiles_dates['P_l'],1, \
-        label='P_l ' + np.str(TOTnp['P_l']))
+        label='P_l ' + str(TOTnp['P_l']))
 pl.bar(dates['N3n'],nprofiles_dates['N3n'],1, \
-        label='N3n ' + np.str(TOTnp['N3n']))
+        label='N3n ' + str(TOTnp['N3n']))
 
 pl.grid()
 pl.legend()
@@ -96,9 +96,9 @@ pl.savefig('/gpfs/scratch/userexternal/ateruzzi/' + \
 
 pl.figure(figsize=[9,5])
 pl.bar(range(1,13),nprofiles_month['P_l'],1, \
-        label='P_l ' + np.str(TOTnp['P_l']))
+        label='P_l ' + str(TOTnp['P_l']))
 pl.bar(range(1,13),nprofiles_month['N3n'],1, \
-        label='N3n ' + np.str(TOTnp['N3n']))
+        label='N3n ' + str(TOTnp['N3n']))
 
 pl.grid()
 pl.legend()

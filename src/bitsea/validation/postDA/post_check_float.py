@@ -174,7 +174,7 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
                 nobsexc = np.sum(checkvar[:,5])
                 nprofexc = checkvar.shape[0]
                 nexc[var]+= 1 
-                #print ' ...some exclusions on ' + var + ' ' + np.str(nexc[var])
+                #print ' ...some exclusions on ' + var + ' ' + str(nexc[var])
             LIST[var][3+Nlayers[var]] = nobsexc
             LIST[var][4+Nlayers[var]] = nprofexc
 
@@ -187,8 +187,8 @@ for misfile,datemis in zip(TLmis.filelist,TLmis.Timelist):
         except:
             nomefile = None
 
-#print ' TOT exc CHL ' + np.str(nexc['chl']) + ' on ' + np.str(Ndates)
-#print ' TOT exc N3n ' + np.str(nexc['nit']) + ' on ' + np.str(Ndates)
+#print ' TOT exc CHL ' + str(nexc['chl']) + ' on ' + str(Ndates)
+#print ' TOT exc N3n ' + str(nexc['nit']) + ' on ' + str(Ndates)
 
 
 

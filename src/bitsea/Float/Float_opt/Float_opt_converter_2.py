@@ -51,9 +51,9 @@ def unique_rows(data, prec=5):
 
 def get_Profiles(filename, varname="VALUE", dtype=BIOOPTIMOD_type):
     A=np.loadtxt(filename, dtype=dtype,skiprows=1)
-    year                            = np.array( [ np.int(A['date'][i][1:5]) for i in range(len(A)) ] )
-    month                           = np.array( [ np.int(A['date'][i][6:8]) for i in range(len(A)) ] )
-    day                             = np.array( [ np.int(A['date'][i][9:11]) for i in range(len(A)) ] )
+    year                            = np.array( [ int(A['date'][i][1:5]) for i in range(len(A)) ] )
+    month                           = np.array( [ int(A['date'][i][6:8]) for i in range(len(A)) ] )
+    day                             = np.array( [ int(A['date'][i][9:11]) for i in range(len(A)) ] )
     lon   =A['Longitude']
     lat   =A['Latitude']
     values=A[varname]

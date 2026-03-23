@@ -204,13 +204,13 @@ for WMO in WMO_LIST:
               metadata = NPROF._my_float
               superfloat_oxy_function.dump_oxygen_file(outname, NPROF , Pres, Profile, Qc, metadata, mode=writing_mode)
         else:
-           ARGO     = Rectangle(np.float(tmp.lon) , np.float(tmp.lon) , np.float(tmp.lat) , np.float(tmp.lat))
+           ARGO     = Rectangle(float(tmp.lon) , float(tmp.lon) , float(tmp.lat) , float(tmp.lat))
            NAME_BASIN, BORDER_BASIN  = cross_Med_basins(ARGO)
            VALCLIM  = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,COLINDEX])
            if tmp_meta.TREND_TIME_SERIES.isnull().values.any():
-              OFFSET  = np.float(tmp.VAR) - VALCLIM
+              OFFSET  = float(tmp.VAR) - VALCLIM
            else:
-              Corrrected_val = np.float(tmp.VAR) - np.float(tmp_meta.TREND_TIME_SERIES)
+              Corrrected_val = float(tmp.VAR) - float(tmp_meta.TREND_TIME_SERIES)
               OFFSET  = Corrrected_val - VALCLIM
            STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,COLINDEX])
            STDCLIM_2 = 2*STDCLIM
@@ -232,7 +232,7 @@ for WMO in WMO_LIST:
               Prof_Coriolis = Profile.copy()
 
               z_depth = np.array([Pres[0], DEPTH])
-              x_var   = np.array([0, np.float(tmp_meta.TREND_TIME_SERIES)])
+              x_var   = np.array([0, float(tmp_meta.TREND_TIME_SERIES)])
               if np.isnan(np.sum(x_var)): 
                  pass
               else:

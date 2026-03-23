@@ -109,7 +109,7 @@ def time_serie_plot(LIST_DEPTH, WMO_LIST, df , df_report):
            fig, axs = plt.subplots(1, figsize=(9, 5.5))
            timeseries_plot(fig, np.array(tmp_data.time) , np.array(tmp_data.VAR), np.array(tmp_data.Corrected) ,  'Coriolis', 'Corrected')
            plt.tick_params(labelrotation=45)
-           plt.suptitle('Coriolis ARGO correction WMO: ' + str(WMO) +' at '+str(DEPTH)+ ' with trend =' + str(np.float(np.around(tmp_meta.TREND_per_YEAR.iloc[0],2)) ) + ' mmol/m3/yr')
+           plt.suptitle('Coriolis ARGO correction WMO: ' + str(WMO) +' at '+str(DEPTH)+ ' with trend =' + str(float(np.around(tmp_meta.TREND_per_YEAR.iloc[0],2)) ) + ' mmol/m3/yr')
            plt.savefig(str(WMO) +'_'+str(DEPTH)+ '_TimeSeries' )
 
 

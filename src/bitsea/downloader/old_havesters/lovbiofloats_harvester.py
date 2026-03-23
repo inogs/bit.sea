@@ -127,7 +127,7 @@ class LovBioFloatsHarvester(HarvesterInterface):
         return True
 
     def wmo_file_reader(self):
-        FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_fs','S20'),('status','S1')]
+        FLOAT_dtype=[('id',int),('wmo','S20'),('id_type',int),('type','S20'),('nome_fs','S20'),('status','S1')]
         TABLE=np.loadtxt(wmo_file,dtype=FLOAT_dtype,skiprows=2,delimiter=" | ")
         return TABLE
 

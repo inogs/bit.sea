@@ -112,7 +112,7 @@ for j,wmo in enumerate(wmo_list):
         plotmat[:,ip] = 
 
 
-	print var_mod + " " + np.str(len(timelabel_list))
+	print var_mod + " " + str(len(timelabel_list))
 
 	fig = pl.figure()
 	fig.set_size_inches(15,10)

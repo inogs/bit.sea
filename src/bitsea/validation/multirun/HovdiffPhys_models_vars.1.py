@@ -186,7 +186,7 @@ for j,wmo in enumerate(wmo_list):
                 plotmat_model[run][:,ip] = M_newDepth
 
 
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print var_mod + " " + str(len(timelabel_list)) +  p.available_params
 
     	plt.close('all')
         fig,axs = plt.subplots(2,1,sharex=True,figsize=[15,10])

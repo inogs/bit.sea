@@ -78,7 +78,7 @@ for iFrame, req in enumerate(WEEKLY):
             Profilelist_raw = bio_float.FloatSelector(LOVFLOATVARS[var], req.time_interval, sub)
 	    Profilelist = bio_float.remove_bad_sensors(Profilelist_raw,LOVFLOATVARS[var])
             nProfiles = len(Profilelist)
-            print "RAW " + np.str(len(Profilelist_raw))
+            print "RAW " + str(len(Profilelist_raw))
             print sub.name, nProfiles
             Matchup_object_list=[]
             for ip in range(nProfiles):

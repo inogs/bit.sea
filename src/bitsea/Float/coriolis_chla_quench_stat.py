@@ -55,4 +55,4 @@ fid.writelines(LINES)
 fid.close()
 
 
-dtype=[('flag', np.int), ('month', np.int), ('MLD', np.float32), ('Pres_top', np.float32), ('quench_value', np.float32), ('ID', "S200")]
+dtype=[('flag', int), ('month', int), ('MLD', np.float32), ('Pres_top', np.float32), ('quench_value', np.float32), ('ID', "S200")]

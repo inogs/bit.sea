@@ -120,7 +120,7 @@ class plot_container():
         seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.ones_like(y,dtype=np.bool)
+        maskseas = np.ones_like(y,dtype=bool)
         #maskseas[sind] = True
         if self.label is not None:
             ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0),self.mask.zlevels, color=self.plotargs,label=self.label)
@@ -233,12 +233,12 @@ LISTyear= range(1999,2018)
 
 PATH = {}
 for yy in LISTyear :
-    PATH[yy] =  INPUTDIR  + '/' + np.str(yy) +'/'
-PATH_2019=INPUTDIR + '/' + np.str(2019) +'/'
-PATH_2020=INPUTDIR + '/' + np.str(2020) +'/'
-PATH_2021=INPUTDIR + '/' + np.str(2021) +'/'
-PATH_2022=INPUTDIR + '/' + np.str(2022) +'/'
-PATH_2023=INPUTDIR + '/' + np.str(2023) +'/'
+    PATH[yy] =  INPUTDIR  + '/' + str(yy) +'/'
+PATH_2019=INPUTDIR + '/' + str(2019) +'/'
+PATH_2020=INPUTDIR + '/' + str(2020) +'/'
+PATH_2021=INPUTDIR + '/' + str(2021) +'/'
+PATH_2022=INPUTDIR + '/' + str(2022) +'/'
+PATH_2023=INPUTDIR + '/' + str(2023) +'/'
 Mask24 = Mask.from_file('Maskfile')
 
 LEVELS=[0,50,100,150] #m
@@ -249,7 +249,7 @@ COLOR=cm.gray_r(np.linspace(0.2,0.3,ncolors))
 PLOT_LIST = []
 
 for ii,yy in enumerate(LISTyear):
-    PLOT_LIST.append(plot_container(np.str(yy),COLOR[ii],PATH[yy],Mask24,None))
+    PLOT_LIST.append(plot_container(str(yy),COLOR[ii],PATH[yy],Mask24,None))
 
 PLOT_LIST.append(plot_container('2019',COLOR[18],PATH_2019,Mask24,'1999-2019'))
 PLOT_LIST.append(plot_container('2020','r',PATH_2020,Mask24,'2020'))

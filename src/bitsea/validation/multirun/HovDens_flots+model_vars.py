@@ -197,7 +197,7 @@ for j,wmo in enumerate(wmo_list):
         slope_ref.append(find_SLOPE_dz_max(densprof_Ref,NewPres_5m))
         slope_mod.append(find_SLOPE_dz_max(densprof_Mod,NewPres_5m))
 
-    print np.str(len(timelabel_list)) +  p.available_params
+    print str(len(timelabel_list)) +  p.available_params
 
     pl.close('all')
     fig = plt.figure()

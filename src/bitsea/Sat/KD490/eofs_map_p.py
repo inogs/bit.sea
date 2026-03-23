@@ -55,7 +55,7 @@ def modulation_func(myx,mycorr):
 INPDIR = addsep(args.indir)
 DIRIND = addsep(args.dirind)
 OUTDIR = addsep(args.outdir)
-perc = np.float(args.perc)
+perc = float(args.perc)
 TheMask = Mask.from_file(args.maskfile)
 Lon = TheMask.xlevels
 Lat = TheMask.ylevels

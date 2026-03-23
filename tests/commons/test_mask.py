@@ -394,6 +394,54 @@ def test_mask_save(tmp_path, mask):
     mask_path.unlink()
 
 
+@pytest.mark.parametrize("compression_level", [0, 1, 3, 5, 9])
+def test_mask_save_with_compression_levels(tmp_path, mask, compression_level):
+    """Test that different compression levels work correctly."""
+    mask_path = tmp_path / f"mask_compression_{compression_level}.nc"
+    mask.save_as_netcdf(mask_path, compression_level=compression_level)
+    new_mask = Mask.from_file(mask_path)
+
+    assert np.all(new_mask.xlevels == mask.xlevels)
+    assert np.all(new_mask.ylevels == mask.ylevels)
+    assert np.all(new_mask.zlevels == mask.zlevels)
+    assert np.all(new_mask.e1t == mask.e1t)
+    assert np.all(new_mask.e2t == mask.e2t)
+    assert np.all(new_mask.e3t == mask.e3t)
+    assert np.all(new_mask[:] == mask[:])
+
+    mask_path.unlink()
+
+
+@pytest.mark.parametrize("invalid_level", [-1, 10, 15, -5])
+def test_mask_save_with_invalid_compression_level(
+    tmp_path, mask, invalid_level
+):
+    """Test that invalid compression levels raise ValueError."""
+    mask_path = tmp_path / "mask_invalid_compression.nc"
+    with pytest.raises(
+        ValueError, match="compression_level must be an integer"
+    ):
+        mask.save_as_netcdf(mask_path, compression_level=invalid_level)
+
+
+def test_mask_save_compression_affects_file_size(tmp_path, mask):
+    """Test that compression level affects file size."""
+    mask_path_no_compression = tmp_path / "mask_no_compression.nc"
+    mask_path_max_compression = tmp_path / "mask_max_compression.nc"
+
+    mask.save_as_netcdf(mask_path_no_compression, compression_level=0)
+    mask.save_as_netcdf(mask_path_max_compression, compression_level=9)
+
+    size_no_compression = mask_path_no_compression.stat().st_size
+    size_max_compression = mask_path_max_compression.stat().st_size
+
+    # File with compression should be smaller than without compression
+    assert size_max_compression < size_no_compression
+
+    mask_path_no_compression.unlink()
+    mask_path_max_compression.unlink()
+
+
 def test_regular_mask_xarray_conversions(regular_mask):
     xarray_mask = regular_mask.to_xarray()
     new_mask = Mask.from_xarray(xarray_mask)

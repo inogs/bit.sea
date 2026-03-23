@@ -126,7 +126,7 @@ for sub in V2.Pred:
             masksub[iip] = True
 
     Np_sub = np.sum(masksub)
-    print('     ... Np ' + np.str(Np_sub))
+    print('     ... Np ' + str(Np_sub))
 
     filename = OUTDIR + 'masksub.' + sub.name + masktype + '.npy'
     print(filename)
@@ -137,7 +137,7 @@ masksub = np.zeros(numP,dtype=bool)
 masksub[:] = True
 Np_sub = np.sum(masksub)
 print('med')
-print('     ... Np ' + np.str(Np_sub))
+print('     ... Np ' + str(Np_sub))
 
 filename = OUTDIR + 'masksub.med' + masktype + '.npy'
 print(filename)

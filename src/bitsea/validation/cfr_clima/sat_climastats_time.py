@@ -114,7 +114,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
     iDate = TL_orig.Timelist[iTime] 
     date8 = '%04d' %iDate.year + '%02d' %iDate.month + '%02d' %iDate.day
     julian = int( iDate.strftime("%j") )
-    print(' ... day ' + np.str(julian) + '  of ' + np.str(iDate.year))
+    print(' ... day ' + str(julian) + '  of ' + str(iDate.year))
     if julian == 366:
         julian = 365
 
@@ -180,7 +180,7 @@ for iTime, filename in enumerate(TL_orig.filelist):
             chlsub[chlsub<0] = np.nan
 
             if np.nansum(masksubday[masktype])>0:
-                #print(sub.name + ' ... Np ' + np.str(np.nansum(masksubday)))
+                #print(sub.name + ' ... Np ' + str(np.nansum(masksubday)))
                 stats_clima[sub.name][0] = np.nanmean(climadmean)
                 stats_clima[sub.name][1] = np.nanmin(climadmean)
                 stats_clima[sub.name][2] = np.nanmax(climadmean)

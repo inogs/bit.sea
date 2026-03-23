@@ -109,7 +109,7 @@ for ii in range(365):
         continue
 
     julian = ii+1
-    print(' ... day ' + np.str(julian))
+    print(' ... day ' + str(julian))
 
     DAILY_REF_MEAN = MEAN[julian-1,:,:]
     DAILY_REF_STD  =  STD[julian-1,:,:]    

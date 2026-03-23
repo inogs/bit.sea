@@ -174,7 +174,7 @@ for j,wmo in enumerate(wmo_list):
 	    plotmat_model[:,ip] = M_newDepth
 
 
-	print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+	print var_mod + " " + str(len(timelabel_list)) +  p.available_params
         if p.available_params.find(var)<0 : continue
 	for ip, p in enumerate(list_float_track):
 	    break # esco

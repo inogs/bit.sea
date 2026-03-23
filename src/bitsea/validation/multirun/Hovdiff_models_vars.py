@@ -180,7 +180,7 @@ for j,wmo in enumerate(wmo_list):
                 M_newDepth=np.interp(NewPres_5m,TheMask.zlevels[:max_depth+1],M[:max_depth+1])
                 plotmat_model[run][:,ip] = M_newDepth
 
-        print var_mod + " " + np.str(len(timelabel_list)) +  p.available_params
+        print var_mod + " " + str(len(timelabel_list)) +  p.available_params
 
 
         plt.close('all')

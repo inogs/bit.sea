@@ -148,7 +148,7 @@ for masktype in ['ORIG','CHECK','ALLP']:
 
         plt.sca(axs[3])
         plt.title('Coverage [grid points with obs / total sub grid points] ' + \
-                   np.str(Ntotsub))
+                   str(Ntotsub))
 
         plt.bar(datesplot,statsSUB_time[sub.name][:,5]/Ntotsub)
 

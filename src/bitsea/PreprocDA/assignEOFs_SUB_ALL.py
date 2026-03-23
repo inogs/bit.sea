@@ -61,7 +61,7 @@ meshmask = args.maskfile
 TheMask = Mask.from_file(meshmask)
 
 MM = NC.netcdf_file(BFMgrid,'r')
-nregs = np.int(np.max(MM.variables['regs'].data))
+nregs = int(np.max(MM.variables['regs'].data))
 regs = MM.variables['regs'].data.copy()
 tgr = MM.variables['tmsk'].data[0,:,:].copy()
 Lon = MM.variables['lon'].data.copy()
@@ -154,7 +154,7 @@ for im in range(12):
             eofp[:,:nleveof,int(indnomask[iip])] = evc[:,:,indsub]
             eofa[:,int(indnomask[iip])] = eva[:,indsub]
 
-    fileout = OUTDIR +  '/eof.' + np.str(nregs) + '.' + mm + '.nc' 
+    fileout = OUTDIR +  '/eof.' + str(nregs) + '.' + mm + '.nc' 
     print (fileout)
     write_eof(fileout,eofp,eofa)
     

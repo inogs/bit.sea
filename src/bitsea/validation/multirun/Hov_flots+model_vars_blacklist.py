@@ -259,7 +259,7 @@ for j, wmo in enumerate(wmo_list):
                   
         if np.all(np.isnan(plotmat_misf)): continue
 
-        print var_mod + " " + np.str(len(timelabel_list)) + p.available_params
+        print var_mod + " " + str(len(timelabel_list)) + p.available_params
 
         fig = pl.figure()
         fig.set_size_inches(15,10)

@@ -148,7 +148,7 @@ for sub in V2.P:
 for ifile,filemod in enumerate(TLmodel.filelist):
     datefile = TLmodel.Timelist[ifile]
     plotDates.append(datefile)
-    print ' Reading model file ' + np.str(ifile+1) + ' of ' + np.str(Ndates)
+    print ' Reading model file ' + str(ifile+1) + ' of ' + str(Ndates)
     print '   ... date ' + datetime.strftime(datefile,'%Y-%m-%d')
     De = DataExtractor(TheMask,filename=filemod,varname='lchlm',dimvar=2)
     surfchl = De.filled_values
@@ -189,7 +189,7 @@ for sub in V2.P:
 for ifile,filesat in enumerate(TLsat.filelist):
     datefile = TLsat.Timelist[ifile]
     datepsat.append(datefile)
-    print ' Reading satellite file ' + np.str(ifile+1) + ' of ' + np.str(Ndsat)
+    print ' Reading satellite file ' + str(ifile+1) + ' of ' + str(Ndsat)
     print '   ... date ' + datetime.strftime(datefile,'%Y-%m-%d')
     De = DataExtractor(TheMask,filename=filesat,varname='lchlm',dimvar=2)
     satchl = De.filled_values

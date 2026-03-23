@@ -90,14 +90,14 @@ def ticklabels_degree(ax,fsize=7,intdeg=True):
     xticks = ax.get_xticks()
     xticklabels = []
     for xt in xticks:
-        if intdeg: xt = np.int(xt)
-        xticklabels.append(np.str(xt) + degsymb + 'E')
+        if intdeg: xt = int(xt)
+        xticklabels.append(str(xt) + degsymb + 'E')
     ax.set_xticklabels(xticklabels, fontsize=7)
     yticks = ax.get_yticks()
     yticklabels = []
     for yt in yticks:
-        if intdeg: yt = np.int(yt)
-        yticklabels.append(np.str(yt) + degsymb + 'N')
+        if intdeg: yt = int(yt)
+        yticklabels.append(str(yt) + degsymb + 'N')
     ax.set_yticklabels(yticklabels, fontsize=7)
 
 

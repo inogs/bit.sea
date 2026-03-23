@@ -194,7 +194,7 @@ def read_float_update(input_file):
         ('latitude',np.float32),
         ('longitude',np.float32),
         ('ocean','S10'),
-        ('profiler_type',np.int),
+        ('profiler_type',int),
         ('institution','S10'),
         ('parameters','S200'),
         ('parameter_data_mode','S100'),

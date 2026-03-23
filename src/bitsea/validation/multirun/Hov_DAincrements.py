@@ -154,7 +154,7 @@ for j in range(0, len(wmo_list)):
         
         if len(Goodp)==0: continue
 
-        print var_mod + " " + np.str(len(timelabel_list))
+        print var_mod + " " + str(len(timelabel_list))
         print wmo_list[j]
         fig = pl.figure()
         fig.set_size_inches(15, 10)

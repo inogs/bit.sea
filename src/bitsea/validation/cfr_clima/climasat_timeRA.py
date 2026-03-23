@@ -131,7 +131,7 @@ for sub in V2.P:
 for ifile,filesat in enumerate(TLsat.filelist):
     datefile = TLsat.Timelist[ifile]
     plotDates.append(datefile)
-    print ' Reading sat file ' + np.str(ifile+1) + ' of ' + np.str(Ndates)
+    print ' Reading sat file ' + str(ifile+1) + ' of ' + str(Ndates)
     print '   ... date ' + datetime.strftime(datefile,'%Y-%m-%d')
     De = DataExtractor(TheMask,filename=filesat,varname='lchlm',dimvar=2)
     surfchl = De.filled_values

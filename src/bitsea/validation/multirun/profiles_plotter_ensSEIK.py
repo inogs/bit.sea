@@ -125,7 +125,7 @@ class plot_container():
         # seasonstr = seasonObj.SEASON_LIST_NAME[seasonind]
         # seasreq = timerequestors.Clim_season(seasonind,seasonObj)
         # sind,_ = TimeList(self.timelist).select(seasreq)
-        maskseas = np.ones_like(y,dtype=np.bool)
+        maskseas = np.ones_like(y,dtype=bool)
         #maskseas[sind] = True
         if self.label is not None:
             ax.plot(self.values[maskseas,iSub,iCoast,:,0].mean(axis=0),self.mask.zlevels, color=self.plotargs,label=self.label)
@@ -238,7 +238,7 @@ LISTens= [f'{ii:03d}' for ii in range(24)]
 
 PATH = {}
 for iens in LISTens :
-    PATH[iens] =  INPUTDIR  + '/' + np.str(iens) +'/STAT_PROFILES/'
+    PATH[iens] =  INPUTDIR  + '/' + str(iens) +'/STAT_PROFILES/'
 Mask24 = Mask.from_file(Maskfile)
 
 PATH_MEAN = INPUTDIR  + '/MEAN/STAT_PROFILES/'
@@ -251,7 +251,7 @@ LEVELS=[0,50,100,150] #m
 PLOT_LIST = []
 
 for ii,yy in enumerate(LISTens):
-    PLOT_LIST.append(plot_container(np.str(yy),'gray',PATH[yy],Mask24,None))
+    PLOT_LIST.append(plot_container(str(yy),'gray',PATH[yy],Mask24,None))
 
 PLOT_LIST.append(plot_container('MEAN','blue',PATH_MEAN,Mask24,None))
 

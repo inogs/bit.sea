@@ -203,7 +203,7 @@ for j, wmo in enumerate(wmo_list):
                 LIST[4].append(mean200)
 
 
-        print var_mod + " " + np.str(len(timelabel_list)) + p.available_params
+        print var_mod + " " + str(len(timelabel_list)) + p.available_params
         
     if acceptN3n[wmo][ip]==1: break
 
@@ -312,7 +312,7 @@ for ii in range(nL):
     for iit in range(len(thresholds[ii])):
         pl.bar(LISTwmo, height[:,iit], \
             bottom=base[:,iit], color=category_colors[iit], \
-            label=np.str(thresholds[ii][iit]))
+            label=str(thresholds[ii][iit]))
     # for iit in range(1,len(thresholds[ii])):
     #     pl.plot(LISTwmo, base[:,iit],'o')
     #     pl.plot(LISTwmo, base[:,iit],'-', color='grey')
@@ -373,7 +373,7 @@ for ii in range(nL):
     for iit in range(len(thresholdsN[ii])):
         pl.bar(LISTwmo, height[:,iit], \
             bottom=base[:,iit], color=category_colors[iit], \
-            label=np.str(thresholdsN[ii][iit]))
+            label=str(thresholdsN[ii][iit]))
     # for iit in range(1,len(thresholds[ii])):
     #     pl.plot(LISTwmo, base[:,iit],'o')
     #     pl.plot(LISTwmo, base[:,iit],'-', color='grey')

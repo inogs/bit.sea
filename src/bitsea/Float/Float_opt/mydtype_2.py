@@ -2,29 +2,29 @@
 
 import numpy as np
 
-BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('VALUE'      , np.float)  ,  ('qc'    ,   'S100')   ,\
-                                ('Latitude'    , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('VALUE'      , float)  ,  ('qc'    ,   'S100')   ,\
+                                ('Latitude'    , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                 ('Name'        , 'S100')     , ('date'       , 'S100')])
 
 
-QC_380_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('IRR_380'    , np.float)  ,  ('qc_380'    ,   'S100')   ,\
-                                                       ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+QC_380_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('IRR_380'    , float)  ,  ('qc_380'    ,   'S100')   ,\
+                                                       ('Latitude'   , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                                        ('Name'       , 'S100')     , ('date'       , 'S100')])
 
-QC_412_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('IRR_412'    , np.float)  ,  ('qc_412'    ,   'S100')   ,\
-                                                       ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+QC_412_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('IRR_412'    , float)  ,  ('qc_412'    ,   'S100')   ,\
+                                                       ('Latitude'   , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                                        ('Name'       , 'S100')     , ('date'       , 'S100')])
 
-QC_490_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('IRR_490'    , np.float)  ,  ('qc_490'    ,   'S100')   ,\
-                                                       ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+QC_490_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('IRR_490'    , float)  ,  ('qc_490'    ,   'S100')   ,\
+                                                       ('Latitude'   , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                                        ('Name'       , 'S100')     , ('date'       , 'S100')])
 
-QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('CHL'        , np.float)  ,  ('qc_chl'    ,   'S100')   ,\
-                                                       ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+QC_CHL_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('CHL'        , float)  ,  ('qc_chl'    ,   'S100')   ,\
+                                                       ('Latitude'   , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                                        ('Name'       , 'S100')     , ('date'       , 'S100')])
 
-QC_PAR_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , np.float)   , ('PAR'        , np.float)  ,  ('qc_PAR'    ,   'S100')   ,\
-                                                       ('Latitude'   , np.float)   , ('Longitude'  , np.float)  ,  ('Julian_Day', np.float)   ,\
+QC_PAR_MEDSEA_MAY2019_BIOOPTIMOD_type      = np.dtype([('PRES'       , float)   , ('PAR'        , float)  ,  ('qc_PAR'    ,   'S100')   ,\
+                                                       ('Latitude'   , float)   , ('Longitude'  , float)  ,  ('Julian_Day', float)   ,\
                                                        ('Name'       , 'S100')     , ('date'       , 'S100')])
 
 FloatIndex_type= np.dtype([
@@ -36,12 +36,12 @@ FloatIndex_type= np.dtype([
 
 
 plot_conf=np.dtype([('title'          ,'S100')  , ('var' ,'S100')        ,\
-                    ('unit_conversion',np.float), ('unit_label','S100')  ,\
+                    ('unit_conversion',float), ('unit_label','S100')  ,\
                     ('operator'       ,'S100')                           ,\
-                    ('vmin'           ,np.float), ('vmax',np.float)      ,\
-                    ('depth'          ,np.float)                         ,\
-                    ('lonS'           ,np.float), ('lonE',np.float)      ,\
-                    ('latS'           ,np.float), ('latE',np.float)      ,\
+                    ('vmin'           ,float), ('vmax',float)      ,\
+                    ('depth'          ,float)                         ,\
+                    ('lonS'           ,float), ('lonE',float)      ,\
+                    ('latS'           ,float), ('latE',float)      ,\
                     ('start'          ,'S100')  , ('end'   ,'S100')      ,\
                     ('indataAve'      ,'S100')  , ('aggregation' ,'S100'),\
                     ('InputDir'       ,'S100')  , ('OutputDir'   ,'S100'),\

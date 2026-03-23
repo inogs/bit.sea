@@ -166,7 +166,7 @@ for j,wmo in enumerate(wmo_list):
             densprof_Mod = seawater.dens(M_newDepth['vosaline'],M_newDepth['votemper'],NewPres_5m)
             plotmat_model[run][:,ip] = densprof_Mod
 
-    print "Density " + np.str(len(timelabel_list)) +  p.available_params
+    print "Density " + str(len(timelabel_list)) +  p.available_params
 
     plt.close('all')
     fig,axs = plt.subplots(2,1,sharex=True,figsize=[15,10])

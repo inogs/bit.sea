@@ -36,7 +36,7 @@ A=json.load(fid)  # list of dicts
 fid.close()
 
 nFloats= len(A)
-FLOAT_dtype=[('id',np.int),('wmo','S20'),('id_type',np.int),('type','S20'),('nome_lov','S20'),('status','S1')]
+FLOAT_dtype=[('id',int),('wmo','S20'),('id_type',int),('type','S20'),('nome_lov','S20'),('status','S1')]
 
 TABLE=np.ones((nFloats,),dtype=FLOAT_dtype)
 

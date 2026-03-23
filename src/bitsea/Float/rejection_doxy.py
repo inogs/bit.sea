@@ -21,8 +21,8 @@ WEEKLY_REQS=TL.getOwnList()
 
 nWeeks = len(WEEKLY_REQS)
 
-TOTAL = np.zeros((nWeeks), np.int)
-REJ  = np.zeros((nWeeks), np.int)
+TOTAL = np.zeros((nWeeks), int)
+REJ  = np.zeros((nWeeks), int)
 for ireq, req in enumerate(WEEKLY_REQS):
     print ireq
     PROFILE_LIST=bio_float.FloatSelector(var, req.time_interval, R)

@@ -16,7 +16,7 @@ start_i=53
 CLIM16[CLIM16==-999] = np.nan
 tmask=tmask[:, start_i:]
 
-VOIDS=np.zeros((365),np.int)
+VOIDS=np.zeros((365),int)
 
 
 for julian in range(365):

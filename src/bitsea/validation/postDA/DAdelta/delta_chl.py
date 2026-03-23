@@ -96,7 +96,7 @@ for itime,DAdate in enumerate(TL_DIR.Timelist):
     # totbal = np.zeros(3)
     # totbal[:] = np.nan
     for iphyto in range(4):
-        strphyto = np.str(iphyto + 1)
+        strphyto = str(iphyto + 1)
         varname = 'P' + strphyto + 'l'
         print ' ... ' + varname
       #  fileBefore = TL_DIR.filelist[itime] + '/RST.before.' \

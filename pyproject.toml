@@ -9,8 +9,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-numpy = ">1.26.2"
+python = "^3.11"
+numpy = ">2.0.0"
 scipy = "^1.12.0"
 netcdf4 = "^1.6.5"
 xarray = ">2024.1.0"
@@ -18,7 +18,7 @@ defusedxml = "^0.7.1"
 
 [tool.poetry.group.plots.dependencies]
 matplotlib = ">3.7.5"
-cartopy = "^0.23.0"
+cartopy = "^0.25.0"
 
 [tool.poetry.group.algorithms.dependencies]
 geographiclib = "^2.0"
@@ -29,8 +29,8 @@ scikit-learn = "^1.4.2"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.6.4"
-pytest = "^8.3.2"
-pre-commit = "^3.8.0"
+pytest = "^9.0.2"
+pre-commit = "^4.5.1"
 requests = "^2.32.4"
 hypothesis = "^6.115.3"
 

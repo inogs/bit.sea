@@ -626,17 +626,37 @@ class Mask(BooleanArrayWrapper, Mesh):
         """
         pass
 
-    def save_as_netcdf(self, file_path: Union[PathLike, str]):
+    def save_as_netcdf(
+        self,
+        file_path: Union[PathLike, str],
+        compression_level: Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 3,
+    ):
         """
         Saves the current `Mask` object to a netCDF file, which can later
         be loaded using the `from_file` method.
 
         Args:
-            file_path (Union[PathLike, str]): The path to the netCDF file
-            where the `Mask` object will be saved.
+            file_path: The path to the netCDF file where the `Mask` object
+                will be saved.
+            compression_level: The compression level to use when saving the
+                variables. Valid values are 0 (no compression), and integers
+                between 1 and 9, where 1 is the fastest compression and 9 is
+                the slowest. The default value is 3, which is a reasonable
+                compromise between speed and compression.
         """
 
         file_path = Path(file_path)
+
+        if compression_level < 0 or compression_level > 9:
+            raise ValueError(
+                "compression_level must be an integer between 0 and 9; "
+                f"received {compression_level}."
+            )
+
+        var_kwargs = {}
+        if compression_level > 0:
+            var_kwargs["zlib"] = True
+            var_kwargs["complevel"] = compression_level
 
         with netCDF4.Dataset(file_path, "w") as netCDF_out:
             # Add the spatial dimensions
@@ -646,28 +666,42 @@ class Mask(BooleanArrayWrapper, Mesh):
             netCDF_out.createDimension("x", self.shape[2])
 
             # Add nav_lev data
-            nav_lev = netCDF_out.createVariable("nav_lev", "f4", ("z",))
+            nav_lev = netCDF_out.createVariable(
+                "nav_lev", "f4", ("z",), **var_kwargs
+            )
             nav_lev[:] = self.zlevels
 
             # Create the nav_lat NetCDF variable
-            nav_lat = netCDF_out.createVariable("nav_lat", "f4", ("y", "x"))
+            nav_lat = netCDF_out.createVariable(
+                "nav_lat", "f4", ("y", "x"), **var_kwargs
+            )
             nav_lat[:, :] = self.ylevels
 
             # Create the nav_lon NetCDF variable
-            nav_lon = netCDF_out.createVariable("nav_lon", "f4", ("y", "x"))
+            nav_lon = netCDF_out.createVariable(
+                "nav_lon", "f4", ("y", "x"), **var_kwargs
+            )
             nav_lon[:, :] = self.xlevels
 
-            e1t = netCDF_out.createVariable("e1t", "f4", ("y", "x"))
+            e1t = netCDF_out.createVariable(
+                "e1t", "f4", ("y", "x"), **var_kwargs
+            )
             e1t[:] = self.e1t
 
-            e2t = netCDF_out.createVariable("e2t", "f4", ("y", "x"))
+            e2t = netCDF_out.createVariable(
+                "e2t", "f4", ("y", "x"), **var_kwargs
+            )
             e2t[:] = self.e2t
 
-            e3t = netCDF_out.createVariable("e3t", "f4", ("t", "z", "y", "x"))
+            e3t = netCDF_out.createVariable(
+                "e3t", "f4", ("t", "z", "y", "x"), **var_kwargs
+            )
             e3t[:] = self.e3t
 
             # Create a variable to hold the data
-            mask = netCDF_out.createVariable("tmask", "u1", ("z", "y", "x"))
+            mask = netCDF_out.createVariable(
+                "tmask", "u1", ("z", "y", "x"), **var_kwargs
+            )
 
             # Assign the data to the NetCDF variable
             mask[:, :, :] = self[:, :, :]

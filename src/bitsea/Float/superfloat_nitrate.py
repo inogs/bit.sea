@@ -166,6 +166,8 @@ def nitrate_algorithm(p, outfile, metadata, writing_mode):
         print("few values for " + str(F.filename), flush=True)
         return
 
+    Value = convert_nitrate(p, Pres, Value)
+
     Path.mkdir(outfile.parent, exist_ok=True)
     if F.status_var('NITRATE')=='D':
         metadata.status_var = 'D'

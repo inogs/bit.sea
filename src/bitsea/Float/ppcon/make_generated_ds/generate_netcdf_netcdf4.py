@@ -131,6 +131,11 @@ print('____________________________________________')
 print("total numer of profiles to generate \n" + str(len(my_df) ))
 print('____________________________________________')
 
+# sciortino#
+torch.set_num_threads(1)
+#torch.no_grad()
+print("Number of threads: ", torch.get_num_threads())
+print("Is gradient enabled: ", torch.is_grad_enabled())
 
 #for sample in my_ds:
 for III in range(0,len(my_df)):

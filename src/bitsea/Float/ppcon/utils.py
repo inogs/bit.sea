@@ -108,11 +108,6 @@ def upload_and_evaluate_model(dir_model, info_model, ep):
 def get_output(sample, model_day, model_year, model_lat, model_lon, model):
     year, day_rad, lat, lon, temp, psal, doxy, _, _, _ = sample
 
-    # sciortino#
-    #print("Number of threads: ", torch.get_num_threads())
-    #print("Is gradient enabled: ", torch.is_grad_enabled())
-    
-    # amadio#
     is_scalar = len(day_rad.shape) == 0
     if is_scalar:
        day_rad = day_rad.unsqueeze(0)

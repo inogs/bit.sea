@@ -48,9 +48,6 @@ def get_gloria_profile(year, day_rad, lat, lon, temperature, psalinity, doxygen,
         depth_unnormalized = -gsw.z_from_p(pres[k], lat)
         depth_u = depth_unnormalized / 20000 + (1 / ((1 + np.exp(-depth_unnormalized / 300)) ** 3))
 
-        # pressure = sw.eos80.pres(depth_unnormalized, lat)
-        # density = sw.eos80.dens(psal, temp, pres[k])
-
         input_tensor = torch.tensor([time, lat, lon1, lon2, temp, doxy, psal, depth_u]).float()
 
         input_tensor = normalization_scale_si * (input_tensor - torch.tensor(mean_input_si)) / torch.tensor(
@@ -65,7 +62,6 @@ def get_gloria_profile(year, day_rad, lat, lon, temperature, psalinity, doxygen,
 
             output_ = model_(input_tensor)
             output_ = (mean_target_si + denormalization_scale_si * output_ * std_target_si).item()
-            # output_ = output_ / (density * 0.001)
 
             if output_ < 0:
                 output_ = 0

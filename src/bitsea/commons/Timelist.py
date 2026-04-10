@@ -570,6 +570,35 @@ class TimeList:
                 REQ_LIST.append(d)
         return REQ_LIST
 
+    def getHourlyList(self,hours:int, start_hour=0):
+        """
+        Args:
+        * hours : integer, the time interval
+        * start_hour: integer, the  hour of the center time of the first
+         time interval of each day.
+
+        Returns: a list of requestors.Hourly_req objects
+        For example, getHourlyList(hours=6, start_hour=3)
+        returns requestors.Hourly_req objects for intervals 0-6h, 6-12h,
+        12-18h, 18-24h, centered in 3h, 9h, 15h, 21h respectively.
+
+        """
+        if not isinstance(hours, int) or hours <= 0:
+            raise ValueError("hours must be a positive integer")
+        if not isinstance(start_hour, int) or not (0 <= start_hour <= 23):
+            raise ValueError("start_hour must be an integer in the range 0-23")
+        REQ_LIST = []
+        t = self.Timelist[0]
+        starting_centered_day = datetime.datetime(t.year, t.month, t.day, start_hour)
+        TL = DL.getTimeList(starting_centered_day, self.Timelist[-1], hours=hours)
+        for t in TL:
+            d = requestors.Hourly_req(t.year, t.month, t.day, t.hour, delta_hours=hours)
+            indexes, _ = self.select(d)
+            if len(indexes) > 0:
+                REQ_LIST.append(d)
+        return REQ_LIST
+
+
     def getWeeklyList(self, weekday):
         """
 
@@ -872,17 +901,23 @@ if __name__ == "__main__":
     seas_req = requestors.Season_req(1997, 2, seasonobj)  #
     seas_req = requestors.Clim_season(1, seasonobj)
     ii, w = TTL.select(seas_req)
-    sys.exit()
+
 
     MyReqList = TTL.getMonthlist()
     for req in MyReqList:
         ii, weights = TTL.select(req)
 
-    H2 = DL.getTimeList("20180301-00:00:00", "20200310-00:00:00", hours=2)
+    H2 = DL.getTimeList("20180301-00:00:00", "20180310-00:00:00", hours=1)
     TL = TimeList(H2)
+
     REQS = TL.getWeeklyList(4)
     print(len(REQS))
     REQS = TL.getOwnList()
+    REQS = TL.getHourlyList(hours=6, start_hour=3)
+    if REQS:
+        TL.select(REQS[0])
+
+    sys.exit()
 
     Min15 = DL.getTimeList("20180301-00:00:00", "20200310-00:00:00", minutes=15)
     TL = TimeList(Min15)

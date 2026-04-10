@@ -56,7 +56,7 @@ import matplotlib.dates as mdates
 from bitsea.timeseries.plot import *
 import numpy.ma as ma
 from bitsea.mhelpers.pgmean import PLGaussianMean
-import seawater
+import gsw
 import pickle
 
 from SingleFloat_vs_Model_Stat_Timeseries_IOnc import ncreader
@@ -244,8 +244,10 @@ for j,wmo in enumerate(wmo_list):
                     rmsdfloat = (np.sum((MP_newDepth[varp_mod]-NewProfp_5m[varp_mod])**2)/nPnewpres)**.5
                     RMSD[varp_mod].append(rmsdfloat)
 
-                MP_newDepth['density'] = seawater.dens(MP_newDepth['vosaline'],MP_newDepth['votemper'],NewPres_5m)
-                NewProfp_5m['density'] = seawater.dens(NewProfp_5m['vosaline'],NewProfp_5m['votemper'],NewPres_5m)
+                SA_MP = gsw.SA_from_SP(MP_newDepth['vosaline'], NewPres_5m, p.lon, p.lat)
+                MP_newDepth['density'] = gsw.rho(SA_MP, gsw.CT_from_t(SA_MP, MP_newDepth['votemper'], NewPres_5m), NewPres_5m)
+                SA_NP = gsw.SA_from_SP(NewProfp_5m['vosaline'], NewPres_5m, p.lon, p.lat)
+                NewProfp_5m['density'] = gsw.rho(SA_NP, gsw.CT_from_t(SA_NP, NewProfp_5m['votemper'], NewPres_5m), NewPres_5m)
 
                 rmsdfloat = (np.sum((MP_newDepth['density']-NewProfp_5m['density'])**2)/nPnewpres)**.5
                 RMSD['density'].append(rmsdfloat)

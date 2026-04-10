@@ -56,7 +56,7 @@ from pathlib import Path
 import os
 import netCDF4 as NC
 import numpy as np
-import seawater as sw
+import gsw
 from datetime import datetime, timedelta
 from TREND_ANALYSIS import trend_conditions
 from TREND_ANALYSIS import sign_analysis
@@ -83,7 +83,8 @@ def convert_oxygen(p,doxypres,doxyprofile):
     if doxypres.size == 0: return doxyprofile
     Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
     Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
-    density = sw.dens(sali,temp,Pres)
+    SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
+    density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
     return doxyprofile * density_on_zdoxy/1000.
 

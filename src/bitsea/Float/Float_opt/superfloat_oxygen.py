@@ -37,7 +37,7 @@ from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
+import gsw
 
 def remove_bad_sensors(Profilelist,var):
     '''
@@ -72,7 +72,8 @@ def convert_oxygen(p,doxypres,doxyprofile):
     if doxypres.size == 0: return doxyprofile
     Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
     Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
-    density = sw.dens(sali,temp,Pres)
+    SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
+    density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
     return doxyprofile * density_on_zdoxy/1000.
 

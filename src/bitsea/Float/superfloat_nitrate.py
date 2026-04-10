@@ -49,7 +49,7 @@ from bitsea.Float.MedBGCins import nitrate_correction
 import os
 import netCDF4 as NC
 import numpy as np
-import seawater as sw
+import gsw
 import datetime
 
 class Metadata():
@@ -73,7 +73,8 @@ def convert_nitrate(p,pres,profile):
     if pres.size == 0: return profile
     _   , temp, _ = p.read("TEMP",read_adjusted=False)
     Pres, sali, _ = p.read("PSAL",read_adjusted=False)
-    density = sw.dens(sali,temp,Pres)
+    SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
+    density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_z = np.interp(pres,Pres,density)
     return profile * density_on_z/1000.
 

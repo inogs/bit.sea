@@ -677,6 +677,26 @@ files = [
 ]
 
 [[package]]
+name = "gsw"
+version = "3.6.21"
+description = "Gibbs Seawater Oceanographic Package of TEOS-10"
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+markers = "sys_platform == \"win32\" or sys_platform == \"emscripten\" or sys_platform != \"win32\" and sys_platform != \"emscripten\""
+files = [
+    {file = "gsw-3.6.21-cp311-abi3-macosx_10_9_x86_64.whl", hash = "sha256:200dc7bc89195608b16d9a6d24cfe02f33df79ace68309845180000975c82c03"},
+    {file = "gsw-3.6.21-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:59562f4b4cf4abaeab8058b6d90d05fcacc1d027e4d299dabc7ef21d8b6a516a"},
+    {file = "gsw-3.6.21-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:345d20cc0c58c21ccd3754e3695620a988acf1d9b548cb503071247a904fac80"},
+    {file = "gsw-3.6.21-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4d0ef1d7490a33a4a69ca3b7d6b60f709c7c4b6c05d31d0286de706835219ac7"},
+    {file = "gsw-3.6.21-cp311-abi3-win_amd64.whl", hash = "sha256:cc504b9b77e89e50200248d086cd4e2432ee11fda2308b8cdd1e10d70338cbc2"},
+    {file = "gsw-3.6.21.tar.gz", hash = "sha256:6e0609d374916b4393484b9c7b32666d36dda74d900a40d19c766484ac295efa"},
+]
+
+[package.dependencies]
+numpy = ">=2"
+
+[[package]]
 name = "hypothesis"
 version = "6.151.9"
 description = "The property-based testing library for Python"
@@ -2422,4 +2442,4 @@ plots = []
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "cfef8e1a2c4437fa213e42c9a91ac5824896a5e94de9e7b861b6a65287300c57"
+content-hash = "6cf194177077db0be170b7c23fcacc742f752f0590e0df776214f2be02bce582"

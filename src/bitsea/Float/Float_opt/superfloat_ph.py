@@ -37,7 +37,6 @@ from bitsea.commons.utils import addsep
 import os
 import scipy.io.netcdf as NC
 import numpy as np
-import seawater as sw
 
 
 def dump_ph_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):

@@ -74,7 +74,7 @@ class Metadata():
         self.status_var = 'n'
         self.drift_code = -5
         self.offset = -999
-
+        self.drift  = np.nan
 
 def convert_oxygen(p,doxypres,doxyprofile):
     '''
@@ -153,6 +153,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar[:]=Qc
         setattr(ncvar, 'status_var' , metadata.status_var)
         setattr(ncvar, 'drift_code' , metadata.drift_code)
+        setattr(ncvar, 'drift'      , metadata.drift)
         setattr(ncvar, 'offset'     , metadata.offset)
         setattr(ncvar, 'variable'   , 'DOXY')
         setattr(ncvar, 'units'      , "mmol/m3")
@@ -327,9 +328,11 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
                 save_report( OUT_META / "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
                 return
             else:
+                if df_report.DRIFT_CODE[0] ==1: 
                 Oxy_Profile = apply_detrend(Pres, Value, df_report)
                 metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
                 metadata.offset = OFFSET
+                metadata.drift  = df_report.TREND_TIME_SERIES.iloc[0]
                 # high freq.csv
 
     Path.mkdir(outfile.parent, exist_ok=True)

@@ -216,12 +216,27 @@ def read_doxy(pCor):
 
 def Depth_interp(Profilelist, HistoricalDataset):
     """
-    HistoricalDataset is a dictionary: keys are p.ID(), values are tuples (Pres,Value,Qc)
+    Interpolate oxygen (DOXY) values at standard depths (600m and 800m) from historical profiles.
 
-    data at 600m and 800m are created by interpolating data using layer 580-620m
-        and 780-820 m
+    Parameters
+    ----------
+    Profilelist : list of ProfileList of float profiles to process.
+    HistoricalDataset : dictDictionary where keys are profile IDs and values are tuples (Pres, Value, Qc) containing        pressure, measured oxygen values, and quality control flags.
+
+    What it does
+    ------------
+    1. For each profile in Profilelist, checks if data exists within ±20m around 600m and 800m.
+    2. Interpolates oxygen (DOXY) values at exactly 600m and 800m if sufficient data exists.
+    3. Creates a DataFrame summarizing profile ID, time, location, depth, and interpolated values.
+    4. Sets a condition flag True if at least one valid oxygen value exists at 600m.
+
+    Returns
+    -------
+    df : DataFrame with interpolated oxygen values at 600m and 800m for each profile.
+    CONDITION : bool= True if at least one valid oxygen value exists at 600m, False otherwise.
     """
-    THRES             = 20
+
+    THRES             = 20 # data are interpolated starting from a layer +/- 20m es 580-620m
     LIST_DEPTH        = [600,800]
     COUNT=0
     VARNAME ,varmod   = 'DOXY' , 'O2o'
@@ -241,7 +256,8 @@ def Depth_interp(Profilelist, HistoricalDataset):
                df.VAR[COUNT]   = np.interp(DEPTH , Pres[IDX], (Profile[IDX]))
             COUNT+=1
 
-    CONDITION = df[df.Depth==600].VAR.notnull().any()  # no data at 600m
+    # CONDITION is True if at least one valid value of VAR exists at 600 m
+    CONDITION = df[df.Depth==600].VAR.notnull().any()  
     return(df, CONDITION)
 
 

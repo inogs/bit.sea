@@ -63,7 +63,7 @@ from TREND_ANALYSIS import sign_analysis
 import TREND_ANALYSIS
 import bitsea.basins.OGS as OGS
 from bitsea.instruments.var_conversions import FLOATVARS
-from commons_local import cross_Med_basins, save_report
+from commons_local import cross_Med_basins
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
 df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
@@ -73,7 +73,7 @@ class Metadata():
         self.filename = str(filename)
         self.status_var = 'n'
         self.drift_code = -5
-        self.offset = -999
+        self.offset = np.nan
         self.drift  = np.nan
 
 def convert_oxygen(p,doxypres,doxyprofile):
@@ -87,6 +87,45 @@ def convert_oxygen(p,doxypres,doxyprofile):
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
     return doxyprofile * density_on_zdoxy/1000.
+
+def save_df_report(out_dir, df_report, filename):
+    """
+    Save or update a CSV report file by appending the first row of a DataFrame,
+    avoiding duplicate entries.
+
+    Parameters
+    ----------
+    out_dir : str or Path. Directory where the CSV file is stored.
+    df_report : pandas.DataFrame DataFrame from which the first row is extracted and saved.
+    filename : str. Name of the CSV file.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If the file already exists, the function updates it by adding the new entry
+    only if it is not already present.
+    """
+
+    # prepare directory
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    file_path = out_dir / filename
+
+    # prepare report
+    df_new = df_report.iloc[[0]].copy()
+    if file_path.exists():
+        df_existing = pd.read_csv(file_path)
+        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+    else:
+        df_combined = df_new
+
+    # save report
+    df_combined = df_combined.drop_duplicates()
+    df_combined.to_csv(file_path, index=False)
+    #print(f"saved {file_path} with {len(df_combined)} rows.")
 
 def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)

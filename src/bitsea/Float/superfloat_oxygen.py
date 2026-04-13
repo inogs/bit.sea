@@ -498,11 +498,37 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 
 
 
-def load_history(wmo):
+def load_history(wmo, write_report=False):
     '''
      Replicates superfloat dataset without detrend - the previous doxy_algorithm
+     Adds optional logging to a CSV for rejected profiles
+
+     Input: wmo          : str , WMO code of the float to load
+            write_report : bool, If True, rejected profiles (status 'R', missing data, saturation test fail) are logged to a CSV in OUTDIR.
+
+     Output: Profilelist : List of profiles that passed Data Mode and Saturation checks
+             Dataset     : Dictionary of data keyed by profile ID, values = (Pres, Value, Qc)
     '''
+
+    global OUTDIR
+    df_reject = None
+    csv_file = OUTDIR / "DataMode_and_Saturation_rejection_doxy.csv"
+
+    if write_report:
+        if csv_file.exists():
+            df_reject = pd.read_csv(csv_file)
+        else:
+            df_reject = pd.DataFrame(columns=["wmo","cycle","date","reasons"])
+
+        def log_reject(wmo_name, cycle,date, reason):
+            nonlocal df_reject
+            df_reject = pd.concat(
+            [df_reject, pd.DataFrame({"wmo": [wmo_name], "cycle": [cycle] , "date": [date],"reasons": [reason]})],
+                ignore_index=True)
+            df_reject.drop_duplicates(inplace=True)
+
     print("Loading dataset for float", wmo, "...", flush=True)
+
     TI     = TimeInterval("1950","2050",'%Y')
     R = Rectangle(-6,36,30,46)
     PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
@@ -510,22 +536,31 @@ def load_history(wmo):
     Profilelist=[]
     Dataset={}
     for p in Profilelist_wmo:
-        if p._my_float.status_var('DOXY')=='R': continue
-        Pres, Value, Qc = read_doxy(p)
-        if Pres is None: continue
-        if p._my_float.status_var('DOXY')=='D':
+        status = p._my_float.status_var('DOXY')
+        if status == 'R':
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "RT")
+            continue
+        Pres, Value, Qc = read_doxy(p) # convert doxy and filter len pres<5
+        if Pres is None:
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "PresNone")
+            continue
+        if status == 'D':
             condition_to_write = True
         else:
-            condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
+            condition_to_write = oxygen_saturation.oxy_check(Pres, Value, p)
         if not condition_to_write:
-            print(p._my_float.filename, "Saturation Test not passed", flush=True)
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "SaturationTest")
             continue
-
         Profilelist.append(p)
         Dataset[p.ID()] = (Pres,Value,Qc)
+
+    if write_report and df_reject is not None:
+        df_reject.to_csv(csv_file, index=False)
     print("...done", flush=True)
     return Profilelist, Dataset
-
 
 
 OUTDIR = Path(args.outdir)

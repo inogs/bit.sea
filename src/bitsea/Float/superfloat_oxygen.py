@@ -239,7 +239,6 @@ def Depth_interp(Profilelist, HistoricalDataset):
     THRES             = 20 # data are interpolated starting from a layer +/- 20m es 580-620m
     LIST_DEPTH        = [600,800]
     COUNT=0
-    
     columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
     df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
     for DEPTH in LIST_DEPTH:
@@ -297,11 +296,48 @@ def extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset):
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
 
-def get_trend_report(p, df):
+def get_trend_report(p, df, Save_Repo_when_rejected):
+    """
+    Compute trend diagnostics of dissolved oxygen time series at 600m and 800m
+    for a given float profile.
+
+    Parameters
+    ----------
+    p : Profile Current float profile containing metadata (time, cycle, float info).
+    df : pandas.DataFrame containing interpolated oxygen values (VAR) at different depths
+    Save_Repo_when_rejected : bool If True, the function returns early afterregistering basic data (eg cycle time..)
+
+    What it does
+    ------------
+    1. Initializes a report DataFrame to store trend diagnostics for 600m and 800m.
+    2. For each depth (600m and 800m):
+        - Filters the input DataFrame for the selected depth and float.
+        - Computes time series properties:
+            * duration (in days)
+            * minimum and maximum dates
+            * presence of valid (non-NaN) data
+        - Applies quality checks (length of time series and NaNs).
+        - Calls `trend_conditions` to compute preliminary trend metrics
+          (e.g. Theil-Sen and RANSAC estimators).
+    3. If `Save_Repo_when_rejected` is True:
+        - Returns the partial report without performing full trend analysis.
+    4. Otherwise:
+        - Combines Theil-Sen and RANSAC results.
+        - Evaluates the consistency of trend signs (`sign_analysis`).
+        - Assigns a drift classification using `drift_coding`.
+        - Computes and stores the trend per year.
+        - Updates metadata with the drift code.
+    5. Repeats the process for both depths (600m and 800m).
+
+    Returns
+    -------
+    df_report : pandas.DataFrame DataFrame summarizing trend diagnostics for each depth
+    tmp       : pandas.DataFrame Subset of the input DataFrame corresponding to 600m depth, used for
+    """
+
     LIST_DEPTH = [600,800]
-    COLUMNS     = ['WMO','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC']
-    df_report   = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
-    df_report['TREND_TIME_SERIES'] ,df_report['TREND_per_YEAR'] ,df_report['DRIFT_CODE'] = np.nan , np.nan , np.nan
+    COLUMNS    = ['WMO','cycle','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC','TREND_TIME_SERIES', 'TREND_per_YEAR', 'DRIFT_CODE']
+    df_report  = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
 
     COUNT=0
     TI_3 = TimeInterval.fromdatetimes(p.time, p.time)
@@ -309,18 +345,26 @@ def get_trend_report(p, df):
     for DEPTH in LIST_DEPTH:
         tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
         tmp.index = np.arange(0,len(tmp.index))
-        days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
-        Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
+        days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp,'time') # for each depth calculate length timeserie
+        Bool_nans = CORIOLIS_checks.nans_check(tmp, 'VAR') #True  -> the time series has enough valid data (few NaNs)
         tmp.dropna(inplace=True)
-        lst = trend_conditions(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
+        cycle = p._my_float.cycle
+        if Save_Repo_when_rejected: #save report even if no data at depth
+            lst = trend_conditions(wmo,cycle,days, Bool_nans , np.nan,min_d, max_d ,     TI_3, tmp)
+            df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns) # only cycle and wmo registered
+            return df_report
+
+        lst = trend_conditions(wmo,cycle,days, Bool_nans , DEPTH,min_d, max_d , TI_3,     tmp)
         df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns)
         serv = df_report.loc[df_report.WMO==wmo]
         A    = np.append(np.array( serv['Theil-Sen']), np.array( serv['RANSAC']))
-        if serv.DURATION.any()==0:
-            pass
+        if (serv.DURATION == 0).any(): # if duration is 0 days at 600 or 800m
+            pass # skip sign analysis and trend analysis
         else:
             Bool = sign_analysis(A)
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
+            #arr = np.array(df_report.TREND_per_YEAR)[0]
+            #metadata.drift_code = np.round(arr, 3)
         COUNT+=1
 
     tmp = df[(df.Depth == 600) & (df.name == wmo)]

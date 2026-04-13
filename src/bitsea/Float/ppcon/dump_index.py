@@ -135,8 +135,18 @@ def get_sensor_list(wmo,LINES):
             A=np.loadtxt(d,dtype=mydtype,delimiter=',')
             return str(A['parameters'])
     else:
-        print (wmo + " not in CORIOLIS")
+        print(wmo + " not in CORIOLIS")
         return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+def is_SR_to_reject(filename, filenames):
+    isSR=os.path.basename(filename).startswith('SR')
+    if isSR:
+        SDfilename=filename.replace('SR','SD')
+        if SDfilename in filenames:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 LOC=addsep(args.inputdir)
@@ -151,9 +161,8 @@ for DIR in DIRLIST:
     filenames = glob.glob(dirpath + "/*nc")
     filenames.sort()
     for filename in filenames:
-        #if filename == "1902605/SR1902605_001.nc":
-        #    sys.exit('ddd')
         if filename[-4:]!='D.nc':
+            if is_SR_to_reject(filename, filenames): continue
             if filename in FILELIST:
                 ind=FILELIST.index(filename)
                 timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
@@ -163,12 +172,10 @@ for DIR in DIRLIST:
                 else:
                     line=file_header_content(filename,VARLIST,avail_params=None)
                     if line is not None:
-                        if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                         LINES.append(line+"\n")
             else:
                 line=file_header_content(filename,VARLIST,avail_params=None)
                 if line is not None:
-                    if args.type=="lov": line = line.replace('SR_NO3_ADJUSTED','SR_NO3')
                     LINES.append(line+"\n")
                     if is_provided_indexer: print ("added " + line)
 

@@ -221,7 +221,7 @@ def Depth_interp(Profilelist, HistoricalDataset):
     Parameters
     ----------
     Profilelist : list of ProfileList of float profiles to process.
-    HistoricalDataset : dictDictionary where keys are profile IDs and values are tuples (Pres, Value, Qc) containing        pressure, measured oxygen values, and quality control flags.
+    HistoricalDataset : dictDictionary where keys are profile IDs and values are tuples (Pres, Value, Qc) containing pressure, measured oxygen values, and quality control flags.
 
     What it does
     ------------
@@ -239,7 +239,7 @@ def Depth_interp(Profilelist, HistoricalDataset):
     THRES             = 20 # data are interpolated starting from a layer +/- 20m es 580-620m
     LIST_DEPTH        = [600,800]
     COUNT=0
-    VARNAME ,varmod   = 'DOXY' , 'O2o'
+    
     columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
     df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
     for DEPTH in LIST_DEPTH:
@@ -253,6 +253,7 @@ def Depth_interp(Profilelist, HistoricalDataset):
                df.Depth[COUNT] = DEPTH
             else:
                df.Depth[COUNT] = DEPTH
+               # interp. at 600/800m if data at layer +-20m
                df.VAR[COUNT]   = np.interp(DEPTH , Pres[IDX], (Profile[IDX]))
             COUNT+=1
 
@@ -285,9 +286,11 @@ def extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset):
     NAME_BASIN : str Name of the Mediterranean basin where the profile is located.
     condition1_to_detrend : bool True if there is at least one valid oxygen value at 600m, False otherwise.
     """
-    starttime                  = p.time - timedelta(days=365*3)
-    TI                         = TimeInterval.fromdatetimes(starttime, p.time)
-    Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
+
+    starttime           = p.time - timedelta(days=365*3)
+    endtime             = p.time + timedelta(hours=1)
+    TI                  = TimeInterval.fromdatetimes(starttime, endtime)
+    Profilelist         = [p for p in Profilelist_hist if TI.contains(p.time)]
 
     df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
     ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))

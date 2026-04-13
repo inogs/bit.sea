@@ -288,7 +288,7 @@ def extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset):
 
     starttime           = p.time - timedelta(days=365*3)
     endtime             = p.time + timedelta(hours=1)
-    TI                  = TimeInterval.fromdatetimes(starttime, endtime)
+    TI                  = TimeInterval.fromdatetimes(starttime, endtime) # fixed bug
     Profilelist         = [p for p in Profilelist_hist if TI.contains(p.time)]
 
     df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
@@ -371,9 +371,37 @@ def get_trend_report(p, df, Save_Repo_when_rejected):
     return df_report, tmp
 
 def clim_check(p, df_report, NAME_BASIN, tmp):
+    """
+    Compute climatology-based offset and update trend report diagnostics.
+
+    This function compares observed dissolved oxygen values with a basin
+    climatological reference and computes an offset, optionally correcting
+    for the estimated trend. It also updates the report DataFrame with
+    climatology-related metadata.
+
+    Parameters
+    ----------
+    p : Profile Current float profile containing metadata (e.g. WMO, cycle).
+    df_report : pandas.DataFrame Trend report containing results such as trend per year and time series trend.
+    NAME_BASIN : str Name of the Mediterranean basin associated with the profile.
+    tmp : pandas.DataFrame Time series subset at a given depth, containing oxygen values (VAR).
+
+    Returns
+    -------
+    OFFSET : float, Difference between observed (or trend-corrected) value and climatology.
+    threshold : float, Climatological threshold defined as 2 × standard deviation.
+    df_report : pandas.DataFrame Updated report including OFFSET, basin, climatology, and threshold.
+
+    Notes
+    -----
+    - If the trend is missing or < 1, the offset is computed directly from
+      the last observed value.
+    - Otherwise, the last value is corrected by removing the estimated trend
+      before computing the offset.
+    """
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
-    TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
-    if TREND_null:
+    TREND_null = df_report.TREND_per_YEAR.isnull().values.any() # bug fixed
+    if TREND_null or df_report.TREND_per_YEAR[0]<1:
         OFFSET  = float(tmp.VAR.iloc[-1]) - VALCLIM
     else:
         Corrrected_val = float(tmp.VAR.iloc[-1]) - float(df_report.TREND_TIME_SERIES.iloc[0])

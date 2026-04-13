@@ -458,16 +458,21 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
+    # condition1_to_detrend data at 600 m must be available (condition1_to_detrend = True)
     df, NAME_BASIN, condition1_to_detrend = extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset)
     Oxy_Profile = Value
 
     if not condition1_to_detrend:
         DRIFT_CODE = -1
-        print("no detrend possible", flush=True)
+        print("no detrend possible, no data at depths", flush=True)
         metadata.drift_code = DRIFT_CODE
+        df_report   = get_trend_report(p, df, True) # true it write basic info and exit
+        df_report['basin']=NAME_BASIN
     else:
-        df_report, tmp = get_trend_report(p, df)
-        if tmp[tmp.Depth==600].VAR.isnull().values.any() :
+        df_report, tmp = get_trend_report(p, df, False) # false it write basic info and go on in writing drift info 
+        df_report['basin'] = NAME_BASIN
+        # No drift correction if timeseries is short or last 3 values at 600 m are NaN
+        if len(tmp)<5 or tmp.loc[tmp.Depth == 600, 'VAR'].tail(3).isnull().all(): #bug fixed
             DRIFT_CODE = -1
             metadata.drift_code = DRIFT_CODE
         else:
@@ -477,17 +482,17 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
             if abs(OFFSET) >= threshold:
                 wmo = p._my_float.wmo
                 df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
-                timenum = int(p.time.strftime("%Y%m%d"))
-                save_report( OUT_META / "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
+                save_df_report(OUT_META , df_report , "Floats_rejected.csv")
                 return
             else:
                 if df_report.DRIFT_CODE[0] ==1: 
-                Oxy_Profile = apply_detrend(Pres, Value, df_report)
-                metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
-                metadata.offset = OFFSET
-                metadata.drift  = df_report.TREND_TIME_SERIES.iloc[0]
-                # high freq.csv
-
+                   Oxy_Profile = apply_detrend(Pres, Value, df_report)
+                   metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
+                   metadata.offset = OFFSET
+                   metadata.drift  = df_report.TREND_TIME_SERIES.iloc[0]
+    
+    # posso metterlo opzionale
+    save_df_report(OUT_META , df_report , "Floats_accepted.csv")
     Path.mkdir(outfile.parent, exist_ok=True)
     dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
 

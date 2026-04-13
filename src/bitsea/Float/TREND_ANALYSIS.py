@@ -48,7 +48,7 @@ def compute_trend(df):
 
 
 
-def trend_conditions(WMO,  days, Bool, DEPTH, min_d, max_d , TI_3, tmp):
+def trend_conditions(WMO,cycle,   days, Bool, DEPTH, min_d, max_d , TI_3, tmp):
     """  compute the trend if time-nans and vals for the selected day
          are satisfied. 
          CASE_* is a Boolean 
@@ -60,11 +60,11 @@ def trend_conditions(WMO,  days, Bool, DEPTH, min_d, max_d , TI_3, tmp):
        y = np.array(tmp.VAR)
        x = np.array(tmp.index)
        LIST_APP_TRENDS = Trend_RANSAC_ThSEN(x , y)
-       lst   = [WMO ,DEPTH,  days , min_d ,  max_d,  LIST_APP_TRENDS[0][1], LIST_APP_TRENDS[1][1] ,np.nan,np.nan,np.nan]
+       lst   = [WMO,cycle ,DEPTH, days , min_d ,  max_d,  LIST_APP_TRENDS[0][1], LIST_APP_TRENDS[1][1] ,np.nan,np.nan,np.nan]
     elif CASE_2:
-       lst   = [WMO ,DEPTH,  days , np.nan , np.nan , np.nan ,               np.nan, np.nan,np.nan,np.nan] 
+       lst   = [WMO,cycle ,DEPTH, days, np.nan, np.nan, np.nan, np.nan, np.nan,np.nan,np.nan] 
     else: 
-       lst   = [WMO ,DEPTH,  days , min_d ,  max_d,   np.nan ,               np.nan, np.nan,np.nan,np.nan]
+       lst   = [WMO,cycle ,DEPTH, days, min_d, max_d, np.nan, np.nan, np.nan,np.nan,np.nan]
     return (lst)
 
 def drift_coding(WMO,Bool ,df0,df1):

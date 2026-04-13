@@ -261,7 +261,30 @@ def Depth_interp(Profilelist, HistoricalDataset):
     return(df, CONDITION)
 
 
-def trend_analysis(p, Profilelist_hist, Dataset):
+def extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset):
+    """
+    Extract and prepare oxygen timeseries at 600m and 800m depths for a given profile.
+
+    Parameters
+    ----------
+    p : Profile Current float profile for which the timeseries is prepared.
+    Profilelist_hist : List of historical profiles from the same float.
+    Dataset : dict Dictionary with profile IDs as keys and tuples (Pres, Value, Qc) as values.
+
+    What it does
+    ------------
+    1. Defines a time window of 3 years before the profile time up to 1 hour after.
+    2. Filters historical profiles to include only those within the time window.
+    3. Interpolates oxygen (DOXY) values at 600m and 800m from historical profiles.
+    4. Identifies the corresponding Mediterranean basin of the profile.
+    5. Checks whether there is at least one valid oxygen value at 600m for trend analysis.
+
+    Returns
+    -------
+    df : pandas.DataFrame DataFrame containing interpolated oxygen values at 600m and 800m depths.
+    NAME_BASIN : str Name of the Mediterranean basin where the profile is located.
+    condition1_to_detrend : bool True if there is at least one valid oxygen value at 600m, False otherwise.
+    """
     starttime                  = p.time - timedelta(days=365*3)
     TI                         = TimeInterval.fromdatetimes(starttime, p.time)
     Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
@@ -360,7 +383,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
-    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, Profilelist_hist, Dataset)
+    df, NAME_BASIN, condition1_to_detrend = extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset)
     Oxy_Profile = Value
 
     if not condition1_to_detrend:

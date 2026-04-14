@@ -401,7 +401,7 @@ def clim_check(p, df_report, NAME_BASIN, tmp):
     """
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
     TREND_null = df_report.TREND_per_YEAR.isnull().values.any() # bug fixed
-    if TREND_null or df_report.TREND_per_YEAR[0]<1:
+    if TREND_null or abs(df_report.TREND_per_YEAR[0])<1:
         OFFSET  = float(tmp.VAR.iloc[-1]) - VALCLIM
     else:
         Corrrected_val = float(tmp.VAR.iloc[-1]) - float(df_report.TREND_TIME_SERIES.iloc[0])
@@ -578,11 +578,14 @@ if input_file == 'NO_file':
 
     for wmo in wmo_list:
         print (wmo, flush=True)
-
-        Hist_filtered_Profilelist, Dataset = load_history(wmo)
+        if wmo != '6903266': continue
+        Hist_filtered_Profilelist, Dataset = load_history(wmo,True)
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
         for ip, p in enumerate(Profilelist):
+            import sys 
+            if p._my_float.cycle == 345:
+                sys.exit('carol')
             outfile = get_outfile(p,OUTDIR)
 
             writing_mode=superfloat_generator.writing_mode(outfile)

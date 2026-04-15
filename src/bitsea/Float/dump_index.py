@@ -169,6 +169,16 @@ def is_SR_to_reject(filename, filenames):
     else:
         return False
 
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
 
 LOC=addsep(args.inputdir)
 FloatIndexer=args.output_float_indexer
@@ -176,32 +186,39 @@ DIRLIST=os.listdir(LOC)
 HERE=os.getcwd()
 os.chdir(LOC)
 
-LINES=[]
+filenames = []
 for DIR in DIRLIST:
     dirpath=DIR
-    filenames = glob.glob(dirpath + "/*nc")
-    filenames.sort()
-    for filename in filenames:
+    dir_filenames = glob.glob(dirpath + "/*nc")
+    dir_filenames.sort()
+    for filename in dir_filenames:
         if filename[-4:]!='D.nc':
-            if is_SR_to_reject(filename, filenames): continue
-            if filename in FILELIST:
-                ind=FILELIST.index(filename)
-                timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
-                if timedist.days > 15:
-                    line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
-                    LINES.append(line+"\n")
-                else:
-                    line=file_header_content(filename,VARLIST,avail_params=None)
-                    if line is not None:
-                        LINES.append(line+"\n")
-            else:
-                line=file_header_content(filename,VARLIST,avail_params=None)
-                if line is not None:
-                    LINES.append(line+"\n")
-                    if is_provided_indexer: print("added " + line)
+            filenames.append(filename)
+
+LINES = [None] * len(filenames)
+
+for i in range(rank, len(filenames), nranks):
+    filename = filenames[i]
+    if is_SR_to_reject(filename, filenames): 
+        continue
+    if filename in FILELIST:
+        ind=FILELIST.index(filename)
+        timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
+        if timedist.days > 15:
+            line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
+            LINES[i] = line+"\n"
+        else:
+            line=file_header_content(filename,VARLIST,avail_params=None)
+            if line is not None:
+                LINES[i] = line+"\n"
+    else:
+        line=file_header_content(filename,VARLIST,avail_params=None)
+        if line is not None:
+            LINES[i] = line+"\n"
+            if is_provided_indexer: print("added " + line)
 
 
 F = open(FloatIndexer,'w')
-F.writelines(LINES)
+F.writelines(line for line in LINES if line is not None)
 F.close()
 os.chdir(HERE)

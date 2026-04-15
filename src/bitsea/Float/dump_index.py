@@ -160,17 +160,6 @@ def is_SR_to_reject(filename, filenames):
     else:
         return False
 
-try:
-    from mpi4py import MPI
-    comm  = MPI.COMM_WORLD
-    rank  = comm.Get_rank()
-    nranks =comm.size
-    isParallel = True
-except:
-    rank   = 0
-    nranks = 1
-    isParallel = False
-
 LOC=addsep(args.inputdir)
 FloatIndexer=args.output_float_indexer
 DIRLIST=os.listdir(LOC)
@@ -187,6 +176,17 @@ for DIR in DIRLIST:
             filenames.append(filename)
 
 LINES = [None] * len(filenames)
+
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
 
 for i in range(rank, len(filenames), nranks):
     filename = filenames[i]

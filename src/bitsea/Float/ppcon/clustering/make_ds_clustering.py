@@ -78,6 +78,7 @@ def make_dict_single_float(path, date_time):
     pres_temp_df = ds["PRES_TEMP"][:].data[:]
 
     if "DOXY" not in ds.variables.keys():
+        print("No DOXY variable for this float, we skip it")
         return dict()
     doxy_df = ds["DOXY"][:].data[:]
     pres_doxy_df = ds["PRES_DOXY"][:].data[:]
@@ -102,6 +103,7 @@ def make_dict_single_float(path, date_time):
                                 max_extreme=180) and counting_measurement_test(variable_df=chla_df, tradeoff=50):
             chla = discretize(pres_chla_df, chla_df, max_pres_chla, interval_chla)
         else:
+            print("CHLA variable failed quality tests for this float, we skip it")
             return dict()
 
     if "BBP700" not in ds.variables.keys():
@@ -114,6 +116,7 @@ def make_dict_single_float(path, date_time):
             BBP700_df = BBP700_df * 1000
             BBP700 = discretize(pres_BBP700_df, BBP700_df, max_pres_BBP700, interval_BBP700)
         else:
+            print("BBP700 variable failed quality tests for this float, we skip it")
             return dict()
 
     name_float = path[8:-3]
@@ -146,10 +149,13 @@ def make_dataset(path_float_index, INDIR):
         datetime_list = pd.read_csv(path_float_index, header=None).to_numpy()[:, 3].tolist()
     dict_ds_accepted = dict()
 
+    print(f"{np.size(name_list)}\n")
     for i in range(np.size(name_list)):
         path =INDIR+ "/SUPERFLOAT/" + name_list[i]
         if not os.path.exists(path):
+            print(f"{name_list[i]}: not accepted")
             continue
+        print(f"{name_list[i]}: accepted")
         date_time = datetime_list[i]
         dict_single_float = make_dict_single_float(path, date_time)
 
@@ -163,6 +169,8 @@ def make_pandas_df(path_float_index, path_clust_csv ,INDIR):
         path_clust_csv    =  ONLINE_REPO/clustering/ds_sf_clustering.csv
         INDIR             =  ONLINE_REPO
     """
+    print("path_float_index: ", path_float_index)
+    print("path_clust_csv: ", path_clust_csv)
     dict_ds_accepted = make_dataset(path_float_index, INDIR)
     pd_ds_accepted = pd.DataFrame(dict_ds_accepted,
                                   index=['year', 'day_rad', 'lat', 'lon', 'temp', 'psal', 'doxy', 'nitrate', 'chla',

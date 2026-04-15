@@ -32,16 +32,12 @@ def argument():
 args = argument()
 
 
-import netCDF4
-
+import netCDF4 as NC
 import datetime
 import os,glob
 import numpy as np
+from io import StringIO
 from bitsea.commons.utils import addsep
-
-
-from io import StringIO ## for Python 3
-
 
 NOW=datetime.datetime.now()
 mydtype= np.dtype([
@@ -67,7 +63,6 @@ if args.type=="ppcon_float":
     ppcon_varlist1=['CHLA_PPCON', 'NITRATE_PPCON','BBP700_PPCON']
     NNmethod = '_PPCON'
 
-
 def file_header_content(filename,VARLIST, avail_params=None):
     '''
     it takes variable list
@@ -77,16 +72,20 @@ def file_header_content(filename,VARLIST, avail_params=None):
     - None in case of error
     '''
     try:
-        ncIN = netCDF4.Dataset(filename,'r')
+        ncIN = NC.Dataset(filename,'r')
     except:
-        print ("Not valid NetDCF file: " + filename)
+        print("Not valid NetDCF file: " + filename)
         return
 
     lon=float(ncIN.variables['LONGITUDE'][0])
     lat=float(ncIN.variables['LATITUDE'][0])
+    BadPosition = (lon > 90.) or (lon < -90.) or (lat > 90.) or (lat < -90.) 
+    if BadPosition:
+        print("Bad position in file : " + filename)
+        ncIN.close()
+        return
 
-
-    ref  = np.asarray(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
+    ref  = np.array(ncIN.variables['REFERENCE_DATE_TIME']).tobytes().decode()
     juld = int (ncIN.variables['JULD'][0])
     d=datetime.datetime.strptime(ref,'%Y%m%d%H%M%S')
     Time =  d+datetime.timedelta(days=juld)
@@ -95,8 +94,7 @@ def file_header_content(filename,VARLIST, avail_params=None):
     basename=split_path[-1]
     relative_name=wmo + "/" + basename
     s="%s,%f,%f,%s," %(relative_name, lat, lon, Time.strftime('%Y%m%d-%H:%M:%S'))
-    
-    
+
     if avail_params is None:
         for var in VARLIST: 
             varpp = var + NNmethod # CHLA_PPCON
@@ -126,7 +124,6 @@ def file_header_content(filename,VARLIST, avail_params=None):
                   s = s +'P'
     ncIN.close()
     return s
-    
 
 def get_sensor_list(wmo,LINES):
     for line in LINES:
@@ -177,8 +174,7 @@ for DIR in DIRLIST:
                 line=file_header_content(filename,VARLIST,avail_params=None)
                 if line is not None:
                     LINES.append(line+"\n")
-                    if is_provided_indexer: print ("added " + line)
-
+                    if is_provided_indexer: print("added " + line)
 
 
 F = open(FloatIndexer,'w')

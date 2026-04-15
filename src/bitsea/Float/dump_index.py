@@ -25,7 +25,7 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat'])
+                                choices = ['coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat', 'ppcon_float'])
 
     return parser.parse_args()
 
@@ -49,7 +49,9 @@ mydtype= np.dtype([
           ('lat',np.float64),
           ('lon',np.float64),
           ('time','S17'),
-          ('parameters','S200')] )
+          ('parameters','S400'),
+          ('profile_avail','S200')]  
+          ) #profile_avail options: I or P or B ==>>   I --> insitu || P --> ppcon reconstructed || B --> both are available 
 
 FILELIST=[]
 is_provided_indexer = False
@@ -58,7 +60,6 @@ if args.input_float_indexer is not None:
         INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
         FILELIST=INDEX_FILE['file_name'].tolist()
         is_provided_indexer = len(FILELIST) >0
-
 
 if args.type=="coriolis":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
@@ -72,7 +73,11 @@ if args.type=="superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
 if args.type=="static_superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR','CDOM','IRR_380' ,'IRR_412','IRR_490' ]
-
+if args.type=="ppcon_float":
+    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490']
+    ppcon_varlist=['CHLA', 'NITRATE','BBP700']
+    ppcon_varlist1=['CHLA_PPCON', 'NITRATE_PPCON','BBP700_PPCON']
+    NNmethod = '_PPCON'
 
 def file_header_content(filename,VARLIST, avail_params=None):
     '''
@@ -105,14 +110,45 @@ def file_header_content(filename,VARLIST, avail_params=None):
     basename=split_path[-1]
     relative_name=wmo + "/" + basename
     s="%s,%f,%f,%s," %(relative_name, lat, lon, Time.strftime('%Y%m%d-%H:%M:%S'))
-    if avail_params is None:
-        for var in VARLIST: 
-            if var in ncIN.variables.keys():
-                s=s+" " + var
-        ncIN.close()
+    if args.type=="ppcon_float":
+        if avail_params is None:
+            for var in VARLIST: 
+                varpp = var + NNmethod # CHLA_PPCON
+                if var in ncIN.variables.keys():
+                    s= s+" " + var   
+                elif varpp in ncIN.variables.keys():
+                    s= s+" " + var
+                else:
+                    pass
+            
+            s= s + ", "        
+            #ncIN.close()
+        else:
+            s=s+" " + avail_params
+        
+        if avail_params is None:
+            for var in VARLIST:  
+                
+                varpp = var + NNmethod # CHLA_PPCON
+                if var in ncIN.variables.keys(): 
+                    if varpp in ncIN.variables.keys():
+                        s = s +'B'
+                    else: 
+                        s = s + 'I'
+                else: 
+                    if varpp in ncIN.variables.keys():
+                        s = s +'P'
     else:
-        s=s+" " + avail_params
+        if avail_params is None:
+            for var in VARLIST: 
+                if var in ncIN.variables.keys():
+                    s=s+" " + var
+
+        else:
+            s=s+" " + avail_params
+    ncIN.close()
     return s
+
 def get_sensor_list(wmo,LINES):
     for line in LINES:
         if wmo in line:
@@ -169,4 +205,3 @@ F = open(FloatIndexer,'w')
 F.writelines(LINES)
 F.close()
 os.chdir(HERE)
-

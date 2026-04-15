@@ -115,16 +115,6 @@ def file_header_content(filename,VARLIST, avail_params=None):
     else:
         s=s+" " + avail_params
     return s
-def get_sensor_list(wmo,LINES):
-    for line in LINES:
-        if wmo in line:
-            d=StringIO(line)
-            A=np.loadtxt(d,dtype=mydtype,delimiter=',')
-            return str(A['parameters'])
-    else:
-        print wmo + " not in CORIOLIS"
-        return 'DOXY NITRATE CHLA PRES PSAL TEMP'
-
 
 LOC=addsep(args.inputdir)
 FloatIndexer=args.output_float_indexer

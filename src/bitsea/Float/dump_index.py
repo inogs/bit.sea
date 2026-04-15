@@ -43,7 +43,7 @@ from bitsea.commons.utils import addsep
 #e.g. lines as 
 #6901765/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEMP
 
-NOW=datetime.datetime.now()
+NOW=None
 mydtype= np.dtype([
           ('file_name','S200'),
           ('lat',np.float64),
@@ -55,11 +55,7 @@ mydtype= np.dtype([
 
 FILELIST=[]
 is_provided_indexer = False
-if args.input_float_indexer is not None:
-    if os.path.exists(args.input_float_indexer):
-        INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
-        FILELIST=INDEX_FILE['file_name'].tolist()
-        is_provided_indexer = len(FILELIST) >0
+INDEX_FILE = None
 
 if args.type=="coriolis":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
@@ -162,20 +158,8 @@ def is_SR_to_reject(filename, filenames):
 
 LOC=addsep(args.inputdir)
 FloatIndexer=args.output_float_indexer
-DIRLIST=os.listdir(LOC)
 HERE=os.getcwd()
 os.chdir(LOC)
-
-filenames = []
-for DIR in DIRLIST:
-    dirpath=DIR
-    dir_filenames = glob.glob(dirpath + "/*nc")
-    dir_filenames.sort()
-    for filename in dir_filenames:
-        if filename[-4:]!='D.nc':
-            filenames.append(filename)
-
-LINES = [None] * len(filenames)
 
 try:
     from mpi4py import MPI
@@ -188,6 +172,34 @@ except:
     nranks = 1
     isParallel = False
 
+if rank == 0:
+    NOW=datetime.datetime.now()
+    if args.input_float_indexer is not None:
+        if os.path.exists(args.input_float_indexer):
+            INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
+            FILELIST=INDEX_FILE['file_name'].tolist()
+            is_provided_indexer = len(FILELIST) >0
+
+    DIRLIST=os.listdir(LOC)
+    filenames = []
+    for DIR in DIRLIST:
+        dirpath=DIR
+        dir_filenames = glob.glob(dirpath + "/*nc")
+        dir_filenames.sort()
+        for filename in dir_filenames:
+            if filename[-4:]!='D.nc':
+                filenames.append(filename)
+else:
+    filenames = None
+
+if isParallel:
+    NOW = comm.bcast(NOW, root=0)
+    filenames = comm.bcast(filenames, root=0)
+    FILELIST = comm.bcast(FILELIST, root=0)
+    INDEX_FILE = comm.bcast(INDEX_FILE, root=0)
+    is_provided_indexer = comm.bcast(is_provided_indexer, root=0)
+
+local_lines = []
 for i in range(rank, len(filenames), nranks):
     filename = filenames[i]
     if is_SR_to_reject(filename, filenames): 
@@ -197,19 +209,30 @@ for i in range(rank, len(filenames), nranks):
         timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
         if timedist.days > 15:
             line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
-            LINES[i] = line+"\n"
+            local_lines.append((i, line+"\n"))
         else:
             line=file_header_content(filename,VARLIST,avail_params=None)
             if line is not None:
-                LINES[i] = line+"\n"
+                local_lines.append((i, line+"\n"))
     else:
         line=file_header_content(filename,VARLIST,avail_params=None)
         if line is not None:
-            LINES[i] = line+"\n"
+            local_lines.append((i, line+"\n"))
             if is_provided_indexer: print("added " + line)
 
+if isParallel:
+    gathered_lines = comm.gather(local_lines, root=0)
+else:
+    gathered_lines = [local_lines]
 
-F = open(FloatIndexer,'w')
-F.writelines(line for line in LINES if line is not None)
-F.close()
+if rank == 0:
+    LINES = [None] * len(filenames)
+    for rank_lines in gathered_lines:
+        for i, line in rank_lines:
+            LINES[i] = line
+
+    F = open(FloatIndexer,'w')
+    F.writelines(line for line in LINES if line is not None)
+    F.close()
+
 os.chdir(HERE)

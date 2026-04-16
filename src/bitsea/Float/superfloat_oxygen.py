@@ -81,12 +81,15 @@ def convert_oxygen(p,doxypres,doxyprofile):
     from micromol/Kg to  mmol/m3
     '''
     if doxypres.size == 0: return doxyprofile
-    Pres, temp, Qc = p.read("TEMP",read_adjusted=True)
+    PresT, temp, Qc = p.read("TEMP",read_adjusted=True)
     Pres, sali, Qc = p.read("PSAL",read_adjusted=True)
     # --- fallback on REAL TIME 
     if Pres is None or len(Pres) <5:
-       Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
-       Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
+       PresT, temp, Qc = p.read("TEMP",read_adjusted=False)
+       Pres, sali, Qc = p.read("PSAL",read_adjusted=False) 
+    
+    if len(temp) != len(sali):
+           temp = np.interp(Pres,temp,PresT )
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
@@ -455,10 +458,12 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     * Dataset          * dictionary, provided by load_history()
     '''
     Pres, Value, Qc  = Dataset[p.ID()]
-    PresT, _, _ = p.read('TEMP', read_adjusted=False)
-    if len(PresT)<5:
-        print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
-        return
+    PresT, _, _ = p.read('TEMP', read_adjusted=True)
+    if len(PresT)<5 or PresT is None:
+        PresT, _, _ = p.read('TEMP', read_adjusted=False)
+        if len(PresT)<5 or PresT is None:
+           print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
+           return
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
@@ -544,22 +549,27 @@ def load_history(wmo, write_report=False):
     Profilelist=[]
     Dataset={}
     for p in Profilelist_wmo:
+        
         ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))
         NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
         status = p._my_float.status_var('DOXY')
+        
         if status == 'R':
             if write_report:
                 log_reject(p.name(), p._my_float.cycle, p.time, "RT" ,NAME_BASIN )
             continue
+        
         Pres, Value, Qc = read_doxy(p) # convert doxy and filter len pres<5
         if Pres is None:
             if write_report:
                 log_reject(p.name(), p._my_float.cycle, p.time, "PresNone", NAME_BASIN)
             continue
+        
         if status == 'D':
             condition_to_write = True
-        else:
+        else: #ADJUSTED MODE
             condition_to_write = oxygen_saturation.oxy_check(Pres, Value, p)
+        
         if not condition_to_write:
             if write_report:
                 log_reject(p.name(), p._my_float.cycle, p.time, "SaturationTest", NAME_BASIN)

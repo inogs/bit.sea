@@ -84,12 +84,12 @@ def convert_oxygen(p,doxypres,doxyprofile):
     PresT, temp, Qc = p.read("TEMP",read_adjusted=True)
     Pres, sali, Qc = p.read("PSAL",read_adjusted=True)
     # --- fallback on REAL TIME 
-    if Pres is None or len(Pres) <5:
+    if (Pres is None or PresT is None or temp is None or sali is None or len(Pres) < 5 or len(PresT) < 5):
        PresT, temp, Qc = p.read("TEMP",read_adjusted=False)
        Pres, sali, Qc = p.read("PSAL",read_adjusted=False) 
     
     if len(temp) != len(sali):
-           temp = np.interp(Pres,temp,PresT )
+           temp = np.interp(Pres, PresT, temp)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)

@@ -72,7 +72,7 @@ class Metadata():
     def __init__(self, filename):
         self.filename = str(filename)
         self.status_var = 'n'
-        self.drift_code = -5
+        self.drift_code = np.nan
         self.offset = np.nan
         self.drift  = np.nan
 
@@ -81,8 +81,12 @@ def convert_oxygen(p,doxypres,doxyprofile):
     from micromol/Kg to  mmol/m3
     '''
     if doxypres.size == 0: return doxyprofile
-    Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
-    Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
+    Pres, temp, Qc = p.read("TEMP",read_adjusted=True)
+    Pres, sali, Qc = p.read("PSAL",read_adjusted=True)
+    # --- fallback on REAL TIME 
+    if Pres is None or len(Pres) <5:
+       Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
+       Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
@@ -479,18 +483,22 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 
             OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
 
-            if abs(OFFSET) >= threshold:
+            if abs(OFFSET) >= threshold: # discard profiles
                 wmo = p._my_float.wmo
                 df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
                 save_df_report(OUT_META , df_report , "Floats_rejected.csv")
                 return
-            else:
+            else: 
                 if df_report.DRIFT_CODE[0] ==1: 
                    Oxy_Profile = apply_detrend(Pres, Value, df_report)
                    metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
                    metadata.offset = OFFSET
                    metadata.drift  = df_report.TREND_TIME_SERIES.iloc[0]
-    
+                else:
+                   metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
+                   metadata.offset = OFFSET
+
+             
     # posso metterlo opzionale
     save_df_report(OUT_META , df_report , "Floats_accepted.csv")
     Path.mkdir(outfile.parent, exist_ok=True)
@@ -520,10 +528,10 @@ def load_history(wmo, write_report=False):
         else:
             df_reject = pd.DataFrame(columns=["wmo","cycle","date","reasons"])
 
-        def log_reject(wmo_name, cycle,date, reason):
+        def log_reject(wmo_name, cycle,date, reason, NAME_BASIN):
             nonlocal df_reject
             df_reject = pd.concat(
-            [df_reject, pd.DataFrame({"wmo": [wmo_name], "cycle": [cycle] , "date": [date],"reasons": [reason]})],
+            [df_reject, pd.DataFrame({"wmo": [wmo_name], "cycle": [cycle] , "date": [date],"reasons": [reason], "basin": [NAME_BASIN] })],
                 ignore_index=True)
             df_reject.drop_duplicates(inplace=True)
 
@@ -536,15 +544,17 @@ def load_history(wmo, write_report=False):
     Profilelist=[]
     Dataset={}
     for p in Profilelist_wmo:
+        ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))
+        NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
         status = p._my_float.status_var('DOXY')
         if status == 'R':
             if write_report:
-                log_reject(p.name(), p._my_float.cycle, p.time, "RT")
+                log_reject(p.name(), p._my_float.cycle, p.time, "RT" ,NAME_BASIN )
             continue
         Pres, Value, Qc = read_doxy(p) # convert doxy and filter len pres<5
         if Pres is None:
             if write_report:
-                log_reject(p.name(), p._my_float.cycle, p.time, "PresNone")
+                log_reject(p.name(), p._my_float.cycle, p.time, "PresNone", NAME_BASIN)
             continue
         if status == 'D':
             condition_to_write = True
@@ -552,7 +562,7 @@ def load_history(wmo, write_report=False):
             condition_to_write = oxygen_saturation.oxy_check(Pres, Value, p)
         if not condition_to_write:
             if write_report:
-                log_reject(p.name(), p._my_float.cycle, p.time, "SaturationTest")
+                log_reject(p.name(), p._my_float.cycle, p.time, "SaturationTest", NAME_BASIN)
             continue
         Profilelist.append(p)
         Dataset[p.ID()] = (Pres,Value,Qc)
@@ -578,14 +588,14 @@ if input_file == 'NO_file':
 
     for wmo in wmo_list:
         print (wmo, flush=True)
-        if wmo != '6903266': continue
-        Hist_filtered_Profilelist, Dataset = load_history(wmo,True)
+        #if wmo != '4903818': continue
+        Hist_filtered_Profilelist, Dataset = load_history(wmo,True) #true --> save a repo of discarded  prechecks
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
         for ip, p in enumerate(Profilelist):
-            import sys 
-            if p._my_float.cycle == 345:
-                sys.exit('carol')
+            #import sys 
+            #if p._my_float.cycle == 75:
+            #    sys.exit('carol')
             outfile = get_outfile(p,OUTDIR)
 
             writing_mode=superfloat_generator.writing_mode(outfile)

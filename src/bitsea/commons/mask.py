@@ -626,12 +626,84 @@ class Mask(BooleanArrayWrapper, Mesh):
         """
         pass
 
+    def _save_as_netcdf(self, file_pointer: netCDF4.Dataset, compression_level):
+        """
+        Internal method to save the current `Mask` object to a netCDF file.
+
+        This is the internal implementation of the `save_as_netcdf` method.
+        Unlike the public method, which opens the file internally, this method
+        operates on an already-open file pointer.
+
+        Subclasses inheriting from `Mask` can override this method to include
+        additional information in the output file.
+
+        Args:
+            file_pointer (netCDF4.Dataset): An open netCDF Dataset object where
+                the mask data will be written.
+            compression_level (int): Compression level for the saved variables.
+                Use 0 for no compression, or an integer between 1 and 9, where
+                1 provides the fastest compression and 9 provides the highest
+                compression ratio. The default value is 3, offering a good
+                balance between compression speed and file size.
+        """
+        var_kwargs = {}
+        if compression_level > 0:
+            var_kwargs["zlib"] = True
+            var_kwargs["complevel"] = compression_level
+
+        # Add the spatial dimensions
+        file_pointer.createDimension("t", 1)
+        file_pointer.createDimension("z", self.shape[0])
+        file_pointer.createDimension("y", self.shape[1])
+        file_pointer.createDimension("x", self.shape[2])
+
+        # Add nav_lev data
+        nav_lev = file_pointer.createVariable(
+            "nav_lev", "f4", ("z",), **var_kwargs
+        )
+        nav_lev[:] = self.zlevels
+
+        # Create the nav_lat NetCDF variable
+        nav_lat = file_pointer.createVariable(
+            "nav_lat", "f4", ("y", "x"), **var_kwargs
+        )
+        nav_lat[:, :] = self.ylevels
+
+        # Create the nav_lon NetCDF variable
+        nav_lon = file_pointer.createVariable(
+            "nav_lon", "f4", ("y", "x"), **var_kwargs
+        )
+        nav_lon[:, :] = self.xlevels
+
+        e1t = file_pointer.createVariable("e1t", "f4", ("y", "x"), **var_kwargs)
+        e1t[:] = self.e1t
+
+        e2t = file_pointer.createVariable("e2t", "f4", ("y", "x"), **var_kwargs)
+        e2t[:] = self.e2t
+
+        e3t = file_pointer.createVariable(
+            "e3t", "f4", ("t", "z", "y", "x"), **var_kwargs
+        )
+        e3t[:] = self.e3t
+
+        # Create a variable to hold the data
+        mask = file_pointer.createVariable(
+            "tmask", "u1", ("z", "y", "x"), **var_kwargs
+        )
+
+        # Assign the data to the NetCDF variable
+        mask[:, :, :] = self[:, :, :]
+
+        self._add_attributes_on_file(file_pointer)
+
     def save_as_netcdf(
         self,
         file_path: Union[PathLike, str],
         compression_level: Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 3,
     ):
         """
+        Saves the Mask into a netCDF file.
+
         Saves the current `Mask` object to a netCDF file, which can later
         be loaded using the `from_file` method.
 
@@ -644,69 +716,17 @@ class Mask(BooleanArrayWrapper, Mesh):
                 the slowest. The default value is 3, which is a reasonable
                 compromise between speed and compression.
         """
-
         file_path = Path(file_path)
-
         if compression_level < 0 or compression_level > 9:
             raise ValueError(
                 "compression_level must be an integer between 0 and 9; "
                 f"received {compression_level}."
             )
 
-        var_kwargs = {}
-        if compression_level > 0:
-            var_kwargs["zlib"] = True
-            var_kwargs["complevel"] = compression_level
-
         with netCDF4.Dataset(file_path, "w") as netCDF_out:
-            # Add the spatial dimensions
-            netCDF_out.createDimension("t", 1)
-            netCDF_out.createDimension("z", self.shape[0])
-            netCDF_out.createDimension("y", self.shape[1])
-            netCDF_out.createDimension("x", self.shape[2])
-
-            # Add nav_lev data
-            nav_lev = netCDF_out.createVariable(
-                "nav_lev", "f4", ("z",), **var_kwargs
+            self._save_as_netcdf(
+                netCDF_out, compression_level=compression_level
             )
-            nav_lev[:] = self.zlevels
-
-            # Create the nav_lat NetCDF variable
-            nav_lat = netCDF_out.createVariable(
-                "nav_lat", "f4", ("y", "x"), **var_kwargs
-            )
-            nav_lat[:, :] = self.ylevels
-
-            # Create the nav_lon NetCDF variable
-            nav_lon = netCDF_out.createVariable(
-                "nav_lon", "f4", ("y", "x"), **var_kwargs
-            )
-            nav_lon[:, :] = self.xlevels
-
-            e1t = netCDF_out.createVariable(
-                "e1t", "f4", ("y", "x"), **var_kwargs
-            )
-            e1t[:] = self.e1t
-
-            e2t = netCDF_out.createVariable(
-                "e2t", "f4", ("y", "x"), **var_kwargs
-            )
-            e2t[:] = self.e2t
-
-            e3t = netCDF_out.createVariable(
-                "e3t", "f4", ("t", "z", "y", "x"), **var_kwargs
-            )
-            e3t[:] = self.e3t
-
-            # Create a variable to hold the data
-            mask = netCDF_out.createVariable(
-                "tmask", "u1", ("z", "y", "x"), **var_kwargs
-            )
-
-            # Assign the data to the NetCDF variable
-            mask[:, :, :] = self[:, :, :]
-
-            self._add_attributes_on_file(netCDF_out)
 
 
 class MaskBathymetry(Bathymetry):
@@ -949,3 +969,59 @@ class MaskWithRivers(Mask):
                 rivers_var_name=rivers_var_name,
                 read_e3t=read_e3t,
             )
+
+    def as_standard_mask(self, include_rivers: bool = False) -> Mask:
+        """
+        Converts the MaskWithRivers object to a standard Mask object.
+
+        This method creates a new standard Mask object from the current
+        MaskWithRivers instance. By default, river cells are excluded from the
+        resulting mask (treated as land). If `include_rivers` is set to True,
+        river cells are included as water cells in the output mask.
+
+        Args:
+            include_rivers (bool): If True, includes river cells as water cells
+                in the output mask. If False (default), river cells are treated
+                as land cells.
+
+        Returns:
+            Mask: A standard Mask object with the same grid and vertical levels
+                as the current MaskWithRivers instance.
+        """
+        if include_rivers:
+            data_array = self.get_water_cells()
+        else:
+            data_array = self.as_array()
+
+        return Mask(
+            grid=self.grid,
+            zlevels=self.zlevels,
+            mask_array=data_array,
+            e3t=self.e3t,
+        )
+
+    def save_as_netcdf(
+        self,
+        file_path: Union[PathLike, str],
+        compression_level: Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 3,
+    ):
+        file_path = Path(file_path)
+        if compression_level < 0 or compression_level > 9:
+            raise ValueError(
+                "compression_level must be an integer between 0 and 9; "
+                f"received {compression_level}."
+            )
+
+        var_kwargs = {}
+        if compression_level > 0:
+            var_kwargs["zlib"] = True
+            var_kwargs["complevel"] = compression_level
+
+        with netCDF4.Dataset(file_path, "w") as netCDF_out:
+            self.as_standard_mask(include_rivers=True)._save_as_netcdf(
+                netCDF_out, compression_level=compression_level
+            )
+            rivers_var = netCDF_out.createVariable(
+                "rivers", np.int32, ("y", "x"), **var_kwargs
+            )
+            rivers_var[:] = self._river_cells[0].toarray()

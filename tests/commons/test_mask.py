@@ -488,6 +488,43 @@ def test_mask_with_rivers_from_file(test_data_dir):
 
 
 @pytest.mark.uses_test_data
+def test_mask_with_rivers_save_and_load_roundtrip(test_data_dir, tmp_path):
+    mask_file = test_data_dir / "masks" / "mask_with_rivers.nc"
+    rivers_mask = MaskWithRivers.from_file(mask_file)
+
+    output_file = tmp_path / "mask_with_rivers_roundtrip.nc"
+    rivers_mask.save_as_netcdf(output_file)
+
+    loaded_mask = MaskWithRivers.from_file(output_file)
+
+    assert np.all(np.asarray(rivers_mask) == np.asarray(loaded_mask))
+    assert np.all(
+        rivers_mask.get_water_cells() == loaded_mask.get_water_cells()
+    )
+    assert np.allclose(rivers_mask.xlevels, loaded_mask.xlevels)
+    assert np.allclose(rivers_mask.ylevels, loaded_mask.ylevels)
+    assert np.allclose(rivers_mask.zlevels, loaded_mask.zlevels)
+
+    with netCDF4.Dataset(mask_file, "r") as original_ds, netCDF4.Dataset(
+        output_file, "r"
+    ) as roundtrip_ds:
+        assert np.allclose(
+            np.asarray(original_ds.variables["e1t"]),
+            np.asarray(roundtrip_ds.variables["e1t"]),
+        )
+        assert np.allclose(
+            np.asarray(original_ds.variables["e2t"]),
+            np.asarray(roundtrip_ds.variables["e2t"]),
+        )
+        assert np.allclose(
+            np.asarray(original_ds.variables["e3t"]),
+            np.asarray(roundtrip_ds.variables["e3t"]),
+        )
+        assert np.all(
+            np.asarray(original_ds.variables["rivers"])
+            == np.asarray(roundtrip_ds.variables["rivers"])
+        )
+@pytest.mark.uses_test_data
 def test_mask_with_rivers_copy(test_data_dir):
     mask_dir = test_data_dir / "masks"
     mask_file = mask_dir / "mask_with_rivers.nc"

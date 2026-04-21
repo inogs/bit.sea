@@ -10,16 +10,16 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-numpy = ">2.0.0"
+numpy = "^2.0.0"
 scipy = "^1.12.0"
 netcdf4 = "^1.6.5"
 xarray = ">2024.1.0"
-defusedxml = "^0.7.1"
+defusedxml = ">=0.7.1"
 gsw = ">=3.6.16"
 
 [tool.poetry.group.plots.dependencies]
 matplotlib = ">3.7.5"
-cartopy = "^0.25.0"
+cartopy = ">=0.25.0"
 
 [tool.poetry.group.algorithms.dependencies]
 geographiclib = "^2.0"

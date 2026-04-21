@@ -911,6 +911,36 @@ class MaskWithRivers(Mask):
             output_data[depth_index, lat_indices, lon_indices] = True
         return output_data
 
+    def get_river_ids(self) -> set:
+        """Return a set of unique river identifiers present in the mask.
+
+        This method extracts the unique river IDs from the river positions
+        stored in the mask. It assumes that river cells are labeled with
+        integer values representing different rivers.
+
+        Returns:
+            set: A set of unique river identifiers found in the mask.
+        """
+        if len(self._river_cells) == 0:
+            return set()
+
+        # Get the unique river IDs from the first depth layer
+        unique_rivers = set(self._river_cells[0].values())
+
+        return unique_rivers
+
+    def n_rivers(self) -> int:
+        """Return the number of distinct rivers represented in the mask.
+
+        This method counts the number of unique river identifiers present in
+        the river positions. It assumes that river cells are labeled with
+        integer values representing different rivers.
+
+        Returns:
+            int: The number of distinct rivers in the mask.
+        """
+        return len(self.get_river_ids())
+
     @classmethod
     def from_file_pointer(
         cls,
@@ -1021,7 +1051,11 @@ class MaskWithRivers(Mask):
             self.as_standard_mask(include_rivers=True)._save_as_netcdf(
                 netCDF_out, compression_level=compression_level
             )
+            var_kwargs["fill_value"] = 0
             rivers_var = netCDF_out.createVariable(
                 "rivers", np.int32, ("y", "x"), **var_kwargs
             )
-            rivers_var[:] = self._river_cells[0].toarray()
+            if self.n_rivers() > 0:
+                rivers_var[:] = self._river_cells[0].toarray()
+            else:
+                rivers_var[:] = 0

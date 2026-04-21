@@ -25,7 +25,7 @@ def argument():
     parser.add_argument(   '--type','-t',
                                 type = str,
                                 required = True,
-                                choices = ['coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat'])
+                                choices = ['coriolis','Float_opt', 'Float_opt_19', 'Float_opt_20','superfloat', 'static_superfloat', 'ppcon_float'])
 
     return parser.parse_args()
 
@@ -43,22 +43,19 @@ from bitsea.commons.utils import addsep
 #e.g. lines as 
 #6901765/MR6901765_024.nc 34.024883 24.519977 20150818-09:33:00 DOXY NITRATE CHLA PRES PSAL TEMP
 
-NOW=datetime.datetime.now()
+NOW=None
 mydtype= np.dtype([
           ('file_name','S200'),
           ('lat',np.float64),
           ('lon',np.float64),
           ('time','S17'),
-          ('parameters','S200')] )
+          ('parameters','S400'),
+          ('profile_avail','S200')]  
+          ) #profile_avail options: I or P or B ==>>   I --> insitu || P --> ppcon reconstructed || B --> both are available 
 
 FILELIST=[]
 is_provided_indexer = False
-if args.input_float_indexer is not None:
-    if os.path.exists(args.input_float_indexer):
-        INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
-        FILELIST=INDEX_FILE['file_name'].tolist()
-        is_provided_indexer = len(FILELIST) >0
-
+INDEX_FILE = None
 
 if args.type=="coriolis":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
@@ -72,7 +69,11 @@ if args.type=="superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490' ]
 if args.type=="static_superfloat":
     VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'PAR','CDOM','IRR_380' ,'IRR_412','IRR_490' ]
-
+if args.type=="ppcon_float":
+    VARLIST=['DOXY','NITRATE','CHLA',  'PRES','PSAL','TEMP','PH_IN_SITU_TOTAL', 'BBP700','BBP532', 'DOWNWELLING_PAR','CDOM','DOWN_IRRADIANCE380'       ,'DOWN_IRRADIANCE412'       ,'DOWN_IRRADIANCE490']
+    ppcon_varlist=['CHLA', 'NITRATE','BBP700']
+    ppcon_varlist1=['CHLA_PPCON', 'NITRATE_PPCON','BBP700_PPCON']
+    NNmethod = '_PPCON'
 
 def file_header_content(filename,VARLIST, avail_params=None):
     '''
@@ -105,23 +106,45 @@ def file_header_content(filename,VARLIST, avail_params=None):
     basename=split_path[-1]
     relative_name=wmo + "/" + basename
     s="%s,%f,%f,%s," %(relative_name, lat, lon, Time.strftime('%Y%m%d-%H:%M:%S'))
-    if avail_params is None:
-        for var in VARLIST: 
-            if var in ncIN.variables.keys():
-                s=s+" " + var
-        ncIN.close()
+    if args.type=="ppcon_float":
+        if avail_params is None:
+            for var in VARLIST: 
+                varpp = var + NNmethod # CHLA_PPCON
+                if var in ncIN.variables.keys():
+                    s= s+" " + var   
+                elif varpp in ncIN.variables.keys():
+                    s= s+" " + var
+                else:
+                    pass
+            
+            s= s + ", "        
+            #ncIN.close()
+        else:
+            s=s+" " + avail_params
+        
+        if avail_params is None:
+            for var in VARLIST:  
+                
+                varpp = var + NNmethod # CHLA_PPCON
+                if var in ncIN.variables.keys(): 
+                    if varpp in ncIN.variables.keys():
+                        s = s +'B'
+                    else: 
+                        s = s + 'I'
+                else: 
+                    if varpp in ncIN.variables.keys():
+                        s = s +'P'
     else:
-        s=s+" " + avail_params
+        if avail_params is None:
+            for var in VARLIST: 
+                if var in ncIN.variables.keys():
+                    s=s+" " + var
+
+        else:
+            s=s+" " + avail_params
+    ncIN.close()
     return s
-def get_sensor_list(wmo,LINES):
-    for line in LINES:
-        if wmo in line:
-            d=StringIO(line)
-            A=np.loadtxt(d,dtype=mydtype,delimiter=',')
-            return str(A['parameters'])
-    else:
-        print(wmo + " not in CORIOLIS")
-        return 'DOXY NITRATE CHLA PRES PSAL TEMP'
+
 def is_SR_to_reject(filename, filenames):
     isSR=os.path.basename(filename).startswith('SR')
     if isSR:
@@ -133,40 +156,83 @@ def is_SR_to_reject(filename, filenames):
     else:
         return False
 
-
 LOC=addsep(args.inputdir)
 FloatIndexer=args.output_float_indexer
-DIRLIST=os.listdir(LOC)
 HERE=os.getcwd()
 os.chdir(LOC)
 
-LINES=[]
-for DIR in DIRLIST:
-    dirpath=DIR
-    filenames = glob.glob(dirpath + "/*nc")
-    filenames.sort()
-    for filename in filenames:
-        if filename[-4:]!='D.nc':
-            if is_SR_to_reject(filename, filenames): continue
-            if filename in FILELIST:
-                ind=FILELIST.index(filename)
-                timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
-                if timedist.days > 15:
-                    line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
-                    LINES.append(line+"\n")
-                else:
-                    line=file_header_content(filename,VARLIST,avail_params=None)
-                    if line is not None:
-                        LINES.append(line+"\n")
-            else:
-                line=file_header_content(filename,VARLIST,avail_params=None)
-                if line is not None:
-                    LINES.append(line+"\n")
-                    if is_provided_indexer: print("added " + line)
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
 
+if rank == 0:
+    NOW=datetime.datetime.now()
+    if args.input_float_indexer is not None:
+        if os.path.exists(args.input_float_indexer):
+            INDEX_FILE=np.loadtxt(args.input_float_indexer,dtype=mydtype, delimiter=",",ndmin=1)
+            FILELIST=INDEX_FILE['file_name'].tolist()
+            is_provided_indexer = len(FILELIST) >0
 
-F = open(FloatIndexer,'w')
-F.writelines(LINES)
-F.close()
+    DIRLIST=os.listdir(LOC)
+    filenames = []
+    for DIR in DIRLIST:
+        dirpath=DIR
+        dir_filenames = glob.glob(dirpath + "/*nc")
+        dir_filenames.sort()
+        for filename in dir_filenames:
+            if filename[-4:]!='D.nc':
+                filenames.append(filename)
+else:
+    filenames = None
+
+if isParallel:
+    NOW = comm.bcast(NOW, root=0)
+    filenames = comm.bcast(filenames, root=0)
+    FILELIST = comm.bcast(FILELIST, root=0)
+    INDEX_FILE = comm.bcast(INDEX_FILE, root=0)
+    is_provided_indexer = comm.bcast(is_provided_indexer, root=0)
+
+local_lines = []
+for i in range(rank, len(filenames), nranks):
+    filename = filenames[i]
+    if is_SR_to_reject(filename, filenames): 
+        continue
+    if filename in FILELIST:
+        ind=FILELIST.index(filename)
+        timedist = NOW - datetime.datetime.strptime(INDEX_FILE['time'][ind][:8],"%Y%m%d")
+        if timedist.days > 15:
+            line="%s,%f,%f,%s,%s" %(filename, INDEX_FILE['lat'][ind], INDEX_FILE['lon'][ind], INDEX_FILE['time'][ind], INDEX_FILE['parameters'][ind])
+            local_lines.append((i, line+"\n"))
+        else:
+            line=file_header_content(filename,VARLIST,avail_params=None)
+            if line is not None:
+                local_lines.append((i, line+"\n"))
+    else:
+        line=file_header_content(filename,VARLIST,avail_params=None)
+        if line is not None:
+            local_lines.append((i, line+"\n"))
+            if is_provided_indexer: print("added " + line)
+
+if isParallel:
+    gathered_lines = comm.gather(local_lines, root=0)
+else:
+    gathered_lines = [local_lines]
+
+if rank == 0:
+    LINES = [None] * len(filenames)
+    for rank_lines in gathered_lines:
+        for i, line in rank_lines:
+            LINES[i] = line
+
+    F = open(FloatIndexer,'w')
+    F.writelines(line for line in LINES if line is not None)
+    F.close()
+
 os.chdir(HERE)
-

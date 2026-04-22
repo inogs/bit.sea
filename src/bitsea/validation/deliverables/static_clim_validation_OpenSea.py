@@ -137,12 +137,14 @@ for ivar, var in enumerate(VARLIST):
     STATS_STD = np.zeros((nLayers,7),np.float32)*np.nan
     for ilayer, layer in enumerate(LayerList):
 
-        refsubs = CLIM_REF_static[:,ilayer]
-        modsubs =      CLIM_MODEL[:,ilayer]
-        bad = np.isnan(refsubs) | np.isnan(modsubs)
-        good = ~bad
+        if (ilayer < 8):     # because CLIM_REF_static is not defined for 0-1000 layer. 
 
-        m = matchup(modsubs[good], refsubs[good])
+            refsubs = CLIM_REF_static[:,ilayer]
+            modsubs =      CLIM_MODEL[:,ilayer]
+            bad = np.isnan(refsubs) | np.isnan(modsubs)
+            good = ~bad
+
+            m = matchup(modsubs[good], refsubs[good])
 
         # SET THE METRICS OF THE TOTAL LAYER 0-1000 AS THE MEAN VALUES OF THE LAYERS ABOVE
         if (layer == Layer(0,1000) ):

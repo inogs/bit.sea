@@ -13,26 +13,23 @@ def argument():
                                 type = str,
                                 required = True,
                                 help = 'remote directory of the argo indexed files',
-                                example = '/ifremer/argo/dac/')
-    # example $REMOTEDIR=/ifremer/argo/dac/
+                                default = '/ifremer/argo/dac/')
     parser.add_argument(   '--coriolisdir',"-c",
                                 type = str,
                                 required = True,
                                 help = 'local directory of the argo indexed files',
-                                example = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/')
-    # example $ONLINE_REPO/CORIOLIS/
+                                default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/')
     #         ONLINE_REPO=/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/
     parser.add_argument( '--update_file',"-u",
                                 type = str,
                                 required = True,
-                                help = 'path to the update file containing the list of floats to download')
-    # example $UPDATE_FILE=$ONLINE_REPO/CORIOLIS/download/DIFF_floats.txt
+                                help = 'path to the update file containing the list of floats to download',
+                                default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/download/DIFF_floats.txt')
     parser.add_argument(   '--indexer_file',"-i",
                                 type = str,
                                 required = False,
-                                help = 'path to the indexer file containing the list of floats that have already been downloaded')
-    # example $INDEXER_CORIOLIS=$ONLINE_REPO/CORIOLIS/download/Med_floats.txt
-
+                                help = 'path to the indexer file containing the list of floats that have already been downloaded',
+                                default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/download/Med_floats.txt')
 
     return parser.parse_args()
 

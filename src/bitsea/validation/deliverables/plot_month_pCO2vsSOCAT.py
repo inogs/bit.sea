@@ -73,7 +73,7 @@ for ns,sub in enumerate(OGS.P.basin_list[:4]):
             axs[0].set_xticklabels(x_labels)
           #  axs[0].ticklabel_format(fontsize=12)
             axs[0].tick_params(axis='x', labelsize=12)
-            axs[0].set_ylabel("$\mu  atm$")
+            axs[0].set_ylabel("$\\mu  atm$")
 
 color=iter(cm.rainbow(np.linspace(0,1,4)))
 
@@ -110,7 +110,7 @@ for ns,sub in enumerate(OGS.P.basin_list[8:12]):
             axs[2].set_xticklabels(x_labels)
             #axs[2].ticklabel_format(fontsize=12) 
             axs[2].tick_params(axis='x', labelsize=12)
-            axs[2].set_ylabel("$\mu  atm$")
+            axs[2].set_ylabel("$\\mu  atm$")
 
 color=iter(cm.rainbow(np.linspace(0,1,4)))
 for ns,sub in enumerate(OGS.P.basin_list[12:16]):

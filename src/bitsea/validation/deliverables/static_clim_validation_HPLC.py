@@ -205,7 +205,6 @@ for ivar, var in enumerate(VARLIST):
         Model_Med_Mean_Std = np.zeros((nLayers, 2), np.float32)
 
         for iSub, sub in enumerate(SUBlist):
-            print(sub.name)
             Mean_profiles, _, _ = Hovmoeller_matrix(
                 TIMESERIES_season, TLL, np.arange(jpk), iSub, icoast=1, istat=0
             )  # istat=0 --> MEAN

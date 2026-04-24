@@ -53,8 +53,6 @@ for var in VARLIST:
     for imonth in range(12):
         req = timerequestors.Clim_month(imonth + 1)
         ii, w = TL.select(req)
-        for kk in ii:
-            print(TL.Timelist[kk])
         for isub, sub in enumerate(OGS.P):
             V = data[ii, isub, 1, 0, 0]
             # They are weekly values, therefore we include the weight in the mean

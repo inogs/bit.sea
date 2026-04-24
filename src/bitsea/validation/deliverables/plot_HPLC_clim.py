@@ -114,8 +114,8 @@ ax1.tick_params(axis="both", which="major", labelsize=10)
 ax2.tick_params(axis="both", which="major", labelsize=10)
 
 ax2.set_yticklabels([])
-ax1.set_xlabel("$[ mg {\,} m^{-3} ]$").set_fontsize(12)
-ax2.set_xlabel("$[ mg {\,} m^{-3} ]$").set_fontsize(12)
+ax1.set_xlabel(r"$[ mg {\,} m^{-3} ]$").set_fontsize(12)
+ax2.set_xlabel(r"$[ mg {\,} m^{-3} ]$").set_fontsize(12)
 
 ax1.set_ylabel("depth [m]").set_fontsize(12)
 

@@ -1,5 +1,13 @@
 import argparse
 from bitsea.utilities.argparse_types import existing_dir_path
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of nitrate.
@@ -71,8 +79,7 @@ def convert_nitrate(p,pres,profile):
     from micromol/Kg to  mmol/m3
     '''
     if pres.size == 0: return profile
-    _   , temp, _ = p.read("TEMP",read_adjusted=False)
-    Pres, sali, _ = p.read("PSAL",read_adjusted=False)
+    _, temp, _, Pres, sali, _ = read_temp_psal(p)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_z = np.interp(pres,Pres,density)
@@ -89,8 +96,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
         if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
             setattr(ncOUT, 'origin'     , 'coriolis')
             setattr(ncOUT, 'file_origin', metadata.filename)
-            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            PresT, Temp, QcT, Pres, Sali, QcS = read_temp_psal(p)
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))
@@ -151,7 +157,7 @@ def dump_nitrate_file(outfile, p, Pres, Value, Qc, metadata,mode='w'):
 
 def nitrate_algorithm(p, outfile, metadata, writing_mode):
     F = p._my_float
-    Pres, _, _ = p.read('TEMP', read_adjusted=False)
+    Pres, _, _ = read_temp_psal(p)[3:]
     if len(Pres)<5:
         print("few values in Coriolis TEMP in " + str(F.filename), flush=True)
         return

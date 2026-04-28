@@ -76,18 +76,22 @@ class Metadata():
         self.offset = np.nan
         self.drift  = np.nan
 
+
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
+
+
 def convert_oxygen(p,doxypres,doxyprofile):
     '''
     from micromol/Kg to  mmol/m3
     '''
     if doxypres.size == 0: return doxyprofile
-    PresT, temp, Qc = p.read("TEMP",read_adjusted=True)
-    Pres, sali, Qc = p.read("PSAL",read_adjusted=True)
-    # --- fallback on REAL TIME 
-    if (Pres is None or PresT is None or temp is None or sali is None or len(Pres) < 5 or len(PresT) < 5):
-       PresT, temp, Qc = p.read("TEMP",read_adjusted=False)
-       Pres, sali, Qc = p.read("PSAL",read_adjusted=False) 
-    
+    PresT, temp, Qc, Pres, sali, QcS = read_temp_psal(p)
     if len(temp) != len(sali):
            temp = np.interp(Pres, PresT, temp)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
@@ -145,8 +149,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
             setattr(ncOUT, 'origin'     , 'coriolis')
             setattr(ncOUT, 'file_origin', metadata.filename)
-            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))
@@ -415,6 +418,8 @@ def clim_check(p, df_report, NAME_BASIN, tmp):
         OFFSET  = Corrrected_val - VALCLIM
     STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
     STDCLIM_2 = 2*STDCLIM
+    if STDCLIM_2 <10:
+        STDCLIM_2=10
     wmo = p._my_float.wmo
     df_report.loc[ df_report.WMO == wmo , 'OFFSET'] = OFFSET
     df_report.loc[ df_report.WMO == wmo , 'basin'] = NAME_BASIN
@@ -458,12 +463,10 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     * Dataset          * dictionary, provided by load_history()
     '''
     Pres, Value, Qc  = Dataset[p.ID()]
-    PresT, _, _ = p.read('TEMP', read_adjusted=True)
-    if len(PresT)<5 or PresT is None:
-        PresT, _, _ = p.read('TEMP', read_adjusted=False)
-        if len(PresT)<5 or PresT is None:
-           print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
-           return
+    PresT, _, _, _, _, _ = read_temp_psal(p)
+    if PresT is None or len(PresT) < 5:
+        print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
+        return
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
@@ -598,13 +601,13 @@ if input_file == 'NO_file':
 
     for wmo in wmo_list:
         print (wmo, flush=True)
-        #if wmo != '4903818': continue
+        #if wmo != '6903818': continue
         Hist_filtered_Profilelist, Dataset = load_history(wmo,True) #true --> save a repo of discarded  prechecks
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
         for ip, p in enumerate(Profilelist):
             #import sys 
-            #if p._my_float.cycle == 75:
+            #if p._my_float.cycle == 250:
             #    sys.exit('carol')
             outfile = get_outfile(p,OUTDIR)
 

@@ -33,25 +33,23 @@ def check_lenght_timeseries(df):
 # check over nans 
 def nans_check(df, namecol):
     """
-    Check whether a time series contains an acceptable fraction of NaNs
-    within its interpolable core.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-    col : str
-    Returns
-    -------
-    A boolean:
-    True  -> the time series has enough valid data (few NaNs) in the core
+        output : Boolean
+        method : fill nans inside the dataset to remove the starting part of time series: create list_index
+                 nan are counted in the core of time series df_ix[list_index]
     """
-    series = pd.to_numeric(df[namecol], errors='coerce')
-    interp = series.interpolate()
-    core = interp.dropna()
-    # If no valid data → reject
-    if len(core) == 0:
+    df[namecol]   = pd.to_numeric(df[namecol])
+    list_index    = list((df.VAR.interpolate()).dropna().index)
+    sliced_time_df = df.iloc[list_index]  
+    if sliced_time_df.empty:
         return False
-    return len(core) > len(series) / 2
+    if len(sliced_time_df) <5:
+        return False
+    sliced_time_df["time"] = pd.to_datetime(sliced_time_df["time"])
+    duration_days = (sliced_time_df["time"].iloc[-1] - sliced_time_df["time"].iloc[0]).days
+    
+    if duration_days > 365 : return True
+    else: return False
+
 
 def lenght_timeseries(df, namecol):
     df1=df.copy()

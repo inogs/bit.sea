@@ -384,9 +384,8 @@ if input_file == 'NO_file':
         print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
-        Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
-        for ip, p in enumerate(Profilelist):
+        Profilelist = [p for p in Hist_filtered_Profilelist if TI.contains(p.time)]
+        for p in Profilelist:
             outfile = get_outfile(p,OUTDIR)
 
             writing_mode=superfloat_generator.writing_mode(outfile)
@@ -427,8 +426,8 @@ else:
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
-        for ip, p in enumerate(Profilelist):
+        Profilelist = [p for p in Hist_filtered_Profilelist if p in Selected_Profilelist]
+        for p in Profilelist:
             outfile = get_outfile(p,OUTDIR)
             if p._my_float.status_var('DOXY')=='R': continue
             writing_mode=superfloat_generator.writing_mode(outfile)

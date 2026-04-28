@@ -4,8 +4,11 @@ from ftplib import FTP
 from pathlib import Path, PurePosixPath
 def argument():
     parser = argparse.ArgumentParser(description = '''
-    downloads netcdf files of argo floats in the mediterranean sea, 
-    using one or two lists of floats
+    Downloads:
+    - netcdf files of argo floats in Med_floats.txt if not already present
+    - netcdf files of update file, in force mode
+                                 
+    The script also removes files that begin with "SR" when "SD" files with the same WMO number and rise up number exist.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
 
@@ -19,7 +22,6 @@ def argument():
                                 required = True,
                                 help = 'local directory of the argo indexed files',
                                 default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/')
-    #         ONLINE_REPO=/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/
     parser.add_argument( '--update_file',"-u",
                                 type = str,
                                 required = True,
@@ -51,9 +53,9 @@ def parse_float_line(line):
     if len(split_line) > 0:
         float_path_remote = PurePosixPath(split_line[0])
         float_path_remote_split = float_path_remote.parts
-        float_dir = float_path_remote_split[1]   #wmo number
+        wmo = float_path_remote_split[1]
         float_file_name = float_path_remote_split[-1]
-        float_path_local = local_coriolis_dir / float_dir / float_file_name
+        float_path_local = local_coriolis_dir / wmo / float_file_name
         return float_path_remote, float_path_local, float_file_name
     else:
         return None, None, None

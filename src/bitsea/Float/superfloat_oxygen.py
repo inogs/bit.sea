@@ -153,7 +153,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))
-            ncOUT.createDimension('nPSAL', len(PresT))
+            ncOUT.createDimension('nPSAL', len(PresS))
 
             ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
             ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
@@ -174,13 +174,13 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
             ncvar[:]=QcT
 
-            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PSAL','f',('nPSAL',))
             ncvar[:]=Sali
             setattr(ncvar, 'variable'   , 'SALI')
             setattr(ncvar, 'units'      , "PSS78")
-            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-            ncvar[:]=PresT
-            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
+            ncvar[:]=PresS
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
             ncvar[:]=QcS
 
         print("dumping oxygen on " + str(outfile), flush=True)

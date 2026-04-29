@@ -73,7 +73,7 @@ def get_outfile(p,outdir):
     return filename
 
 def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
-    PresT, Temp, QcT, Pres, Sali, QcS = read_temp_psal(p)
+    PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
 
     print("dumping chla on " , outfile, p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
     ncOUT = NC.Dataset(outfile,"w")
@@ -84,7 +84,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncOUT.createDimension("NPROF", 1)
 
     ncOUT.createDimension('nTEMP', len(PresT))
-    ncOUT.createDimension('nPSAL', len(PresT))
+    ncOUT.createDimension('nPSAL', len(PresS))
     ncOUT.createDimension('nCHLA', len(Pres ))    
     
     ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
@@ -113,7 +113,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     setattr(ncvar, 'units'      , "PSS78")
 
     ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
-    ncvar[:]=PresT
+    ncvar[:]=PresS
     ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
     ncvar[:]=QcS
 

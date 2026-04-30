@@ -300,7 +300,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     PresT, _, _ = p.read('TEMP', read_adjusted=False)
     if len(PresT)<5:
         print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
-        return
+        return None
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
@@ -324,8 +324,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
                 wmo = p._my_float.wmo
                 df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
                 timenum = int(p.time.strftime("%Y%m%d"))
-                save_report( OUT_META / "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
-                return
+                return (int(wmo), timenum, OFFSET, threshold)
             else:
                 Oxy_Profile = apply_detrend(Pres, Value, df_report)
                 metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
@@ -334,6 +333,7 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
 
     Path.mkdir(outfile.parent, exist_ok=True)
     dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
+    return None
 
 
 
@@ -365,22 +365,40 @@ def load_history(wmo):
     print("...done", flush=True)
     return Profilelist, Dataset
 
-
-
 OUTDIR = Path(args.outdir)
 OUT_META = Path(args.outdiag)
 input_file=args.update_file
+
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
 if input_file == 'NO_file':
-    TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-    R = Rectangle(-6,36,30,46)
+    if rank == 0:
+        TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+        R = Rectangle(-6,36,30,46)
 
-    PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
+        PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
 
-    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-    wmo_list.sort()
+        wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+        wmo_list.sort()
 
+    if isParallel:
+        NOW = comm.bcast(TI, root=0)
+        R = comm.bcast(R, root=0)
+        PROFILES_COR = comm.bcast(PROFILES_COR, root=0)
+        wmo_list = comm.bcast(wmo_list, root=0)
 
-    for wmo in wmo_list:
+    local_blacklist_events = []
+    for i in range(rank, len(wmo_list), nranks):
+        wmo = wmo_list[i]
         print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
@@ -395,7 +413,23 @@ if input_file == 'NO_file':
             if not condition_to_write: continue
 
             metadata = Metadata(p._my_float.filename)
-            doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
+            blacklist_event = doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
+            if blacklist_event is not None:
+                local_blacklist_events.append(blacklist_event)
+
+    if isParallel:
+        gathered_blacklist_events = comm.gather(local_blacklist_events, root=0)
+        if rank == 0:
+            for rank_events in gathered_blacklist_events:
+                for wmo, timenum, offset, threshold in rank_events:
+                    save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                                ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                                [wmo, timenum, offset, threshold])
+    else:
+        for wmo, timenum, offset, threshold in local_blacklist_events:
+            save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                        ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                        [wmo, timenum, offset, threshold])
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
@@ -421,7 +455,9 @@ else:
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
     wmo_list.sort()
 
-    for wmo in wmo_list:
+    local_blacklist_events = []
+    for i in range(rank, len(wmo_list), nranks):
+        wmo = wmo_list[i]
         print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
@@ -432,5 +468,21 @@ else:
             if p._my_float.status_var('DOXY')=='R': continue
             writing_mode=superfloat_generator.writing_mode(outfile)
             metadata = Metadata(p._my_float.filename)
-            doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
+            blacklist_event = doxy_algorithm(p, Hist_filtered_Profilelist, Dataset , outfile, metadata,writing_mode)
+            if blacklist_event is not None:
+                local_blacklist_events.append(blacklist_event)
+
+    if isParallel:
+        gathered_blacklist_events = comm.gather(local_blacklist_events, root=0)
+        if rank == 0:
+            for rank_events in gathered_blacklist_events:
+                for wmo, timenum, offset, threshold in rank_events:
+                    save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                                ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                                [wmo, timenum, offset, threshold])
+    else:
+        for wmo, timenum, offset, threshold in local_blacklist_events:
+            save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                        ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                        [wmo, timenum, offset, threshold])
 

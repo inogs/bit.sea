@@ -381,24 +381,16 @@ except:
     isParallel = False
 
 if input_file == 'NO_file':
-    if rank == 0:
-        TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
-        R = Rectangle(-6,36,30,46)
 
-        PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
+    TI = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
+    R = Rectangle(-6,36,30,46)
+    PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
 
-        wmo_list= bio_float.get_wmo_list(PROFILES_COR)
-        wmo_list.sort()
-
-    if isParallel:
-        NOW = comm.bcast(TI, root=0)
-        R = comm.bcast(R, root=0)
-        PROFILES_COR = comm.bcast(PROFILES_COR, root=0)
-        wmo_list = comm.bcast(wmo_list, root=0)
+    wmo_list= bio_float.get_wmo_list(PROFILES_COR)
+    wmo_list.sort()
 
     local_blacklist_events = []
-    for i in range(rank, len(wmo_list), nranks):
-        wmo = wmo_list[i]
+    for wmo in wmo_list[rank::nranks]:
         print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
@@ -456,8 +448,7 @@ else:
     wmo_list.sort()
 
     local_blacklist_events = []
-    for i in range(rank, len(wmo_list), nranks):
-        wmo = wmo_list[i]
+    for wmo in wmo_list[rank::nranks]:
         print (wmo, flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)

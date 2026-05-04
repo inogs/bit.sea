@@ -1,7 +1,18 @@
 from bitsea.basins import V2 as basV2
 import os
+import sys
 import pandas as pd
 import numpy as np
+try:
+   import fcntl
+except ImportError:
+   fcntl = None
+   print(
+      "WARNING: fcntl is not available; save_report will run without file locking.",
+      file=sys.stderr,
+      flush=True
+   )
+
 def cross_Med_basins(RECTANGLE):
    if RECTANGLE.cross(basV2.eas3):
       LIST_REGION=['lev1','lev2','lev3','lev4','aeg']
@@ -45,13 +56,30 @@ def cross_Med_basins(RECTANGLE):
 def save_report(OUTPATH_NAME, indexlenght, columns_list, values_list):
    """ OUTPATH_NAME EG. 'OUTPUTS/High_time_freq_argo.csv'
    """
-   if os.path.exists(OUTPATH_NAME):
-       df  = pd.read_csv(OUTPATH_NAME,index_col=0)
-   else:
-       df  = pd.DataFrame(index=np.arange(0, indexlenght), columns= columns_list  )
-   dftmp = pd.DataFrame(index=np.arange(0,1), columns= columns_list )
-   dftmp = pd.Series(values_list , columns_list)
-   df = pd.concat((df, dftmp),ignore_index=True)
-   df.drop_duplicates(inplace=True)
-   df = df.sort_values(by="DATE_DAY")
-   df.to_csv(OUTPATH_NAME)
+   outpath = os.fspath(OUTPATH_NAME)
+   with open(outpath, 'a+') as lock_fd:
+      if fcntl is not None:
+         fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+      try:
+         lock_fd.seek(0, os.SEEK_END)
+         file_is_empty = lock_fd.tell() == 0
+         if file_is_empty:
+            df = pd.DataFrame(index=np.arange(0, indexlenght), columns=columns_list)
+         else:
+            lock_fd.seek(0)
+            df = pd.read_csv(lock_fd, index_col=0)
+
+         dftmp = pd.DataFrame(index=np.arange(0,1), columns=columns_list)
+         dftmp = pd.Series(values_list, columns_list)
+         df = pd.concat((df, dftmp), ignore_index=True)
+         df.drop_duplicates(inplace=True)
+         df = df.sort_values(by="DATE_DAY")
+
+         lock_fd.seek(0)
+         lock_fd.truncate()
+         df.to_csv(lock_fd)
+         lock_fd.flush()
+         os.fsync(lock_fd.fileno())
+      finally:
+         if fcntl is not None:
+            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)

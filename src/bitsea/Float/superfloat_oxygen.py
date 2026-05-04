@@ -410,19 +410,10 @@ if input_file == 'NO_file':
             if blacklist_event is not None:
                 local_blacklist_events.append(blacklist_event)
 
-    if isParallel:
-        gathered_blacklist_events = comm.gather(local_blacklist_events, root=0)
-        if rank == 0:
-            for rank_events in gathered_blacklist_events:
-                for wmo, timenum, offset, threshold in rank_events:
-                    save_report(OUT_META / "Blacklist_wmo.csv", 1,
-                                ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
-                                [wmo, timenum, offset, threshold])
-    else:
-        for wmo, timenum, offset, threshold in local_blacklist_events:
-            save_report(OUT_META / "Blacklist_wmo.csv", 1,
-                        ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
-                        [wmo, timenum, offset, threshold])
+    for wmo, timenum, offset, threshold in local_blacklist_events:
+        save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                    ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                    [wmo, timenum, offset, threshold])
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
@@ -466,17 +457,8 @@ else:
             if blacklist_event is not None:
                 local_blacklist_events.append(blacklist_event)
 
-    if isParallel:
-        gathered_blacklist_events = comm.gather(local_blacklist_events, root=0)
-        if rank == 0:
-            for rank_events in gathered_blacklist_events:
-                for wmo, timenum, offset, threshold in rank_events:
-                    save_report(OUT_META / "Blacklist_wmo.csv", 1,
-                                ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
-                                [wmo, timenum, offset, threshold])
-    else:
-        for wmo, timenum, offset, threshold in local_blacklist_events:
-            save_report(OUT_META / "Blacklist_wmo.csv", 1,
-                        ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
-                        [wmo, timenum, offset, threshold])
+    for wmo, timenum, offset, threshold in local_blacklist_events:
+        save_report(OUT_META / "Blacklist_wmo.csv", 1,
+                    ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
+                    [wmo, timenum, offset, threshold])
 

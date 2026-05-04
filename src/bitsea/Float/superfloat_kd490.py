@@ -76,7 +76,7 @@ def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
             setattr(ncOUT, 'origin'     , 'coriolis')
             setattr(ncOUT, 'file_origin', metadata.filename)
-            PresT, Temp, QcT, Pres, Sali, QcS = read_temp_psal(p)
+            PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))

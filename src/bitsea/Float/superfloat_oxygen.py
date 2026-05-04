@@ -391,12 +391,13 @@ if input_file == 'NO_file':
 
     local_blacklist_events = []
     for wmo in wmo_list[rank::nranks]:
-        print (wmo, flush=True)
+        print (f"Rank {rank} processing float {wmo}", flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
         Profilelist = [p for p in Hist_filtered_Profilelist if TI.contains(p.time)]
         for p in Profilelist:
             outfile = get_outfile(p,OUTDIR)
+            print(f"Rank {rank} processing profile {p._my_float.filename} to {outfile}", flush=True)
 
             writing_mode=superfloat_generator.writing_mode(outfile)
 
@@ -449,13 +450,14 @@ else:
 
     local_blacklist_events = []
     for wmo in wmo_list[rank::nranks]:
-        print (wmo, flush=True)
+        print (f"Rank {rank} processing float {wmo}", flush=True)
 
         Hist_filtered_Profilelist, Dataset = load_history(wmo)
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         Profilelist = [p for p in Hist_filtered_Profilelist if p in Selected_Profilelist]
         for p in Profilelist:
             outfile = get_outfile(p,OUTDIR)
+            print(f"Rank {rank} processing profile {p._my_float.filename} to {outfile}", flush=True)
             if p._my_float.status_var('DOXY')=='R': continue
             writing_mode=superfloat_generator.writing_mode(outfile)
             metadata = Metadata(p._my_float.filename)

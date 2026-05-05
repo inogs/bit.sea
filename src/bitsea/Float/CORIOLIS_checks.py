@@ -30,16 +30,26 @@ def check_lenght_timeseries(df):
     days = duration.days
     return(days>365)
 
-# check over nans
+# check over nans 
 def nans_check(df, namecol):
-    """ input  : dataframe & nameof column selected for the check 
+    """
         output : Boolean
         method : fill nans inside the dataset to remove the starting part of time series: create list_index
                  nan are counted in the core of time series df_ix[list_index]
-        """
+    """
     df[namecol]   = pd.to_numeric(df[namecol])
-    list_index    = list((df.interpolate()).dropna().index)
-    return(df.iloc[list_index].VAR.isna().sum()  < df.shape[0]/2)
+    list_index    = list((df.VAR.interpolate()).dropna().index)
+    sliced_time_df = df.iloc[list_index]  
+    if sliced_time_df.empty:
+        return False
+    if len(sliced_time_df) <5:
+        return False
+    sliced_time_df["time"] = pd.to_datetime(sliced_time_df["time"])
+    duration_days = (sliced_time_df["time"].iloc[-1] - sliced_time_df["time"].iloc[0]).days
+    
+    if duration_days > 365 : return True
+    else: return False
+
 
 def lenght_timeseries(df, namecol):
     df1=df.copy()

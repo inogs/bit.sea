@@ -45,6 +45,7 @@ class DatasetExtractor():
             lon  = uniques[i,1].astype(np.float32)
             lat  = uniques[i,2].astype(np.float32)
             inthisprofile = ib==i
+            inthisprofile= inthisprofile.ravel()
             Values=values[inthisprofile]
             Depth = depth[inthisprofile]
             

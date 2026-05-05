@@ -39,6 +39,14 @@ import scipy.io.netcdf as NC
 import numpy as np
 import gsw
 
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
+
 def remove_bad_sensors(Profilelist,var):
     '''
 
@@ -70,8 +78,7 @@ def convert_oxygen(p,doxypres,doxyprofile):
     from micromol/Kg to  mmol/m3
     '''
     if doxypres.size == 0: return doxyprofile
-    Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
-    Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
+    PresT, temp, QcT, Pres, sali, QcS = read_temp_psal(p)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
@@ -85,8 +92,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
+        PresT, Temp, QcT, Pres, Sali, QcS = read_temp_psal(p)
         ncOUT.createDimension("DATETIME",14)
         ncOUT.createDimension("NPROF", 1)
         ncOUT.createDimension('nTEMP', len(PresT))

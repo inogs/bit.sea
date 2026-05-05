@@ -4,6 +4,13 @@ import scipy.io.netcdf as NC
 import os
 
 
+def read_temp_adjusted(profile_obj):
+    PresT, Temp, QcT = profile_obj.read('TEMP', read_adjusted=True)
+    if PresT is None or Temp is None or len(PresT) == 0 or len(Temp) == 0:
+        PresT, Temp, QcT = profile_obj.read('TEMP', read_adjusted=False)
+    return PresT, Temp, QcT
+
+
 def general_quenching(profile_obj, Pres, Profile, Qc):
     '''
     Manages the quenching for Coriolis profiles
@@ -14,7 +21,7 @@ def general_quenching(profile_obj, Pres, Profile, Qc):
     In case of cutted profile (Z_top > 10.) the quench value is replied up to the sea surface
     on a set of extrapolation points, every 5 meters.
     '''
-    PresT, Temp, _ = profile_obj.read('TEMP', read_adjusted=False)
+    PresT, Temp, _ = read_temp_adjusted(profile_obj)
     mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
     if mld < 80:
         if Pres[0] <= mld+5:
@@ -57,7 +64,7 @@ def quenching(profile_obj, PresChl, Chl, chl_lov_zero):
     '''
     Quenched_Chl = Chl.copy()
     if profile_obj.time.month in range(1,13):
-        PresT, Temp, _ = profile_obj.read('TEMP', read_adjusted=False)
+        PresT, Temp, _ = read_temp_adjusted(profile_obj)
         mld = calculated_depths.mld(Temp, PresT, zref=0, deltaTemp=0.1)
         if mld > 200:mld=20
 

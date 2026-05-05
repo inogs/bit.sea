@@ -1,5 +1,13 @@
 import argparse
 from bitsea.utilities.argparse_types import existing_dir_path
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    PresS, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (PresS is None or PresT is None or Temp is None or Sali is None or len(PresS) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, PresS, Sali, QcS
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of down irradiance at 490nm.
@@ -68,8 +76,7 @@ def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
             setattr(ncOUT, 'origin'     , 'coriolis')
             setattr(ncOUT, 'file_origin', metadata.filename)
-            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))
@@ -93,13 +100,13 @@ def dump_kd_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
             ncvar[:]=QcT
 
-            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PSAL','f',('nPSAL',))
             ncvar[:]=Sali
             setattr(ncvar, 'variable'   , 'SALI')
             setattr(ncvar, 'units'      , "PSS78")
-            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-            ncvar[:]=PresT
-            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
+            ncvar[:]=PresS
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
             ncvar[:]=QcS
 
         print("dumping kd490 on " + str(outfile), flush=True)

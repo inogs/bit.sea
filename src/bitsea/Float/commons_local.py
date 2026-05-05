@@ -2,6 +2,7 @@ from bitsea.basins import V2 as basV2
 import os
 import pandas as pd
 import numpy as np
+
 def cross_Med_basins(RECTANGLE):
    if RECTANGLE.cross(basV2.eas3):
       LIST_REGION=['lev1','lev2','lev3','lev4','aeg']
@@ -42,16 +43,31 @@ def cross_Med_basins(RECTANGLE):
       elif RECTANGLE.cross(basV2.ion3):
          return(basV2.ion3.name, basV2.ion3.borders)
 
-def save_report(OUTPATH_NAME, indexlenght, columns_list, values_list):
-   """ OUTPATH_NAME EG. 'OUTPUTS/High_time_freq_argo.csv'
+def save_report(lock_fd, indexlenght, columns_list, values_list):
+   """ lock_fd EG. open('OUTPUTS/High_time_freq_argo.csv', 'a+')
    """
-   if os.path.exists(OUTPATH_NAME):
-       df  = pd.read_csv(OUTPATH_NAME,index_col=0)
+   lock_fd.seek(0, os.SEEK_END)
+   file_is_empty = lock_fd.tell() == 0
+   if file_is_empty:
+      df = pd.DataFrame(index=np.arange(0, indexlenght), columns=columns_list)
    else:
-       df  = pd.DataFrame(index=np.arange(0, indexlenght), columns= columns_list  )
-   dftmp = pd.DataFrame(index=np.arange(0,1), columns= columns_list )
-   dftmp = pd.Series(values_list , columns_list)
-   df = pd.concat((df, dftmp),ignore_index=True)
+      lock_fd.seek(0)
+      df = pd.read_csv(lock_fd, index_col=0)
+   df.dropna(how="all", inplace=True)
+   #print(f"loaded df: size: {df.size}; shape: {df.shape}")
+   dftmp = pd.Series(values_list, columns_list)
+   #print(f"tmp series: size: {dftmp.size}; shape: {dftmp.shape}")
+   df = pd.concat((df, dftmp.to_frame().T), ignore_index=True)
+   #print(f"after concat df: size: {df.size}; shape: {df.shape}")
    df.drop_duplicates(inplace=True)
+   #print(f"dropped duplicates df: size: {df.size}; shape: {df.shape}")
+   #print("DATAFRAME AFTER CONCAT AND DROPPING DUPLICATES:")
+   #print(df)
    df = df.sort_values(by="DATE_DAY")
-   df.to_csv(OUTPATH_NAME)
+   #print(f"sorted df: size: {df.size}; shape: {df.shape}")
+
+   lock_fd.seek(0)
+   lock_fd.truncate()
+   df.to_csv(lock_fd)
+   lock_fd.flush()
+   os.fsync(lock_fd.fileno())

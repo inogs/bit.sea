@@ -68,12 +68,18 @@ def save_report(OUTPATH_NAME, indexlenght, columns_list, values_list):
          else:
             lock_fd.seek(0)
             df = pd.read_csv(lock_fd, index_col=0)
-
-         dftmp = pd.DataFrame(index=np.arange(0,1), columns=columns_list)
+         df.dropna(how="all", inplace=True)
+         #print(f"loaded df: size: {df.size}; shape: {df.shape}")
          dftmp = pd.Series(values_list, columns_list)
-         df = pd.concat((df, dftmp), ignore_index=True)
+         #print(f"tmp series: size: {dftmp.size}; shape: {dftmp.shape}")
+         df = pd.concat((df, dftmp.to_frame().T), ignore_index=True)
+         #print(f"after concat df: size: {df.size}; shape: {df.shape}")
          df.drop_duplicates(inplace=True)
+         #print(f"dropped duplicates df: size: {df.size}; shape: {df.shape}")
+         #print("DATAFRAME AFTER CONCAT AND DROPPING DUPLICATES:")
+         #print(df)
          df = df.sort_values(by="DATE_DAY")
+         #print(f"sorted df: size: {df.size}; shape: {df.shape}")
 
          lock_fd.seek(0)
          lock_fd.truncate()

@@ -54,7 +54,6 @@ from bitsea.basins.region import Rectangle
 import superfloat_generator
 from pathlib import Path
 import os
-import sys
 import netCDF4 as NC
 import numpy as np
 import gsw
@@ -65,16 +64,7 @@ import TREND_ANALYSIS
 import bitsea.basins.OGS as OGS
 from bitsea.instruments.var_conversions import FLOATVARS
 from commons_local import cross_Med_basins, save_report
-
-try:
-    import fcntl
-except ImportError:
-    fcntl = None
-    print(
-        "WARNING: fcntl is not available; superfloat_oxygen will run without file locking.",
-        file=sys.stderr,
-        flush=True
-    )
+import fcntl
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
 df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
@@ -422,16 +412,14 @@ if input_file == 'NO_file':
                 local_blacklist_events.append(blacklist_event)
 
     with open(OUT_META / "Blacklist_wmo.csv", 'a+') as lock_fd:
-        if fcntl is not None:
-            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
         try:
             for wmo, timenum, offset, threshold in local_blacklist_events:
                 save_report(lock_fd, 1,
                             ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
                             [wmo, timenum, offset, threshold])
         finally:
-            if fcntl is not None:
-                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
 else:
 
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
@@ -476,14 +464,13 @@ else:
                 local_blacklist_events.append(blacklist_event)
 
     with open(OUT_META / "Blacklist_wmo.csv", 'a+') as lock_fd:
-        if fcntl is not None:
-            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
         try:
             for wmo, timenum, offset, threshold in local_blacklist_events:
                 save_report(lock_fd, 1,
                             ['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],
                             [wmo, timenum, offset, threshold])
         finally:
-            if fcntl is not None:
-                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+
 

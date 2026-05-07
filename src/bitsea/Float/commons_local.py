@@ -46,8 +46,7 @@ def cross_Med_basins(RECTANGLE):
 def save_report(lock_fd, indexlenght, columns_list, values_list):
    """ lock_fd EG. open('OUTPUTS/High_time_freq_argo.csv', 'a+')
    """
-   lock_fd.seek(0, os.SEEK_END)
-   file_is_empty = lock_fd.tell() == 0
+   file_is_empty = os.fstat(lock_fd.fileno()).st_size == 0
    if file_is_empty:
       df = pd.DataFrame(index=np.arange(0, indexlenght), columns=columns_list)
    else:
@@ -66,8 +65,7 @@ def save_report(lock_fd, indexlenght, columns_list, values_list):
    df = df.sort_values(by="DATE_DAY")
    #print(f"sorted df: size: {df.size}; shape: {df.shape}")
 
-   lock_fd.seek(0)
-   lock_fd.truncate()
+   os.ftruncate(lock_fd.fileno(), 0)
    df.to_csv(lock_fd)
    lock_fd.flush()
    os.fsync(lock_fd.fileno())

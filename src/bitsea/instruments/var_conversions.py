@@ -10,7 +10,16 @@ FLOATVARS={'O2o':'DOXY', \
            'P_c':'BBP700',
            'BBP532':'BBP532',
            'pH'    : 'PH_IN_SITU_TOTAL'   }
- 
+
+CANYONVAR={'O2o':'DOXY', \
+           'P_l':'CHLA', \
+           'N3n':'NITRATE',  \
+           'N1p' :'PO4', \
+           'DIC' :'DIC', \
+           'N5s' :'SiOH4', \
+           'ALK' :'AT',    \
+           'pH'  :'PH_IN_SITU_TOTAL'   }
+
 #DOXY:units = "micromole/kg" ;
 #CHLA:units = "mg/m3" ;
 #NITRATE:units = "micromole/kg" ;

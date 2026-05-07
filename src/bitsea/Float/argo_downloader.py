@@ -1,7 +1,7 @@
 import argparse
 import os
-import subprocess as sp
-from pathlib import Path
+from ftplib import FTP
+from pathlib import Path, PurePosixPath
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Downloads:
@@ -11,12 +11,6 @@ def argument():
     The script also removes files that begin with "SR" when "SD" files with the same WMO number and rise up number exist.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
-
-    parser.add_argument(   '--getcommand',"-g",
-                                type = str,
-                                required = False,
-                                help = 'path of the ncftpget command',
-                                default = '/leonardo/home/usera07ogs/a07ogs00/OPA/V12C-dev/HOST/leonardo/bin/ncftpget')
     parser.add_argument(   '--coriolisdir',"-c",
                                 type = str,
                                 required = True,
@@ -35,12 +29,9 @@ def argument():
 
     return parser.parse_args()
 
-
-
 args = argument()
 
-ncftpget_command = args.getcommand
-remote_dir = Path("/ifremer/argo/dac/")
+remote_dir = PurePosixPath("/ifremer/argo/dac/")
 local_coriolis_dir = Path(args.coriolisdir)
 update_file = args.update_file
 if args.indexer_file:
@@ -63,15 +54,15 @@ def parse_float_line(line):
     split_line = line.split(",")
 
     if len(split_line) > 0:
-        float_path_remote = Path(split_line[0])
+        float_path_remote = PurePosixPath(split_line[0])
         float_path_remote_split = float_path_remote.parts
-        float_dir = float_path_remote_split[1]   #wmo number
+        wmo = float_path_remote_split[1]
         float_file_name = float_path_remote_split[-1]
-        float_path_local = local_coriolis_dir / float_dir / float_file_name
+        float_path_local = local_coriolis_dir / wmo / float_file_name
         return float_path_remote, float_path_local, float_file_name
     else:
         return None, None, None
-    
+
 def download_move_float(float_path_remote, float_path_local, float_file_name):
     """
     Downloads the netcdf file containing the profiles associated to a specified argo float and rise up number.
@@ -83,21 +74,28 @@ def download_move_float(float_path_remote, float_path_local, float_file_name):
     Output:
     - bool              : False/True   failure/success output states
     """
+    local_tmp_download_path.mkdir(parents=True, exist_ok=True)
+    float_path_local.parent.mkdir(parents=True, exist_ok=True)
+    tmp_file_path = local_tmp_download_path / float_file_name
     remote_file_path = str(remote_dir / float_path_remote)
-    command = f"{ncftpget_command} -u anonymous ftp.ifremer.fr {local_tmp_download_path} {remote_file_path)}"
-    
+
     print(f"Downloading {remote_file_path} from ftp.ifremer.fr")
 
-    res=sp.run(command, shell=True, stdout=sp.PIPE, stderr=sp.STDOUT)
-    res_str = res.stdout.decode("utf-8")
-    if res.returncode == 0:
-        os.rename(local_tmp_download_path + "/" + float_file_name, float_path_local)
-        print(f"Download OK: {float_path_local}")
-    else:
+    try:
+        with FTP("ftp.ifremer.fr") as connection:
+            connection.login()
+            with open(tmp_file_path, "wb") as tmp_file:
+                connection.retrbinary(f"RETR {remote_file_path}", tmp_file.write)
+    except Exception as exc:
+        if tmp_file_path.exists():
+            os.remove(tmp_file_path)
         print(f"""Download FAILED: {float_file_name}.
-              Command output: {res_str}""")
-    return res.returncode == 0
+              Command output: {exc}""")
+        return False
 
+    os.rename(tmp_file_path, float_path_local)
+    print(f"Download OK: {float_path_local}")
+    return True
 
 # download from indexer file list (if provided)
 print("Downloading missing argo float profiles (sync list with existing files)...")

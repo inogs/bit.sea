@@ -1,4 +1,12 @@
 import argparse
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of cdom.
@@ -47,8 +55,7 @@ def dump_cdom_file(outfile, p, Pres, Value, Qc, metatata, mode='w'):
     ncOUT = NC.netcdf_file(outfile + ".tmp" ,mode)
 
     if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-        PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)        
+        PresT, Temp, QcT, Pres, Sali, QcS = read_temp_psal(p)        
         ncOUT.createDimension("DATETIME",14)
         ncOUT.createDimension("NPROF", 1)
         ncOUT.createDimension('nTEMP', len(PresT))

@@ -63,7 +63,7 @@ from TREND_ANALYSIS import sign_analysis
 import TREND_ANALYSIS
 import bitsea.basins.OGS as OGS
 from bitsea.instruments.var_conversions import FLOATVARS
-from commons_local import cross_Med_basins, save_report
+from commons_local import cross_Med_basins
 
 df_clim = pd.read_csv('EMODNET_climatology.csv',index_col=0)
 df_cstd = pd.read_csv('EMODNET_stdev.csv',index_col=0)
@@ -72,8 +72,18 @@ class Metadata():
     def __init__(self, filename):
         self.filename = str(filename)
         self.status_var = 'n'
-        self.drift_code = -5
-        self.offset = -999
+        self.drift_code = np.nan
+        self.offset = np.nan
+        self.drift  = np.nan
+
+
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
 
 
 def convert_oxygen(p,doxypres,doxyprofile):
@@ -81,12 +91,52 @@ def convert_oxygen(p,doxypres,doxyprofile):
     from micromol/Kg to  mmol/m3
     '''
     if doxypres.size == 0: return doxyprofile
-    Pres, temp, Qc = p.read("TEMP",read_adjusted=False)
-    Pres, sali, Qc = p.read("PSAL",read_adjusted=False)
+    PresT, temp, Qc, Pres, sali, QcS = read_temp_psal(p)
+    if len(temp) != len(sali):
+           temp = np.interp(Pres, PresT, temp)
     SA = gsw.SA_from_SP(sali, Pres, p.lon, p.lat)
     density = gsw.rho(SA, gsw.CT_from_t(SA, temp, Pres), Pres)
     density_on_zdoxy = np.interp(doxypres,Pres,density)
     return doxyprofile * density_on_zdoxy/1000.
+
+def save_df_report(out_dir, df_report, filename):
+    """
+    Save or update a CSV report file by appending the first row of a DataFrame,
+    avoiding duplicate entries.
+
+    Parameters
+    ----------
+    out_dir : str or Path. Directory where the CSV file is stored.
+    df_report : pandas.DataFrame DataFrame from which the first row is extracted and saved.
+    filename : str. Name of the CSV file.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If the file already exists, the function updates it by adding the new entry
+    only if it is not already present.
+    """
+
+    # prepare directory
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    file_path = out_dir / filename
+
+    # prepare report
+    df_new = df_report.iloc[[0]].copy()
+    if file_path.exists():
+        df_existing = pd.read_csv(file_path)
+        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+    else:
+        df_combined = df_new
+
+    # save report
+    df_combined = df_combined.drop_duplicates()
+    df_combined.to_csv(file_path, index=False)
+    #print(f"saved {file_path} with {len(df_combined)} rows.")
 
 def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
     nP=len(Pres)
@@ -99,12 +149,11 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
         if mode=='w': # if not existing file, we'll put header, TEMP, PSAL
             setattr(ncOUT, 'origin'     , 'coriolis')
             setattr(ncOUT, 'file_origin', metadata.filename)
-            PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
-            PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+            PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
             ncOUT.createDimension("DATETIME",14)
             ncOUT.createDimension("NPROF", 1)
             ncOUT.createDimension('nTEMP', len(PresT))
-            ncOUT.createDimension('nPSAL', len(PresT))
+            ncOUT.createDimension('nPSAL', len(PresS))
 
             ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
             ncvar[:]=p.time.strftime("%Y%m%d%H%M%S")
@@ -125,13 +174,13 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar=ncOUT.createVariable('TEMP_QC','f',('nTEMP',))
             ncvar[:]=QcT
 
-            ncvar=ncOUT.createVariable('PSAL','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PSAL','f',('nPSAL',))
             ncvar[:]=Sali
             setattr(ncvar, 'variable'   , 'SALI')
             setattr(ncvar, 'units'      , "PSS78")
-            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nTEMP',))
-            ncvar[:]=PresT
-            ncvar=ncOUT.createVariable('PSAL_QC','f',('nTEMP',))
+            ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
+            ncvar[:]=PresS
+            ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
             ncvar[:]=QcS
 
         print("dumping oxygen on " + str(outfile), flush=True)
@@ -153,6 +202,7 @@ def dump_oxygen_file(outfile, p, Pres, Value, Qc, metadata, mode='w'):
             ncvar[:]=Qc
         setattr(ncvar, 'status_var' , metadata.status_var)
         setattr(ncvar, 'drift_code' , metadata.drift_code)
+        setattr(ncvar, 'drift'      , metadata.drift)
         setattr(ncvar, 'offset'     , metadata.offset)
         setattr(ncvar, 'variable'   , 'DOXY')
         setattr(ncvar, 'units'      , "mmol/m3")
@@ -176,15 +226,29 @@ def read_doxy(pCor):
 
 def Depth_interp(Profilelist, HistoricalDataset):
     """
-    HistoricalDataset is a dictionary: keys are p.ID(), values are tuples (Pres,Value,Qc)
+    Interpolate oxygen (DOXY) values at standard depths (600m and 800m) from historical profiles.
 
-    data at 600m and 800m are created by interpolating data using layer 580-620m
-        and 780-820 m
+    Parameters
+    ----------
+    Profilelist : list of ProfileList of float profiles to process.
+    HistoricalDataset : dictDictionary where keys are profile IDs and values are tuples (Pres, Value, Qc) containing pressure, measured oxygen values, and quality control flags.
+
+    What it does
+    ------------
+    1. For each profile in Profilelist, checks if data exists within ±20m around 600m and 800m.
+    2. Interpolates oxygen (DOXY) values at exactly 600m and 800m if sufficient data exists.
+    3. Creates a DataFrame summarizing profile ID, time, location, depth, and interpolated values.
+    4. Sets a condition flag True if at least one valid oxygen value exists at 600m.
+
+    Returns
+    -------
+    df : DataFrame with interpolated oxygen values at 600m and 800m for each profile.
+    CONDITION : bool= True if at least one valid oxygen value exists at 600m, False otherwise.
     """
-    THRES             = 20
+
+    THRES             = 20 # data are interpolated starting from a layer +/- 20m es 580-620m
     LIST_DEPTH        = [600,800]
     COUNT=0
-    VARNAME ,varmod   = 'DOXY' , 'O2o'
     columnlist        = ['ID','time','lat','lon','name','Type','VAR', 'Depth']
     df = pd.DataFrame(index=np.arange(0,2), columns=columnlist)
     for DEPTH in LIST_DEPTH:
@@ -198,28 +262,92 @@ def Depth_interp(Profilelist, HistoricalDataset):
                df.Depth[COUNT] = DEPTH
             else:
                df.Depth[COUNT] = DEPTH
+               # interp. at 600/800m if data at layer +-20m
                df.VAR[COUNT]   = np.interp(DEPTH , Pres[IDX], (Profile[IDX]))
             COUNT+=1
 
-    CONDITION = df[df.Depth==600].VAR.notnull().any()  # no data at 600m
+    # CONDITION is True if at least one valid value of VAR exists at 600 m
+    CONDITION = df[df.Depth==600].VAR.notnull().any()  
     return(df, CONDITION)
 
 
-def trend_analysis(p, Profilelist_hist, Dataset):
-    starttime                  = p.time - timedelta(days=365*3)
-    TI                         = TimeInterval.fromdatetimes(starttime, p.time)
-    Profilelist                = [p for p in Profilelist_hist if TI.contains(p.time)]
+def extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset):
+    """
+    Extract and prepare oxygen timeseries at 600m and 800m depths for a given profile.
+
+    Parameters
+    ----------
+    p : Profile Current float profile for which the timeseries is prepared.
+    Profilelist_hist : List of historical profiles from the same float.
+    Dataset : dict Dictionary with profile IDs as keys and tuples (Pres, Value, Qc) as values.
+
+    What it does
+    ------------
+    1. Defines a time window of 3 years before the profile time up to 1 hour after.
+    2. Filters historical profiles to include only those within the time window.
+    3. Interpolates oxygen (DOXY) values at 600m and 800m from historical profiles.
+    4. Identifies the corresponding Mediterranean basin of the profile.
+    5. Checks whether there is at least one valid oxygen value at 600m for trend analysis.
+
+    Returns
+    -------
+    df : pandas.DataFrame DataFrame containing interpolated oxygen values at 600m and 800m depths.
+    NAME_BASIN : str Name of the Mediterranean basin where the profile is located.
+    condition1_to_detrend : bool True if there is at least one valid oxygen value at 600m, False otherwise.
+    """
+
+    starttime           = p.time - timedelta(days=365*3)
+    endtime             = p.time + timedelta(hours=1)
+    TI                  = TimeInterval.fromdatetimes(starttime, endtime) # fixed bug
+    Profilelist         = [p for p in Profilelist_hist if TI.contains(p.time)]
 
     df, condition1_to_detrend  = Depth_interp(Profilelist, Dataset)
     ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))
     NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
     return df, NAME_BASIN, condition1_to_detrend
 
-def get_trend_report(p, df):
+def get_trend_report(p, df, Save_Repo_when_rejected):
+    """
+    Compute trend diagnostics of dissolved oxygen time series at 600m and 800m
+    for a given float profile.
+
+    Parameters
+    ----------
+    p : Profile Current float profile containing metadata (time, cycle, float info).
+    df : pandas.DataFrame containing interpolated oxygen values (VAR) at different depths
+    Save_Repo_when_rejected : bool If True, the function returns early afterregistering basic data (eg cycle time..)
+
+    What it does
+    ------------
+    1. Initializes a report DataFrame to store trend diagnostics for 600m and 800m.
+    2. For each depth (600m and 800m):
+        - Filters the input DataFrame for the selected depth and float.
+        - Computes time series properties:
+            * duration (in days)
+            * minimum and maximum dates
+            * presence of valid (non-NaN) data
+        - Applies quality checks (length of time series and NaNs).
+        - Calls `trend_conditions` to compute preliminary trend metrics
+          (e.g. Theil-Sen and RANSAC estimators).
+    3. If `Save_Repo_when_rejected` is True:
+        - Returns the partial report without performing full trend analysis.
+    4. Otherwise:
+        - Combines Theil-Sen and RANSAC results.
+        - Evaluates the consistency of trend signs (`sign_analysis`).
+        - Assigns a drift classification using `drift_coding`.
+        - Computes and stores the trend per year.
+        - Updates metadata with the drift code.
+    5. Repeats the process for both depths (600m and 800m).
+
+    Returns
+    -------
+    df_report : pandas.DataFrame DataFrame summarizing trend diagnostics for each depth
+    tmp       : pandas.DataFrame Subset of the input DataFrame corresponding to 600m depth, used for
+    """
+
     LIST_DEPTH = [600,800]
-    COLUMNS     = ['WMO','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC']
-    df_report   = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
-    df_report['TREND_TIME_SERIES'] ,df_report['TREND_per_YEAR'] ,df_report['DRIFT_CODE'] = np.nan , np.nan , np.nan
+    COLUMNS    = ['WMO','cycle','Depth','DURATION','min_date','max_date','Theil-Sen','RANSAC','TREND_TIME_SERIES', 'TREND_per_YEAR', 'DRIFT_CODE']
+    df_report  = pd.DataFrame(index=np.arange(0,2), columns=COLUMNS)
 
     COUNT=0
     TI_3 = TimeInterval.fromdatetimes(p.time, p.time)
@@ -227,33 +355,71 @@ def get_trend_report(p, df):
     for DEPTH in LIST_DEPTH:
         tmp = df[(df.Depth == DEPTH) & (df.name == wmo)]
         tmp.index = np.arange(0,len(tmp.index))
-        days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp, 'time')
-        Bool = CORIOLIS_checks.nans_check(tmp, 'VAR')
+        days, min_d , max_d = CORIOLIS_checks.lenght_timeseries(tmp,'time') # for each depth calculate length timeserie
+        Bool_nans = CORIOLIS_checks.nans_check(tmp, 'VAR') #True  -> the time series has enough valid data (few NaNs)
         tmp.dropna(inplace=True)
-        lst = trend_conditions(wmo,days, Bool  , DEPTH,min_d, max_d , TI_3, tmp)
+        cycle = p._my_float.cycle
+        if Save_Repo_when_rejected: #save report even if no data at depth
+            lst = trend_conditions(wmo,cycle,days, Bool_nans , np.nan,min_d, max_d ,     TI_3, tmp)
+            df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns) # only cycle and wmo registered
+            return df_report
+
+        lst = trend_conditions(wmo,cycle,days, Bool_nans , DEPTH,min_d, max_d , TI_3,     tmp)
         df_report.iloc[COUNT,:] = pd.Series(lst, df_report.columns)
         serv = df_report.loc[df_report.WMO==wmo]
         A    = np.append(np.array( serv['Theil-Sen']), np.array( serv['RANSAC']))
-        if serv.DURATION.any()==0:
-            pass
+        if (serv.DURATION == 0).any(): # if duration is 0 days at 600 or 800m
+            pass # skip sign analysis and trend analysis
         else:
             Bool = sign_analysis(A)
             df_report =  TREND_ANALYSIS.drift_coding(wmo, Bool, serv, df_report)
+            #arr = np.array(df_report.TREND_per_YEAR)[0]
+            #metadata.drift_code = np.round(arr, 3)
         COUNT+=1
 
     tmp = df[(df.Depth == 600) & (df.name == wmo)]
     return df_report, tmp
 
 def clim_check(p, df_report, NAME_BASIN, tmp):
+    """
+    Compute climatology-based offset and update trend report diagnostics.
+
+    This function compares observed dissolved oxygen values with a basin
+    climatological reference and computes an offset, optionally correcting
+    for the estimated trend. It also updates the report DataFrame with
+    climatology-related metadata.
+
+    Parameters
+    ----------
+    p : Profile Current float profile containing metadata (e.g. WMO, cycle).
+    df_report : pandas.DataFrame Trend report containing results such as trend per year and time series trend.
+    NAME_BASIN : str Name of the Mediterranean basin associated with the profile.
+    tmp : pandas.DataFrame Time series subset at a given depth, containing oxygen values (VAR).
+
+    Returns
+    -------
+    OFFSET : float, Difference between observed (or trend-corrected) value and climatology.
+    threshold : float, Climatological threshold defined as 2 × standard deviation.
+    df_report : pandas.DataFrame Updated report including OFFSET, basin, climatology, and threshold.
+
+    Notes
+    -----
+    - If the trend is missing or < 1, the offset is computed directly from
+      the last observed value.
+    - Otherwise, the last value is corrected by removing the estimated trend
+      before computing the offset.
+    """
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
-    TREND_null = df_report.TREND_TIME_SERIES.isnull().values.any()
-    if TREND_null:
+    TREND_null = df_report.TREND_per_YEAR.isnull().values.any() # bug fixed
+    if TREND_null or abs(df_report.TREND_per_YEAR[0])<1:
         OFFSET  = float(tmp.VAR.iloc[-1]) - VALCLIM
     else:
         Corrrected_val = float(tmp.VAR.iloc[-1]) - float(df_report.TREND_TIME_SERIES.iloc[0])
         OFFSET  = Corrrected_val - VALCLIM
     STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
     STDCLIM_2 = 2*STDCLIM
+    if STDCLIM_2 <10:
+        STDCLIM_2=10
     wmo = p._my_float.wmo
     df_report.loc[ df_report.WMO == wmo , 'OFFSET'] = OFFSET
     df_report.loc[ df_report.WMO == wmo , 'basin'] = NAME_BASIN
@@ -297,51 +463,88 @@ def doxy_algorithm(p, Profilelist_hist, Dataset, outfile, metadata,writing_mode)
     * Dataset          * dictionary, provided by load_history()
     '''
     Pres, Value, Qc  = Dataset[p.ID()]
-    PresT, _, _ = p.read('TEMP', read_adjusted=False)
-    if len(PresT)<5:
+    PresT, _, _, _, _, _ = read_temp_psal(p)
+    if PresT is None or len(PresT) < 5:
         print("few values in Coriolis TEMP in " + str(p._my_float.filename), flush=True)
         return
 
 
     metadata.status_var = p._my_float.status_var('DOXY')
-    df, NAME_BASIN, condition1_to_detrend = trend_analysis(p, Profilelist_hist, Dataset)
+    # condition1_to_detrend data at 600 m must be available (condition1_to_detrend = True)
+    df, NAME_BASIN, condition1_to_detrend = extract_oxy_timeseries_at_depth(p, Profilelist_hist, Dataset)
     Oxy_Profile = Value
 
     if not condition1_to_detrend:
         DRIFT_CODE = -1
-        print("no detrend possible", flush=True)
+        print("no detrend possible, no data at depths", flush=True)
         metadata.drift_code = DRIFT_CODE
+        df_report   = get_trend_report(p, df, True) # true it write basic info and exit
+        df_report['basin']=NAME_BASIN
     else:
-        df_report, tmp = get_trend_report(p, df)
-        if tmp[tmp.Depth==600].VAR.isnull().values.any() :
+        df_report, tmp = get_trend_report(p, df, False) # false it write basic info and go on in writing drift info 
+        df_report['basin'] = NAME_BASIN
+        # No drift correction if timeseries is short or last 3 values at 600 m are NaN
+        if len(tmp)<5 or tmp.loc[tmp.Depth == 600, 'VAR'].tail(3).isnull().all(): #bug fixed
             DRIFT_CODE = -1
             metadata.drift_code = DRIFT_CODE
         else:
 
             OFFSET, threshold, df_report = clim_check(p,df_report, NAME_BASIN, tmp)
 
-            if abs(OFFSET) >= threshold:
+            if abs(OFFSET) >= threshold: # discard profiles
                 wmo = p._my_float.wmo
                 df_report.loc[ (df_report.WMO == wmo) & (df_report.Depth== 600), 'Black_list'] = 'True'
-                timenum = int(p.time.strftime("%Y%m%d"))
-                save_report( OUT_META / "Blacklist_wmo.csv", 1,['WMO', 'DATE_DAY' , 'OFFSET' , 'STDCLIM_2'],[int(wmo), timenum, OFFSET , threshold])
+                save_df_report(OUT_META , df_report , "Floats_rejected.csv")
                 return
-            else:
-                Oxy_Profile = apply_detrend(Pres, Value, df_report)
-                metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
-                metadata.offset = OFFSET
-                # high freq.csv
+            else: 
+                if df_report.DRIFT_CODE[0] ==1: 
+                   Oxy_Profile = apply_detrend(Pres, Value, df_report)
+                   metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
+                   metadata.offset = OFFSET
+                   metadata.drift  = df_report.TREND_TIME_SERIES.iloc[0]
+                else:
+                   metadata.drift_code = df_report['DRIFT_CODE'].iloc[0]
+                   metadata.offset = OFFSET
 
+             
+    # posso metterlo opzionale
+    save_df_report(OUT_META , df_report , "Floats_accepted.csv")
     Path.mkdir(outfile.parent, exist_ok=True)
     dump_oxygen_file(outfile, p, Pres, Oxy_Profile, Qc, metadata,mode=writing_mode)
 
 
 
-def load_history(wmo):
+def load_history(wmo, write_report=False):
     '''
      Replicates superfloat dataset without detrend - the previous doxy_algorithm
+     Adds optional logging to a CSV for rejected profiles
+
+     Input: wmo          : str , WMO code of the float to load
+            write_report : bool, If True, rejected profiles (status 'R', missing data, saturation test fail) are logged to a CSV in OUTDIR.
+
+     Output: Profilelist : List of profiles that passed Data Mode and Saturation checks
+             Dataset     : Dictionary of data keyed by profile ID, values = (Pres, Value, Qc)
     '''
+
+    global OUTDIR
+    df_reject = None
+    csv_file = OUTDIR / "DataMode_and_Saturation_rejection_doxy.csv"
+
+    if write_report:
+        if csv_file.exists():
+            df_reject = pd.read_csv(csv_file)
+        else:
+            df_reject = pd.DataFrame(columns=["wmo","cycle","date","reasons"])
+
+        def log_reject(wmo_name, cycle,date, reason, NAME_BASIN):
+            nonlocal df_reject
+            df_reject = pd.concat(
+            [df_reject, pd.DataFrame({"wmo": [wmo_name], "cycle": [cycle] , "date": [date],"reasons": [reason], "basin": [NAME_BASIN] })],
+                ignore_index=True)
+            df_reject.drop_duplicates(inplace=True)
+
     print("Loading dataset for float", wmo, "...", flush=True)
+
     TI     = TimeInterval("1950","2050",'%Y')
     R = Rectangle(-6,36,30,46)
     PROFILES_COR =bio_float.FloatSelector('DOXY', TI, R)
@@ -349,22 +552,38 @@ def load_history(wmo):
     Profilelist=[]
     Dataset={}
     for p in Profilelist_wmo:
-        if p._my_float.status_var('DOXY')=='R': continue
-        Pres, Value, Qc = read_doxy(p)
-        if Pres is None: continue
-        if p._my_float.status_var('DOXY')=='D':
-            condition_to_write = True
-        else:
-            condition_to_write =  oxygen_saturation.oxy_check(Pres,Value,p)
-        if not condition_to_write:
-            print(p._my_float.filename, "Saturation Test not passed", flush=True)
+        
+        ARGO       = Rectangle(float(p.lon) , float(p.lon) , float(p.lat) , float(p.lat))
+        NAME_BASIN , BORDER_BASIN = cross_Med_basins(ARGO)
+        status = p._my_float.status_var('DOXY')
+        
+        if status == 'R':
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "RT" ,NAME_BASIN )
             continue
-
+        
+        Pres, Value, Qc = read_doxy(p) # convert doxy and filter len pres<5
+        if Pres is None:
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "PresNone", NAME_BASIN)
+            continue
+        
+        if status == 'D':
+            condition_to_write = True
+        else: #ADJUSTED MODE
+            condition_to_write = oxygen_saturation.oxy_check(Pres, Value, p)
+        
+        if not condition_to_write:
+            if write_report:
+                log_reject(p.name(), p._my_float.cycle, p.time, "SaturationTest", NAME_BASIN)
+            continue
         Profilelist.append(p)
         Dataset[p.ID()] = (Pres,Value,Qc)
+
+    if write_report and df_reject is not None:
+        df_reject.to_csv(csv_file, index=False)
     print("...done", flush=True)
     return Profilelist, Dataset
-
 
 
 OUTDIR = Path(args.outdir)
@@ -382,11 +601,14 @@ if input_file == 'NO_file':
 
     for wmo in wmo_list:
         print (wmo, flush=True)
-
-        Hist_filtered_Profilelist, Dataset = load_history(wmo)
+        #if wmo != '6903818': continue
+        Hist_filtered_Profilelist, Dataset = load_history(wmo,True) #true --> save a repo of discarded  prechecks
         Selected_Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         Profilelist= [p for p in Selected_Profilelist if p in Hist_filtered_Profilelist]
         for ip, p in enumerate(Profilelist):
+            #import sys 
+            #if p._my_float.cycle == 250:
+            #    sys.exit('carol')
             outfile = get_outfile(p,OUTDIR)
 
             writing_mode=superfloat_generator.writing_mode(outfile)

@@ -7,7 +7,7 @@ import xarray as xr
 from bitsea.commons.grid import RegularGrid
 from bitsea.mhelpers.linear_shift import linear_shift
 
-default_clim_n3n_nc = "/gss/gss_work/DRES_OGS_BiGe/Observations/CLIMATOLOGY/Nutrients/MedBGC-ins/Climatology_N3n_600_800m.nc"
+default_clim_n3n_nc = "/g100_work/OGS_test2528/Observations/CLIMATOLOGY/Nutrients/MedBGC-ins/Climatology_N3n_600_800m.nc"
 
 clim_file = Path(os.getenv("CLIM_MED_BGC_INS_FILE", default_clim_n3n_nc))
 if not clim_file.exists():

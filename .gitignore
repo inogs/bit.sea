@@ -13,3 +13,6 @@ makefile
 *.grib
 /.pytest_cache/
 .hypothesis/*
+bitsea-copilot-coder-bundle.zip
+docs
+*pyc

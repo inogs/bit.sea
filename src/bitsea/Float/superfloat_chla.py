@@ -1,5 +1,13 @@
 from bitsea.utilities.argparse_types import existing_dir_path
 import argparse
+def read_temp_psal(p):
+    PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+    Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
+    if (Pres is None or PresT is None or Temp is None or Sali is None or len(Pres) < 5 or len(PresT) < 5):
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        Pres, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    return PresT, Temp, QcT, Pres, Sali, QcS
+
 def argument():
     parser = argparse.ArgumentParser(description = '''
     Creates superfloat files of chla.
@@ -65,8 +73,7 @@ def get_outfile(p,outdir):
     return filename
 
 def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
-    _    , Temp, QcT = p.read('TEMP', read_adjusted=False)
-    PresT, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
 
     print("dumping chla on " , outfile, p.time.strftime(" %Y%m%d-%H:%M:%S"), flush=True)
     ncOUT = NC.Dataset(outfile,"w")
@@ -77,7 +84,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     ncOUT.createDimension("NPROF", 1)
 
     ncOUT.createDimension('nTEMP', len(PresT))
-    ncOUT.createDimension('nPSAL', len(PresT))
+    ncOUT.createDimension('nPSAL', len(PresS))
     ncOUT.createDimension('nCHLA', len(Pres ))    
     
     ncvar=ncOUT.createVariable("REFERENCE_DATE_TIME", 'c', ("DATETIME",))
@@ -106,7 +113,7 @@ def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     setattr(ncvar, 'units'      , "PSS78")
 
     ncvar=ncOUT.createVariable('PRES_PSAL','f',('nPSAL',))
-    ncvar[:]=PresT
+    ncvar[:]=PresS
     ncvar=ncOUT.createVariable('PSAL_QC','f',('nPSAL',))
     ncvar[:]=QcS
 
@@ -137,7 +144,7 @@ def chla_algorithm(pCor,outfile):
     '''
 
     background_value=0.005
-    Pres, _, _ = pCor.read('TEMP', read_adjusted=False)
+    Pres, _, _ = read_temp_psal(pCor)[3:]
     if len(Pres)<5:
         print("few values in Coriolis TEMP in " + str(pCor._my_float.filename), flush=True)
         return

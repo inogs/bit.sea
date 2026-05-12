@@ -30,7 +30,11 @@ def find_DCM(Chl_profile, zlev):
     return CM, DCM
 
 
-def MLD(Temperature, Salinity, Pres, insitu_T=True):
+def smooth_profile(profile, N=5):
+    profile_smoothed = convolve1d(profile, np.ones(N)/N, mode='reflect')
+    return profile_smoothed
+
+def MLD(Temperature, Salinity, Pres, insitu_T=True, smooth=False):
     """
     Calculation of Mixed Layer Depth based on temperature difference of 0.2
     inputs are Temperature ([C], in-situ, optionally conservative temperature), Salinity ([psu]), Pressure ([kg/m^3])
@@ -39,6 +43,11 @@ def MLD(Temperature, Salinity, Pres, insitu_T=True):
     """
     th = 10  # threshold of depth minimum
     i_10 = np.abs(Pres - th).argmin()
+    if smooth:
+        # smooth T, S profiles
+        N = 5
+        Temperature = smooth_profile(Temperature, N)
+        Salinity = smooth_profile(Salinity)
     SA = gsw.SA_from_SP(Salinity, Pres, 0, 0)
     if insitu_T:
         CT = gsw.CT_from_t(Salinity, Temperature, Pres)

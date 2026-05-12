@@ -152,7 +152,8 @@ class BioFloat(Instrument):
             # POC/bbp700 ratio after Gali' et al. 2022
             Pres_PSAL, PSAL, Qc_PSAL = self.read_raw('PSAL')
             Pres_TEMP, TEMP, Qc_TEMP = self.read_raw('TEMP')
-            z_mld, d_mld, pd_mld = MLD(TEMP, Pres_TEMP, Salinity=PSAL, smooth=True)
+            #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP, smooth=True) #to do, implement smoothing
+            z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
             # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
             TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
             PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation

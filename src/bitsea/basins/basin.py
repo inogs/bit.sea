@@ -1,9 +1,8 @@
 # Copyright (c) 2015 eXact Lab srl
 # Author: Stefano Piani <stefano.piani@exact-lab.it>
 import importlib
-from collections.abc import Sequence
 from inspect import currentframe
-from typing import Tuple
+from typing import Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np

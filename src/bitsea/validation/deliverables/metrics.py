@@ -34,6 +34,32 @@ def smooth_profile(profile, N=5):
     profile_smoothed = convolve1d(profile, np.ones(N)/N, mode='reflect')
     return profile_smoothed
 
+def MLD_sigma(Temperature, Salinity, Pres, insitu_T=True):
+    '''
+    Calculation of Mixed Layer Depth based on density difference
+    of 0.03 kg m^-3 after Gali et al. 2022
+    '''
+    sigma_thr = 0.03 #[kg m^-3]
+    N = 5 #running mean window
+    nh = int(N/2)
+    zref = 5.0 #[m]
+    i5m = np.abs(Pres - zref).argmin()
+    if insitu_T:
+        # this not used cause gsw.pot_rho_t_exact() wants insitu_T
+        #Temperature = ptmp(Salinity, Temperature, Pres)
+        CT = gsw.CT_from_t(Salinity, Temperature, Pres)
+    #
+    # Density = pden(Salinity, Temperature, Pres)
+    SA = gsw.SA_from_SP(Salinity, Pres, 0, 0)
+    Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 10.1325) 
+    d5m = np.mean(Density[i5m-nh:i5m+nh+1])
+    for ip, p in enumerate(Density):
+        abs_diff = p - d5m
+        if abs_diff > sigma_thr:
+            break
+    MixedLayerDepth = np.min([1000.0, Pres[ip]])
+    return MixedLayerDepth
+
 def MLD(Temperature, Salinity, Pres, insitu_T=True, smooth=False):
     """
     Calculation of Mixed Layer Depth based on temperature difference of 0.2

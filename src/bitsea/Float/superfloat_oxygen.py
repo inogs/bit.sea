@@ -411,11 +411,17 @@ def clim_check(p, df_report, NAME_BASIN, tmp):
     """
     VALCLIM    = float(df_clim.loc[df_clim.index==NAME_BASIN].iloc[:,0])
     TREND_null = df_report.TREND_per_YEAR.isnull().values.any() # bug fixed
-    if TREND_null or abs(df_report.TREND_per_YEAR[0])<1:
-        OFFSET  = float(tmp.VAR.iloc[-1]) - VALCLIM
+
+    vals = tmp.loc[tmp.Depth == 600, "VAR"].dropna().tail(3)
+    if vals.empty:
+        raise ValueError("clim_check(): no valid 600m values available for OFFSET computation")
+
+    observed = float(vals.iloc[-1])
+    if TREND_null or abs(df_report.TREND_per_YEAR[0]) < 1:
+        OFFSET = observed - VALCLIM
     else:
-        Corrrected_val = float(tmp.VAR.iloc[-1]) - float(df_report.TREND_TIME_SERIES.iloc[0])
-        OFFSET  = Corrrected_val - VALCLIM
+        corrected_val = observed - float(df_report.TREND_TIME_SERIES.iloc[0])
+        OFFSET = corrected_val - VALCLIM
     STDCLIM   = float(df_cstd.loc[df_cstd.index==NAME_BASIN].iloc[:,0])
     STDCLIM_2 = 2*STDCLIM
     if STDCLIM_2 <10:

@@ -36,6 +36,7 @@ class DatasetExtractor():
         M[:,1] = lon
         M[:,2] = lat
         uniques,_,ib = self.unique_rows(M)
+        ib = np.squeeze(ib)
         
         nProfiles = len(uniques)
     

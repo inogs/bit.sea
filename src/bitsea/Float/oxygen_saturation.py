@@ -14,13 +14,16 @@ def oxy_sat(p):
     * O2o * a concentration of oxygen in mmol/m3
             nan if there are no TEMP and PSAL values with pressure less than 5m.
     '''
-    
     if p.has_adjusted:
-        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)#p._my_float.adjusted('TEMP'))
-        PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)#p._my_float.adjusted('PSAL'))
+        try:
+            PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
+            PresS, Sali, QcS = p.read('PSAL', read_adjusted=True)
+        except TypeError: # dovrebbe entrare se uso superfloat wrapper
+            PresT, Temp, QcT = p.read('TEMP')
+            PresS, Sali, QcS = p.read('PSAL')
     else:
-        PresT, Temp, QcT = p.read('TEMP')
-        PresS, Sali, QcS = p.read('PSAL')
+        PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+        PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)
 
     ii = PresT<=depth_threshold
     if ii.sum() == 0:

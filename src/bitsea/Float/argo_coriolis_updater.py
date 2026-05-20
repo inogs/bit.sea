@@ -175,7 +175,8 @@ txt_file = c_dl_dir / txt_name
 if gz_file.exists():
     os.remove(gz_file)
 
-if not download_argo_index_file(c_dl_dir, str(remote_gzip_file)):
+download_result = download_argo_index_file(c_dl_dir, str(remote_gzip_file))
+if not download_result:
     print("Cannot continue: failed to download argo index file.")
     raise SystemExit(1)
 

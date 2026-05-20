@@ -4,7 +4,7 @@ import os
 import shutil
 from datetime import datetime
 from ftplib import FTP
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import numpy as np
 
@@ -29,6 +29,16 @@ def argument():
                                 required = True,
                                 help = 'local directory of the argo indexed files',
                                 default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/download/')
+    parser.add_argument(   '--remote_gzip_file',"-R",
+                                type = str,
+                                required = True,
+                                help = 'full remote FTP path of the Argo gzip index file',
+                                default = '/ifremer/argo/argo_synthetic-profile_index.txt.gz')
+    parser.add_argument(   '--indexer_file_old',"-O",
+                                type = str,
+                                required = True,
+                                help = 'path to the old indexer file (previously downloaded floats)',
+                                default = '/leonardo_work/OGS_prod2528_0/OPA/V12C/ONLINE/CORIOLIS/download/Med_floats_OLD.txt')
     parser.add_argument( '--update_file',"-u",
                                 type = str,
                                 required = True,
@@ -114,7 +124,7 @@ def build_difference_file(input_new: Path | str, input_old: Path | str, output_f
         file_handle.writelines(lines)
 
 
-def download_argo_index_file(c_dl_dir:Path):
+def download_argo_index_file(c_dl_dir: Path, remote_file_path: str):
     """
     Downloads the argo synthetic profile index file.
     Input:
@@ -123,9 +133,8 @@ def download_argo_index_file(c_dl_dir:Path):
     - bool              : False/True   failure/success output states
     """
 
-    file_name = "argo_synthetic-profile_index.txt.gz"
+    file_name = PurePosixPath(remote_file_path).name
     local_file_path = c_dl_dir / file_name
-    remote_file_path = "/ifremer/argo/" + file_name
 
     print(f"Downloading {remote_file_path} from ftp.ifremer.fr")
 
@@ -143,23 +152,30 @@ def download_argo_index_file(c_dl_dir:Path):
     return True
     
 c_dl_dir = Path(args.coriolis_dl_dir)
+remote_gzip_file = PurePosixPath(args.remote_gzip_file)
+indexer_file_old = Path(args.indexer_file_old) if args.indexer_file_old else None
 update_file = Path(args.update_file) if args.update_file else None
 indexer_file = Path(args.indexer_file) if args.indexer_file else None
 
 if not c_dl_dir.exists():
     print(f"Creating directory {c_dl_dir}")
     c_dl_dir.mkdir(parents=True, exist_ok=True)
-if update_file is None or indexer_file is None:
+if update_file is None or indexer_file is None or indexer_file_old is None:
     print("Update file or indexer file not provided. Exiting.")
     exit(1)
 
-gz_file = c_dl_dir / "argo_synthetic-profile_index.txt.gz"
-txt_file = c_dl_dir / "argo_synthetic-profile_index.txt"
+gz_name = remote_gzip_file.name
+if not gz_name.endswith(".gz"):
+    raise ValueError(f"Remote gzip path must end with .gz: {remote_gzip_file}")
+
+txt_name = gz_name[:-3]
+gz_file = c_dl_dir / gz_name
+txt_file = c_dl_dir / txt_name
 
 if gz_file.exists():
     os.remove(gz_file)
 
-if not download_argo_index_file(c_dl_dir):
+if not download_argo_index_file(c_dl_dir, str(remote_gzip_file)):
     print("Cannot continue: failed to download argo index file.")
     raise SystemExit(1)
 
@@ -177,8 +193,7 @@ with open(txt_file, "r", encoding="utf-8", errors="ignore") as src, open(corr_tx
 #launch the reader -> obtain the mediterranean floater file
 build_mediterranean_index(corr_txt_file, indexer_file)
 #matching old vs new -> return a file called DIFF_floats.txt in which there is the list of floats that are different between the two files
-old_indexer_file = c_dl_dir / "Med_floats_OLD.txt"
-build_difference_file(indexer_file, old_indexer_file, update_file)
+build_difference_file(indexer_file, indexer_file_old, update_file)
 
 daily_log_dir = Path(os.environ["OPA_LOGDIR"]) / "daily"
 if not daily_log_dir.exists():

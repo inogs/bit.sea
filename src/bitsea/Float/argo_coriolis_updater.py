@@ -2,7 +2,7 @@ import argparse
 import gzip
 import os
 import shutil
-from datetime import datetime
+# from datetime import datetime
 from ftplib import FTP
 from pathlib import Path, PurePosixPath
 
@@ -196,12 +196,12 @@ build_mediterranean_index(corr_txt_file, indexer_file)
 #matching old vs new -> return a file called DIFF_floats.txt in which there is the list of floats that are different between the two files
 build_difference_file(indexer_file, indexer_file_old, update_file)
 
-daily_log_dir = Path(os.environ["OPA_LOGDIR"]) / "daily"
-if not daily_log_dir.exists():
-    print(f"Creating directory {daily_log_dir}")
-    daily_log_dir.mkdir(parents=True, exist_ok=True)
+# daily_log_dir = Path(os.environ["OPA_LOGDIR"]) / "daily"
+# if not daily_log_dir.exists():
+#     print(f"Creating directory {daily_log_dir}")
+#     daily_log_dir.mkdir(parents=True, exist_ok=True)
 
-diff_log_file = daily_log_dir / f"DIFF_floats.{datetime.now().strftime('%Y%m%d-%H:%M:%S')}.txt"
-shutil.copyfile(update_file, diff_log_file)
+# diff_log_file = daily_log_dir / f"DIFF_floats.{datetime.now().strftime('%Y%m%d-%H:%M:%S')}.txt"
+# shutil.copyfile(update_file, diff_log_file)
 
 

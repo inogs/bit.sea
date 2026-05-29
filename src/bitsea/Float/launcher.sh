@@ -18,8 +18,10 @@ mkdir $LOCALDIR
 #rename old syntetic_profile file and old output file
 if [ -f "$INDEXER_CORIOLIS" ]; then
 	my_prex "cp $INDEXER_CORIOLIS $INDEXER_CORIOLIS_OLD"
+    echo "Old indexer file found, copying it to $INDEXER_CORIOLIS_OLD. Downloading only new profiles."
 else
 	my_prex "touch $INDEXER_CORIOLIS_OLD"
+    echo "No old indexer file found, creating an empty one at $INDEXER_CORIOLIS_OLD. Downloading all profiles as new."
 fi
 
 #download new syntetic profile

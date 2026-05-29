@@ -117,23 +117,17 @@ def sat_check(
 
     maskSat = getattr(masks, mesh)
 
-    print(f"varnames: {varnames}", flush=True)
-    print(f"force: {force}", flush=True)
-
     checked_file_list = [outputdir / f.name for f in inputfiles]
-    print(f"rank: {rank} of {nranks}", flush=True)
+
     for filename in inputfiles[rank::nranks]:
         outfile = outputdir / filename.name
-        print(f"rank: {rank} processing file: {filename} -> {outfile}", flush=True)
-        #print(f"{varnames}", flush=True)
+
         for varname in varnames:
             writing_mode = Sat.writing_mode(outfile)
 
             condition_to_write = not Sat.exist_valid_variable(varname, outfile)
-
             if force:
                 condition_to_write = True
-            print(f"   condition_to_write for {varname}: {condition_to_write}", flush=True)
             if not condition_to_write:
                 continue
 
@@ -151,7 +145,7 @@ def sat_check(
 
             bad = np.abs(sat_qi) > qi_threshold  # 2.0
             sat_values[bad] = Sat.fillValue
-            print(f"   {outfile}: {varname}", flush=True)
+            print(outfile, varname, flush=True)
             Sat.dumpGenericfile(
                 outfile, sat_values, varname, mesh=maskSat, mode=writing_mode
             )
@@ -163,10 +157,7 @@ def main():
 
     if not args.serial:
         # noinspection PyUnresolvedReferences
-        from mpi4py import MPI
-        print("Parallel MPI run")
-    else:
-        print("Serial run")
+        import mpi4py.MPI
 
     time_start = "19501231"
     time_end = "20500101"

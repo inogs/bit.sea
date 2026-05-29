@@ -16,7 +16,11 @@ INDEXER_CORIOLIS_OLD=$DOWNLOAD_DIR/Med_floats_OLD.txt
 mkdir $LOCALDIR
 
 #rename old syntetic_profile file and old output file
-my_prex "cp $INDEXER_CORIOLIS $INDEXER_CORIOLIS_OLD"
+if [ -f "$INDEXER_CORIOLIS" ]; then
+	my_prex "cp $INDEXER_CORIOLIS $INDEXER_CORIOLIS_OLD"
+else
+	my_prex "touch $INDEXER_CORIOLIS_OLD"
+fi
 
 #download new syntetic profile
 

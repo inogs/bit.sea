@@ -131,7 +131,13 @@ class BioFloat(Instrument):
 
 
     def has_insitu(self, var):
-        if self.status_profile(var) in ['I']: return True
+        if self.status_profile(var) in ['I','T']: return True
+        return False
+    def has_ppcon(self, var):
+        if self.status_profile(var) in ['P', 'B', 'D' , 'T']: return True
+        return False
+    def has_canyonmed(self, var):
+        if self.status_profile(var) in ['C','D','T']: return True
         return False
     def has_tris(self,  var):
         if self.status_profile(var) in['T']: return True

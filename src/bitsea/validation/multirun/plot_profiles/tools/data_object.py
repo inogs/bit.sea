@@ -86,7 +86,7 @@ class DataObject(ABC):
         assert False, 'Internal error; there is a bug in the code!'
 
 
-class PickleDataObject(DataObject):
+class AveScanResultDataObject(DataObject):
     BFMv5_dict = {
         'Ac': 'ALK',
         'ppn': 'netPPYc',
@@ -129,6 +129,29 @@ class PickleDataObject(DataObject):
     def dir_path(self, dir_path):
         self._dir_path = Path(dir_path)
 
+    @abstractmethod
+    def load(self):
+        raise NotImplementedError
+
+    def get_values(self, time_steps, basin, level_index, indicator, coasts=1):
+        if not self._loaded:
+            self.load()
+        return self._data[time_steps, basin, coasts, level_index, indicator]
+
+    def get_time_steps(self):
+        if not self._loaded:
+            self.load()
+        return self._time_steps
+
+    def is_2d(self):
+        if self._is_2d is None:
+            if not self._loaded:
+                self.load()
+            self._is_2d = np.all(np.ma.getmaskarray(self._data)[0, :, :, 1:])
+        return self._is_2d
+
+
+class PickleDataObject(AveScanResultDataObject):
     @classmethod
     def get_matching_filename(cls, dir_path, var_name):
         dir_path = Path(dir_path)
@@ -157,25 +180,8 @@ class PickleDataObject(DataObject):
         self._time_steps = time_steps.Timelist
         self._loaded = True
 
-    def get_values(self, time_steps, basin, level_index, indicator, coasts=1):
-        if not self._loaded:
-            self.load()
-        return self._data[time_steps, basin, coasts, level_index, indicator]
 
-    def get_time_steps(self):
-        if not self._loaded:
-            self.load()
-        return self._time_steps
-
-    def is_2d(self):
-        if self._is_2d is None:
-            if not self._loaded:
-                self.load()
-            self._is_2d = np.all(np.ma.getmaskarray(self._data)[0, :, :, 1:])
-        return self._is_2d
-
-
-class NetCDFDataObject(PickleDataObject):
+class NetCDFDataObject(AveScanResultDataObject):
     _search_patterns = ("*.stat_profiles.nc", "*.stat_profiles.netcdf")
 
     @classmethod
@@ -249,11 +255,11 @@ class NetCDFDataObject(PickleDataObject):
 
 
 def get_data_object(dir_path, var_name):
-    if PickleDataObject.get_matching_filename(dir_path, var_name) is not None:
-        return PickleDataObject(dir_path, var_name)
-
     if NetCDFDataObject.get_matching_filenames(dir_path):
         return NetCDFDataObject(dir_path, var_name)
+
+    if PickleDataObject.get_matching_filename(dir_path, var_name) is not None:
+        return PickleDataObject(dir_path, var_name)
 
     raise IOError(
         'No supported input file found for variable "{}" in directory "{}"'.format(

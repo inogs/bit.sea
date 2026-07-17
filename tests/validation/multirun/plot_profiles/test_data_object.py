@@ -6,6 +6,9 @@ import numpy as np
 
 from bitsea.commons.Timelist import TimeList
 from bitsea.validation.multirun.plot_profiles.tools.data_object import (
+    AveScanResultDataObject,
+)
+from bitsea.validation.multirun.plot_profiles.tools.data_object import (
     NetCDFDataObject,
 )
 from bitsea.validation.multirun.plot_profiles.tools.data_object import (
@@ -41,6 +44,37 @@ def test_get_data_object_routes_to_pickle(tmp_path):
     assert data_object.get_time_steps() == time_steps.Timelist
 
 
+def test_get_data_object_prefers_netcdf_when_both_formats_are_available(tmp_path):
+    netcdf_values = np.arange(2 * 3 * 4 * 5, dtype=np.float32).reshape(2, 3, 4, 5)
+    filename = tmp_path / "ave.20240101-12:00:00.stat_profiles.nc"
+    with netCDF4.Dataset(filename, "w") as dataset:
+        dataset.createDimension("sub", netcdf_values.shape[0])
+        dataset.createDimension("coast", netcdf_values.shape[1])
+        dataset.createDimension("z", netcdf_values.shape[2])
+        dataset.createDimension("stat", netcdf_values.shape[3])
+
+        variable = dataset.createVariable("N1p", "f4", ("sub", "coast", "z", "stat"))
+        variable[:] = np.ascontiguousarray(netcdf_values)
+
+    pickle_values = np.ma.arange(1 * 2 * 3 * 4 * 5).reshape(1, 2, 3, 4, 5) + 9999
+    pickle_time_steps = TimeList(
+        [datetime.datetime(2024, 1, 3, 12, 0, 0)],
+        forceFrequency="daily",
+    )
+    with open(tmp_path / "N1p.pkl", "wb") as f:
+        pickle.dump([pickle_values, pickle_time_steps], f)
+
+    data_object = get_data_object(tmp_path, "N1p")
+
+    assert isinstance(data_object, NetCDFDataObject)
+    np.testing.assert_array_equal(
+        data_object.get_values(
+            slice(None), slice(None), slice(None), slice(None), slice(None)
+        ),
+        np.ma.stack([netcdf_values], axis=0),
+    )
+
+
 def test_get_data_object_routes_to_netcdf(tmp_path):
     time_steps = [
         datetime.datetime(2024, 1, 1, 12, 0, 0),
@@ -68,6 +102,7 @@ def test_get_data_object_routes_to_netcdf(tmp_path):
     data_object = get_data_object(tmp_path, "N1p")
 
     assert isinstance(data_object, NetCDFDataObject)
+    assert isinstance(data_object, AveScanResultDataObject)
     np.testing.assert_array_equal(
         data_object.get_values(
             slice(None), slice(None), slice(None), slice(None), slice(None)

@@ -16,9 +16,9 @@ netcdf4 = "^1.6.5"
 xarray = ">2024.1.0"
 defusedxml = ">=0.7.1"
 gsw = ">=3.6.16"
+matplotlib = ">3.7.5"
 
 [tool.poetry.group.plots.dependencies]
-matplotlib = ">3.7.5"
 cartopy = ">=0.25.0"
 
 [tool.poetry.group.algorithms.dependencies]
@@ -39,10 +39,10 @@ requests = "^2.33.0"
 hypothesis = "^6.115.3"
 
 [tool.poetry.extras]
-plots = ["matplotlib", "cartopy"]
+plots = ["cartopy"]
 algorithms = ["geographiclib"]
 performances = ["numba", "scikit-learn"]
-all = ["matplotlib", "cartopy", "geographiclib", "numba", "scikit-learn"]
+all = ["cartopy", "geographiclib", "numba", "scikit-learn"]
 
 [build-system]
 requires = ["poetry-core"]

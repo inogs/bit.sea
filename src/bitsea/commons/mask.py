@@ -1074,7 +1074,8 @@ class MaskWithRivers(Mask):
 
         river_names = None
         if "river_names" in file_pointer.ncattrs():
-            river_names = json.loads(file_pointer.getncattr("river_names"))
+            river_names_raw = json.loads(file_pointer.getncattr("river_names"))
+            river_names = {int(k): str(v) for k, v in river_names_raw.items()}
 
         return cls(
             grid=raw_mask.grid,

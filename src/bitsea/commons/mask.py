@@ -1,3 +1,6 @@
+import json
+from collections import defaultdict
+from collections.abc import Mapping
 from os import PathLike
 from pathlib import Path
 from typing import Literal
@@ -792,6 +795,8 @@ class MaskWithRivers(Mask):
         zlevels: ArrayLike,
         mask_array: ArrayLike,
         river_positions: ArrayLike,
+        river_sources: ArrayLike | None = None,
+        river_names: Mapping[int, str] | None = None,
         allow_broadcast: bool = False,
         e3t: Optional[np.ndarray] = None,
     ):
@@ -804,14 +809,29 @@ class MaskWithRivers(Mask):
               water (True) or land (False) at each grid cell and depth level.
               Shape should be (len(zlevels), grid.shape[0], grid.shape[1]).
               The mask shall be `True` also on the cells occupied by rivers.
+              In this way, this is back compatible with the original Mask
+              implementation.
             river_positions: An array or sparse matrix indicating the
               positions of river cells in the grid. Typically, this should
               be a 2D array (grid.shape[0], grid.shape[1]) where nonzero
               entries indicate river cells and their values may represent
               river indices or IDs.
-            allow_broadcast (bool): If True, allows broadcasting of mask_array
-              to match the required shape. Default is False.
-            e3t (Optional[np.ndarray]): Optional array specifying the
+            river_sources (Optional): An array or sparse matrix indicating the
+              cells of the rivers from which the river originates. It must be a
+              2D array (grid.shape[0], grid.shape[1]) that it is zero on every
+              cell where `river_positions` is zero. Where `river_positions` is
+              not zero, this array can have the same value of `river_positions`
+              (if the cell must be considered a source) or be zero (if the cell
+              is just part of the river stem). If this is not submitted, the
+              code will assume that this mask has no knowledge about the
+              sources.
+            river_names (Optional): A dictionary that associate each river id
+              with its real name. It is not mandatory to have a name for each
+              river and, if this argument is not submitted, it will be
+              initialized as an empty dictionary.
+            allow_broadcast (Optional): If True, allows broadcasting of
+              mask_array to match the required shape. Default is False.
+            e3t (Optional): Optional array specifying the
               thickness of each vertical layer.
 
         Note:
@@ -819,6 +839,61 @@ class MaskWithRivers(Mask):
             further processing.
         """
         rivers = np.asarray(river_positions)
+        if rivers.shape != grid.shape:
+            raise ValueError(
+                f"river_positions has shape {rivers.shape} while the expected shape was {grid.shape}"
+            )
+        self._sources = {}
+        if river_sources is None:
+            self._has_sources = False
+        else:
+            river_sources = np.asarray(river_sources)
+            if river_sources.shape != grid.shape:
+                raise ValueError(
+                    f"river_sources has shape {river_sources.shape} while the expected shape was {grid.shape}"
+                )
+            # Where rivers == 0, river_sources must be also zero!
+            if np.any(np.logical_and(rivers == 0, river_sources != 0)):
+                raise ValueError(
+                    "Trying to set as a river source a cell that is not "
+                    "part of any river"
+                )
+            # Where river_sources is not zero, it must be equal to rivers
+            not_equal = np.logical_and(
+                river_sources != 0, river_sources != rivers
+            )
+            if np.any(not_equal):
+                r_id = rivers[not_equal].ravel()[0]
+                r_source_id = river_sources[not_equal].ravel()[0]
+                raise ValueError(
+                    f"Trying to set the source of river {r_source_id} on the "
+                    f"stem of river {r_id}"
+                )
+            self._has_sources = bool(np.any(river_sources != 0))
+
+            # We save the sources into a dictionary that associates each
+            # river ID with its source positions
+            s_lat_indices, s_lon_indices = np.nonzero(river_sources)
+            s_values = river_sources[s_lat_indices, s_lon_indices]
+
+            sources: defaultdict[int, list[tuple[int, int]]] = defaultdict(list)
+            for val, r, c in zip(s_values, s_lat_indices, s_lon_indices):
+                sources[val].append((r, c))
+
+            self._sources = dict(sources)
+
+        if river_names is None:
+            self._river_names = {}
+        else:
+            self._river_names = {int(k): str(v) for k, v in river_names.items()}
+
+        self._name_to_id = {}
+        for r_id, r_name in self._river_names.items():
+            if r_name in self._name_to_id:
+                raise ValueError(
+                    f"Duplicate river name '{r_name}' for ids {self._name_to_id[r_name]} and {r_id}"
+                )
+            self._name_to_id[r_name] = r_id
 
         mask_dim = len(zlevels), grid.shape[0], grid.shape[1]
 
@@ -883,11 +958,17 @@ class MaskWithRivers(Mask):
         """
         Return a copy of this MaskWithRivers, preserving river information.
         """
+        if self.has_river_sources():
+            river_sources = self.get_river_sources_map()
+        else:
+            river_sources = None
 
         return self.__class__(
             grid=self.grid,
             zlevels=self.zlevels,
             river_positions=self._river_cells[0].todense(),
+            river_names=self._river_names,
+            river_sources=river_sources,
             mask_array=self.get_water_cells(),
             allow_broadcast=False,
             e3t=getattr(self, "e3t", None),
@@ -941,6 +1022,40 @@ class MaskWithRivers(Mask):
         """
         return len(self.get_river_ids())
 
+    def has_river_sources(self):
+        return self._has_sources
+
+    def get_river_sources_map(self):
+        if not self.has_river_sources():
+            raise ValueError(
+                "This Mask has no information about the river sources"
+            )
+
+        river_sources = np.zeros_like(self[0, :], dtype=int)
+        for v, coords in self._sources.items():
+            for lat_i, lon_i in coords:
+                river_sources[lat_i, lon_i] = v
+        return river_sources
+
+    def get_river_sources(
+        self, river: Union[int, str]
+    ) -> list[tuple[int, int]]:
+        """Return the coordinates of the river sources for a given river."""
+        if not self.has_river_sources():
+            raise ValueError(
+                "This Mask has no information about the river sources"
+            )
+
+        if isinstance(river, str):
+            try:
+                river_id = self._name_to_id[river]
+            except KeyError as e:
+                raise ValueError(f"Unknown river name: {river}") from e
+        else:
+            river_id = river
+
+        return self._sources.get(river_id, [])
+
     @classmethod
     def from_file_pointer(
         cls,
@@ -952,6 +1067,7 @@ class MaskWithRivers(Mask):
         e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         rivers_var_name: str = "rivers",
+        river_sources_var_name: str | None = "river_sources",
         read_e3t: bool = True,
     ):
         raw_mask = Mask.from_file_pointer(
@@ -966,11 +1082,31 @@ class MaskWithRivers(Mask):
         rivers = np.asarray(
             file_pointer.variables[rivers_var_name][:], dtype=int
         )
+
+        river_sources = None
+        if (
+            river_sources_var_name is not None
+            and river_sources_var_name in file_pointer.variables
+        ):
+            river_sources = np.asarray(
+                file_pointer.variables[river_sources_var_name][:],
+                dtype=int,
+            )
+            if np.all(river_sources == 0):
+                river_sources = None
+
+        river_names = None
+        if "river_names" in file_pointer.ncattrs():
+            river_names_raw = json.loads(file_pointer.getncattr("river_names"))
+            river_names = {int(k): str(v) for k, v in river_names_raw.items()}
+
         return cls(
             grid=raw_mask.grid,
             zlevels=raw_mask.zlevels,
             mask_array=raw_mask.as_mutable_array(),
             river_positions=rivers,
+            river_sources=river_sources,
+            river_names=river_names,
             allow_broadcast=False,
             e3t=raw_mask.e3t,
         )
@@ -986,6 +1122,7 @@ class MaskWithRivers(Mask):
         e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         rivers_var_name: str = "rivers",
+        river_sources_var_name: str | None = "river_sources",
         read_e3t: bool = True,
     ):
         with netCDF4.Dataset(file_path, "r") as f:
@@ -997,6 +1134,7 @@ class MaskWithRivers(Mask):
                 e3t_var_name=e3t_var_name,
                 mask_var_name=mask_var_name,
                 rivers_var_name=rivers_var_name,
+                river_sources_var_name=river_sources_var_name,
                 read_e3t=read_e3t,
             )
 
@@ -1059,3 +1197,15 @@ class MaskWithRivers(Mask):
                 rivers_var[:] = self._river_cells[0].toarray()
             else:
                 rivers_var[:] = 0
+
+            sources_var = netCDF_out.createVariable(
+                "river_sources", np.int32, dimensions=("y", "x"), **var_kwargs
+            )
+            if self.has_river_sources():
+                river_sources = self.get_river_sources_map()
+                sources_var[:] = river_sources
+            else:
+                sources_var[:] = 0
+
+            river_names_json = json.dumps(self._river_names)
+            netCDF_out.setncattr("river_names", river_names_json)

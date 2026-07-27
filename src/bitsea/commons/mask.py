@@ -795,8 +795,8 @@ class MaskWithRivers(Mask):
         zlevels: ArrayLike,
         mask_array: ArrayLike,
         river_positions: ArrayLike,
-        river_sources: ArrayLike | None = None,
-        river_names: Mapping[int, str] | None = None,
+        river_sources: Optional[ArrayLike] = None,
+        river_names: Optional[Mapping[int, str]] = None,
         allow_broadcast: bool = False,
         e3t: Optional[np.ndarray] = None,
     ):
@@ -1067,7 +1067,7 @@ class MaskWithRivers(Mask):
         e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         rivers_var_name: str = "rivers",
-        river_sources_var_name: str | None = "river_sources",
+        river_sources_var_name: Optional[str] = "river_sources",
         read_e3t: bool = True,
     ):
         raw_mask = Mask.from_file_pointer(
@@ -1122,7 +1122,7 @@ class MaskWithRivers(Mask):
         e3t_var_name: Optional[str] = None,
         mask_var_name: str = "tmask",
         rivers_var_name: str = "rivers",
-        river_sources_var_name: str | None = "river_sources",
+        river_sources_var_name: Optional[str] = "river_sources",
         read_e3t: bool = True,
     ):
         with netCDF4.Dataset(file_path, "r") as f:

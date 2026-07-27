@@ -839,11 +839,19 @@ class MaskWithRivers(Mask):
             further processing.
         """
         rivers = np.asarray(river_positions)
+        if rivers.shape != grid.shape:
+            raise ValueError(
+                f"river_positions has shape {rivers.shape} while the expected shape was {grid.shape}"
+            )
         self._sources = {}
         if river_sources is None:
             self._has_sources = False
         else:
             river_sources = np.asarray(river_sources)
+            if river_sources.shape != grid.shape:
+                raise ValueError(
+                    f"river_sources has shape {river_sources.shape} while the expected shape was {grid.shape}"
+                )
             # Where rivers == 0, river_sources must be also zero!
             if np.any(np.logical_and(rivers == 0, river_sources != 0)):
                 raise ValueError(
@@ -861,7 +869,7 @@ class MaskWithRivers(Mask):
                     f"Trying to set the source of river {r_source_id} on the "
                     f"stem of river {r_id}"
                 )
-            self._has_sources = True
+            self._has_sources = bool(np.any(river_sources != 0))
 
             # We save the sources into a dictionary that associates each
             # river ID with its source positions
@@ -878,7 +886,14 @@ class MaskWithRivers(Mask):
             self._river_names = {}
         else:
             self._river_names = {int(k): str(v) for k, v in river_names.items()}
-        self._name_to_id = {v: k for k, v in self._river_names.items()}
+
+        self._name_to_id = {}
+        for r_id, r_name in self._river_names.items():
+            if r_name in self._name_to_id:
+                raise ValueError(
+                    f"Duplicate river name '{r_name}' for ids {self._name_to_id[r_name]} and {r_id}"
+                )
+            self._name_to_id[r_name] = r_id
 
         mask_dim = len(zlevels), grid.shape[0], grid.shape[1]
 
@@ -1026,12 +1041,20 @@ class MaskWithRivers(Mask):
         self, river: Union[int, str]
     ) -> list[tuple[int, int]]:
         """Return the coordinates of the river sources for a given river."""
+        if not self.has_river_sources():
+            raise ValueError(
+                "This Mask has no information about the river sources"
+            )
+
         if isinstance(river, str):
-            river_id = self._name_to_id[river]
+            try:
+                river_id = self._name_to_id[river]
+            except KeyError as e:
+                raise ValueError(f"Unknown river name: {river}") from e
         else:
             river_id = river
 
-        return self._sources[river_id]
+        return self._sources.get(river_id, [])
 
     @classmethod
     def from_file_pointer(

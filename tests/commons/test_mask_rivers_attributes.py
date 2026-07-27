@@ -216,3 +216,53 @@ def test_mask_with_rivers_from_file_no_sources(
 
     loaded = MaskWithRivers.from_file(nc_path, read_e3t=False)
     assert not loaded.has_river_sources()
+
+
+def test_get_river_sources_by_id(grid, zlevels, mask_data, river_positions):
+    river_sources = np.zeros(grid.shape, dtype=int)
+    river_sources[2, 2] = 1
+    river_sources[3, 3] = 2
+
+    mask = MaskWithRivers(
+        grid=grid,
+        zlevels=zlevels,
+        mask_array=mask_data,
+        river_positions=river_positions,
+        river_sources=river_sources,
+    )
+
+    assert mask.get_river_sources(1) == [(2, 2)]
+    assert mask.get_river_sources(2) == [(3, 3)]
+
+
+def test_get_river_sources_by_name(grid, zlevels, mask_data, river_positions):
+    river_sources = np.zeros(grid.shape, dtype=int)
+    river_sources[2, 2] = 1
+    river_sources[3, 3] = 2
+    river_names = {1: "Po", 2: "Rhone"}
+
+    mask = MaskWithRivers(
+        grid=grid,
+        zlevels=zlevels,
+        mask_array=mask_data,
+        river_positions=river_positions,
+        river_sources=river_sources,
+        river_names=river_names,
+    )
+
+    assert mask.get_river_sources("Po") == [(2, 2)]
+    assert mask.get_river_sources("Rhone") == [(3, 3)]
+
+
+def test_get_river_sources_no_source_info(
+    grid, zlevels, mask_data, river_positions
+):
+    mask = MaskWithRivers(
+        grid=grid,
+        zlevels=zlevels,
+        mask_array=mask_data,
+        river_positions=river_positions,
+    )
+
+    with pytest.raises(ValueError):
+        mask.get_river_sources(1)

@@ -1,33 +1,48 @@
-[tool.poetry]
+[project]
 name = "bitsea"
 version = "0.1.0"
 description = ""
-authors = ["OGS"]
+authors = [
+    { name = "OGS" }
+]
 readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0.0,<2.5.0; python_version < '3.12'",
+    "numpy>=2.5.0,<3.0.0; python_version >= '3.12'",
+    "scipy>=1.12.0,<2.0.0",
+    "netcdf4>=1.6.5,<2.0.0",
+    "xarray>2024.1.0",
+    "defusedxml>=0.7.1",
+    "gsw>=3.6.16",
+    "matplotlib>3.7.5"
+]
+
+[project.optional-dependencies]
+plots = [
+    "cartopy>=0.25.0"
+]
+algorithms = [
+    "geographiclib>=2.0,<3.0"
+]
+performances = [
+    "numba>0.58",
+    "scikit-learn>=1.4.2,<2.0.0"
+]
+all = [
+    "cartopy>=0.25.0",
+    "geographiclib>=2.0,<3.0",
+    "numba>0.58",
+    "scikit-learn>=1.4.2,<2.0.0"
+]
+
+[tool.poetry]
 packages = [
     { include = "bitsea", from="src" },
 ]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^2.0.0"
-scipy = "^1.12.0"
-netcdf4 = "^1.6.5"
-xarray = ">2024.1.0"
-defusedxml = ">=0.7.1"
-gsw = ">=3.6.16"
-matplotlib = ">3.7.5"
-
-[tool.poetry.group.plots.dependencies]
-cartopy = ">=0.25.0"
-
-[tool.poetry.group.algorithms.dependencies]
-geographiclib = "^2.0"
-
-[tool.poetry.group.performances.dependencies]
-numba = ">0.58"
-scikit-learn = "^1.4.2"
-
+# I gruppi di sviluppo/documentazione che non sono "extras" installabili
+# dall'utente finale rimangono nei gruppi specifici di Poetry
 [tool.poetry.group.docs.dependencies]
 sphinx = ">=8.2.3"
 
@@ -39,12 +54,6 @@ requests = "^2.33.0"
 hypothesis = "^6.115.3"
 ipython = ">=9.15.0"
 
-[tool.poetry.extras]
-plots = ["cartopy"]
-algorithms = ["geographiclib"]
-performances = ["numba", "scikit-learn"]
-all = ["cartopy", "geographiclib", "numba", "scikit-learn"]
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -55,7 +64,6 @@ pythonpath = ["src"]
 markers = [
     "uses_test_data: Needs external data not downloaded from the repository"
 ]
-
 
 [tool.ruff.lint.pyflakes]
 allowed-unused-imports = ["mpi4py.MPI"]

@@ -122,7 +122,7 @@ class BioFloat(Instrument):
         return Pres, Profile, Qc
 
 
-    def read(self,var,var_mod=None):
+    def read(self, var, var_mod=None, POC_Bellacicco=False):
 
         Pres, Profile, Qc = self.read_raw(var)
 
@@ -139,41 +139,43 @@ class BioFloat(Instrument):
                 ii=Profile<=0
                 Profile[ii] = 0.0
 
-        #if (var_mod == "POC"):
-        #    POC = Profile *  52779.37 - 3.57 # Bellacicco 2019
-        #    if ii.sum() > 0 :
-        #        shift=POC[ii].mean()
-        #        print( "POC: adding a shift of " + str(shift))
-        #        Profile = POC - shift
-        #        ii=Profile<=0
-        #        Profile[ii] = 0.0
-
         if (var_mod == "POC"):
-            # POC/bbp700 ratio after Gali' et al. 2022
-            Pres_PSAL, PSAL, Qc_PSAL = self.read_raw('PSAL')
-            Pres_TEMP, TEMP, Qc_TEMP = self.read_raw('TEMP')
-            #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP, smooth=True) #to do, implement smoothing
-            z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
-            # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
-            TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
-            PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation
-            # Gali et al. 2022 parameters
-            #c = 1000.0        # [mmol_C m^-2] best value globally
-            c = 500.0         # [mmol_C m^-2] best fit in subtropical biomes
-            c = c * 12.011    # [mg_C m^-2]
-            b = 6.57          # [m^-1]
-            a = 41305.0       # [mg_C m^-2]
-            z_surf_Med = 14.0 # [m]
-            #
-            Z_term = np.maximum(0.0, Pres - z_surf_Med)
-            PB_ratio = c + a * np.exp(-0.001 * b * Z_term)
-            #
-            z_ref = np.max([z_surf_Med, z_mld])
-            z_term_i = np.max([0.0, z_ref - z_surf_Med])
-            PB_zref = c + a * np.exp(-0.001 * b * z_term_i)
-            PB_ratio[Pres<=z_ref] = PB_zref
-            # POC / bbp700 ratio
-            Profile = Profile * PB_ratio
+            if POC_Bellacicco:
+                # bbp700-to-POC conversion algorithm from Bellacicco 2019
+                # this is the original implementation, now an option
+                POC = Profile *  52779.37 - 3.57
+                if ii.sum() > 0 :
+                    shift=POC[ii].mean()
+                    print( "POC: adding a shift of " + str(shift))
+                    Profile = POC - shift
+                    ii=Profile<=0
+                    Profile[ii] = 0.0
+            else:
+                # POC/bbp700 ratio after Gali' et al. 2022
+                Pres_PSAL, PSAL, Qc_PSAL = self.read_raw('PSAL')
+                Pres_TEMP, TEMP, Qc_TEMP = self.read_raw('TEMP')
+                #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP, smooth=True) #to do, implement smoothing
+                z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
+                # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
+                TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
+                PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation
+                # Gali et al. 2022 parameters
+                #c = 1000.0        # [mmol_C m^-2] best value globally
+                c = 500.0         # [mmol_C m^-2] best fit in subtropical biomes
+                c = c * 12.011    # [mg_C m^-2]
+                b = 6.57          # [m^-1]
+                a = 41305.0       # [mg_C m^-2]
+                z_surf_Med = 14.0 # [m]
+                #
+                Z_term = np.maximum(0.0, Pres - z_surf_Med)
+                PB_ratio = c + a * np.exp(-0.001 * b * Z_term)
+                #
+                z_ref = np.max([z_surf_Med, z_mld])
+                z_term_i = np.max([0.0, z_ref - z_surf_Med])
+                PB_zref = c + a * np.exp(-0.001 * b * z_term_i)
+                PB_ratio[Pres<=z_ref] = PB_zref
+                # POC / bbp700 ratio
+                Profile = Profile * PB_ratio
  
         return Pres, Profile, Qc
 

@@ -30,32 +30,30 @@ def find_DCM(Chl_profile, zlev):
     return CM, DCM
 
 
-def MLD(Temperature, Salinity, Pres):
-    """Calculation of Mixed Layer Depth based on temperature difference of 0.2
-    mld is defined as the level where the difference of temperature with respect the reference level of 10m
-    is of 0.2C
-    It resurns also DENSITY (SIGMA) and POTENTIAL DENSITY (SIGMA THETA)
+def MLD(Temperature, Salinity, Pres, insitu_T=True):
+    """
+    Calculation of Mixed Layer Depth based on temperature difference of 0.2
+    inputs are Temperature ([C], in-situ, optionally conservative temperature), Salinity ([psu]), Pressure ([kg/m^3])
+    mld is defined as the level where the difference of temperature with respect the reference level of 10m is of 0.2C
+    It resurns also DENSITY and POTENTIAL DENSITY at mld
     """
     th = 10  # threshold of depth minimum
     i_10 = np.abs(Pres - th).argmin()
-    T = Temperature
-    S = Salinity
-    D1000 = Pres[
-        (Pres < 1000) & (Pres > th)
-    ]  # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
-    T1000 = T[(Pres < 1000) & (Pres > th)]
-    S1000 = S[(Pres < 1000) & (Pres > th)]
-    SA1000 = gsw.SA_from_SP(S1000, D1000, 0, 0)
-    CT1000 = gsw.CT_from_t(SA1000, T1000, D1000)
-    Dens1000 = gsw.rho(SA1000, CT1000, D1000) - 1000  # DENSITY # SIGMA
-    PDens1000 = (
-        gsw.sigma0(SA1000, CT1000)
-    )  # POTENTIAL DENSITY # SIGMA THETA
-    for ip, p in enumerate(T1000):
-        #            abs_diff=abs(p-T1000[0])
-        #            if abs_diff > 0.2:
-        #            abs_diff=abs(p-np.mean(T[Pres<th]))
-        abs_diff = abs(p - T[i_10])
+    SA = gsw.SA_from_SP(Salinity, Pres, 0, 0)
+    if insitu_T:
+        CT = gsw.CT_from_t(Salinity, Temperature, Pres)
+    else:
+        CT = Temperature
+    # CONSIDER VALUES the reference level at 10m (de Boyer-Montegut 2004)
+    D1000 = Pres[(Pres < 1000) & (Pres > th)]
+    CT1000 = CT[(Pres < 1000) & (Pres > th)]
+    SA1000 = SA[(Pres < 1000) & (Pres > th)]
+    # in situ density anomaly [kg/m^3]
+    Dens1000 = gsw.rho(SA1000, CT1000, D1000) - 1000  # in situ density anomaly [kg/m^3] DENSITY # SIGMA
+    # potential density anomaly with reference pressure of 0 dbar
+    PDens1000 = (gsw.sigma0(SA1000, CT1000))
+    for ip, p in enumerate(CT1000):
+        abs_diff = abs(p - CT[i_10])
         if abs_diff > 0.2:
             break
     MixedLayerDepth = D1000[ip]

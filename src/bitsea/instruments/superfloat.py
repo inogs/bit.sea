@@ -50,7 +50,7 @@ class BioFloatProfile(Profile):
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var,var_mod)
+        return self._my_float.read(var, var_mod, POC_Bellacicco)
 
 
     def read_fitted(self,var, func):

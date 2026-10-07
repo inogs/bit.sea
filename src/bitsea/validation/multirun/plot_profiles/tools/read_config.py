@@ -26,7 +26,7 @@ from ..filters.read_filter_description import read_filter_description
 from ..plot_inputs import PlotInputData
 from ..plot_inputs.single_line_plot import SingleLineInputData
 from ..tools.data_object import DataObject
-from ..tools.data_object import PickleDataObject
+from ..tools.data_object import get_data_object
 from ..tools.depth_profile_algorithms import DEFAULT_DEPTH_PROFILE_MODE
 from ..tools.depth_profile_algorithms import DepthProfileMode
 from ..tools.depth_profile_algorithms import read_depth_profile_mode
@@ -560,7 +560,7 @@ class PlotConfig:
                 )
             )
 
-        data_object = PickleDataObject(self.source.path, variable)
+        data_object = get_data_object(self.source.path, variable)
         plot_input = self._plot_builder(data_object)
         if self._filter is None:
             return plot_input

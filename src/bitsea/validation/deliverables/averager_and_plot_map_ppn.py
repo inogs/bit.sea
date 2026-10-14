@@ -84,6 +84,7 @@ from pathlib import Path
 from bitsea.commons.xml_module import get_subelements, get_node_attr
 from xml.dom import minidom
 from bitsea.commons import netcdf3
+from bitsea.validation.deliverables.batlow import batlow_map as batlow
 
 xmldoc = minidom.parse(args.plotlistfile)
 
@@ -194,11 +195,16 @@ for il, layer in enumerate(PLOT.layerlist):
 
 #    cmap=viridis
 #    cmap=matplotlib.colormaps['viridis']
-    cmap=matplotlib.colormaps['cividis']
+#    cmap=matplotlib.colormaps['cividis']
+    cmap=batlow   # NEW BLIND-FRIENDLY COLORSCALE
 
     n_lines=len(levels)
     # Take colors at regular intervals spanning the colormap.
-    colors = cmap(np.linspace(0, 1, n_lines))
+#    colors = cmap(np.linspace(0, 1, n_lines))
+
+    x = (np.linspace(0, 1, n_lines))
+    bias = 0.7     # < 1 → privilegia valori piccoli
+    colors = cmap(x**bias)
 
     CS=ax.contourf(TheMask.xlevels, TheMask.ylevels,integrated_masked,levels,colors=colors)
     cbar=fig.colorbar(CS,ticks=levels)

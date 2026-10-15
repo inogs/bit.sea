@@ -7,7 +7,7 @@ from bitsea.commons.utils import addsep
 from bitsea.instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
 from bitsea.instruments.var_conversions import FLOATVARS as conversion
-from bitsea.validation.deliverables.metrics import MLD #MLD_sigma
+from bitsea.validation.deliverables.metrics import MLD, MLD_sigma
 
 mydtype= np.dtype([
           ('file_name','S200'),
@@ -155,7 +155,8 @@ class BioFloat(Instrument):
                 Pres_PSAL, PSAL, Qc_PSAL = self.read_raw('PSAL')
                 Pres_TEMP, TEMP, Qc_TEMP = self.read_raw('TEMP')
                 #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP, smooth=True) #to do, implement smoothing
-                z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
+                #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
+                z_mld = MLD_sigma(TEMP, PSAL, Pres_TEMP)
                 # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
                 TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
                 PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation

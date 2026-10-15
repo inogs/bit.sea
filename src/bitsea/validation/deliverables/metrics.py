@@ -40,10 +40,11 @@ def MLD_sigma(Temperature, Salinity, Pres, insitu_T=True):
     of 0.03 kg m^-3 after Gali et al. 2022
     '''
     sigma_thr = 0.03 #[kg m^-3]
-    N = 5 #running mean window
-    nh = int(N/2)
-    zref = 5.0 #[m]
-    i5m = np.abs(Pres - zref).argmin()
+    #N = 5 #running mean window
+    #nh = int(N/2)
+    #zref = 5.0 #[m]
+    zref = 10.0 #[m]
+    i_zref = np.abs(Pres - zref).argmin()
     if insitu_T:
         # this not used cause gsw.pot_rho_t_exact() wants insitu_T
         #Temperature = ptmp(Salinity, Temperature, Pres)
@@ -51,12 +52,15 @@ def MLD_sigma(Temperature, Salinity, Pres, insitu_T=True):
     #
     # Density = pden(Salinity, Temperature, Pres)
     SA = gsw.SA_from_SP(Salinity, Pres, 0, 0)
-    Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 10.1325) 
-    d5m = np.mean(Density[i5m-nh:i5m+nh+1])
-    for ip, p in enumerate(Density):
-        abs_diff = p - d5m
+    #Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 10.1325) 
+    Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 0.0) 
+    #d_zref = np.mean(Density[i_zref-nh:i_zref+nh+1])
+    d_zref = np.mean(Density[0:i_zref+1])
+    for ip, p in enumerate(Density[i_zref:]):
+        abs_diff = np.abs(p - d_zref)
         if abs_diff > sigma_thr:
             break
+    ip = ip + i_zref
     MixedLayerDepth = np.min([1000.0, Pres[ip]])
     return MixedLayerDepth
 

@@ -1,4 +1,5 @@
 from collections import namedtuple
+from datetime import datetime
 from itertools import compress
 from itertools import product as cart_product
 from math import gcd
@@ -6,6 +7,7 @@ from os import path
 from pathlib import Path
 from warnings import warn
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
@@ -104,6 +106,32 @@ class PlotDrawer:
             plot.source.meshmask,
             mask_var_name=plot.source.mask_var_name,
         )
+
+    def plot_over_a_single_year(self, ax, Days, y, plot_kwargs):
+        years = sorted(set(day.year for day in Days))
+        for year in years:
+            year_points = [
+                (
+                    datetime(
+                        2000,
+                        day.month,
+                        day.day,
+                        day.hour,
+                        day.minute,
+                        day.second,
+                    ),
+                    y[index],
+                )
+                for index, day in enumerate(Days)
+                if day.year == year
+            ]
+            if not year_points:
+                continue
+            x_axis, values = zip(*year_points)
+            ax.plot(x_axis, values, **plot_kwargs)
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+        return ax
 
     def _plot_time_series(
         self, axis_dict, basin_index: int, basin, is_2d: bool
@@ -211,6 +239,8 @@ class PlotDrawer:
                     plots_with_legend[p_index] = True
 
                 current_axis.plot(plot_x_data, plot_y_data, **plot_kwargs)
+                # This one could be choosen by a namelis
+                # self.plot_over_a_single_year(current_axis, plot_x_data, plot_y_data, plot_kwargs)
 
         # Now we add the legends to each plot
         show_legend_flag = self._config.time_series_options.show_legend

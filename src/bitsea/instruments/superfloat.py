@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import os
 import matplotlib.pyplot as pl
-from bitsea.commons.utils import addsep
+from bitsea.commons.utils import addsep, f_sat
 from bitsea.instruments.instrument import Instrument, Profile
 from scipy.optimize import curve_fit
 from bitsea.instruments.var_conversions import FLOATVARS as conversion
@@ -39,7 +39,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self, var, var_mod=None, POC_Bellacicco=False):
+    def read(self, var, var_mod=None, POC_Bellacicco=False, mld_sat=False):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -50,7 +50,7 @@ class BioFloatProfile(Profile):
 
         Returns 3 numpy arrays: Pres, Profile, Qc '''
 
-        return self._my_float.read(var, var_mod, POC_Bellacicco)
+        return self._my_float.read(var, var_mod, POC_Bellacicco, mld_sat)
 
 
     def read_fitted(self,var, func):
@@ -122,7 +122,7 @@ class BioFloat(Instrument):
         return Pres, Profile, Qc
 
 
-    def read(self, var, var_mod=None, POC_Bellacicco=False):
+    def read(self, var, var_mod=None, POC_Bellacicco=False, mld_sat=False):
 
         Pres, Profile, Qc = self.read_raw(var)
 
@@ -154,9 +154,12 @@ class BioFloat(Instrument):
                 # POC/bbp700 ratio after Gali' et al. 2022
                 Pres_PSAL, PSAL, Qc_PSAL = self.read_raw('PSAL')
                 Pres_TEMP, TEMP, Qc_TEMP = self.read_raw('TEMP')
-                #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP, smooth=True) #to do, implement smoothing
-                #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP)
+                #z_mld, d_mld, pd_mld = MLD(TEMP, PSAL, Pres_TEMP) # temp threshold criterion
                 z_mld = MLD_sigma(TEMP, PSAL, Pres_TEMP)
+                if mld_sat:
+                    # saturate too deep MLDs:
+                    # this algorithm returns very low bbp/POC when MLD is deep
+                    z_mld = f_sat(z_mld, 200.0, 10.0)
                 # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
                 TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
                 PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation
@@ -177,7 +180,7 @@ class BioFloat(Instrument):
                 PB_ratio[Pres<=z_ref] = PB_zref
                 # POC / bbp700 ratio
                 Profile = Profile * PB_ratio
- 
+                # 
         return Pres, Profile, Qc
 
 

@@ -315,6 +315,17 @@ def search_closest_sorted(a, b):
 
     return output
 
+def f_sat(x, y_max, n):
+    '''
+    a saturating function that,
+    for high enough n,
+    stays quite close to y = x
+    as it approaches x = y_max,
+    so it really affects just "high" x values
+    (used in superfloat, look there for details)
+    '''
+    y = x / (1 + ((x / y_max)**n))**(1 / n)
+    return y
 
 if __name__ == '__main__':
     A=np.random.randn(3,2)

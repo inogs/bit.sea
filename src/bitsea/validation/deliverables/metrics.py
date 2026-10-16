@@ -34,31 +34,44 @@ def smooth_profile(profile, N=5):
     profile_smoothed = convolve1d(profile, np.ones(N)/N, mode='reflect')
     return profile_smoothed
 
+def f_sat(x, y_max, n):
+    '''
+    a saturating function that, 
+    for high enough n, 
+    stays quite close to y = x 
+    as it approaches x = y_max,
+    so it really affects just "high" x values
+    '''
+    y = x / (1 + ((x / y_max)**n))**(1 / n)
+    return y
+
 def MLD_sigma(Temperature, Salinity, Pres, insitu_T=True):
     '''
-    Calculation of Mixed Layer Depth based on density difference
-    of 0.03 kg m^-3 after Gali et al. 2022
+    Calculation of Mixed Layer Depth, adapted from Gali et al. 2022.
+    based on a variable density threshold (de Boyer Montegut 2004),
+    compared to fixed sigma threshold, 
+    less prone to too shallow (~0m) mld when mld is shallow (summer),
+    and is more stable (does not go up and down like crazy) when mld is deep (winter)
     '''
-    sigma_thr = 0.03 #[kg m^-3]
-    #N = 5 #running mean window
-    #nh = int(N/2)
-    #zref = 5.0 #[m]
+    temp_thr = 0.2 #[K]
+    #sigma_thr = 0.03 #[kg m^-3]
     zref = 10.0 #[m]
     i_zref = np.abs(Pres - zref).argmin()
     if insitu_T:
-        # this not used cause gsw.pot_rho_t_exact() wants insitu_T
-        #Temperature = ptmp(Salinity, Temperature, Pres)
         CT = gsw.CT_from_t(Salinity, Temperature, Pres)
     #
-    # Density = pden(Salinity, Temperature, Pres)
-    SA = gsw.SA_from_SP(Salinity, Pres, 0, 0)
-    #Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 10.1325) 
+    SA = gsw.SA_from_SP(Salinity, Pres, 0.0, 38.0) #(S, Pres, lon, lat)
     Density = gsw.pot_rho_t_exact(SA, Temperature, Pres, 0.0) 
-    #d_zref = np.mean(Density[i_zref-nh:i_zref+nh+1])
-    d_zref = np.mean(Density[0:i_zref+1])
+    d_zref = Density[i_zref]
     for ip, p in enumerate(Density[i_zref:]):
         abs_diff = np.abs(p - d_zref)
-        if abs_diff > sigma_thr:
+        # variable density threshold after de Boyer Montegut 2004
+        sigma_thr_var = (
+                         gsw.pot_rho_t_exact(SA[i_zref], Temperature[i_zref] - temp_thr, Pres[i_zref], 0.0) 
+                       - gsw.pot_rho_t_exact(SA[i_zref], Temperature[i_zref], Pres[i_zref], 0.0)
+                        )
+        if abs_diff > sigma_thr_var:
+            print(f'sigma_thr: {sigma_thr_var}')
             break
     ip = ip + i_zref
     MixedLayerDepth = np.min([1000.0, Pres[ip]])

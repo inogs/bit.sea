@@ -159,7 +159,7 @@ class BioFloat(Instrument):
                 if mld_sat:
                     # saturate too deep MLDs:
                     # this algorithm returns very low bbp/POC when MLD is deep
-                    z_mld = f_sat(z_mld, 200.0, 10.0)
+                    z_mld = f_sat(z_mld, 150.0, 10.0)
                 # Interpolate TEMP @ Z = Pres, because Pres and Pres_TEMP are different
                 TEMP = np.interp(Pres, Pres_TEMP, TEMP) #piecewise linear interpolation
                 PSAL = np.interp(Pres, Pres_PSAL, PSAL) #piecewise linear interpolation

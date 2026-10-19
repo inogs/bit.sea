@@ -39,7 +39,7 @@ class BioFloatProfile(Profile):
         else:
             return False
 
-    def read(self, var, var_mod=None, POC_Bellacicco=False, mld_sat=False):
+    def read(self, var, var_mod=None, POC_Bellacicco=True, mld_sat=False):
         '''
         Reads profile data from file. Wrapper for BioFloat.read()
 
@@ -122,7 +122,7 @@ class BioFloat(Instrument):
         return Pres, Profile, Qc
 
 
-    def read(self, var, var_mod=None, POC_Bellacicco=False, mld_sat=False):
+    def read(self, var, var_mod=None, POC_Bellacicco=True, mld_sat=False):
 
         Pres, Profile, Qc = self.read_raw(var)
 

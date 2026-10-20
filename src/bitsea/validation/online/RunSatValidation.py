@@ -1,5 +1,5 @@
 import argparse
-
+# For MER
 def argument():
     parser = argparse.ArgumentParser(description = 'run sat validation on N procs')
     parser.add_argument(   '--inputdir', '-i',

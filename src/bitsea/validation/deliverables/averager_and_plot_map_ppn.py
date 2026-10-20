@@ -1,74 +1,14 @@
 import argparse
-from bitsea.utilities.argparse_types import date_from_str
-from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
-def argument():
-    parser = argparse.ArgumentParser(description = '''
-    Generates png maps, based on matplotlib.imshow(), of time averaged fields
-    and bias and RMSD table with respect the datasets: CAFE and OCTAC
-    
-    Brief description of the algorithm:
-    INPUTS                                               OPERATOR              OUTPUT
-    (InputDir, varname, StartTime, EndTime)  ---->     time average       ---> 3D field
-    (3d_field, Layer list )                  ----> vertical mean/integral ---> 2d map
-    
-    
-    Example of output files:
-    - ppn_2021_Int0000-0200m-0000m.png
-    - ppn_ean_2021.txt
-    - ppn_mean_basin_2021.txt
-    
-    Caveats:
-    A unit conversion is performed.
-    ''',
-    formatter_class=argparse.RawTextHelpFormatter
-    )
+import ast
 
-    parser.add_argument(   '--outdir', '-o',
-                            type = existing_dir_path,
-                            required =True,
-                            help = ''' Output dir'''
-                            )
-
-    parser.add_argument(   '--inputdir', '-i',
-                            type = existing_dir_path,
-                            required = True,
-                            help = 'Input dir')
-
-    parser.add_argument(   '--varname', '-v',
-                                type = str,
-                                required = True,
-                                default = '',
-                                choices = ['ppn','P_c','P_z'] )
-    parser.add_argument(   '--plotlistfile', '-l',
-                                type = str,
-                                required = True,
-                                help = '''Plotlist_bio.xml"
-                                ''')
-    parser.add_argument(   '--maskfile', '-m',
-                                type = existing_file_path,
-                                required = True,
-                                help = 'Path of the mask file')
-    parser.add_argument(   '--optype', '-t',
-                                type = str,
-                                required = True,
-                                default = '',
-                                choices = ['integral','mean'],
-                                help ="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer")
-    parser.add_argument(   '--starttime','-s',
-                                type = date_from_str,
-                                required = True,
-                                help = 'start date in yyyymmdd format; just year 2021, 2022 or 2023 can be selected)')
-    parser.add_argument(   '--endtime','-e',
-                                type = date_from_str,
-                                required = True,
-                                help = 'start date in yyyymmdd format')      
-
-    return parser.parse_args()
-args = argument()
-
-import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+import numpy as np
+
+from bitsea.utilities.argparse_types import date_from_str
+from bitsea.utilities.argparse_types import existing_dir_path
+from bitsea.utilities.argparse_types import existing_file_path
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as pl
 
 from bitsea.commons.time_interval import TimeInterval
@@ -82,145 +22,291 @@ from bitsea.layer_integral import coastline
 import bitsea.commons.timerequestors as requestors
 from pathlib import Path
 from bitsea.commons.xml_module import get_subelements, get_node_attr
-from xml.dom import minidom
+from defusedxml import minidom
 from bitsea.commons import netcdf3
+from bitsea.utilities.colormaps.batlow import batlow_map
 
-xmldoc = minidom.parse(args.plotlistfile)
+
+def argument():
+    parser = argparse.ArgumentParser(
+        description="""
+    Generates png maps, based on matplotlib.imshow(), of time averaged fields
+    and bias and RMSD table with respect the datasets: CAFE and OCTAC
+
+    Brief description of the algorithm:
+    INPUTS                                               OPERATOR              OUTPUT
+    (InputDir, varname, StartTime, EndTime)  ---->     time average       ---> 3D field
+    (3d_field, Layer list )                  ----> vertical mean/integral ---> 2d map
 
 
-INPUTDIR  = args.inputdir
+    Example of output files:
+    - ppn_2021_Int0000-0200m-0000m.png
+    - ppn_ean_2021.txt
+    - ppn_mean_basin_2021.txt
+
+    Caveats:
+    A unit conversion is performed.
+    """,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    parser.add_argument(
+        "--outdir",
+        "-o",
+        type=existing_dir_path,
+        required=True,
+        help=""" Output dir""",
+    )
+
+    parser.add_argument(
+        "--inputdir",
+        "-i",
+        type=existing_dir_path,
+        required=True,
+        help="Input dir",
+    )
+
+    parser.add_argument(
+        "--varname",
+        "-v",
+        type=str,
+        required=True,
+        default="",
+        choices=["ppn", "P_c", "P_z"],
+    )
+    parser.add_argument(
+        "--plotlistfile",
+        "-l",
+        type=str,
+        required=True,
+        help="""Plotlist_bio.xml"
+                                """,
+    )
+    parser.add_argument(
+        "--maskfile",
+        "-m",
+        type=existing_file_path,
+        required=True,
+        help="Path of the mask file",
+    )
+    parser.add_argument(
+        "--optype",
+        "-t",
+        type=str,
+        required=True,
+        default="",
+        choices=["integral", "mean"],
+        help="  INTEGRALE:  * heigth of the layer, MEDIA    :  average of layer",
+    )
+    parser.add_argument(
+        "--starttime",
+        "-s",
+        type=date_from_str,
+        required=True,
+        help="start date in yyyymmdd format; just year 2021, 2022 or 2023 can be selected)",
+    )
+    parser.add_argument(
+        "--endtime",
+        "-e",
+        type=date_from_str,
+        required=True,
+        help="start date in yyyymmdd format",
+    )
+
+    return parser.parse_args()
+
+
+args = argument()
+
+
+with open(args.plotlistfile, "r") as f:
+    xmldoc = minidom.parse(f)
+
+
+INPUTDIR = args.inputdir
 OUTPUTDIR = args.outdir
-var       = args.varname
-DIR_OBS=Path("/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/Cafe_Octac/")
+var = args.varname
+DIR_OBS = Path(
+    "/g100_work/OGS_test2528/Observations/TIME_RAW_DATA/STATIC/Cafe_Octac/"
+)
 
 
-if  args.optype=='integral':
-    maptype="Int"
+if args.optype == "integral":
+    maptype = "Int"
 else:
-    maptype="Ave"
+    maptype = "Ave"
 
 for lm in xmldoc.getElementsByTagName("LayersMaps"):
     for pdef in get_subelements(lm, "plots"):
-        filevar = get_node_attr(pdef, "var")        
-        if not filevar == var : continue
-        PLOT = Plot(get_node_attr(pdef, "var"), get_node_attr(pdef, "longname"), get_node_attr(pdef, "plotunits"), [], [0,1] )
+        filevar = get_node_attr(pdef, "var")
+        if not filevar == var:
+            continue
+        PLOT = Plot(
+            get_node_attr(pdef, "var"),
+            get_node_attr(pdef, "longname"),
+            get_node_attr(pdef, "plotunits"),
+            [],
+            [0, 1],
+        )
         for d in get_subelements(pdef, "depth"):
-            levplot  = float(get_node_attr(d, "levplot")) 
-            clim     = eval(get_node_attr(d, "clim"))
-            L = Layer(get_node_attr(d,"top"), get_node_attr(d, "bottom"))
-            PLOT.append_layer(L,clim=clim, mapdepthfilter=levplot)
-            
+            levplot = float(get_node_attr(d, "levplot"))
+            clim = ast.literal_eval(get_node_attr(d, "clim"))
+            L = Layer(get_node_attr(d, "top"), get_node_attr(d, "bottom"))
+            PLOT.append_layer(L, clim=clim, mapdepthfilter=levplot)
 
 
-
-
-clon,clat = coastline.get()
+clon, clat = coastline.get()
 TheMask = Mask.from_file(args.maskfile)
 
-CONVERSION_DICT={
-         'ppn' : 365./1000,
-         'P_c' : 1,
-         'Z_c' : 1,
-         }
+CONVERSION_DICT = {
+    "ppn": 365.0 / 1000,
+    "P_c": 1,
+    "Z_c": 1,
+}
 
-MONTH_STRING = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-TI = TimeInterval.fromdatetimes(args.starttime,args.endtime)
+MONTH_STRING = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+]
+TI = TimeInterval.fromdatetimes(args.starttime, args.endtime)
 if args.endtime.year > args.starttime.year:
-    req_label=f"{args.starttime.year}_{args.endtime.year}"
+    req_label = f"{args.starttime.year}_{args.endtime.year}"
 else:
-    req_label=f"{args.starttime.year}"
+    req_label = f"{args.starttime.year}"
 
-TL = TimeList.fromfilenames(TI, INPUTDIR,"ave*.nc",filtervar=var)
+TL = TimeList.fromfilenames(TI, INPUTDIR, "ave*.nc", filtervar=var)
 if TL.inputFrequency is None:
-    TL.inputFrequency='monthly'
-    print ("inputFrequency forced to monthly because of selection of single time")
+    TL.inputFrequency = "monthly"
+    print(
+        "inputFrequency forced to monthly because of selection of single time"
+    )
 
-#Set the year of interest:
+# Set the year of interest:
 yy = TI.start_time.year
 
 # READ OBS DATASETS:
 
-filename_CAFE =f"ppn_CAFE_mean_16basins_{yy}_annual.txt"
-filename_OCTAC=f"ppn_OCTAC_mean_16basins_{yy}_annual.txt"
+filename_CAFE = f"ppn_CAFE_mean_16basins_{yy}_annual.txt"
+filename_OCTAC = f"ppn_OCTAC_mean_16basins_{yy}_annual.txt"
 
-CAFE = np.loadtxt(DIR_OBS / filename_CAFE, skiprows=1,usecols=1)
-OCTAC = np.loadtxt(DIR_OBS / filename_OCTAC , skiprows=1,usecols=1)
+CAFE = np.loadtxt(DIR_OBS / filename_CAFE, skiprows=1, usecols=1)
+OCTAC = np.loadtxt(DIR_OBS / filename_OCTAC, skiprows=1, usecols=1)
 
 
 req = requestors.Generic_req(TI)
-indexes,weights = TL.select(req)
+indexes, weights = TL.select(req)
 
 
-VARCONV=CONVERSION_DICT[var]
+VARCONV = CONVERSION_DICT[var]
 # setting up filelist for requested period -----------------
-filelist=[]
+filelist = []
 for k in indexes:
     t = TL.Timelist[k]
-    filename = INPUTDIR / ("ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc")
+    filename = INPUTDIR / (
+        "ave." + t.strftime("%Y%m%d-%H:%M:%S") + "." + var + ".nc"
+    )
     filelist.append(filename)
 # ----------------------------------------------------------
-print ("time averaging ...")
-M3d     = TimeAverager3D(filelist, weights, var, TheMask)
-print ("... done.")
+print("time averaging ...")
+M3d = TimeAverager3D(filelist, weights, var, TheMask)
+print("... done.")
 for il, layer in enumerate(PLOT.layerlist):
     z_mask = PLOT.depthfilters[il]
-    z_mask_str = "-%04gm" %z_mask
-    Lstr=layer.longname()
+    z_mask_str = "-%04gm" % z_mask
+    Lstr = layer.longname()
     filename = f"{var}_{req_label}_{maptype}{Lstr}{z_mask_str}"
-    outfile=OUTPUTDIR / f"{filename}.png"
+    outfile = OUTPUTDIR / f"{filename}.png"
 
-    De      = DataExtractor(TheMask,rawdata=M3d)
+    De = DataExtractor(TheMask, rawdata=M3d)
 
-    if args.optype=='integral':
+    if args.optype == "integral":
         integrated = MapBuilder.get_layer_integral(De, layer)
     else:
         integrated = MapBuilder.get_layer_average(De, layer)
-    integrated=integrated * VARCONV
+    integrated = integrated * VARCONV
 
+    mask = TheMask.mask_at_level(z_mask)
+    clim = PLOT.climlist[il]
+    integrated_masked = integrated * mask  # taglio il costiero
+    integrated_masked[integrated_masked == 0] = (
+        np.nan
+    )  # sostituisco gli 0 con i NAN
 
-    mask=TheMask.mask_at_level(z_mask)
-    clim=PLOT.climlist[il]
-    integrated_masked=integrated*mask # taglio il costiero
-    integrated_masked[integrated_masked==0]=np.nan # sostituisco gli 0 con i NAN
-
-# X ppn:
-    fig,ax = pl.subplots()
-    fig.set_size_inches(10.0, 10.0*16/42)
+    # X ppn:
+    fig, ax = pl.subplots()
+    fig.set_size_inches(10.0, 10.0 * 16 / 42)
     ax.set_position([0.08, 0.13, 0.78, 0.78])
     levels = [0, 25, 50, 75, 100, 125, 150, 175, 200, 300, 400, 500]
     # colors = ['navy','blue','royalblue','deepskyblue','aqua','lawngreen','greenyellow','gold','orange','red','maroon']
-    colors = ['midnightblue','indigo','blue','royalblue','deepskyblue','aqua','greenyellow','gold','orange','red','maroon']
+    colors = [
+        "midnightblue",
+        "indigo",
+        "blue",
+        "royalblue",
+        "deepskyblue",
+        "aqua",
+        "greenyellow",
+        "gold",
+        "orange",
+        "red",
+        "maroon",
+    ]
     # New corlors more similar to Lazzari et al. (2012)
 
-#    cmap=viridis
-#    cmap=matplotlib.colormaps['viridis']
-    cmap=matplotlib.colormaps['cividis']
+    cmap = batlow_map  # NEW BLIND-FRIENDLY COLORSCALE
 
-    n_lines=len(levels)
+    n_lines = len(levels)
     # Take colors at regular intervals spanning the colormap.
-    colors = cmap(np.linspace(0, 1, n_lines))
+    #    colors = cmap(np.linspace(0, 1, n_lines))
 
-    CS=ax.contourf(TheMask.xlevels, TheMask.ylevels,integrated_masked,levels,colors=colors)
-    cbar=fig.colorbar(CS,ticks=levels)
-    ax.set_xlim([-5,36])
+    x = np.linspace(0, 1, n_lines)
+    bias = 0.7  # < 1 → privilegia valori piccoli
+    colors = cmap(x**bias)
 
-    ax.set_ylim([30,46])
-    ax.set_xlabel('Lon').set_fontsize(11)
-    ax.set_ylabel('Lat').set_fontsize(12)
-    ax.tick_params(axis='x', labelsize=10)
-# CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
-    ax.text(-4,44.5,'npp [' + PLOT.units() + ']',horizontalalignment='left',verticalalignment='center',fontsize=14, color='black')
-    title = "%s %s %s" % (req_label, 'npp', layer.__repr__())
+    CS = ax.contourf(
+        TheMask.xlevels,
+        TheMask.ylevels,
+        integrated_masked,
+        levels,
+        colors=colors,
+    )
+    cbar = fig.colorbar(CS, ticks=levels)
+    ax.set_xlim([-5, 36])
 
+    ax.set_ylim([30, 46])
+    ax.set_xlabel("Lon").set_fontsize(11)
+    ax.set_ylabel("Lat").set_fontsize(12)
+    ax.tick_params(axis="x", labelsize=10)
+    # CHANGE ACRONYM for NET PRIMARY PRODUCTION from "ppn" to "npp":
+    ax.text(
+        -4,
+        44.5,
+        "npp [" + PLOT.units() + "]",
+        horizontalalignment="left",
+        verticalalignment="center",
+        fontsize=14,
+        color="black",
+    )
+    title = "%s %s %s" % (req_label, "npp", layer.__repr__())
 
-    ax.xaxis.set_ticks(np.arange(-2,36,6))
-    ax.yaxis.set_ticks(np.arange(30,46,4))
-##########
-    #Draw coastline
-    ax.plot(clon,clat, color='#000000',linewidth=0.5)
+    ax.xaxis.set_ticks(np.arange(-2, 36, 6))
+    ax.yaxis.set_ticks(np.arange(30, 46, 4))
+    ##########
+    # Draw coastline
+    ax.plot(clon, clat, color="#000000", linewidth=0.5)
     ax.set_xlim([-6, 36])
     ax.set_ylim([30, 46])
-#########
+    #########
     ax.grid()
     pl.suptitle(title)
     pl.savefig(outfile)
@@ -232,54 +318,87 @@ for il, layer in enumerate(PLOT.layerlist):
     #     ncfile = OUTPUTDIR + "Map_" + var + "_" + req_label + "_Int" + layer.longname() + z_mask_string  + ".nc"
     #     netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,mask)
     #     netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
-        
-    if (var == "ppn"or var == "Z_c" or var == "P_c"):
+
+    if var == "ppn" or var == "Z_c" or var == "P_c":
         from bitsea.basins import V2 as OGS
         from bitsea.commons.submask import SubMask
         from bitsea.basins.basin import ComposedBasin
         from bitsea.commons.utils import writetable
+
         tablefile = OUTPUTDIR / f"{var}_mean_basin.txt"
-        OGSred = ComposedBasin('OGSred',[OGS.alb,
-                    #  OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr,
-                    OGS.swm, OGS.nwm, OGS.tyr,
-                    OGS.adr, OGS.aeg, OGS.ion, OGS.lev , OGS.med],
-                    # 'Gruped Subbasin for ppn analysis')
-                    'Gruped Subbasin for integral variable analysis')
+        OGSred = ComposedBasin(
+            "OGSred",
+            [
+                OGS.alb,
+                #  OGS.swm1, OGS.swm2, OGS.nwm, OGS.tyr,
+                OGS.swm,
+                OGS.nwm,
+                OGS.tyr,
+                OGS.adr,
+                OGS.aeg,
+                OGS.ion,
+                OGS.lev,
+                OGS.med,
+            ],
+            # 'Gruped Subbasin for ppn analysis')
+            "Gruped Subbasin for integral variable analysis",
+        )
         SUBlist = OGSred.basin_list
-        nSub   = len(OGSred.basin_list)
-        rows_names=[sub.name for sub in SUBlist]
-        ppn_submean = np.zeros((nSub,2),np.float32)*np.nan # FIRST COL: mean; SECOND COL: std
+        nSub = len(OGSred.basin_list)
+        rows_names = [sub.name for sub in SUBlist]
+        ppn_submean = (
+            np.zeros((nSub, 2), np.float32) * np.nan
+        )  # FIRST COL: mean; SECOND COL: std
         for isub, sub in enumerate(OGSred):
             S = SubMask(sub, TheMask)
-            mask2d = S[0,:,:]
-            ppn_submean[isub,0] = integrated_masked[mask2d].mean()
-            ppn_submean[isub,1] = integrated_masked[mask2d].std()
+            mask2d = S[0, :, :]
+            ppn_submean[isub, 0] = integrated_masked[mask2d].mean()
+            ppn_submean[isub, 1] = integrated_masked[mask2d].std()
 
     ncfile = OUTPUTDIR / f"{filename}.nc"
-    netcdf3.write_2d_file(integrated_masked,"ppn",ncfile,TheMask)
+    netcdf3.write_2d_file(integrated_masked, "ppn", ncfile, TheMask)
 
     from bitsea.basins import V2 as OGS
     from bitsea.commons.submask import SubMask
     from bitsea.commons.utils import writetable
+
     tablefile = OUTPUTDIR / f"{var}_mean_basin_{yy}.txt"
-    tablefile_PPN_EAN =  OUTPUTDIR / f"{var}_ean_{yy}.txt"
+    tablefile_PPN_EAN = OUTPUTDIR / f"{var}_ean_{yy}.txt"
 
     SUBlist = OGS.P.basin_list
-    nSub   = len(SUBlist)
-    rows_names=[sub.name for sub in SUBlist]
-    ppn_submean = np.zeros((nSub,3),np.float32)*np.nan
-    ppn_ean = np.zeros((2,2),np.float32)*np.nan
+    nSub = len(SUBlist)
+    rows_names = [sub.name for sub in SUBlist]
+    ppn_submean = np.zeros((nSub, 3), np.float32) * np.nan
+    ppn_ean = np.zeros((2, 2), np.float32) * np.nan
     for isub, sub in enumerate(OGS.P):
         S = SubMask(sub, TheMask)
-        mask2d=S[0,:,:]
-        ppn_submean[isub,0] = integrated_masked[mask2d].mean()
-        ppn_submean[isub,1] = CAFE[isub]
-        ppn_submean[isub,2] = OCTAC[isub]
+        mask2d = S[0, :, :]
+        ppn_submean[isub, 0] = integrated_masked[mask2d].mean()
+        ppn_submean[isub, 1] = CAFE[isub]
+        ppn_submean[isub, 2] = OCTAC[isub]
 
-    ppn_ean[0,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,1]) # BIAS CAFE
-    ppn_ean[0,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,1])**2)) #RMSD CAFE
-    ppn_ean[1,0] = np.nanmean(ppn_submean[:16,0]-ppn_submean[:16,2]) # BIAS OCTAC
-    ppn_ean[1,1] = np.sqrt(np.nanmean((ppn_submean[:16,0]-ppn_submean[:16,2])**2)) # RMSD OCTAC
+    ppn_ean[0, 0] = np.nanmean(
+        ppn_submean[:16, 0] - ppn_submean[:16, 1]
+    )  # BIAS CAFE
+    ppn_ean[0, 1] = np.sqrt(
+        np.nanmean((ppn_submean[:16, 0] - ppn_submean[:16, 1]) ** 2)
+    )  # RMSD CAFE
+    ppn_ean[1, 0] = np.nanmean(
+        ppn_submean[:16, 0] - ppn_submean[:16, 2]
+    )  # BIAS OCTAC
+    ppn_ean[1, 1] = np.sqrt(
+        np.nanmean((ppn_submean[:16, 0] - ppn_submean[:16, 2]) ** 2)
+    )  # RMSD OCTAC
 
-    writetable(tablefile,ppn_submean,rows_names,['mean Mod', 'CAFE mean','OCTAC mean'])
-    writetable(tablefile_PPN_EAN,ppn_ean,["Mod_vs_CAFE","Mod_vs_OCTAC"],["BIAS","RMSD"])
+    writetable(
+        tablefile,
+        ppn_submean,
+        rows_names,
+        ["mean Mod", "CAFE mean", "OCTAC mean"],
+    )
+    writetable(
+        tablefile_PPN_EAN,
+        ppn_ean,
+        ["Mod_vs_CAFE", "Mod_vs_OCTAC"],
+        ["BIAS", "RMSD"],
+    )

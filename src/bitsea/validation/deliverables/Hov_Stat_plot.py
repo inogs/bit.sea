@@ -218,7 +218,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]
             ymean=np.mean(ax8.get_ylim())
-            ax8.text(xmax, ymean, "MWB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+            ax8.text(xmax, ymean, "WBL", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
 
 
         if ( var_mod == "O2o" ):

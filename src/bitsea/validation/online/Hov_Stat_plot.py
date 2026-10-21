@@ -139,10 +139,9 @@ for ivar, var_mod in enumerate(VARLIST):
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
-        print(OUTFILE)
+        print(OUTFILE,flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
-
         ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8=axes
         xlabels = ax8.get_xticklabels()
         ax8.xaxis.grid(True)
@@ -266,10 +265,7 @@ for ivar, var_mod in enumerate(VARLIST):
 
 
         legend = ax5.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5) #shadow=True
-
-
-
-                        
+            
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,1.8)
@@ -309,7 +305,6 @@ for ivar, var_mod in enumerate(VARLIST):
                 ax7.set_xticklabels([])
             ax7.set_ylim(0,1)
 
-
             ax7.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
             ax7.tick_params(axis = 'both', which = 'major', labelsize = label_s)
 
@@ -322,7 +317,7 @@ for ivar, var_mod in enumerate(VARLIST):
             xlabels = ax8.get_xticklabels()
 
 
-        pl.setp(xlabels, rotation=30, fontsize=15)
+        pl.setp(xlabels, rotation=30, fontsize=14)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
         for ax in axes[2:]: ax.set_xlim([T_start2num,T_end2num])

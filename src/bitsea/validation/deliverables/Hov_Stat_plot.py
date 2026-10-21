@@ -99,7 +99,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
-        print (OUTFILE,flush=True)
+        print(OUTFILE,flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         if ( var_mod == 'P_c'):
             fig,axes= plotter_oxy.figure_generator(list_float_track)
@@ -111,9 +111,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8=axes
             xlabels = ax8.get_xticklabels()
             ax8.xaxis.grid(True)
-
         nP = len(list_float_track)
-
         if nP <2 : continue
 
         plotmat = np.zeros([len(depths), len(list_float_track)])*np.nan
@@ -124,12 +122,10 @@ for ivar_m, var_mod in enumerate(VARLIST):
             try:
                 Pres,Prof,Qc=p.read(var,var_mod=var_mod)
             except:
-                print (var_mod)
                 timelabel_list.append(p.time)
                 continue
             ii = Pres<=bt
             if ii.sum() < 2 :
-                print ("less than 2 points")
                 timelabel_list.append(p.time)
                 continue
 
@@ -181,14 +177,9 @@ for ivar_m, var_mod in enumerate(VARLIST):
         times = timelabel_list
 
         model, ref =           A.plotdata(var_mod,'Int_0-200', only_good=False)
-
         if np.isnan(ref).all(): continue
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
-
-#        if ( var_mod == "P_c"):
-#           ref = 12128 * (ref * ( 470.0/ 700)**0.78 ) + 0.59
-#           surf_ref = 12128 * (surf_ref * ( 470.0/ 700)**0.78 ) + 0.59
 
         ax6.plot(times,  ref,'.b',label='FLO INTEG')
         ax6.plot(times,model,'b',label='MOD INTEG')
@@ -218,7 +209,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.set_ylim([200,0])
             xmax=ax8.get_xlim()[1]
             ymean=np.mean(ax8.get_ylim())
-            ax8.text(xmax, ymean, "MWB", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
+            ax8.text(xmax, ymean, "WBL", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
 
 
         if ( var_mod == "O2o" ):
@@ -280,11 +271,10 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax5.set_xticklabels([])
             ax6.set_xticklabels([])
         except:
-            print ("nans in figure")
+            print("nans in figure")
         if (np.isnan(ref_corr).all() == False ):
             ax7.plot(times,ref_corr,'b')
             ax7.set_ylabel('CORR',fontsize=15)
-#            if ( var_mod != 'O2o' ):
             if ( var_mod != 'OXY' ):
                 ax7.set_xticklabels([])
             ax7.set_ylim(0,1)
@@ -294,7 +284,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
-#        ticklabs = cbar.ax.get_yticklabels()
+
         ticklabs = cbar.get_ticks()
         ticks_loc = cbar.ax.get_yticks().tolist()
         cbar.ax.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
@@ -311,6 +301,8 @@ for ivar_m, var_mod in enumerate(VARLIST):
 
         else:
             xlabels = ax8.get_xticklabels()
+
+
         pl.setp(xlabels, rotation=30, fontsize=14)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
@@ -318,8 +310,6 @@ for ivar_m, var_mod in enumerate(VARLIST):
         ax5.xaxis.grid(True)
         ax6.xaxis.grid(True)
         ax7.xaxis.grid(True)
-#        ax8.xaxis.grid(True)
 
         fig.savefig(OUTFILE)
-#        fig.show()
         pl.close(fig)

@@ -16,3 +16,7 @@ makefile
 bitsea-copilot-coder-bundle.zip
 docs
 *pyc
+
+src/bitsea/Float/bck/
+src/bitsea/Float/oxygen_saturation2.py
+src/bitsea/Float/superfloat_oxygen_bck.py

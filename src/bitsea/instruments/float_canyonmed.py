@@ -16,14 +16,23 @@ mydtype= np.dtype([
           ('parameters','U200'),
           ('prof_flags' ,'U200')]
           )
-GSS_DEFAULT_LOC ='/g100_scratch/userexternal/camadio0/ARGOPY_TESTS/Climatologies_Argopy/'
+
+GSS_DEFAULT_LOC ='/g100_scratch/userexternal/camadio0/Tracing_deoxygenation_Med_ISSUE_01/'
 ONLINE_REPO = addsep(os.getenv("ONLINE_REPO",GSS_DEFAULT_LOC))
-FloatIndexer=addsep(ONLINE_REPO) + "CANYON_MED_QC/Float_Index.txt"
+FloatIndexer=addsep(ONLINE_REPO) + "CANYONMED/Float_Index.txt"
 INDEX_FILE=np.loadtxt(FloatIndexer,dtype=mydtype, delimiter=",",ndmin=1)
 
-nFiles=INDEX_FILE.size
+nFiles = INDEX_FILE.size
+
 for iFile in range(nFiles):
-    INDEX_FILE['parameters'][iFile] = INDEX_FILE['parameters'][iFile].replace("NITRATE_PPCON","NITRATE").replace("CHLA_PPCON","CHLA").replace("BBP700_PPCON","BBP700")
+    INDEX_FILE['parameters'][iFile] = (
+        INDEX_FILE['parameters'][iFile]
+        .replace("NITRATE_CANYONMED", "NITRATE")
+        .replace("PO4_CANYONMED", "PO4")
+        .replace("DIC_CANYONMED", "DIC")
+        .replace("SiOH4_CANYONMED", "SiOH4")
+        .replace("AT_CANYONMED", "AT")
+        .replace("PH_IN_SITU_TOTAL_CANYONMED", "PH_IN_SITU_TOTAL"))
 
 
 class BioFloatProfile(Profile):
@@ -59,7 +68,7 @@ class BioFloatProfile(Profile):
                           Once all bit.sea code will use superfloat instead of lovbio_float, we'll remove it
 
         Returns 3 numpy arrays: Pres, Profile, Qc
-        ProfileType codes= "best" take all profiles || "insitu" take insitu only || "ppcon" take ppcon only
+        ProfileType codes= "best" take all profiles || "insitu" take insitu only || "canyon_med" take canyonmed only
         ProfileType default=> "best"
         '''
 
@@ -121,7 +130,7 @@ class BioFloat(Instrument):
 
 
     def status_profile(self,var):
-        """return code or extended nomenclature for insitu, ppcon, both
+        """return code or extended nomenclature for insitu, canyonmed, both
         """
         li = list(self.available_params.split(" "))
         lf = self.profile_flags
@@ -129,26 +138,12 @@ class BioFloat(Instrument):
         flags_code = lf[iParam]
         return (flags_code)
 
-
     def has_insitu(self, var):
-        if self.status_profile(var) in ['I','T']: return True
+        if self.status_profile(var) in ['I','B']: return True
         return False
-    def has_ppcon(self, var):
-        if self.status_profile(var) in ['P', 'B', 'D' , 'T']: return True
+    def has_canyonmed(self,  var):
+        if self.status_profile(var) in['C','B']: return True
         return False
-    def has_canyonmed(self, var):
-        if self.status_profile(var) in ['C','D','T']: return True
-        return False
-    def has_tris(self,  var):
-        if self.status_profile(var) in['T']: return True
-        return False
-    def has_double(self, var):
-        if self.status_profile(var) == 'D': return True
-        return False
-    def has_issue(self, var):
-        if self.status_profile(var) == 'X': return True
-        return False
-
 
     def read_raw(self , var , flag_code, force_reading=None):
         if force_reading:
@@ -162,22 +157,18 @@ class BioFloat(Instrument):
             var_name  = var
             qc_name   = var + '_QC'
 
-        elif flag_code in ['P'] or force_reading == 'PP':
-            pres_name = 'PRES_' + var + '_PPCON'
-            var_name  = var + '_PPCON'
-            qc_name   = var + '_PPCON_QC'
-
         elif flag_code in ['C'] or force_reading == 'CC':
             pres_name = 'PRES_' + var + '_CANYONMED'
             var_name  = var + '_CANYONMED'
             qc_name   = var + '_CANYONMED_QC'
-
+            
         else:
             raise ValueError(f"Invalid flag_code ({flag_code}) or force_reading ({force_reading})")
 
         for name in [pres_name, var_name, qc_name]:
             if name not in vars_available:
-                    raise KeyError(f"Variable '{name}' not found in {self.filename}")
+                    return None, None, None
+                    #raise KeyError(f"Variable '{name}' not found in {self.filename}")
 
         Pres    = np.array(ncIN.variables[pres_name])
         Profile = np.array(ncIN.variables[var_name])
@@ -191,10 +182,10 @@ class BioFloat(Instrument):
         '''
         With sourcedata='best' gives priority to insitu
         '''
-        assert sourcedata in ["best","insitu","ppcon",'canyon_med']
+        assert sourcedata in ["best","insitu",'canyon_med']
 
         if sourcedata=='best':
-            flag_code = self.status_profile(var) # get flag insitu ppcon both none
+            flag_code = self.status_profile(var) # get flag insitu canyonmed both none
             Pres, Profile, Qc = self.read_raw(var, flag_code,force_reading=None)
 
         elif sourcedata=="insitu":
@@ -203,16 +194,11 @@ class BioFloat(Instrument):
             if (Qc <0).any() : 
                 raise ValueError("Incorrect QC flag for canyon_med")
 
-        elif sourcedata=="ppcon":
-            assert self.has_ppcon(var)
-            Pres, Profile, Qc = self.read_raw(var, 'P',force_reading='PP')
-            if (Qc >0).any() : 
-                raise ValueError("Incorrect QC flag for canyon_med")
-        
         elif sourcedata=="canyon_med":
-            print(self.filename)
-            flag_code = self.status_profile(var)
-            Pres, Profile, Qc = self.read_raw(var, 'X',force_reading='CC')
+            Pres, Profile, Qc = self.read_raw(var, 'C',force_reading='CC')
+            if Pres is None or Profile is None or Qc is None:
+                   return 
+
             if (Qc >0).any() : 
                 raise ValueError("Incorrect QC flag for canyon_med")
         
@@ -399,12 +385,14 @@ def FloatSelector(var, T, region):
         available_params = INDEX_FILE['parameters'][iFile]
         profile_flags    = INDEX_FILE['prof_flags'][iFile]
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d-%H:%M:%S')
-        filename = ONLINE_REPO + 'CANYON_MED_QC/' + filename
+        filename = ONLINE_REPO + 'CANYONMED/' + filename
 
         if var is None :
             VarCondition = True
         else:
-            VarCondition = var in available_params
+            #VarCondition = var in available_params
+            params = available_params.strip().split()
+            VarCondition = var in params
 
         if VarCondition:
             if T.contains(float_time) and region.is_inside(lon, lat):

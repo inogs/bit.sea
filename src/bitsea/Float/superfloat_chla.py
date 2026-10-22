@@ -1,5 +1,11 @@
 from bitsea.utilities.argparse_types import existing_dir_path
 import argparse
+import os
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import pandas as pd
+
+
 def read_temp_psal(p):
     PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
     Pres, Sali, QcS = p.read('PSAL', read_adjusted=True)
@@ -30,6 +36,10 @@ def argument():
                                 type = existing_dir_path,
                                 required = True,                                
                                 help = 'path of the Superfloat dataset ')
+    parser.add_argument(   '--outdiag','-O',
+                                type = existing_dir_path,
+                                required = True,
+                                help = 'path for statistics, diagnostics, logs')
     parser.add_argument(   '--force', '-f',
                                 action='store_true',
                                 help = """Overwrite existing files
@@ -40,6 +50,11 @@ def argument():
                                 required = False,
                                 default = 'NO_file',
                                 help = '''file with updated floats''')
+    parser.add_argument(   '--workers','-w',
+                                type = int,
+                                required = False,
+                                default = os.cpu_count() or 1,
+                                help = 'number of worker processes (one float, i.e. WMO, per task)')
 
     return parser.parse_args()
 
@@ -61,6 +76,8 @@ import netCDF4 as NC
 import numpy as np
 import datetime
 
+CHLA_MAX_THRESHOLD = 7.0  # profiles with any CHLA value above this are rejected
+
 class Metadata():
     def __init__(self, filename):
         self.filename = str(filename)
@@ -71,6 +88,37 @@ def get_outfile(p,outdir):
     wmo=p._my_float.wmo
     filename = outdir / wmo / p._my_float.filename.name
     return filename
+
+
+def save_report(out_dir, df_report, filename='Floats_chla_report.csv'):
+    """Append the rows of df_report to a CSV, avoiding duplicate rows.
+    Called only by the main process, so the CSV has a single writer."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    file_path = out_dir / filename
+
+    df_new = df_report.copy()
+    if file_path.exists():
+        df_existing = pd.read_csv(file_path)
+        df_new = pd.concat([df_existing, df_new], ignore_index=True)
+
+    df_new.drop_duplicates(inplace=True)
+    df_new.to_csv(file_path, index=False)
+
+
+def build_report_row(p, outcome, reason='', shift=np.nan, replaced_values=0):
+    return pd.DataFrame([{
+        'WMO': p._my_float.wmo,
+        'cycle': p._my_float.cycle,
+        'time': str(p.time),
+        'file_origin': str(p._my_float.filename),
+        'outcome': outcome,
+        'reason': reason,
+        'shift_from_coriolis': shift,
+        'background_value': 0.005 if replaced_values else np.nan,
+        'replaced_values': replaced_values,
+    }])
+
 
 def dumpfile(outfile, p,Pres,chl_profile,Qc,metadata):
     PresT, Temp, QcT, PresS, Sali, QcS = read_temp_psal(p)
@@ -137,6 +185,7 @@ def chla_algorithm(pCor,outfile):
     - less than 5 CHLA values
     - less than 5 TEMP values
     - min of depth > 200m
+    - at least one CHLA value > CHLA_MAX_THRESHOLD
     - RealTime Mode
 
     Shifts the profile in order to have mean=0 in 400-600m
@@ -144,38 +193,69 @@ def chla_algorithm(pCor,outfile):
     '''
 
     background_value=0.005
-    Pres, _, _ = read_temp_psal(pCor)[3:]
-    if len(Pres)<5:
+    PresT, Temp, _, _, _, _ = read_temp_psal(pCor)
+    if PresT is None or Temp is None or len(PresT) < 5 or len(Temp) < 5:
         print("few values in Coriolis TEMP in " + str(pCor._my_float.filename), flush=True)
-        return
+        return build_report_row(pCor, 'rejected', reason='insufficient_TEMP_data')
 
     metadata = Metadata(pCor._my_float.filename)
     metadata.status_var = pCor._my_float.status_var('CHLA')
-    if pCor._my_float.status_var('CHLA') in ['A','D'] :
+    if metadata.status_var in ['A','D'] :
         Pres,CHL, Qc=pCor.read('CHLA', read_adjusted=True)
-        if len(Pres)<5:
+        if Pres is None or CHL is None or Qc is None or len(Pres)<5 or len(CHL)<5:
             print("few values in Coriolis in CHLA for " + str(pCor._my_float.filename), flush=True)
-            return
+            return build_report_row(pCor, 'rejected', reason='insufficient_CHLA_data')
+        if len(Pres) != len(CHL) or len(Pres) != len(Qc):
+            return build_report_row(pCor, 'rejected', reason='inconsistent_CHLA_array_lengths')
         if Pres.min() > 200:
             print("Only deep values in Coriolis in CHLA for " + str(pCor._my_float.filename), flush=True)
-            return
+            return build_report_row(pCor, 'rejected', reason='CHLA_only_below_200m')
+        if np.any(CHL > CHLA_MAX_THRESHOLD):
+            print("CHLA value above %s in %s" % (CHLA_MAX_THRESHOLD, pCor._my_float.filename), flush=True)
+            return build_report_row(pCor, 'rejected', reason='CHLA_above_max_threshold')
 
         ii=(Pres >= 400) & (Pres <= 600)
+        shift = 0.0
         if ii.sum() > 0:
             shift = CHL[ii].mean()
             metadata.shift_from_coriolis = shift
             CHL = CHL - shift
         ii=CHL<=0
+        replaced_values = int(ii.sum())
         CHL[ii] = background_value
     else:
         print("R -- not dumped ", pCor._my_float.filename, flush=True)
+        return build_report_row(pCor, 'rejected', reason=f"unsupported_CHLA_status_{metadata.status_var}")
 
 
     Path.mkdir(outfile.parent, exist_ok=True)
     dumpfile(outfile, pCor, Pres, CHL, Qc, metadata)
+    return build_report_row(
+        pCor, 'accepted', shift=metadata.shift_from_coriolis,
+        replaced_values=replaced_values)
 
 OUTDIR = args.outdir
+OUTDIAG = args.outdiag
 input_file=args.update_file
+
+# wmo -> list of profiles. Filled before the pool is created, so that the
+# forked workers inherit it and only the wmo is sent to them.
+WMO_PROFILES = {}
+
+def process_wmo(wmo):
+    """Processes all the profiles of one float. Returns the report rows;
+    the CSV is written only by the main process."""
+    rows = []
+    for pCor in WMO_PROFILES[wmo]:
+        outfile = get_outfile(pCor, OUTDIR)
+        if input_file == 'NO_file' and superfloat_generator.exist_valid(outfile) and not args.force:
+            continue
+        try:
+            rows.append(chla_algorithm(pCor, outfile))
+        except Exception as exc:
+            print("error on " + str(pCor._my_float.filename) + ": " + repr(exc), flush=True)
+            rows.append(build_report_row(pCor, 'error', reason=repr(exc)))
+    return rows
 
 if input_file == 'NO_file': 
     TI = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
@@ -185,11 +265,7 @@ if input_file == 'NO_file':
     wmo_list.sort()
 
     for wmo in wmo_list:
-        Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
-        for ip, pCor in enumerate(Profilelist):
-            outfile = get_outfile(pCor, OUTDIR)
-            if superfloat_generator.exist_valid(outfile) & (not args.force): continue
-            chla_algorithm(pCor,outfile)
+        WMO_PROFILES[wmo] = bio_float.filter_by_wmo(PROFILES_COR, wmo)
 
 
 else:
@@ -209,6 +285,19 @@ else:
         
         if 'CHLA' in available_params:
             pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-            outfile = get_outfile(pCor, OUTDIR)
-            chla_algorithm(pCor, outfile)
+            WMO_PROFILES.setdefault(pCor._my_float.wmo, []).append(pCor)
 
+# longest floats first, to balance the workers
+wmo_order = sorted(WMO_PROFILES, key=lambda w: len(WMO_PROFILES[w]), reverse=True)
+with ProcessPoolExecutor(max_workers=args.workers, mp_context=multiprocessing.get_context('fork')) as executor:
+    futures = {executor.submit(process_wmo, wmo): wmo for wmo in wmo_order}
+    for future in as_completed(futures):
+        wmo = futures[future]
+        try:
+            rows = future.result()
+        except Exception as exc:
+            print(f"{wmo} generated an exception: {exc!r}", flush=True)
+            continue
+        if rows:
+            save_report(OUTDIAG, pd.concat(rows, ignore_index=True))
+        print(f"{wmo} done: {len(rows)} profiles reported", flush=True)

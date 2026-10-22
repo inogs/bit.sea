@@ -18,20 +18,27 @@ def oxy_sat(p):
         try:
             PresT, Temp, QcT = p.read('TEMP', read_adjusted=True)
             PresS, Sali, QcS = p.read('PSAL', read_adjusted=True)
+            if (PresS is None or PresT is None or Temp is None or Sali is None or len(PresS) < 5 or len(PresT) < 5):
+                PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
+                PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)
         except TypeError: # dovrebbe entrare se uso superfloat wrapper
             PresT, Temp, QcT = p.read('TEMP')
             PresS, Sali, QcS = p.read('PSAL')
     else:
         PresT, Temp, QcT = p.read('TEMP', read_adjusted=False)
         PresS, Sali, QcS = p.read('PSAL', read_adjusted=False)
+    
+    if PresT is None or Temp is None or PresS is None or Sali is None:
+         return np.nan
 
-    ii = PresT<=depth_threshold
-    if ii.sum() == 0:
-        print("No TEMP values with pressure less than %f m " %(depth_threshold))
+    ii_T = PresT <= depth_threshold
+    ii_S = PresS <= depth_threshold
+    if ii_T.sum() == 0 or ii_S.sum() == 0:
+        print("No TEMP or PSAL values with pressure less than %f m " %(depth_threshold))
         return np.nan
 
-    temp=np.mean(Temp[ii]) 
-    sal =np.mean(Sali[ii])
+    temp=np.mean(Temp[ii_T]) 
+    sal =np.mean(Sali[ii_S])
 
     ts = np.log( ( 298.15 - temp) / ( temp + 273.15 ) )
     ts2 = ts * ts 

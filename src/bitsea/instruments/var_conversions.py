@@ -5,11 +5,18 @@ FLOATVARS={'O2o':'DOXY', \
            'Chla':'CHLA', \
            'vosaline':'PSAL', \
            'votemper':'TEMP',
-           'PAR':'DOWNWELLING_PAR',
-           'POC':'BBP700',
-           'P_c':'BBP700',
-           'BBP532':'BBP532',
+           'PAR':'DOWNWELLING_PAR',\
+           'POC':'BBP700',\
+           'P_c':'BBP700',\
+           'BBP532':'BBP532',\
+           'Ed_490': 'DOWN_IRRADIANCE490',\
+           'CDOM': 'CDOM',\
            'pH'    : 'PH_IN_SITU_TOTAL'   }
+
+PPCONVAR={'O2o':'DOXY', \
+          'N3n':'NITRATE', \
+          'P_l':'CHLA', \
+          'POC':'BBP700'} 
 
 CANYONVAR={'O2o':'DOXY', \
            'P_l':'CHLA', \

@@ -119,6 +119,7 @@ bt=300
 depths=np.linspace(0,300,121)
 
 my_cmap=matplotlib.colormaps['viridis'].resampled(24)
+
 for ivar_m, var_mod in enumerate(VARLIST):
     var = FLOATVARS[var_mod]
     Profilelist = bio_float.FloatSelector(var, TI, Rectangle(-6,36,30,46))
@@ -240,7 +241,6 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ymean=np.mean(ax8.get_ylim())
 #            ax8.text(xmax, ymean, "WBL", color='r',rotation=90, horizontalalignment="right", verticalalignment="center", fontsize=15)
             multicolor_ylabel(ax8,('DCM','/','WBL','$[m]$'),('k','r','k','b'),axis='y',size=14) #,weight='bold')
-
 
 
         if ( var_mod == "O2o" ):

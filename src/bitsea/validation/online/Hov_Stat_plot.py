@@ -236,7 +236,7 @@ for ivar, var_mod in enumerate(VARLIST):
             ax8.invert_yaxis()
             ax8.plot(times,  ref_dcm,'.b',label='DCM FLO')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='WBL FLO') # vertically Mixed Winter Bloom depth | WINTER BLOOM LAYER
+            ax8.plot(times, ref_mld,'.r',label='WBL FLO') # vertically Mixed Winter Bloom depth | WBL WINTER BLOOM LAYER
             ax8.plot(times,model_mld,'r',label='WBL MOD')
 #            ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
@@ -310,10 +310,16 @@ for ivar, var_mod in enumerate(VARLIST):
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
 
-        if var_mod == 'OXY':
-            xlabels=ax7.get_xticklabels()
+        ticklabs = cbar.get_ticks()
+        ticks_loc = cbar.ax.get_yticks().tolist()
+        cbar.ax.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
+        if (var_mod == 'O2o'):
+            cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
         else:
-            xlabels = ax8.get_xticklabels()
+            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs], fontsize=font_s)
+        #    xlabels=ax7.get_xticklabels()
+        #else:
+        xlabels = ax8.get_xticklabels()
 
 
         pl.setp(xlabels, rotation=30, fontsize=14)

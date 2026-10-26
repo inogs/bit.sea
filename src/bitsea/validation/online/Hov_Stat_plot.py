@@ -41,7 +41,6 @@ def argument():
 
 args = argument()
 
-
 import matplotlib
 matplotlib.use('Agg')
 from bitsea.commons.mesh import Mesh
@@ -259,7 +258,7 @@ for ivar, var_mod in enumerate(VARLIST):
             ax8.plot(times, ref_OMZ, '.r',label='OMZ FLO') #'REF OMZ
             ax8.plot(times, model_OMZ, 'r',label='OMZ MOD') #'Model OMZ
             ax8.plot(times, ref_maxO2 , '.b',label='O2max FLO') #'REF maxO2
-            ax8.plot(times, model_maxO2 , 'b' ,label='O2max MOD') #'Mod maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
             ax8.set_ylim(1000,0)
             legend = ax8.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5)# shadow=True
 

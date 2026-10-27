@@ -255,7 +255,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
             ax8.plot(times, ref_OMZ, '.r',label='OMZ Flo') #'REF OMZ
             ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
             ax8.plot(times, ref_maxO2 , '.b',label='O2max Flo') #'REF maxO2
-            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Mod') #'Mod maxO2
             ax8.set_ylim(1000,0)
             legend = ax8.legend(loc='upper left', shadow=True, fontsize=10)
 
@@ -269,7 +269,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
 #            ax8.plot(times,  np.ones_like(times))
 #            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
 
-        legend = ax5.legend(loc='upper left', left', fontsize=9, fancybox=True, framealpha=0.5)
+        legend = ax5.legend(loc='upper left', left', fontsize=10, fancybox=True, framealpha=0.5)
             
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)

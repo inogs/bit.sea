@@ -255,15 +255,15 @@ for ivar, var_mod in enumerate(VARLIST):
 
             ax5.plot(times, ref_Osat, '.r',label='O2sat (FLO)') #'REF OXY at SATURATION'
 
-            ax8.plot(times, ref_OMZ, '.r',label='OMZ FLO') #'REF OMZ
-            ax8.plot(times, model_OMZ, 'r',label='OMZ MOD') #'Model OMZ
-            ax8.plot(times, ref_maxO2 , '.b',label='O2max FLO') #'REF maxO2
-            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Model') #'Mod maxO2
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ Flo') #'REF OMZ
+            ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max Flo') #'REF maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Mod') #'Mod maxO2
             ax8.set_ylim(1000,0)
-            legend = ax8.legend(loc='upper left', fontsize=9, fancybox=True, framealpha=0.5)# shadow=True
+            legend = ax8.legend(loc='upper left', fontsize=10, fancybox=True, framealpha=0.5)# shadow=True
 
 
-        legend = ax5.legend(loc='upper left', fontsize=9, fancybox=True, framealpha=0.5) #shadow=True
+        legend = ax5.legend(loc='upper left', fontsize=10, fancybox=True, framealpha=0.5) #shadow=True
             
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)

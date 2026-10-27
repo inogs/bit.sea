@@ -72,6 +72,7 @@ def main():
 
                 dst_file = ppcon_dir / v2
                 dst_file.parent.mkdir(parents=True, exist_ok=True)
+                print(f"Copying: '{superfloat_file}' -> '{dst_file}'")
                 shutil.copy2(superfloat_file, dst_file)
 
 if __name__ == "__main__":

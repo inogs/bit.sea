@@ -1,5 +1,7 @@
 #! /bin/bash
+module load python/3.11.7--gcc--10.2.0
 
+source $OPA_HOME/HOST/g100/venv/bin/activate
 source ../../Sat/profile.inc
 
 ONLINE_REPO=/g100_scratch/usera07ogs/a07ogs00/vsciortino/ONLINE/
@@ -45,7 +47,7 @@ for filename in $( cat ${LOCAL_INPUT} | cut -d "," -f1 ) ; do
  done
 
 echo "Start selection of files using the python script..."
-my_prex_or_die "python launcher_reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
+my_prex_or_die "python -u reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
 
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"

@@ -18,7 +18,7 @@ def argument() -> argparse.Namespace:
         "--outputfile",
         "-o",
         required=True,
-        help="Path to the local filtered file to write.",
+        help="Path to the local filtered list of float files to write.",
     )
     parser.add_argument(
         "--inputdir",

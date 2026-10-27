@@ -22,8 +22,8 @@ UPDATE_FILE=/g100_scratch/usera07ogs/a07ogs00/vsciortino/DIFF_floats.20261026-20
 ###### PPCON generation based on UPDATE_FILE #############
 
 
-cd $PWD > $LOCAL_INPUT
-cd $PWD > $LOCAL_INPUT_PY
+> $LOCAL_INPUT
+> $LOCAL_INPUT_PY
 
 echo "Start selection of files using the shell scripting lines..."
 
@@ -44,19 +44,16 @@ for filename in $( cat ${LOCAL_INPUT} | cut -d "," -f1 ) ; do
    cp -v ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
  done
 
-echo "... done"
-
 echo "Start selection of files using the python script..."
 my_prex_or_die "python -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
-
 
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"
 NR_PY=$( wc -l $LOCAL_INPUT_PY | awk '{print $1}')
 echo "Number of lines in the local input file (Python): $NR_PY"
 
-if [[ $NR > 0 ]] ; then
-  my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $LOCAL_INPUT -o $ONLINE_REPO_CLUSTERING"
-  my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $TRAIN_DIR -p $ONLINE_REPO/PPCON"
-  my_prex_or_die "python dump_index.py -i $ONLINE_REPO/PPCON -o $ONLINE_REPO/PPCON/Float_Index.txt -t ppcon_float"
-fi
+#if [[ $NR > 0 ]] ; then
+#  my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $LOCAL_INPUT -o $ONLINE_REPO_CLUSTERING"
+#  my_prex_or_die "python -u make_generated_ds/generate_netcdf_netcdf4.py -t $ONLINE_REPO_CLUSTERING -m $TRAIN_DIR -p $ONLINE_REPO/PPCON"
+#  my_prex_or_die "python dump_index.py -i $ONLINE_REPO/PPCON -o $ONLINE_REPO/PPCON/Float_Index.txt -t ppcon_float"
+#fi

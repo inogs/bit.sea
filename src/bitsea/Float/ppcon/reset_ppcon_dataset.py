@@ -84,10 +84,11 @@ def main():
             ):
                 continue
 
+            profiles_to_remove = []
             for profile in wmo_dir.iterdir():
                 if (
                     not profile.is_file()
-                    or not profile.name.startswith("SD")
+                    or not profile.name.startswith("SR")
                     or not profile.name.endswith(".nc")
                 ):
                     continue
@@ -106,9 +107,12 @@ def main():
                 ):
                     continue
 
-                old_profile = wmo_dir / f"SR{wmo_number}_{rise_number}.nc"
-                if old_profile.is_file():
-                    os.remove(old_profile)
+                new_profile = wmo_dir / f"SD{wmo_number}_{rise_number}.nc"
+                if new_profile.is_file():
+                    profiles_to_remove.append(profile)
+
+            for profile in profiles_to_remove:
+                os.remove(profile)
 
 if __name__ == "__main__":
    main()

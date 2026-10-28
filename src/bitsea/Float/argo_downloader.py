@@ -133,10 +133,13 @@ if os.path.isdir(local_coriolis_dir):
         local_float_dir = local_coriolis_dir / wmo_dir
         if (not local_float_dir.is_dir()) or (len(wmo_dir) != 7) or (not wmo_dir.isdigit()):
             continue
+        files_to_remove = []
         for filename in os.listdir(local_float_dir):
-            if filename.startswith('SD') and filename.endswith('.nc'):
-                sr_path = local_float_dir / ('SR' + filename[2:])
-                if sr_path.exists():
-                    os.remove(sr_path)
-                    print(f"REMOVED: {str(sr_path)}")
+            if filename.startswith('SR') and filename.endswith('.nc'):
+                sd_path = local_float_dir / ('SD' + filename[2:])
+                if sd_path.is_file():
+                    files_to_remove.append(local_float_dir / filename)
+        for sr_path in files_to_remove:
+            os.remove(sr_path)
+            print(f"REMOVED: {str(sr_path)}")
 print("...Done.")

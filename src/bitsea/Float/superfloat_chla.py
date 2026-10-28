@@ -170,6 +170,17 @@ def chla_algorithm(pCor,outfile):
 OUTDIR = args.outdir
 input_file=args.update_file
 
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
 if input_file == 'NO_file': 
     TI = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
     R = Rectangle(-6,36,30,46)
@@ -177,7 +188,7 @@ if input_file == 'NO_file':
     wmo_list= bio_float.get_wmo_list(PROFILES_COR)
     wmo_list.sort()
 
-    for wmo in wmo_list:
+    for wmo in wmo_list[rank::nranks]:
         Profilelist = bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
             outfile = get_outfile(pCor, OUTDIR)
@@ -190,7 +201,13 @@ else:
 
     nFiles=INDEX_FILE.size
 
+    indices_to_process=[]
     for iFile in range(nFiles):
+        available_params = INDEX_FILE['parameters'][iFile]
+        if 'CHLA' in available_params:
+            indices_to_process.append(iFile)
+
+    for iFile in indices_to_process[rank::nranks]:
         timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
@@ -200,8 +217,6 @@ else:
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
         
-        if 'CHLA' in available_params:
-            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-            outfile = get_outfile(pCor, OUTDIR)
-            chla_algorithm(pCor, outfile)
-
+        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+        outfile = get_outfile(pCor, OUTDIR)
+        chla_algorithm(pCor, outfile)

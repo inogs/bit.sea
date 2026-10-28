@@ -152,6 +152,18 @@ def par_algorithm(pCor, outfile, metadata,writing_mode):
 
 OUTDIR = args.outdir
 input_file=args.update_file
+
+try:
+    from mpi4py import MPI
+    comm  = MPI.COMM_WORLD
+    rank  = comm.Get_rank()
+    nranks =comm.size
+    isParallel = True
+except:
+    rank   = 0
+    nranks = 1
+    isParallel = False
+
 if input_file == 'NO_file':
 
     TI     = TimeInterval(args.datestart,args.dateend,'%Y%m%d')
@@ -163,7 +175,7 @@ if input_file == 'NO_file':
     wmo_list.sort()
 
 
-    for wmo in wmo_list:
+    for wmo in wmo_list[rank::nranks]:
         print(wmo, flush=True)
         Profilelist=bio_float.filter_by_wmo(PROFILES_COR, wmo)
         for ip, pCor in enumerate(Profilelist):
@@ -183,7 +195,13 @@ else:
 
     nFiles=INDEX_FILE.size
 
+    indices_to_process=[]
     for iFile in range(nFiles):
+        available_params = INDEX_FILE['parameters'][iFile]
+        if 'DOWNWELLING_PAR' in available_params:
+            indices_to_process.append(iFile)
+
+    for iFile in indices_to_process[rank::nranks]:
         timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
@@ -193,12 +211,10 @@ else:
         float_time = datetime.datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 
-        if  'DOWNWELLING_PAR' in available_params:
-            pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
-            outfile = get_outfile(pCor,OUTDIR)
-            writing_mode=superfloat_generator.writing_mode(outfile)
+        pCor=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
+        outfile = get_outfile(pCor,OUTDIR)
+        writing_mode=superfloat_generator.writing_mode(outfile)
 
-            metadata = Metadata(pCor._my_float.filename)
-            par_algorithm(pCor, outfile, metadata, writing_mode)
-
+        metadata = Metadata(pCor._my_float.filename)
+        par_algorithm(pCor, outfile, metadata, writing_mode)
 

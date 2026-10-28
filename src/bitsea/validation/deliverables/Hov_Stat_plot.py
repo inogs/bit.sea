@@ -269,7 +269,7 @@ for ivar_m, var_mod in enumerate(VARLIST):
 #            ax8.plot(times,  np.ones_like(times))
 #            ax7.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
 
-        legend = ax5.legend(loc='upper left', left', fontsize=10, fancybox=True, framealpha=0.5)
+        legend = ax5.legend(loc='upper left', fontsize=10, fancybox=True, framealpha=0.5)
             
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)

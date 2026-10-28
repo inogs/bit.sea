@@ -19,46 +19,22 @@ echo "ONLINE_REPO_CLUSTERING: $ONLINE_REPO_CLUSTERING"
 
 # Set the local PPCON diff-list path inside the online repository.
 LOCAL_INPUT=$ONLINE_REPO/PPCON/DIFF_floats.txt
-LOCAL_INPUT_PY=$ONLINE_REPO/PPCON/DIFF_floats_py.txt
 # Set the input update file path for the current run.
 UPDATE_FILE=/g100_scratch/usera07ogs/a07ogs00/vsciortino/DIFF_floats.20261026-20:55:39.txt
 
 ###### PPCON generation based on UPDATE_FILE #############
 
-
 > $LOCAL_INPUT
-> $LOCAL_INPUT_PY
-
-echo "Start selection of files using the shell scripting lines..."
-
-while read -r line ; do
-filename=$( echo $line | cut -d "," -f1);
-  V1=${filename/coriolis\//}
-  V2=${V1/profiles\//}
-  superfloat_file=${ONLINE_REPO}/SUPERFLOAT/${V2}
-  [ -f $superfloat_file ] && echo $line >> $LOCAL_INPUT
-
-done < ${UPDATE_FILE}
-
-
-echo "Start copying from SUPERFLOAT"
-for filename in $( cat ${LOCAL_INPUT} | cut -d "," -f1 ) ; do
-  V1=${filename/coriolis\//}
-  V2=${V1/profiles\//}
-   cp -v ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
- done
 
 FLOAT_DIR=$BITSEA_DIR/Float
 PPCON_DIR=$BITSEA_DIR/Float/ppcon
 
-my_prex_or_die "python -u $PPCON_DIR/reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
+my_prex_or_die "python -u $PPCON_DIR/reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
 my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/"
 my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/ --force"
 
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"
-NR_PY=$( wc -l $LOCAL_INPUT_PY | awk '{print $1}')
-echo "Number of lines in the local input file (Python): $NR_PY"
 
 #if [[ $NR > 0 ]] ; then
 #  my_prex_or_die "python -u clustering/clustering.py -i $ONLINE_REPO -u $LOCAL_INPUT -o $ONLINE_REPO_CLUSTERING"

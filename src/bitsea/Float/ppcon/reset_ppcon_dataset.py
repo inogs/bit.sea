@@ -75,44 +75,5 @@ def main():
                 print(f"Copying: '{superfloat_file}' -> '{dst_file}'")
                 shutil.copy2(superfloat_file, dst_file)
 
-    if ppcon_dir.is_dir():
-        for wmo_dir in ppcon_dir.iterdir():
-            if (
-                not wmo_dir.is_dir()
-                or len(wmo_dir.name) != 7
-                or not wmo_dir.name.isdigit()
-            ):
-                continue
-
-            profiles_to_remove = []
-            for profile in wmo_dir.iterdir():
-                if (
-                    not profile.is_file()
-                    or not profile.name.startswith("SR")
-                    or not profile.name.endswith(".nc")
-                ):
-                    continue
-
-                profile_numbers = profile.name[2:-3].split("_")
-                if len(profile_numbers) != 2:
-                    continue
-
-                wmo_number, rise_number = profile_numbers
-                if (
-                    len(wmo_number) != 7
-                    or not wmo_number.isdigit()
-                    or len(rise_number) != 3
-                    or not rise_number.isdigit()
-                    or wmo_number != wmo_dir.name
-                ):
-                    continue
-
-                new_profile = wmo_dir / f"SD{wmo_number}_{rise_number}.nc"
-                if new_profile.is_file():
-                    profiles_to_remove.append(profile)
-
-            for profile in profiles_to_remove:
-                os.remove(profile)
-
 if __name__ == "__main__":
    main()

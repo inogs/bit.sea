@@ -2,7 +2,9 @@
 module load python/3.11.7--gcc--10.2.0
 
 source $OPA_HOME/HOST/g100/venv/bin/activate
-source ../../Sat/profile.inc
+
+BITSEA_DIR=$OPA_HOME/HOST/g100/bit.sea/src/bitsea
+source $BITSEA_DIR/Sat/profile.inc
 
 ONLINE_REPO=/g100_scratch/usera07ogs/a07ogs00/vsciortino/ONLINE/
 OPA_ETCDIR=/g100_scratch/usera07ogs/a07ogs00/vsciortino/etc
@@ -46,8 +48,12 @@ for filename in $( cat ${LOCAL_INPUT} | cut -d "," -f1 ) ; do
    cp -v ${ONLINE_REPO}/SUPERFLOAT/${V2} ${ONLINE_REPO}/PPCON/${V2}
  done
 
-echo "Start selection of files using the python script..."
-my_prex_or_die "python -u reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
+FLOAT_DIR=$BITSEA_DIR/Float
+PPCON_DIR=$BITSEA_DIR/Float/ppcon
+
+my_prex_or_die "python -u $PPCON_DIR/reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT_PY -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
+my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/"
+my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/ --force"
 
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"

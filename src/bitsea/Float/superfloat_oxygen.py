@@ -425,9 +425,15 @@ else:
     INDEX_FILE=superfloat_generator.read_float_update(input_file)
     nFiles=INDEX_FILE.size
 
+    indices_to_process=[]
+    for iFile in range(nFiles):
+        available_params = INDEX_FILE['parameters'][iFile]
+        if 'DOXY' in available_params:
+            indices_to_process.append(iFile)
+
     PROFILES_COR=[]
 
-    for iFile in range(nFiles):
+    for iFile in indices_to_process:
         timestr          = INDEX_FILE['date'][iFile]
         lon              = INDEX_FILE['longitude' ][iFile]
         lat              = INDEX_FILE['latitude' ][iFile]
@@ -437,8 +443,6 @@ else:
         float_time = datetime.strptime(timestr,'%Y%m%d%H%M%S')
         filename=filename.replace('coriolis/','').replace('profiles/','')
 
-
-        if 'DOXY' not in available_params: continue
         p=bio_float.profile_gen(lon, lat, float_time, filename, available_params,parameterdatamode)
         PROFILES_COR.append(p)
 

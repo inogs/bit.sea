@@ -41,7 +41,6 @@ def argument():
 
 args = argument()
 
-
 import matplotlib
 matplotlib.use('Agg')
 from bitsea.commons.mesh import Mesh
@@ -139,10 +138,9 @@ for ivar, var_mod in enumerate(VARLIST):
     
     for wmo in wmo_list:
         OUTFILE = OUTDIR / f"{var_mod}_{wmo}.png"
-        print(OUTFILE)
+        print(OUTFILE,flush=True)
         list_float_track=bio_float.filter_by_wmo(Profilelist,wmo)
         fig,axes= plotter.figure_generator(list_float_track)
-
         ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8=axes
         xlabels = ax8.get_xticklabels()
         ax8.xaxis.grid(True)
@@ -155,7 +153,7 @@ for ivar, var_mod in enumerate(VARLIST):
 
         for ip, p in enumerate(list_float_track):
             try:
-                Pres,Prof,Qc=p.read(var)
+                Pres,Prof,Qc=p.read(var,var_mod=var_mod)
             except:
                 timelabel_list.append(p.time)
                 continue
@@ -215,7 +213,7 @@ for ivar, var_mod in enumerate(VARLIST):
         surf_model, surf_ref = A.plotdata(var_mod,'SurfVal', only_good=False)
         model_corr , ref_corr =A.plotdata(var_mod,'Corr', only_good=False)
 
-        ax6.plot(times,  ref,'.b',label='REF INTEG')
+        ax6.plot(times,  ref,'.b',label='FLO INTEG')
         ax6.plot(times,model,'b',label='MOD INTEG')
 
         ax5.plot(times,  surf_ref,'.b',label='Surf FLO') #'REF SURF')
@@ -236,9 +234,9 @@ for ivar, var_mod in enumerate(VARLIST):
             ax5.plot(times,  ref_cm,'.r',label='ChlMax FLO')
             ax5.plot(times,model_cm,'r',label='ChlMax MOD')
             ax8.invert_yaxis()
-            ax8.plot(times,  ref_dcm,'.b',label='DCM REF')
+            ax8.plot(times,  ref_dcm,'.b',label='DCM FLO')
             ax8.plot(times,model_dcm,'b',label='DCM MOD')
-            ax8.plot(times, ref_mld,'.r',label='WBL REF') # vertically Mixed Winter Bloom depth | WINTER BLOOM LAYER
+            ax8.plot(times, ref_mld,'.r',label='WBL FLO') # vertically Mixed Winter Bloom depth | WBL WINTER BLOOM LAYER
             ax8.plot(times,model_mld,'r',label='WBL MOD')
 #            ax8.set_ylabel('DCM $[m]$',fontsize=15)
             ax8.set_ylim([200,0])
@@ -257,19 +255,16 @@ for ivar, var_mod in enumerate(VARLIST):
 
             ax5.plot(times, ref_Osat, '.r',label='O2sat (FLO)') #'REF OXY at SATURATION'
 
-            ax8.plot(times, ref_OMZ, '.r',label='OMZ FLO') #'REF OMZ
-            ax8.plot(times, model_OMZ, 'r',label='OMZ MOD') #'Model OMZ
-            ax8.plot(times, ref_maxO2 , '.b',label='O2max FLO') #'REF maxO2
-            ax8.plot(times, model_maxO2 , 'b' ,label='O2max MOD') #'Mod maxO2
+            ax8.plot(times, ref_OMZ, '.r',label='OMZ Flo') #'REF OMZ
+            ax8.plot(times, model_OMZ, 'r',label='OMZ Mod') #'Model OMZ
+            ax8.plot(times, ref_maxO2 , '.b',label='O2max Flo') #'REF maxO2
+            ax8.plot(times, model_maxO2 , 'b' ,label='O2max Mod') #'Mod maxO2
             ax8.set_ylim(1000,0)
-            legend = ax8.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5)# shadow=True
+            legend = ax8.legend(loc='upper left', fontsize=10, fancybox=True, framealpha=0.5)# shadow=True
 
 
-        legend = ax5.legend(loc='upper left', fontsize=8, fancybox=True, framealpha=0.5) #shadow=True
-
-
-
-                        
+        legend = ax5.legend(loc='upper left', fontsize=10, fancybox=True, framealpha=0.5) #shadow=True
+            
         if ( var_mod == "N3n" ):
             ax6.set_ylabel('INTG 0-350m \n $[mmol{\  } m^{-3}]$',fontsize=15)
             ax5.set_ylim(0,1.8)
@@ -309,20 +304,25 @@ for ivar, var_mod in enumerate(VARLIST):
                 ax7.set_xticklabels([])
             ax7.set_ylim(0,1)
 
-
             ax7.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1,3,5,7,9,11]))
             ax7.tick_params(axis = 'both', which = 'major', labelsize = label_s)
 
 
         cbar=fig.colorbar(quadmesh, cax = cbaxes)
 
-        if var_mod == 'OXY':
-            xlabels=ax7.get_xticklabels()
+        ticklabs = cbar.get_ticks()
+        ticks_loc = cbar.ax.get_yticks().tolist()
+        cbar.ax.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
+        if (var_mod == 'O2o'):
+            cbar.ax.set_yticklabels([str(round(int(label))) for label in ticklabs] , fontsize=font_s)
         else:
-            xlabels = ax8.get_xticklabels()
+            cbar.ax.set_yticklabels([str(round(float(label), 2)) for label in ticklabs], fontsize=font_s)
+        #    xlabels=ax7.get_xticklabels()
+        #else:
+        xlabels = ax8.get_xticklabels()
 
 
-        pl.setp(xlabels, rotation=30, fontsize=15)
+        pl.setp(xlabels, rotation=30, fontsize=14)
 
         for ax in axes:ax.tick_params(axis = 'both', which = 'major', labelsize = label_s)
         for ax in axes[2:]: ax.set_xlim([T_start2num,T_end2num])

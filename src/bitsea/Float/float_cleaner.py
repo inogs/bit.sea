@@ -47,11 +47,10 @@ def main() -> None:
                 profiles_to_report.append((profile, wmo_number, rise_number))
 
         for profile, wmo_number, rise_number in profiles_to_report:
+            print(f"SD/SR profiles pair exist for float {wmo_number} rise {rise_number}")
             if args.force:
+                print(f"Removing {profile}")
                 profile.unlink()
-            else:
-                print(f"SD/SR profiles pair exist for float {wmo_number} rise {rise_number}")
-
 
 if __name__ == "__main__":
     main()

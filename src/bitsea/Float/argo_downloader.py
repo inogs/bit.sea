@@ -6,9 +6,7 @@ def argument():
     parser = argparse.ArgumentParser(description = '''
     Downloads:
     - netcdf files of argo floats in Med_floats.txt if not already present
-    - netcdf files of update file, in force mode
-                                 
-    The script also removes files that begin with "SR" when "SD" files with the same WMO number and rise up number exist.
+    - netcdf files of update file, in force mode                           
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(   '--coriolisdir',"-c",
@@ -122,21 +120,4 @@ for line in floats_to_download:
     parser_success = float_path_local is not None and float_path_remote is not None and float_file_name is not None
     if parser_success:
         download_move_float(float_path_remote, float_path_local, float_file_name)
-print("...Done.")
-
-# clean up local Coriolis directory by removing files 
-# that begin with "SR" when "SD" files with the same 
-# WMO number and rise up number exist.
-print("Looking for and removing useless SR argo profiles...")
-if os.path.isdir(local_coriolis_dir):
-    for wmo_dir in os.listdir(local_coriolis_dir):
-        local_float_dir = local_coriolis_dir / wmo_dir
-        if (not local_float_dir.is_dir()) or (len(wmo_dir) != 7) or (not wmo_dir.isdigit()):
-            continue
-        for filename in os.listdir(local_float_dir):
-            if filename.startswith('SD') and filename.endswith('.nc'):
-                sr_path = local_float_dir / ('SR' + filename[2:])
-                if sr_path.exists():
-                    os.remove(sr_path)
-                    print(f"REMOVED: {str(sr_path)}")
 print("...Done.")

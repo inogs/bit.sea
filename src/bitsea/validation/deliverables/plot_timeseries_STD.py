@@ -12,6 +12,7 @@ from bitsea.validation.deliverables import netcdf_validation_file
 from matplotlib.ticker import FormatStrFormatter
 from bitsea.instruments.var_conversions import SAT_VARS
 from bitsea.commons.Timelist import TimeInterval
+from datetime import timedelta
 
 
 def argument():
@@ -83,7 +84,7 @@ def argument():
         required=False,
         default="Med",
         help="Areas to generate the STATISTICS mean. std, bias and RMSD with respect satellite",
-        choices=["Med", "rivers", "coastal"],
+        choices=["Med", "rivers", "coastal","mer"],
     )
 
     return parser.parse_args()
@@ -103,9 +104,15 @@ if args.zone == "rivers":
     from bitsea.basins import RiverBoxes as OGS
 if args.zone == "coastal":
     from bitsea.basins import COASTAL12nm as OGS
+if args.zone == "mer":
+    domain = "ION"
+    from bitsea.basins.basin import ComposedBasin, SimplePolygonalBasin
+    from bitsea.basins.region import Rectangle
+    mer = Rectangle(lonmin=4.0, lonmax=20, latmin=32.0, latmax=48.0)
+    mer = SimplePolygonalBasin(domain, mer, f"{domain} Sea")
+    OGS = ComposedBasin("P", [mer], f"{domain} Sea")
+    OGS.P = ComposedBasin("P", [mer], f"{domain} Sea")
 
-
-model_label = " MODEL"
 
 if args.var == "kd490":
     units = "[m$^{-1}$]"
@@ -167,33 +174,55 @@ for isub, sub in enumerate(OGS.P):
     print(outfilename)
     fig, ax = pl.subplots()
     fig.set_size_inches(12, 4)
-    ax.plot(dr.TIMES, dr.SAT___MEAN[:, isub], "o", label=" SAT", color=color)
+    fig.set_dpi(220)
+    ax.plot(dr.TIMES, dr.SAT___MEAN[:, isub], "-", label=" Sat", color=color)
+    ax.plot(dr.TIMES, dr.SAT___MEAN[:, isub], "o", color=color)
     yfillbottom = dr.SAT___MEAN[:, isub] - dr.SAT____STD[:, isub]
     yfilltop = dr.SAT___MEAN[:, isub] + dr.SAT____STD[:, isub]
-    ax.fill_between(dr.TIMES, yfillbottom, yfilltop, color=lightcolor)
-    ax.plot(dr.TIMES, dr.MODEL_MEAN[:, isub], "-k", label=model_label)
-    ax.plot(dr.TIMES, dr.MODEL_MEAN[:, isub] - dr.MODEL__STD[:, isub], ":k")
-    ax.plot(dr.TIMES, dr.MODEL_MEAN[:, isub] + dr.MODEL__STD[:, isub], ":k")
+    ax.fill_between(dr.TIMES, yfillbottom, yfilltop, color=lightcolor, alpha=0.7)
+    ax.plot(dr.TIMES, yfillbottom, "-", color=color, linewidth=0.6)
+    ax.plot(dr.TIMES, yfilltop, "-", color=color, linewidth=0.6)
+    ax.plot(dr.TIMES, dr.MODEL_MEAN[:, isub], "-k", label=" Model")
+    ax.plot(
+        dr.TIMES,
+        dr.MODEL_MEAN[:, isub] - dr.MODEL__STD[:, isub],
+        "-k",
+        linewidth=0.6,
+    )
+    ax.plot(
+        dr.TIMES,
+        dr.MODEL_MEAN[:, isub] + dr.MODEL__STD[:, isub],
+        "-k",
+        linewidth=0.6,
+    )
 
-    ax.set_ylabel("%s - %s" % (sub.name.upper(), var_label)).set_fontsize(14)
+    ax.set_ylabel("%s - %s" % (sub.name.upper(), var_label)).set_fontsize(11)
     ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
-    ax.legend(loc="best", labelspacing=0, handletextpad=0, borderpad=0.1)
+    ax.legend(
+        loc="best",
+        labelspacing=0,
+        handletextpad=0,
+        borderpad=0.1,
+        fontsize=10,
+        frameon=True,
+    )
     leg = pl.gca().get_legend()
     ltext = leg.get_texts()
-    pl.setp(ltext, fontsize=12)
-    pl.rc("xtick", labelsize=12)
-    pl.rc("ytick", labelsize=12)
-    ax.tick_params(axis="both", labelsize=12)
-    #    pl.ylim(0.0, np.max(MODEL_MEAN[:,isub]+MODEL__STD[:,isub]) * 1.2 )
+    pl.setp(ltext, fontsize=10)
+    pl.rc("xtick", labelsize=10)
+    pl.rc("ytick", labelsize=10)
+    ax.tick_params(axis="both", labelsize=10)
+
     vmax = get_vmax(args.var, sub.name, args.zone)
     pl.ylim(vmin, vmax)
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+    if dr.TIMES[-1] - dr.TIMES[0] > timedelta(days=90):
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30, fontsize=12)
+    pl.setp(xlabels, rotation=30, fontsize=8)
     ylabels = ax.get_yticklabels()
-    pl.setp(ylabels, fontsize=12)
+    pl.setp(ylabels, fontsize=8)
     pl.tight_layout()
-    pl.savefig(outfilename)
+    pl.savefig(outfilename, dpi=220)
     pl.close(fig)

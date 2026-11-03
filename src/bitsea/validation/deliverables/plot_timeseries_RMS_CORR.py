@@ -18,6 +18,7 @@ from bitsea.instruments.var_conversions import SAT_VARS
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.validation.deliverables import netcdf_validation_file
 from bitsea.commons import timerequestors
+from datetime import timedelta
 
 
 def argument():
@@ -125,8 +126,15 @@ if args.zone == "rivers":
     from bitsea.basins import RiverBoxes as OGS
 if args.zone == "coastal":
     from bitsea.basins import COASTAL12nm as OGS
+if args.zone == "mer":
+    domain = "ION"
+    from bitsea.basins.basin import ComposedBasin, SimplePolygonalBasin
+    from bitsea.basins.region import Rectangle
+    mer = Rectangle(lonmin=4.0, lonmax=20, latmin=32.0, latmax=48.0)
+    mer = SimplePolygonalBasin(domain, mer, f"{domain} Sea")
+    OGS = ComposedBasin("P", [mer], f"{domain} Sea")
+    OGS.P = ComposedBasin("P", [mer], f"{domain} Sea")
 
-model_label = " MODEL"
 
 if args.var == "kd490":
     units = "[m$^{-1}$]"
@@ -154,31 +162,36 @@ for isub, sub in enumerate(OGS.P):
     fig, ax = pl.subplots()
     fig.set_size_inches(12, 4)
     ax.plot(
-        dr.TIMES, dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[:, isub], "-k", label="RMS"
+        dr.TIMES, dr.BGC_CLASS4_CHL_RMS_SURF_BASIN[:, isub], "-k", label=" RMS", linewidth=0.7
     )
     ax.plot(
-        dr.TIMES, dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:, isub], "-b", label="Bias"
+        dr.TIMES, dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:, isub], "-b", label=" Bias", linewidth=0.7
     )
-    ax.set_ylabel(sub.name.upper() + " - " + var_label).set_fontsize(14)
+    yfilltop = dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:, isub]
+    yfillbottom = np.zeros_like(dr.BGC_CLASS4_CHL_BIAS_SURF_BASIN[:, isub])
+    lightcolor = "lightblue"
+    ax.fill_between(dr.TIMES, yfillbottom, yfilltop, color=lightcolor, alpha=0.7)
+    ax.set_ylabel(sub.name.upper() + " - " + var_label).set_fontsize(11)
     ax.legend(loc="best", labelspacing=0, handletextpad=0, borderpad=0.1)
     leg = pl.gca().get_legend()
     ltext = leg.get_texts()
-    pl.setp(ltext, fontsize=12)
-    pl.rc("xtick", labelsize=12)
-    pl.rc("ytick", labelsize=12)
+    pl.setp(ltext, fontsize=10)
+    pl.rc("xtick", labelsize=10)
+    pl.rc("ytick", labelsize=10)
     vmax = get_vmax(args.var, sub.name, args.zone)
     vmin = -vmax
     pl.ylim(vmin, vmax)
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
+    if dr.TIMES[-1] - dr.TIMES[0] > timedelta(days=90):
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%Y"))
     ax.grid(True)
     xlabels = ax.get_xticklabels()
-    pl.setp(xlabels, rotation=30, fontsize=9)
+    pl.setp(xlabels, rotation=30, fontsize=8)
     ylabels = ax.get_yticklabels()
-    pl.setp(ylabels, fontsize=10)
+    pl.setp(ylabels, fontsize=8)
     pl.tight_layout()
     pl.tight_layout()
-    pl.savefig(outfilename)
+    pl.savefig(outfilename, dpi=220)
     pl.close(fig)
 
 
@@ -243,7 +256,7 @@ if (args.zone == "rivers") or (args.zone == "coastal"):
 
 #-------
 # OUTPUT selection by zone:
-if args.zone == "Med":
+if args.zone == "Med" or args.zone == "mer":
       mat = np.zeros((nSUB, 18), np.float32)
 
       mat[:, 0] = RMS__win

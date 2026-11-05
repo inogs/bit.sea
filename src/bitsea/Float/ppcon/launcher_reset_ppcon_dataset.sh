@@ -30,8 +30,13 @@ FLOAT_DIR=$BITSEA_DIR/Float
 PPCON_DIR=$BITSEA_DIR/Float/ppcon
 
 my_prex_or_die "python -u $PPCON_DIR/reset_ppcon_dataset.py -i $UPDATE_FILE -o $LOCAL_INPUT -I $ONLINE_REPO/SUPERFLOAT/ -O $ONLINE_REPO/PPCON/"
-my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/"
-my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -i $ONLINE_REPO/PPCON/ --force"
+
+my_prex "cd \"$ONLINE_REPO/PPCON/\"; \ls -1R > PPCON_contents.txt"
+
+my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -I $ONLINE_REPO/PPCON/ -i $ONLINE_REPO/PPCON/PPCON_contents.txt"
+my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -I $ONLINE_REPO/PPCON/ -i $ONLINE_REPO/PPCON/PPCON_contents.txt --force"
+
+my_prex "rm -f \"$ONLINE_REPO/PPCON/PPCON_contents.txt\""
 
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"

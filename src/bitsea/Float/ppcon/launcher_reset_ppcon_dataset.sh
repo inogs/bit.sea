@@ -36,8 +36,6 @@ my_prex "cd \"$ONLINE_REPO/PPCON/\"; \ls -1R > PPCON_contents.txt"
 my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -I $ONLINE_REPO/PPCON/ -i $ONLINE_REPO/PPCON/PPCON_contents.txt"
 my_prex_or_die "python -u $FLOAT_DIR/float_cleaner.py -I $ONLINE_REPO/PPCON/ -i $ONLINE_REPO/PPCON/PPCON_contents.txt --force"
 
-my_prex "rm -f \"$ONLINE_REPO/PPCON/PPCON_contents.txt\""
-
 NR=$( wc -l $LOCAL_INPUT | awk '{print $1}')
 echo "Number of lines in the local input file: $NR"
 

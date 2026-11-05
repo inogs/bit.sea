@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+from bitsea.utilities.argparse_types import existing_dir_path, existing_file_path
 import re
 from pathlib import Path
 
@@ -70,14 +71,14 @@ def main() -> None:
     parser.add_argument(
         "--inputdir",
         "-I",
-        type=Path,
+        type=existing_dir_path,
         required=True,
         help="Path to the directory: ONLINE/PPCON, ONLINE/CORIOLIS, ONLINE/SUPERFLOAT.",
     )
     parser.add_argument(
         "--inpdircontent",
         "-i",
-        type=Path,
+        type=existing_file_path,
         required=True,
         help="Path to the ls -1R text output for ONLINE/PPCON, ONLINE/CORIOLIS or ONLINE/SUPERFLOAT.",
     )
@@ -87,12 +88,6 @@ def main() -> None:
         help="Remove matching SR profiles instead of reporting them.",
     )
     args = parser.parse_args()
-
-    if not args.inputdir.is_dir():
-        parser.error(f"not a directory: {args.inputdir}")
-
-    if not args.inpdircontent.is_file():
-        parser.error(f"not a file: {args.inpdircontent}")
 
     for wmo_dir, directory_contents in iter_wmo_directory_contents(args.inpdircontent):
         profiles_to_report = []

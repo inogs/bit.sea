@@ -50,14 +50,14 @@ def argument():
         "-s",
         type=date_from_str,
         required=True,
-        help=""" Date start for time interval to consider for validation, format %Y%m%d""",
+        help=""" Date start for time interval to consider for validation, format yyyymmdd""",
     )
     parser.add_argument(
         "--dateend",
         "-e",
         type=date_from_str,
         required=True,
-        help=""" Date end for time interval to consider for validation,format %Y%m%d""",
+        help=""" Date end for time interval to consider for validation,format yyyymmdd""",
     )
     parser.add_argument(
         "--var",

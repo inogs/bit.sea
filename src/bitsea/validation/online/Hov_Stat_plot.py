@@ -43,6 +43,7 @@ args = argument()
 
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.ticker as mticker
 from bitsea.commons.mesh import Mesh
 from bitsea.commons.Timelist import TimeList, TimeInterval
 from bitsea.basins.region import Rectangle
